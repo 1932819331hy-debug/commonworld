@@ -1,0 +1,105 @@
+{
+  "site": {
+    "name": "Commonworld",
+    "motto": "A shared world for humans and agents",
+    "origin": "https://commonworld.one",
+    "base_path": "/atlas",
+    "home_url": "/",
+    "product_url": "https://commonworld.one/",
+    "product_name": "Commonworld",
+    "privacy_url": "/privacy/",
+    "terms_url": "/terms/",
+    "corrections_url": "https://github.com/commonworld-one/commonworld/issues/new",
+    "ga4_measurement_id": "G-9QB65R36K6",
+    "default_theme": "light"
+  },
+  "contact": {
+    "general": "nerd27dk@commonworld.one",
+    "privacy": "privacy@commonworld.one"
+  },
+  "data_licence": "CC BY 4.0",
+  "legal_draft": false,
+  "legal": {
+    "operator": "Commonworld",
+    "location": null,
+    "last_updated": "2026-10-16",
+    "ga_retention": "14 months"
+  },
+  "announcement": {
+    "enabled": true,
+    "id": "atlas-first-release-2026-10",
+    "text": "Atlas first release: every card is checked against its own sources before it is published.",
+    "link": {
+      "href": "/atlas/about/",
+      "label": "How we verify"
+    }
+  },
+  "ad_slots": {
+    "atlas-index-top": {
+      "enabled": true,
+      "size": [
+        728,
+        90
+      ],
+      "placeholder": true,
+      "creative": null
+    },
+    "atlas-native-card": {
+      "enabled": true,
+      "placeholder": true,
+      "creative": null
+    },
+    "atlas-sidebar": {
+      "enabled": true,
+      "size": [
+        210,
+        120
+      ],
+      "placeholder": true,
+      "creative": null
+    },
+    "atlas-category-top": {
+      "enabled": true,
+      "size": [
+        728,
+        90
+      ],
+      "placeholder": true,
+      "creative": null
+    },
+    "atlas-platform-top": {
+      "enabled": true,
+      "size": [
+        728,
+        90
+      ],
+      "placeholder": true,
+      "creative": null
+    }
+  },
+  "share": {
+    "enabled": true,
+    "label": "Share",
+    "native": true,
+    "networks": [
+      "x",
+      "linkedin",
+      "telegram",
+      "reddit",
+      "facebook",
+      "email",
+      "copy"
+    ]
+  },
+  "_help": {
+    "announcement": "Set enabled=false to hide. Change id whenever the text changes: visitors who dismissed the old id will see the new message.",
+    "ad_slots": "enabled=false renders nothing. With creative=null and placeholder=true the slot shows a neutral 'Sponsored / Your ad here' box; placeholder=false renders nothing. A creative looks like {\"href\": \"https://example.com\", \"title\": \"Sponsor name\", \"text\": \"One line\", \"image\": \"/atlas/assets/ads/file.png\", \"alt\": \"...\"}; links get rel=\"sponsored nofollow noopener\". size=[width,height] in CSS px is reserved so nothing shifts. 'atlas-native-card' is the native sponsored card shown in the catalog grid after every 12 visible cards (same card style; creative uses href/title/text, no image).",
+    "default_theme": "'light' (default) or 'dark': the theme a first-time visitor sees. Visitors' own choice is remembered.",
+    "share": "Share buttons on platform pages (a compact row in the header card next to the Visit button, once per page) and on the Atlas index. enabled=false hides them. networks = which buttons, in order: any of x, linkedin, telegram, reddit, facebook, email, copy. native=true adds a 'Share' button that uses the phone's share sheet (Web Share API); it only appears where the browser supports it on touch devices. Links are plain share-intent URLs (no third-party scripts). A GA4 'share' event (method = network) is sent only if the visitor accepted analytics cookies.",
+    "product_url": "Cross-product navigation: the main Commonworld product. Used by the 'Commonworld' item at the top of the left sidebar and by the top-right home icon. Default https://commonworld.one/; for a local preview of both products on one server build with --local (sets it to '/').",
+    "contact": "general = main mailbox for contact, corrections and advertising (About, Terms, Organization JSON-LD); privacy = privacy@ for data/privacy requests only (Privacy page, Terms privacy pointer).",
+    "data_licence": "null = no licence chosen yet (pages say so). Set a string such as 'CC BY 4.0' and the About/Terms pages and snapshot.json show it.",
+    "legal_draft": "false since 2026-10-16 (owner approved the final text). true would add 'This policy is a draft and may change before launch.' to the Privacy and Terms pages; check.py fails if the note appears while this is false.",
+    "legal": "operator/location shown on the Privacy and Terms pages; last_updated (YYYY-MM-DD) is printed as 'Last updated'; ga_retention must match the Google Analytics property's data-retention setting (2 months or 14 months)."
+  }
+}

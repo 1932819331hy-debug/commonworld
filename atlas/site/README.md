@@ -1,0 +1,232 @@
+# Atlas static site
+
+Static, data-generated site for **Commonworld Atlas**, built to live at `https://commonworld.one/atlas/`.
+Zero dependencies: the generator, the local server and the checks are plain Python 3.9+ (standard library only).
+
+- Input data: `atlas/data/snapshot-verified-2026-10-15.json` (only published cards; the review queue is never published).
+- Output: `atlas/site/dist/` (not committed; build it with one command). The same folder deploys unchanged to Cloudflare.
+
+## Run locally (macOS)
+
+Open Terminal and paste, line by line:
+
+```bash
+# 1. get the code (skip the clone line if you already have the repo)
+git clone https://github.com/commonworld-one/commonworld.git
+cd commonworld
+git pull
+
+# 2. optional but recommended: Pillow for per-page Open Graph images (listed in requirements.txt at the repo root)
+python3 -m pip install -r requirements.txt
+
+# 3. build the site into atlas/site/dist/  (add --local to point the "Commonworld" links at / instead of https://commonworld.one/)
+python3 atlas/site/build.py
+
+# 4. optional: run the checks (links, titles, canonical, JSON-LD, sitemap, page size)
+python3 atlas/site/check.py
+
+# 5. start the local server, then open the Atlas in the browser
+python3 atlas/site/serve.py
+```
+
+Then open <http://localhost:8080/atlas/> (or run `open http://localhost:8080/atlas/` in a second Terminal tab). Stop the server with `Ctrl+C`.
+Another port: `python3 atlas/site/serve.py 9000`.
+
+`python3` ships with the Xcode Command Line Tools; if macOS asks to install them, accept and re-run the command.
+`serve.py` behaves like Cloudflare Pages: clean directory URLs, `/atlas/about` → 301 → `/atlas/about/`, real 404 status with `404.html`. Locally only, `/` redirects to `/atlas/` (the Commonworld home is a placeholder for now).
+
+## What gets built
+
+| URL | Page |
+| --- | --- |
+| `/atlas/` | Atlas of Agent Platforms: stats tiles, colored category bar + legend, hero, catalog with instant search, filters (direction, status, type, features, tags — all AND), sort, native sponsored cards |
+| `/atlas/platforms/` | All entries A–Z |
+| `/atlas/platforms/<slug>/` | One card: badges, description, official link, verified claims with basis / outcome / date / source, QA re-check, related entries, report-a-correction |
+| `/atlas/categories/`, `/atlas/categories/<cat>/` | Category index and pages (social, payments, work, research, registries, arenas, worlds, verification, wiki, projects) |
+| `/atlas/closed/` | Closed platforms kept as history (still indexable) |
+| `/about/` | About Commonworld (site-wide): what Commonworld is, what exists today (the Atlas, live counts), what is coming (planned, no dates), principles, contact; AboutPage + Organization JSON-LD, own OG image `page-cw-about.png`, in `/sitemap.xml`; sidebar "About" under the Commonworld item, footer "About Commonworld" |
+| `/atlas/about/` | How the Atlas works (opens with a line linking `/about/`): intro, what "verified" means, money/metric labels, how a card is checked, freshness, tags, IDs, sources, corrections, sponsored slots, short privacy note |
+| `/privacy/` | **Commonworld Privacy Policy**, one for the whole product (scope: Commonworld and all its sections, including the Atlas). GDPR Art. 13 items: controller, purposes + legal bases, Google Analytics after consent, Cloudflare, browser storage table, recipients, transfers, retention, rights, complaint to the data protection authority in the visitor's country of residence; note that sections for accounts, posts and API keys are added before those features launch |
+| `/terms/` | **Commonworld Terms of Use** (same scope): informational catalog, no endorsement/advice, accuracy, corrections, sponsored content, links, data reuse, planned features note, liability, applicable law (no country named) |
+| `/atlas/privacy/`, `/atlas/terms/` | Old URLs: tiny noindex stubs (meta refresh + canonical to the new URL); on Cloudflare `dist/_redirects` answers them with a 301 first |
+| `/sitemap.xml`, `/_redirects` | Site-level sitemap (the legal pages; `/atlas/sitemap.xml` keeps the Atlas pages, robots.txt names both) and Cloudflare Pages redirects |
+| `/atlas/data/snapshot.json` | Open data copy (published fields only) |
+| `/atlas/sitemap.xml`, `/robots.txt`, `/404.html`, `/_headers` | SEO and hosting files |
+
+Search from any page goes to `/atlas/?q=…` (also the `SearchAction` target). Filters are kept in the URL (`?q=x402&status=live&category=payments&type=platform&feature=money&tag=x402,mcp&sort=claims`). Search covers name, description, direction, type, tags and every claim statement (claim text is fetched once from `/atlas/data/search-index.json` on first use).
+
+## Files
+
+```
+atlas/site/
+  build.py              generator (stdlib)            serve.py      local server (stdlib)
+  check.py              static checks (stdlib)        site-config.json   site settings, announcement, ad slots
+  claim-labels.json     curated "Read as" labels for claims whose raw wording could mislead (e.g. TermiX gross vs organic)
+  components/           the Commonworld design system (Python + CSS + JS), see "Design system" below
+  static/atlas.css      Atlas-only styles (platform page, tables, prose)   static/atlas.js   catalog search/filter/sort/native ads
+  static/*.png|ico      logo, favicon, fallback OG image
+  og_images.py          per-page Open Graph images (Pillow), cached in .og-cache/
+  tools/extract_census_tags.py   maps + cleans census tags -> atlas/data/census-tags-2026-10-15.json
+  tools/make_images.py  regenerates logo/favicon/OG image from the prototype marks (needs Pillow; not part of the build)
+  tools/screenshots.py, tools/smoke_test.py   optional, need Playwright + Chromium (a system Chromium works: CHROMIUM=/path)
+  screenshots/          reference screenshots (desktop light/dark, platform, mobile, tablet, drawer, tags)
+```
+
+## Design system (`components/`)
+
+The visual system is the Commonworld catalog draft (`research/atlas/catalog_en.html`): Inter/system font stack, warm paper
+palette (`--bg #f4f1ea`, `--paper #fbfaf7`, `--ink #202522`, accent `#e75b3d`), 14–18 px radii, 1 px hairlines, tiny uppercase
+labels, huge tight headlines; light and dark themes. It lives in three framework-free files meant to be reused by the whole
+Commonworld product:
+
+- `cw-components.css` — tokens (both themes) and every shared block: shell + sidebar (drawer under 900 px), top row with icon
+  buttons, stats strip tiles, colored category bar + legend, hero + info box, pill tabs, panel + filter bar, **tag shelf**
+  (“козырек”: the clipped row of `#tag N` chips with the `all tags (N) ↓` expander and the hint line), cards (2 columns, 1 on
+  mobile), status/type chips, ad slots, native ad card, announcement bar, consent banner, footer, breadcrumbs.
+- `cw_components.py` — HTML for the same blocks (`sidebar`, `top_row`, `stats_strip`, `catbar`, `legend`, `hero`, `info_box`,
+  `tabs`, `tag_shelf`, `tag_chips`, `card`, `ad_card`, `ad_slot`, `announcement_bar`, `consent_banner`, …). No Atlas data inside.
+- `cw-components.js` — theme toggle, announcement dismissal, consent + GA4 loader, drawer, search clear + `/` shortcut, tag shelf
+  expander (`el.cwRefresh()` after changing chips).
+
+Two deliberate departures from the draft: light-mode `--muted`/`--accent-text` are a shade darker so small text passes WCAG AA,
+and the theme lives on `<html data-theme>` (set before paint) instead of `body.dark`. Category colors come from `CATEGORIES` in
+`build.py` (the draft's palette; `projects` got teal `#5f9ea0`) and are emitted as `.k-<category>` classes.
+
+## Tags
+
+The `#tags` on cards and in the tag shelf are **descriptive labels from the 2026-10-15 census** (the same tags as
+`research/atlas/catalog_en.html`), **not verified claims**. `tools/extract_census_tags.py` maps them onto the published entries
+by census id (checked against name / canonical host), lowercases them, drops internal/status/judgement tags (`dead`, `dormant`,
+`quiet`, `unverified`, `not-deep-dived`, `*-listed`, `fake`, `stale`, …), merges duplicates (`oss` → `open-source`,
+`games` → `game`, …) and keeps only tags used by at least two published entries. Re-run it after the census or snapshot changes.
+
+## Announcement bar and ad slots (`site-config.json`)
+
+Both are reusable components in `components/cw_components.py` (HTML), `components/cw-components.css` and `components/cw-components.js`. They have no Atlas-specific code, so the main Commonworld product can import the same three files and the same config shape.
+
+**Announcement bar** (top of every page):
+
+```json
+"announcement": {
+  "enabled": true,
+  "id": "atlas-first-release-2026-10",
+  "text": "Atlas first release: every card is checked against its own sources before it is published.",
+  "link": { "href": "/atlas/about/", "label": "How we verify" }
+}
+```
+
+- `enabled: false` hides it. `link` is optional (external links get `rel="nofollow noopener"`).
+- Visitors can dismiss it; the dismissal is stored per `id` in localStorage and applied before first paint (no flash).
+- **New message → change the `id`** (e.g. add a date), otherwise visitors who dismissed the old one won't see it.
+
+**Ad slots** (named; each page template calls the slot it owns):
+
+| Slot name | Where | Default size |
+| --- | --- | --- |
+| `atlas-index-top` | Atlas index, under the hero, above the catalog (full width) | 728×90 reserved height |
+| `atlas-native-card` | Catalog grid (index + category pages): a card in the same style after every 12 visible cards; re-inserted when filters/search change. Creative: `href`, `title`, `text` | card |
+| `atlas-sidebar` | Bottom of the left navigation (where the draft had its "Draft" box; inside the drawer on mobile) | 210×120 |
+| `atlas-category-top` | Category pages, under the header | 728×90 |
+| `atlas-platform-top` | Card (platform) pages, under the header block (title, status, description, info box), above the verified facts; same banner as `atlas-index-top` | 728×90 |
+
+```json
+"atlas-index-top": {
+  "enabled": true,
+  "size": [728, 90],
+  "placeholder": true,
+  "creative": { "href": "https://sponsor.example", "title": "Sponsor", "text": "One line", "image": "/atlas/assets/ads/sponsor-728x90.png", "alt": "Sponsor" }
+}
+```
+
+- `enabled: false` → nothing is rendered.
+- `creative: null` + `placeholder: true` → a neutral "Sponsored · Your ad here" box (native card: "Your project here") linking to `/atlas/about/#advertise`; `placeholder: false` → nothing. All sponsored links carry `rel="sponsored nofollow"`.
+- With a `creative`, the link gets `rel="sponsored nofollow noopener"`; `image` is optional (text-only creative otherwise). Put image files in `atlas/site/static/` (copied to `/atlas/assets/`; only `.png/.ico/.svg` are copied — extend `build.py` for other types).
+- `size` is reserved with CSS before anything loads, so the layout never shifts.
+- In a template: `cw.ad_slot(site.cfg, "slot-name")`. New slot = add it to the config and call it where it should appear.
+
+After changing the config: `python3 atlas/site/build.py` again.
+
+## Open Graph images (per page)
+
+Every indexable page gets its own 1200×630 share image at `/atlas/og/<name>.png` (platform pages: `<slug>.png`; categories:
+`category-<cat>.png`; index: `atlas.png`; other pages: `page-<name>.png`), in the light Atlas style: CW logo + "Atlas", category
+chip and color bar, name, live/closed + type + number of verified claims, one short description, `commonworld.one/atlas`, verified
+date. Pages set `og:image` (with `?v=<hash>` so social caches refresh when a card changes), `og:image:width/height/alt`,
+`twitter:card=summary_large_image`, `twitter:image(:alt)`.
+
+- Renderer: `og_images.py` (needs **Pillow**: `pip install Pillow`; the rest of the build stays stdlib). Palette PNGs, ~22 KB each.
+- Cached in `atlas/site/.og-cache/` (gitignored) by a hash of the page's spec + fonts + logo: the first build renders all images
+  (~30 s), later builds copy unchanged ones (<1 s). Same input gives byte-identical files. Change `RENDER_VERSION` to force a re-render.
+- Fonts: Inter if installed, else Liberation Sans / Arial / DejaVu Sans.
+- Without Pillow the build still works and every page falls back to `static/og-atlas.png` (with a warning); `check.py` then fails
+  on purpose, because images are no longer unique per page. The repo-root `requirements.txt` (`Pillow>=10`) covers Cloudflare Pages.
+
+## Share buttons (`site-config.json` → `share`)
+
+`cw.share_bar(cfg, canonical_url, text)` in `components/` (reusable in the main product). Shown on every platform page **in the header
+card, next to the Visit button** (compact icon row, `cls='cw-share-head'`, so visitors can share on landing; once per page) and on the
+Atlas index (under the hero). Buttons: X, LinkedIn, Telegram, Reddit, Facebook, Email, Copy link,
+plus a native **Share** button (Web Share API) that appears only on touch devices whose browser supports it. Share text:
+`<Name> — verified on Commonworld Atlas` + the canonical URL.
+
+```json
+"share": { "enabled": true, "label": "Share", "native": true, "networks": ["x", "linkedin", "telegram", "reddit", "facebook", "email", "copy"] }
+```
+
+- Plain share-intent links (`rel="nofollow noopener noreferrer"`, new tab); no third-party scripts, no tracking pixels.
+- Inline SVG icons in `currentColor` (light/dark), 36 px round buttons (40 px on phones), aria-labels, keyboard operable; "Copied"
+  is announced through an `aria-live` status.
+- Analytics: a GA4 `share` event (`method` = x / linkedin / telegram / reddit / facebook / email / copy / native) is sent only if
+  the visitor accepted analytics cookies; nothing otherwise.
+
+## Theme, analytics, consent
+
+- Light theme by default for first-time visitors (`site.default_theme`, `light` or `dark`), dark theme via the sun/moon icon button; the choice is stored in localStorage (`cw-theme`). An inline head script sets the theme before first paint (no flash).
+- GA4 `G-9QB65R36K6` (in `site-config.json` → `site.ga4_measurement_id`; empty string disables analytics and the banner).
+  Google Consent Mode v2 defaults: everything denied. `gtag.js` is **not loaded** until the visitor clicks Accept; Accept grants `analytics_storage` only (ad storage stays denied). Reject is remembered; "Cookie settings" in the footer reopens the banner; switching from Accept to Reject deletes `_ga*` cookies.
+
+## Cross-product navigation
+
+Atlas and the main Commonworld product link to each other with two reusable components in `components/cw_components.py`:
+
+| Piece | Atlas (this site) | Main product (to do there) |
+| --- | --- | --- |
+| Sidebar item above the first group | `cw.cross_nav_item(product_url, "Commonworld", cw.mark_icon(base))` — sits above **Directions** | `cw.cross_nav_item(atlas_url, "Atlas", cw.ICON_GLOBE)` at the top of its left menu |
+| Top-right icon button | `cw.home_link(cfg)` = `cw.product_icon(product_url, "Commonworld home", "home")` (house) | `cw.product_icon(atlas_url, "Commonworld Atlas", "globe")`, passed as `cw.top_row(search, cfg, product_html=...)` |
+
+- `site.product_url` in `site-config.json` (default `https://commonworld.one/`) is the main product's URL; `python3 atlas/site/build.py --local`
+  sets it to `/` for a one-server preview. Breadcrumbs keep starting at "Commonworld" (`/`), and the Atlas stays reachable through the
+  sidebar logo, "All" and the breadcrumb.
+- `cross_nav_item` renders its own small `<nav>` (styled `.cw-xnav` in `cw-components.css`, light/dark logo marks swapped by theme);
+  `product_icon` is a `.cw-iconbtn`. `check.py` and `tools/smoke_test.py` assert the order (Commonworld above Directions) and both hrefs.
+
+## Commonworld landing (`/`)
+
+`build.py` also writes `dist/index.html`: the root page at `https://commonworld.one/` (canonical, indexable, in `/sitemap.xml`), built with the same
+components (sidebar, top row with house icon + theme toggle, footer with Privacy/Terms, cookie banner, share bar, own OG image
+`/atlas/og/page-home.png`). Content: CW logo, H1 "Commonworld", the motto, "The platform is coming soon. Start with the Atlas — a verified catalog of
+agent platforms.", a primary button to `/atlas/` and live Atlas counts from the build data. `site.product_url` / `site.home_url` point to it.
+`serve.py` now serves `/` as this page (no local redirect to `/atlas/`). When the main product ships, it replaces this file.
+
+## Privacy and Terms pages (`site-config.json`)
+
+One set for all of Commonworld, built at `site.privacy_url` (`/privacy/`) and `site.terms_url` (`/terms/`), outside `/atlas/`, with the Atlas
+components. Operator is just "Commonworld"; the pages name no country or location (decision 2026-10-16). `check.py` fails if any file in
+`dist/` contains one of the operator's private terms (kept outside the repo, see `check.py`), or if a site-authored page has operator location wording.
+
+- `contact.general` (real mailbox: corrections, advertising) and `contact.privacy` (shown on the Privacy page; the alias must exist in Zoho).
+- `legal.operator`, `legal.location` (null = not printed; keep null), `legal.last_updated` (printed as "Last updated"), `legal.ga_retention` (must match the GA4
+  property's data-retention setting: 2 or 14 months).
+- `legal_draft` is `false` since 2026-10-16 (final text approved by the owner). `true` would add "This policy is a draft and may change before launch."; `check.py` fails if that note appears while it is `false`.
+- `data_licence: null` = no licence yet (Terms explain interim reuse; About shows nothing); set e.g. `"CC BY 4.0"` and About, Terms and
+  `snapshot.json` show it.
+- Every page's footer links Privacy and Terms; the cookie banner links `site.privacy_url` (`/privacy/`).
+
+## Deploy to Cloudflare (later)
+
+Build command `python3 atlas/site/build.py`, output directory `atlas/site/dist`. The repo-root `requirements.txt` (`Pillow>=10`) makes Cloudflare Pages install Pillow for the OG images. Pages serves `dist/atlas/...` at `/atlas/...`, uses `dist/404.html` for missing pages and applies `dist/_headers`. If `/atlas` is mounted inside a bigger Commonworld site, copy `dist/atlas/` into that site's output and merge `robots.txt` (it only has to contain the `Sitemap:` line for `https://commonworld.one/atlas/sitemap.xml`).
+
+## Data notes
+
+- Category `projects` (decision 2026-10-15): review-queue cards with verdict `include_verified` whose only queue reason was `entity_type=project` are published under `projects` (`atlas/verify/promote_projects.py`; `build_snapshot.py` applies the same rule on regeneration). The original census category is kept as `census_category`.
+- Money and metric claims keep their basis label (operator claim / observed directly / independent source / inference). QA scope flags ("gross vs organic", "credits, not money", …) and QA disagreements are shown next to the claim; `claim-labels.json` holds curated wording where needed.

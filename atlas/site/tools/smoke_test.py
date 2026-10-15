@@ -1,0 +1,292 @@
+#!/usr/bin/env python3
+"""Optional browser smoke test (needs Playwright + Chromium; a system Chromium works too: CHROMIUM=/path or
+/usr/bin/chromium is picked up automatically).
+
+Covers: HTTP 404 / trailing-slash redirect; light default theme + toggle + persistence (no flash: theme set
+before paint); icon buttons (home, theme, menu); announcement dismissal per id; consent banner (gtag.js only
+after Accept); instant search incl. claim statements; status / type / feature / tag / category filters combined
+with AND and live counts; stats tiles and legend as filters; tag shelf expander; native sponsored cards after
+every 12 visible cards (re-inserted on filter); sort; URL state; mobile drawer; platform page sponsored slot;
+legal pages + cross-product navigation (sidebar Commonworld item, home icon, footer links, banner link);
+About Commonworld /about/ (H1, motto, live count, sidebar About under Commonworld, links to the Atlas method, banner, share,
+theme, mobile; ABOUT_SHOT=path saves a desktop light screenshot); landing page / (H1, motto, CTA to /atlas/, stats, banner, share, theme, mobile; SHOTS_DIR=... saves screenshots);
+share buttons (placement in the platform header card, canonical links, keyboard copy, GA4 'share' event only with consent, native Web Share on mobile).
+
+    python3 atlas/site/tools/smoke_test.py
+"""
+import os, sys, threading, http.server, urllib.request, urllib.error
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, '..'))
+import serve  # noqa: E402
+import json  # noqa: E402
+_SNAP = json.load(open(os.path.join(HERE, '..', 'dist', 'atlas', 'data', 'snapshot.json')))['platforms']  # counts follow the built data
+N_ALL, N_CLOSED = len(_SNAP), sum(1 for c in _SNAP if c.get('status') == 'closed')
+PRODUCT = json.load(open(os.path.join(HERE, '..', 'site-config.json')))['site'].get('product_url') or '/'
+from playwright.sync_api import sync_playwright  # noqa: E402
+
+serve.H.log_message = lambda *a: None
+srv = http.server.ThreadingHTTPServer(('127.0.0.1', 0), serve.H)
+threading.Thread(target=srv.serve_forever, daemon=True).start()
+B = f'http://127.0.0.1:{srv.server_address[1]}'
+ok = True
+
+
+def check(name, cond):
+    global ok
+    ok &= bool(cond)
+    print(('PASS ' if cond else 'FAIL ') + name)
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **k):
+        return None
+
+
+op = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect)
+for url, code in [('/atlas/nope/', 404), ('/atlas/about', 301), ('/atlas/about/', 200), ('/atlas/data/search-index.json', 200),
+                  ('/privacy', 301), ('/privacy/', 200), ('/terms/', 200), ('/atlas/privacy/', 200), ('/atlas/terms/', 200), ('/sitemap.xml', 200), ('/', 200), ('/about/', 200), ('/about', 301)]:
+    try:
+        r = op.open(B + url); got = r.status
+    except urllib.error.HTTPError as ex:
+        got = ex.code
+    check(f'HTTP {url} -> {code}', got == code)
+
+VIS = "Array.from(document.querySelectorAll('#grid .cw-card[data-slug]')).filter(c=>!c.hidden).length"
+ADS_OK = """(() => { const k = Array.from(document.querySelectorAll('#grid > .cw-card')).filter(c => !c.hidden);
+  const vis = k.filter(c => c.dataset.slug).length, ads = k.filter(c => c.hasAttribute('data-ad-card'));
+  const okPos = ads.every(a => { const i = k.indexOf(a); return (i + 1) % 13 === 0; });
+  return [vis, ads.length, okPos && ads.length === Math.floor(vis / 12)]; })()"""
+
+
+def launch(p):
+    exe = os.environ.get('CHROMIUM') or ('/usr/bin/chromium' if os.path.exists('/usr/bin/chromium') else None)
+    return p.chromium.launch(**({'executable_path': exe} if exe else {}))
+
+
+with sync_playwright() as p:
+    br = launch(p)
+    ctx = br.new_context(color_scheme='dark', viewport={'width': 1440, 'height': 1000})
+    ga = []
+    ctx.route('**/www.googletagmanager.com/**', lambda route: (ga.append(route.request.url), route.fulfill(status=200, body='')))
+    pg = ctx.new_page()
+    pg.goto(B + '/atlas/')
+    check('light theme is the default (even with OS dark)', pg.evaluate("document.documentElement.dataset.theme") == 'light')
+    check(f'icon buttons: home links to product_url ({PRODUCT}), theme toggle, no census pill', pg.get_attribute('.cw-top a[aria-label="Commonworld home"]', 'href') == PRODUCT
+          and pg.is_visible('.cw-theme') and not pg.is_visible('.cw-menu') and pg.locator('text=census').count() == 0)
+    pg.click('.cw-theme'); pg.reload()
+    check('theme persisted after reload (dark)', pg.evaluate("document.documentElement.dataset.theme") == 'dark')
+    check('consent banner visible, no gtag before choice', pg.is_visible('.cw-consent') and not ga)
+    check('consent banner links to the Privacy page', pg.get_attribute('.cw-consent a', 'href') == '/privacy/')
+    check('sidebar: "Commonworld" item (CW logo) above Directions, links product_url', pg.evaluate(
+        f"(() => {{ const x = document.querySelector('.cw-side .cw-xnav a'), t = Array.from(document.querySelectorAll('.cw-side .cw-nav-title')).find(n => n.textContent === 'Directions');"
+        f" return !!x && !!t && x.getAttribute('href') === {PRODUCT!r} && x.textContent.includes('Commonworld') && !!x.querySelector('img')"
+        f" && !!(x.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING) && x.getBoundingClientRect().height > 0; }})()"))
+    check('footer: Privacy and Terms links', pg.locator('.cw-foot a[href="/privacy/"]').count() == 1 and pg.locator('.cw-foot a[href="/terms/"]').count() == 1)
+    pg.click('[data-consent="denied"]'); pg.reload()
+    check('reject remembered, banner hidden, gtag never loaded', not pg.is_visible('.cw-consent') and not ga)
+    pg.click('[data-cookie-settings]'); pg.click('[data-consent="granted"]'); pg.wait_for_timeout(300)
+    check('accept loads gtag.js G-9QB65R36K6', any('gtag/js?id=G-9QB65R36K6' in u for u in ga))
+    check('consent update granted in dataLayer', pg.evaluate("JSON.stringify(dataLayer).includes('\"analytics_storage\":\"granted\"')"))
+    pg.click('.cw-announce-x'); pg.reload()
+    check('announcement dismissed and remembered', not pg.is_visible('.cw-announce'))
+
+    # catalog
+    v, a, good = pg.evaluate(ADS_OK)
+    check(f'all {v} cards, {a} native ads after every 12', v == N_ALL and good)
+    check('hint line shown', 'Tags combine with AND.' in pg.inner_text('#active'))
+    pg.fill('#q', 'termix'); pg.wait_for_timeout(250)
+    n = pg.evaluate(VIS)
+    check(f'search "termix" ({n})', 1 <= n <= 3)
+    pg.fill('#q', 'Lightning sats'); pg.wait_for_timeout(600)
+    n = pg.evaluate(VIS)
+    check(f'search reaches claim statements ("Lightning sats" -> {n})', n >= 1 and pg.evaluate("!document.querySelector('[data-slug=\"the-colony\"]').hidden"))
+    pg.fill('#q', ''); pg.wait_for_timeout(250)
+    pg.click('[data-f-status="closed"]')
+    n = pg.evaluate(VIS)
+    check(f'status chip closed -> {N_CLOSED} ({n})', n == N_CLOSED)
+    v, a, good = pg.evaluate(ADS_OK)
+    check(f'native ad re-inserted after filter ({v} cards, {a} ads)', good and a == 1)
+    check('list count updates', pg.inner_text('#list-count') == f'{N_CLOSED} of {N_ALL}')
+    pg.click('#f-reset')
+    pg.click('[data-filter="feat:money"]')
+    nm = pg.evaluate(VIS)
+    pg.click('[data-f-type="platform"]')
+    nmt = pg.evaluate(VIS)
+    check(f'stat tile "money flow" ({nm}) AND type platform ({nmt})', 0 < nmt <= nm < N_ALL)
+    cnt = pg.inner_text('[data-f-status="live"] span')
+    check(f'chip counts follow other filters (live={cnt})', int(cnt) <= nmt)
+    pg.click('#f-reset')
+    pg.click('.cw-legend [data-cat="payments"]')
+    n = pg.evaluate(VIS)
+    check(f'legend item filters category (payments={n})', n == 50 and pg.inner_text('#list-title') == 'Payments & x402')
+    pg.click('#tagcloud [data-tag="x402"]')
+    n2 = pg.evaluate(VIS)
+    check(f'tag AND category ({n2})', 0 < n2 < 50)
+    check('active filter chips shown', 'found' in pg.inner_text('#active') and '#x402' in pg.inner_text('#active'))
+    check('URL keeps state', 'category=payments' in pg.url and 'tag=x402' in pg.url)
+    pg.click('#f-reset')
+    pg.click('#catalog-top [data-cat="wiki"]')
+    check('category tab filters (wiki=4)', pg.evaluate(VIS) == 4)
+    pg.click('#f-reset')
+    shelf_h = pg.evaluate("document.getElementById('tagcloud').clientHeight")
+    pg.click('.cw-tags-more')
+    open_h = pg.evaluate("document.getElementById('tagcloud').clientHeight")
+    check(f'tag shelf expands ({shelf_h}px -> {open_h}px)', shelf_h <= 120 and open_h > shelf_h and 'collapse' in pg.inner_text('.cw-tags-more'))
+    pg.select_option('#f-sort', 'claims')
+    first = pg.evaluate("+document.querySelector('#grid .cw-card[data-slug]:not([hidden])').dataset.claims")
+    mx = pg.evaluate("Math.max(...Array.from(document.querySelectorAll('#grid .cw-card[data-slug]')).map(c=>+c.dataset.claims))")
+    check('sort by most claims', first == mx)
+    pg.goto(B + '/atlas/?status=closed&type=platform&q=x')
+    check('state restored from URL', pg.evaluate(VIS) <= N_CLOSED and pg.input_value('#q') == 'x')
+
+    # share buttons (platform page): placement, links, copy via keyboard, GA4 'share' event only with consent, native share
+    SHARE_EVT = "(m) => (window.dataLayer||[]).some(a => a && a[0]==='event' && a[1]==='share' && (!m || (a[2]||{}).method===m))"
+    canon = 'https://commonworld.one/atlas/platforms/the-colony/'
+    for consent in ('denied', 'granted'):
+        sc = br.new_context(viewport={'width': 1440, 'height': 1000}, permissions=['clipboard-read', 'clipboard-write'])
+        sc.add_init_script(f"try{{localStorage.setItem('cw-consent','{consent}')}}catch(e){{}}")
+        sc.route('**/www.googletagmanager.com/**', lambda route: route.fulfill(status=200, body=''))
+        sc.route('https://x.com/**', lambda route: route.fulfill(status=200, body='ok'))
+        sp = sc.new_page()
+        sp.goto(B + '/atlas/platforms/the-colony/')
+        if consent == 'denied':
+            check('share bar: in the header card next to Visit, visible on landing, only one; sponsored slot still above facts', sp.evaluate(
+                "(() => { const bars = document.querySelectorAll('.cw-share'), b = bars[0], h = document.querySelector('.entry-head'), f = document.getElementById('h-claims'), s = document.querySelector('[data-ad-slot=\"atlas-platform-top\"]');"
+                " const r = b && b.getBoundingClientRect();"
+                " return bars.length === 1 && h.contains(b) && !!h.querySelector('.entry-actions .visit') && r.bottom <= innerHeight && !!s"
+                " && !!(s.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING); })()"))
+            nets = sp.evaluate("Array.from(document.querySelectorAll('.cw-share [data-share]')).filter(b => !b.hidden).map(b => b.dataset.share).join(',')")
+            check(f'share: networks shown on desktop, native hidden ({nets})', nets == 'x,linkedin,telegram,reddit,facebook,email,copy')
+            check('share: every link carries the canonical URL', sp.evaluate(
+                f"Array.from(document.querySelectorAll('.cw-share a[data-share]')).every(a => decodeURIComponent(a.href).includes({canon!r}))"))
+            check('share: buttons have aria-labels', sp.evaluate("Array.from(document.querySelectorAll('.cw-share [data-share]')).every(b => b.getAttribute('aria-label'))"))
+        sp.focus('.cw-share [data-share="copy"]'); sp.keyboard.press('Enter'); sp.wait_for_timeout(200)
+        clip = sp.evaluate('navigator.clipboard.readText()')
+        check(f'share ({consent}): keyboard Enter on Copy link copies the canonical URL', clip == canon and 'Copied' in sp.inner_text('.cw-share [data-share="copy"]')
+              and sp.inner_text('.cw-share-status') == 'Link copied')
+        with sc.expect_page() as popup:
+            sp.click('.cw-share [data-share="x"]')
+        popup.value.close()
+        if consent == 'denied':
+            check('share (denied): no GA4 share event', not sp.evaluate(SHARE_EVT, None))
+        else:
+            check('share (granted): GA4 share events with method copy and x', sp.evaluate(SHARE_EVT, 'copy') and sp.evaluate(SHARE_EVT, 'x'))
+        sc.close()
+    mc = br.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
+    mc.add_init_script("navigator.share = (d) => { window.__shared = d; return Promise.resolve(); };"
+                       "try{localStorage.setItem('cw-consent','denied')}catch(e){}")
+    mp = mc.new_page()
+    mp.goto(B + '/atlas/platforms/the-colony/')
+    check('mobile: native Share button visible where navigator.share exists', mp.is_visible('.cw-share [data-share="native"]'))
+    check('mobile: share row is in the header card', mp.evaluate("document.querySelector('.entry-head').contains(document.querySelector('.cw-share'))"))
+    mp.tap('.cw-share [data-share="native"]'); mp.wait_for_timeout(200)
+    check('mobile: native share gets canonical URL + text', mp.evaluate(f"window.__shared && window.__shared.url === {canon!r} && window.__shared.text.includes('verified on Commonworld Atlas')"))
+    check('mobile: share bar fits (no horizontal overflow)', mp.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+    mc.close()
+
+    # mobile drawer + platform page
+    m = br.new_context(viewport={'width': 390, 'height': 844}).new_page()
+    m.goto(B + '/atlas/platforms/the-colony/')
+    check('mobile: sidebar hidden, menu visible', not m.is_visible('.cw-side .cw-nav') and m.is_visible('.cw-menu'))
+    m.click('.cw-menu'); m.wait_for_timeout(300)
+    check('mobile: drawer opens', m.is_visible('.cw-side .cw-nav') and m.get_attribute('.cw-menu', 'aria-expanded') == 'true')
+    m.keyboard.press('Escape'); m.wait_for_timeout(300)
+    check('mobile: Escape closes drawer', m.get_attribute('.cw-menu', 'aria-expanded') == 'false')
+    check('platform page: sponsored banner under header + info box, before verified facts (same banner as index)', m.evaluate(
+        "(() => { const s = document.querySelector('[data-ad-slot=\"atlas-platform-top\"]'), f = document.getElementById('h-claims'), h = document.querySelector('.entry-head'), d = document.querySelector('.entry > dl.facts');"
+        " return !!s && s.classList.contains('cw-ad-banner') && s.querySelector('.cw-ad-label').textContent === 'Sponsored'"
+        " && /sponsored/.test(s.querySelector('a').rel) && /nofollow/.test(s.querySelector('a').rel)"
+        " && !!(h.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING) && d.nextElementSibling === s"
+        " && !!(s.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING); })()"))
+    check('mobile: no horizontal overflow', m.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+    m.goto(B + '/atlas/')
+    check('mobile index: no horizontal overflow, 1 card column', m.evaluate(
+        "document.documentElement.scrollWidth <= innerWidth && getComputedStyle(document.getElementById('grid')).gridTemplateColumns.split(' ').length === 1"))
+    t = br.new_context(viewport={'width': 820, 'height': 1180}).new_page()
+    for u in ('/', '/about/', '/atlas/', '/atlas/platforms/the-colony/', '/atlas/categories/payments/', '/atlas/about/', '/atlas/closed/', '/privacy/', '/terms/'):
+        t.goto(B + u)
+        check(f'tablet {u}: no horizontal overflow', t.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+    lp = br.new_context().new_page()
+    lp.goto(B + '/privacy/')
+    check('site-wide privacy page: title + scope', lp.inner_text('h1') == 'Commonworld Privacy Policy'
+          and 'Applies to Commonworld and all its sections, including the Atlas.' in lp.inner_text('main'))
+    check('privacy page: final (no draft note, indexable)', lp.locator('.legal-draft').count() == 0 and 'is a draft' not in lp.inner_text('main')
+          and 'noindex' not in (lp.get_attribute('meta[name="robots"]', 'content') or ''))
+    lp.goto(B + '/terms/')
+    check('site-wide terms page: title', lp.inner_text('h1') == 'Commonworld Terms of Use')
+    check('terms page: final (no draft note, indexable)', lp.locator('.legal-draft').count() == 0 and 'is a draft' not in lp.inner_text('main')
+          and 'noindex' not in (lp.get_attribute('meta[name="robots"]', 'content') or ''))
+    lp.goto(B + '/atlas/privacy/'); lp.wait_for_url(lambda u: '/atlas/' not in u, timeout=5000)
+    check('old /atlas/privacy/ stub forwards to /privacy/', lp.url.endswith('/privacy/') and '/atlas/' not in lp.url)
+    lp.goto(B + '/atlas/terms/'); lp.wait_for_url(lambda u: '/atlas/' not in u, timeout=5000)
+    check('old /atlas/terms/ stub forwards to /terms/', lp.url.endswith('/terms/') and '/atlas/' not in lp.url)
+    # --- Commonworld landing (/)
+    SHOTS = os.environ.get('SHOTS_DIR')
+    lc = br.new_context(viewport={'width': 1440, 'height': 1000})
+    lga = []
+    lc.route('**/www.googletagmanager.com/**', lambda route: (lga.append(route.request.url), route.fulfill(status=200, body='')))
+    hp = lc.new_page()
+    hp.goto(B + '/')
+    check('landing: H1, motto, coming-soon line', hp.inner_text('h1') == 'Commonworld' and 'A shared world for humans and agents' in hp.inner_text('main')
+          and 'The platform is coming soon.' in hp.inner_text('main'))
+    check('landing: light default, logo mark visible', hp.evaluate("document.documentElement.dataset.theme") == 'light' and hp.is_visible('.cw-landing img.cw-mark-l'))
+    check(f'landing: stats show the Atlas count ({N_ALL})', f'{N_ALL:,}' in hp.inner_text('.landing-stats'))
+    check('landing: cookie banner shown, no gtag before choice', hp.is_visible('.cw-consent') and not lga)
+    check('landing: footer Privacy/Terms, share bar with canonical URL', hp.locator('.cw-foot a[href="/privacy/"]').count() == 1
+          and hp.locator('.cw-foot a[href="/terms/"]').count() == 1 and hp.get_attribute('.cw-share', 'data-share-url') == 'https://commonworld.one/')
+    check('landing: sidebar Commonworld item is current, home icon present', hp.get_attribute('.cw-side .cw-xnav a', 'aria-current') == 'page'
+          and hp.locator('.cw-top a[aria-label="Commonworld home"]').count() == 1)
+    if SHOTS:
+        hp.click('.cw-consent [data-consent="denied"]')
+        hp.screenshot(path=os.path.join(SHOTS, 'landing-desktop-light.png'))
+        hp.click('.cw-theme'); hp.wait_for_timeout(600); hp.screenshot(path=os.path.join(SHOTS, 'landing-desktop-dark.png')); hp.click('.cw-theme'); hp.wait_for_timeout(600)
+    check('landing: theme toggle works', (hp.click('.cw-theme') or hp.evaluate("document.documentElement.dataset.theme")) == 'dark')
+    hp.click('.cw-theme')
+    hp.click('.landing-cta'); hp.wait_for_url('**/atlas/')
+    check('landing: primary button opens the Atlas', hp.url.endswith('/atlas/') and 'Atlas of Agent Platforms' in hp.inner_text('h1'))
+    mp = br.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True).new_page()
+    mp.goto(B + '/')
+    check('landing mobile: no horizontal overflow, CTA visible', mp.evaluate("document.documentElement.scrollWidth <= innerWidth") and mp.is_visible('.landing-cta'))
+    if SHOTS:
+        mp.evaluate("document.querySelector('.cw-consent').hidden = true"); mp.screenshot(path=os.path.join(SHOTS, 'landing-mobile-light.png'), full_page=True)
+    # --- About Commonworld (/about/)
+    ac = br.new_context(viewport={'width': 1440, 'height': 1000})
+    aga = []
+    ac.route('**/www.googletagmanager.com/**', lambda route: (aga.append(route.request.url), route.fulfill(status=200, body='')))
+    ap = ac.new_page()
+    ap.goto(B + '/')
+    ap.click('.cw-side .cw-xsub a'); ap.wait_for_url('**/about/')
+    check('sidebar "About" under the Commonworld item opens /about/', ap.url.endswith('/about/') and '/atlas/' not in ap.url)
+    main_txt = ap.inner_text('main')
+    check('about: H1 + motto + citizens line', ap.inner_text('h1') == 'About Commonworld' and 'A shared world for humans and agents' in main_txt
+          and 'live side by side as citizens' in main_txt)
+    check(f'about: live Atlas count ({N_ALL}) and platform marked coming/planned', f'{N_ALL:,}' in ap.inner_text('.prose .cw-stats')
+          and 'coming soon' in main_txt and main_txt.count('(planned)') == 4)
+    check('about: links to the Atlas and to How the Atlas works', ap.locator('main a[href="/atlas/"]').count() >= 1 and ap.locator('main a[href="/atlas/about/"]').count() >= 1)
+    check('about: sidebar About is current, Commonworld item not current, Atlas link reads "How the Atlas works"',
+          ap.get_attribute('.cw-side .cw-xsub a', 'aria-current') == 'page' and ap.get_attribute('.cw-side .cw-xnav a', 'aria-current') is None
+          and ap.locator('.cw-side a[href="/atlas/about/"]', has_text='How the Atlas works').count() == 1)
+    check('about: footer About Commonworld + How the Atlas works + Privacy/Terms', ap.locator('.cw-foot a[href="/about/"]').count() == 1
+          and ap.locator('.cw-foot a[href="/atlas/about/"]').count() == 1 and ap.locator('.cw-foot a[href="/privacy/"]').count() == 1)
+    check('about: light default, cookie banner, no gtag before choice', ap.evaluate("document.documentElement.dataset.theme") == 'light'
+          and ap.is_visible('.cw-consent') and not aga)
+    check('about: share bar with canonical URL', ap.get_attribute('.cw-share', 'data-share-url') == 'https://commonworld.one/about/')
+    ap.click('.cw-consent [data-consent="denied"]')
+    if os.environ.get('ABOUT_SHOT'):
+        ap.screenshot(path=os.environ['ABOUT_SHOT'])
+    if SHOTS:
+        ap.screenshot(path=os.path.join(SHOTS, 'about-desktop-light.png'))
+    ap.click('.cw-theme'); ap.wait_for_timeout(400)
+    check('about: dark theme toggles', ap.evaluate("document.documentElement.dataset.theme") == 'dark')
+    if SHOTS:
+        ap.wait_for_timeout(300); ap.screenshot(path=os.path.join(SHOTS, 'about-desktop-dark.png'))
+    ap.click('.cw-theme')
+    ap.goto(B + '/atlas/about/')
+    check('/atlas/about/: top line links to /about/', ap.locator('.about-xref a[href="/about/"]').count() == 1 and ap.inner_text('h1') == 'How the Atlas works')
+    am = br.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True).new_page()
+    am.goto(B + '/about/')
+    check('about mobile: no horizontal overflow', am.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+    br.close()
+srv.shutdown()
+print('SMOKE OK' if ok else 'SMOKE FAILED')
+sys.exit(0 if ok else 1)

@@ -1,0 +1,7 @@
+{
+  "_help": "Curated reading labels shown above a card's claims of a given kind, when the raw claim wording alone could mislead (decided from QA). Format: {\"<slug>\": {\"<claim kind>\": \"label text\"}}. These replace the automatic 'QA caution' label for that kind.",
+  "termix-aacp": {
+    "economic_flow": "Gross on-chain volume, about 99% circular (wallets cycling funds between each other) per an independent decode (ChainWard); not organic demand.",
+    "metric": "The 'agents' figure counts a shared ERC-8004 registry used by all ERC-8004 agents, not TermiX users; jobs are mostly circular. About 19,900 wallets ever settled a job (ChainWard, to 2026-09-29)."
+  }
+}

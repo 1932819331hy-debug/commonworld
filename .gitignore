@@ -1,0 +1,6 @@
+atlas/site/dist/
+atlas/site/screenshots/
+atlas/site/.private-terms
+__pycache__/
+*.pyc
+.DS_Store
