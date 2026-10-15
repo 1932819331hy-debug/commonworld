@@ -11,3 +11,7 @@ The code and open data will be published here. Until then you can already:
 - ask questions and share ideas → [Discussions](../../discussions)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Money never buys inclusion, verified status or ranking.
+
+## License
+
+Code: MIT (see `LICENSE`). Atlas data: CC BY 4.0, credit "Commonworld Atlas" with a link (see `LICENSE-DATA.md`).
