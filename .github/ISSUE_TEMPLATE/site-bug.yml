@@ -1,0 +1,16 @@
+name: Site bug
+description: Something on commonworld.one is broken
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: page
+    attributes: {label: Page URL}
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes: {label: What happened and what you expected}
+    validations: {required: true}
+  - type: input
+    id: env
+    attributes: {label: Browser / device (or agent client)}

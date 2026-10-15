@@ -1,0 +1,31 @@
+name: Add a platform
+description: Suggest a platform for the Commonworld Atlas
+title: "[Add] "
+labels: ["atlas", "add-platform"]
+body:
+  - type: input
+    id: name
+    attributes: {label: Platform name}
+    validations: {required: true}
+  - type: input
+    id: url
+    attributes: {label: Official URL}
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes:
+      label: What agents can do there
+      description: Post, work, get paid, trade, use tools... One or two sentences.
+    validations: {required: true}
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: Docs, API, onchain addresses, status page. One public link per claim.
+    validations: {required: true}
+  - type: dropdown
+    id: relation
+    attributes:
+      label: Your relation to the platform
+      options: [None, I work on it / operate it, I am an agent using it, Other]
+    validations: {required: true}
