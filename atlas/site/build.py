@@ -1077,6 +1077,10 @@ def write_github_mirror(out, b):
     src = os.path.join(out, b.strip('/'))
     shutil.copy(os.path.join(out, 'llms-full.txt'), os.path.join(MIRROR_DIR, 'llms-full.txt'))
     shutil.copy(os.path.join(src, 'platforms.json'), os.path.join(MIRROR_DIR, 'platforms.json'))
+    os.makedirs(os.path.join(MIRROR_DIR, 'categories'))
+    for f in sorted(os.listdir(os.path.join(src, 'categories'))):
+        if f.endswith('.json'):
+            shutil.copy(os.path.join(src, 'categories', f), os.path.join(MIRROR_DIR, 'categories', f))
     shutil.copy(os.path.join(src, 'data', 'snapshot.json'), os.path.join(MIRROR_DIR, 'snapshot.json'))
     pdir = os.path.join(src, 'platforms')
     for f in sorted(os.listdir(pdir)):
@@ -1103,6 +1107,11 @@ def build_agent_files(site, write):
             'fields_note': 'id = permanent slug; verified_at/last_checked = newest observation on the card (UTC); '
                            'money_flow = supported money-flow claims shown on the card; full claims with sources are in each json_url and in full_data.'}
     write(f'{b}/platforms.json', json.dumps(meta | {'platforms': recs}, ensure_ascii=False, indent=1) + '\n')
+    # small per-category lists: some agent tools truncate the full platforms.json (~290 KB)
+    for k in site.cats:
+        sub = [r for c, r in zip(site.cards, recs) if c.get('category') == k]
+        write(f'{b}/categories/{k}.json', json.dumps(meta | {'category': k, 'category_label': CAT_LABEL[k], 'count': len(sub), 'platforms': sub},
+                                                    ensure_ascii=False, separators=(',', ':')) + '\n')
     for c, r in zip(site.cards, recs):
         one = {'licence': lic, 'source': REPO_URL, 'generated_at': iso(gen)} | r | {
             'claims': c.get('claims', []), 'qa_status': c.get('qa_status')}
@@ -1114,7 +1123,7 @@ def build_agent_files(site, write):
     # a single example like '1f916' led one agent to assume IDs are 5-char hex codes and invent entries.
     exs = [c for s in ('dealwork-ai', 'bountybook', 'aibtc-bounty-board') for c in site.cards if c['slug'] == s] or site.cards[:3]
     ex_lines = '\n'.join(f"- [Example entry JSON: {c['slug']}]({A(b + '/platforms/' + c['slug'] + '.json')}): full claims with source URL, basis and observed_at" for c in exs)
-    cats = '\n'.join(f'- [{CAT_LABEL[k]}]({A(f"{b}/categories/{k}/")}): {CAT_DESC[k]} ({len(site.by_cat[k])} entries)' for k in site.cats)
+    cats = '\n'.join(f'- [{CAT_LABEL[k]}]({A(f"{b}/categories/{k}/")}): {CAT_DESC[k]} ({len(site.by_cat[k])} entries; JSON: {A(f"{b}/categories/{k}.json")})' for k in site.cats)
     live = sum(1 for c in site.cards if c['status'] == 'live')
     txt = f"""# Commonworld
 
@@ -1137,6 +1146,7 @@ Commonworld is being built as a place where people and AI agents take part as ci
 
 ## Data
 
+- Per category: {A(f'{b}/categories/')}<category>.json, the same fields for one category only (small files; use these if your tool truncates long responses)
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
 - Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt)
 - IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
@@ -1151,6 +1161,7 @@ Commonworld is being built as a place where people and AI agents take part as ci
 Some agent tools cannot reach the site directly. The same published files are mirrored in the public GitHub repository (updated with every change to main). Use them instead of guessing; the site stays canonical, so cite the Atlas URLs found inside the data.
 
 - [platforms.json (GitHub mirror)]({RAW_BASE}/platforms.json)
+- Per category: {RAW_BASE}/categories/<category>.json
 - [llms-full.txt (GitHub mirror)]({RAW_BASE}/llms-full.txt)
 - Per entry: {RAW_BASE}/platforms/<id>.json (example: [{exs[0]['slug']}.json]({RAW_BASE}/platforms/{exs[0]['slug']}.json))
 - [snapshot.json (GitHub mirror)]({RAW_BASE}/snapshot.json): the full published dataset
