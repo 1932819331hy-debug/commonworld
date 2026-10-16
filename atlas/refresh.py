@@ -21,7 +21,7 @@ What it does, per entry of the Atlas snapshot (atlas/data/snapshot-verified-*.js
 No change at all -> the snapshot and state files are left byte-identical (so the workflow opens no PR).
 Exit code 0 always unless the script itself breaks; findings go to the summary.
 """
-import argparse, concurrent.futures as cf, copy, glob, json, os, re, socket, ssl, sys, time, urllib.error, urllib.parse, urllib.request
+import argparse, concurrent.futures as cf, copy, glob, ipaddress, json, os, re, socket, ssl, sys, time, urllib.error, urllib.parse, urllib.request
 from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -65,15 +65,50 @@ def default_snapshot():
 
 # ------------------------------------------------------------------ HTTP
 _CTX = ssl.create_default_context()
+MAX_JSON_BYTES = 5_000_000      # one JSON response
+MAX_AGG_BYTES = 25_000_000      # all pages of one paginated read together
+MAX_REDIRECTS = 5
+
+
+def public_url(url):
+    """True only for http(s) URLs whose host resolves to public (global) addresses only.
+    Stops a redirect (or a bad source entry) from reaching the runner's local or cloud-internal network."""
+    try:
+        sp = urllib.parse.urlsplit(url)
+        if sp.scheme not in ('http', 'https') or not sp.hostname:
+            return False
+        infos = socket.getaddrinfo(sp.hostname, sp.port or (443 if sp.scheme == 'https' else 80), proto=socket.IPPROTO_TCP)
+        return bool(infos) and all(ipaddress.ip_address(i[4][0].split('%')[0]).is_global for i in infos)
+    except (OSError, ValueError, UnicodeError):
+        return False
+
+
+class _SafeRedirect(urllib.request.HTTPRedirectHandler):
+    max_redirections = MAX_REDIRECTS
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not public_url(newurl):
+            raise urllib.error.URLError(f'redirect to non-public address refused: {newurl[:120]}')
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_OPENER = urllib.request.build_opener(_SafeRedirect, urllib.request.HTTPSHandler(context=_CTX))
 
 
 def fetch(url, want_body=False, limit=65536):
     """One GET. Returns dict(status, final_url, error, body)."""
+    if not public_url(url):
+        return {'status': None, 'final_url': url, 'error': 'refused: not a public http(s) address', 'body': None}
     req = urllib.request.Request(url, headers={'User-Agent': UA, 'Accept': 'text/html,application/json;q=0.9,*/*;q=0.8',
                                                'Accept-Language': 'en'})
     try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT, context=_CTX) as r:
-            body = r.read(limit if not want_body else 20_000_000)
+        with _OPENER.open(req, timeout=TIMEOUT) as r:
+            if want_body:
+                body = r.read(MAX_JSON_BYTES + 1)
+                if len(body) > MAX_JSON_BYTES:
+                    return {'status': r.status, 'final_url': r.geturl(), 'error': f'response larger than {MAX_JSON_BYTES} bytes', 'body': None}
+            else:
+                body = r.read(limit)
             return {'status': r.status, 'final_url': r.geturl(), 'error': None, 'body': body if want_body else None}
     except urllib.error.HTTPError as ex:
         return {'status': ex.code, 'final_url': ex.geturl() or url, 'error': f'HTTP {ex.code}', 'body': None}
@@ -151,30 +186,38 @@ def as_number(v):
     return None
 
 
-def get_json(url):
-    last = None
+def get_json(url, with_size=False):
+    last, out = None, None
     for i in range(ATTEMPTS):
         r = fetch(url, want_body=True)
         if r['status'] == 200 and r['body'] is not None:
             try:
-                return json.loads(r['body'].decode('utf-8', 'replace')), None
+                out = (json.loads(r['body'].decode('utf-8', 'replace')), None, len(r['body']))
             except ValueError as ex:
-                return None, f'not JSON: {ex}'
+                out = (None, f'not JSON: {ex}', 0)
+            break
         last = r['error'] or f'HTTP {r["status"]}'
+        if r['error'] and ('refused' in r['error'] or 'larger than' in r['error']):
+            break  # not transient: do not retry
         if i < ATTEMPTS - 1:
             time.sleep(BACKOFF[min(i, len(BACKOFF) - 1)])
-    return None, last
+    if out is None:
+        out = (None, last, 0)
+    return out if with_size else out[:2]
 
 
 def read_mapping(m):
     """-> (value, quote, methods, error)"""
     if m.get('agg'):
         ag = m['agg']
-        items, url, pages, methods = [], m['url'], 0, []
+        items, url, pages, methods, total = [], m['url'], 0, [], 0
         while True:
-            doc, err = get_json(url)
+            doc, err, size = get_json(url, with_size=True)
             if err:
                 return None, None, methods, f'{url}: {err}'
+            total += size
+            if total > MAX_AGG_BYTES:
+                return None, None, methods, f'paginated read larger than {MAX_AGG_BYTES} bytes'
             lst = dig(doc, ag['list'])
             if not isinstance(lst, list):
                 return None, None, methods, f'{url}: no list at {ag["list"]}'
