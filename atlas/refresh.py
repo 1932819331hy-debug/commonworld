@@ -21,7 +21,7 @@ What it does, per entry of the Atlas snapshot (atlas/data/snapshot-verified-*.js
 No change at all -> the snapshot and state files are left byte-identical (so the workflow opens no PR).
 Exit code 0 always unless the script itself breaks; findings go to the summary.
 """
-import argparse, concurrent.futures as cf, copy, glob, ipaddress, json, os, re, socket, ssl, sys, time, urllib.error, urllib.parse, urllib.request
+import argparse, concurrent.futures as cf, copy, glob, http.client, ipaddress, json, os, re, socket, ssl, string, sys, time, urllib.error, urllib.parse, urllib.request
 from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -65,56 +65,179 @@ def default_snapshot():
 
 # ------------------------------------------------------------------ HTTP
 _CTX = ssl.create_default_context()
-MAX_JSON_BYTES = 5_000_000      # one JSON response
+MAX_JSON_BYTES = 1_000_000      # one JSON response; bounds json.loads object expansion
 MAX_AGG_BYTES = 25_000_000      # all pages of one paginated read together
+MAX_AGG_ITEMS = 100_000         # rows processed across one aggregate read
+MAX_AGG_PAGES = 50
+MAX_OFFSET = 999_999_999_999
 MAX_REDIRECTS = 5
+_REDIRECT_CODES = {301, 302, 303, 307, 308}
+_AZURE_WIRESERVER = ipaddress.ip_address('168.63.129.16')
+_NAT64_WELL_KNOWN = ipaddress.ip_network('64:ff9b::/96')
+_NAT64_LOCAL = ipaddress.ip_network('64:ff9b:1::/48')
+
+
+def _is_public_ipv4(addr):
+    return addr.is_global and addr != _AZURE_WIRESERVER
+
+
+def _is_public_ip(value):
+    """Reject special platform endpoints and IPv6 forms that can carry private IPv4 destinations."""
+    try:
+        addr = ipaddress.ip_address(str(value).split('%')[0])
+    except ValueError:
+        return False
+    if isinstance(addr, ipaddress.IPv4Address):
+        return _is_public_ipv4(addr)
+    if isinstance(addr, ipaddress.IPv6Address):
+        if addr in _NAT64_LOCAL:
+            return False
+        if addr in _NAT64_WELL_KNOWN:
+            return _is_public_ipv4(ipaddress.IPv4Address(int(addr) & 0xffffffff))
+        if addr.ipv4_mapped is not None:
+            return _is_public_ipv4(addr.ipv4_mapped)
+        if addr.sixtofour is not None:
+            return _is_public_ipv4(addr.sixtofour)
+        if addr.teredo is not None:
+            return all(_is_public_ipv4(part) for part in addr.teredo)
+        # IPv4-compatible IPv6 addresses are not routed globally, but may be interpreted by local stacks.
+        if int(addr) >> 32 == 0:
+            return _is_public_ipv4(ipaddress.IPv4Address(int(addr) & 0xffffffff))
+    return addr.is_global
+
+
+def _public_addresses(host, port):
+    infos = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP)
+    if not infos:
+        raise OSError('refused: hostname has no addresses')
+    # Fail closed on mixed DNS answers; otherwise a later resolver choice could select a private address.
+    for info in infos:
+        if not _is_public_ip(info[4][0]):
+            raise OSError('refused: hostname resolved to a non-public address')
+    return infos
 
 
 def public_url(url):
-    """True only for http(s) URLs whose host resolves to public (global) addresses only.
-    Stops a redirect (or a bad source entry) from reaching the runner's local or cloud-internal network."""
+    """True only for credential-free HTTP(S) URLs with entirely public DNS answers.
+    Connection handlers repeat validation on the exact addresses they connect to, preventing DNS rebinding."""
     try:
         sp = urllib.parse.urlsplit(url)
-        if sp.scheme not in ('http', 'https') or not sp.hostname:
+        if sp.scheme not in ('http', 'https') or not sp.hostname or sp.username is not None or sp.password is not None:
             return False
-        infos = socket.getaddrinfo(sp.hostname, sp.port or (443 if sp.scheme == 'https' else 80), proto=socket.IPPROTO_TCP)
-        return bool(infos) and all(ipaddress.ip_address(i[4][0].split('%')[0]).is_global for i in infos)
+        port = sp.port if sp.port is not None else (443 if sp.scheme == 'https' else 80)
+        if port == 0:
+            return False
+        _public_addresses(sp.hostname, port)
+        return True
     except (OSError, ValueError, UnicodeError):
         return False
 
 
-class _SafeRedirect(urllib.request.HTTPRedirectHandler):
-    max_redirections = MAX_REDIRECTS
+def _connect_public(host, port, timeout, source_address):
+    infos = _public_addresses(host, port)
+    errors = []
+    for family, socktype, proto, _canonname, sockaddr in infos:
+        sock = socket.socket(family, socktype, proto)
+        try:
+            sock.settimeout(timeout)
+            if source_address:
+                sock.bind(source_address)
+            # Connect to the exact address returned by the validated lookup; never resolve the hostname again here.
+            sock.connect(sockaddr)
+            return sock
+        except OSError as ex:
+            errors.append(ex)
+            sock.close()
+    if errors:
+        raise errors[-1]
+    raise OSError('no usable public addresses')
 
+
+class _PublicConnectionMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._create_connection = self._create_public_connection
+
+    def _create_public_connection(self, address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, source_address=None):
+        return _connect_public(address[0], address[1], timeout, source_address)
+
+
+class _PublicHTTPConnection(_PublicConnectionMixin, http.client.HTTPConnection):
+    pass
+
+
+class _PublicHTTPSConnection(_PublicConnectionMixin, http.client.HTTPSConnection):
+    pass
+
+
+class _PublicHTTPHandler(urllib.request.HTTPHandler):
+    def http_open(self, req):
+        return self.do_open(_PublicHTTPConnection, req)
+
+
+class _PublicHTTPSHandler(urllib.request.HTTPSHandler):
+    def https_open(self, req):
+        return self.do_open(_PublicHTTPSConnection, req, context=self._context)
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        if not public_url(newurl):
-            raise urllib.error.URLError(f'redirect to non-public address refused: {newurl[:120]}')
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
+        return None
 
 
-_OPENER = urllib.request.build_opener(_SafeRedirect, urllib.request.HTTPSHandler(context=_CTX))
+_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect(), _PublicHTTPHandler(),
+                                      _PublicHTTPSHandler(context=_CTX))
 
 
-def fetch(url, want_body=False, limit=65536):
+def fetch(url, want_body=False, limit=65536, body_limit=MAX_JSON_BYTES):
     """One GET. Returns dict(status, final_url, error, body)."""
     if not public_url(url):
-        return {'status': None, 'final_url': url, 'error': 'refused: not a public http(s) address', 'body': None}
-    req = urllib.request.Request(url, headers={'User-Agent': UA, 'Accept': 'text/html,application/json;q=0.9,*/*;q=0.8',
-                                               'Accept-Language': 'en'})
-    try:
-        with _OPENER.open(req, timeout=TIMEOUT) as r:
-            if want_body:
-                body = r.read(MAX_JSON_BYTES + 1)
-                if len(body) > MAX_JSON_BYTES:
-                    return {'status': r.status, 'final_url': r.geturl(), 'error': f'response larger than {MAX_JSON_BYTES} bytes', 'body': None}
-            else:
-                body = r.read(limit)
-            return {'status': r.status, 'final_url': r.geturl(), 'error': None, 'body': body if want_body else None}
-    except urllib.error.HTTPError as ex:
-        return {'status': ex.code, 'final_url': ex.geturl() or url, 'error': f'HTTP {ex.code}', 'body': None}
-    except (urllib.error.URLError, socket.timeout, TimeoutError, ssl.SSLError, ConnectionError, OSError, ValueError) as ex:
-        reason = getattr(ex, 'reason', ex)
-        return {'status': None, 'final_url': url, 'error': f'{type(reason).__name__}: {str(reason)[:160]}', 'body': None}
+        return {'status': None, 'final_url': url, 'error': 'refused: not a public credential-free http(s) address', 'body': None}
+    current = url
+    redirects = 0
+    while True:
+        req = urllib.request.Request(current, headers={'User-Agent': UA, 'Accept': 'text/html,application/json;q=0.9,*/*;q=0.8',
+                                                       'Accept-Language': 'en'})
+        try:
+            try:
+                response = _OPENER.open(req, timeout=TIMEOUT)
+            except urllib.error.HTTPError as ex:
+                if ex.code not in _REDIRECT_CODES:
+                    ex.close()
+                    return {'status': ex.code, 'final_url': ex.geturl() or current, 'error': f'HTTP {ex.code}', 'body': None}
+                response = ex
+
+            if response.status in _REDIRECT_CODES:
+                location = response.headers.get('Location') or response.headers.get('URI')
+                response.close()  # Do not read an untrusted redirect response body.
+                if not location:
+                    return {'status': response.status, 'final_url': response.geturl() or current, 'error': None, 'body': None}
+                if redirects >= MAX_REDIRECTS:
+                    return {'status': None, 'final_url': current, 'error': 'refused: too many redirects', 'body': None}
+                # Match urllib's handling of non-ASCII and spaces while resolving relative and protocol-relative targets.
+                location = urllib.parse.quote(location, encoding='iso-8859-1', safe=string.punctuation)
+                next_url = urllib.parse.urljoin(current, location)
+                if not public_url(next_url):
+                    return {'status': None, 'final_url': current, 'error': 'refused: redirect target is not public http(s)', 'body': None}
+                current = next_url
+                redirects += 1
+                continue
+
+            with response as r:
+                if want_body:
+                    body_limit = max(0, min(MAX_JSON_BYTES, body_limit))
+                    body = r.read(body_limit + 1)
+                    if len(body) > body_limit:
+                        return {'status': r.status, 'final_url': r.geturl(), 'error': f'response larger than {body_limit} bytes', 'body': None}
+                else:
+                    body = r.read(limit)
+                return {'status': r.status, 'final_url': r.geturl() or current, 'error': None, 'body': body if want_body else None}
+        except (urllib.error.URLError, socket.timeout, TimeoutError, ssl.SSLError, ConnectionError, OSError, ValueError) as ex:
+            reason = getattr(ex, 'reason', ex)
+            message = str(reason)[:160]
+            if isinstance(reason, OSError) and 'refused:' in message.lower():
+                message = message.lower()
+            return {'status': None, 'final_url': current, 'error': f'{type(reason).__name__}: {message}', 'body': None}
 
 
 def classify(res):
@@ -186,14 +309,26 @@ def as_number(v):
     return None
 
 
-def get_json(url, with_size=False):
+def _bounded_offset(value):
+    """Return a short decimal pagination offset, or None for untrusted/unbounded values."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return str(value) if 0 <= value <= MAX_OFFSET else None
+    if isinstance(value, str) and re.fullmatch(r'(?:0|[1-9][0-9]{0,11})', value):
+        return value
+    return None
+
+
+def get_json(url, with_size=False, max_bytes=None):
     last, out = None, None
+    body_limit = MAX_JSON_BYTES if max_bytes is None else min(MAX_JSON_BYTES, max_bytes)
     for i in range(ATTEMPTS):
-        r = fetch(url, want_body=True)
+        r = fetch(url, want_body=True, body_limit=body_limit)
         if r['status'] == 200 and r['body'] is not None:
             try:
                 out = (json.loads(r['body'].decode('utf-8', 'replace')), None, len(r['body']))
-            except ValueError as ex:
+            except (ValueError, RecursionError) as ex:
                 out = (None, f'not JSON: {ex}', 0)
             break
         last = r['error'] or f'HTTP {r["status"]}'
@@ -210,49 +345,71 @@ def read_mapping(m):
     """-> (value, quote, methods, error)"""
     if m.get('agg'):
         ag = m['agg']
-        items, url, pages, methods, total = [], m['url'], 0, [], 0
+        url, pages, methods, total_bytes, total_items, selected_items, total_value = m['url'], 0, [], 0, 0, 0, 0
+        seen_urls = {url}
         while True:
-            doc, err, size = get_json(url, with_size=True)
+            doc, err, size = get_json(url, with_size=True, max_bytes=MAX_AGG_BYTES - total_bytes)
             if err:
                 return None, None, methods, f'{url}: {err}'
-            total += size
-            if total > MAX_AGG_BYTES:
+            total_bytes += size
+            if total_bytes > MAX_AGG_BYTES:
                 return None, None, methods, f'paginated read larger than {MAX_AGG_BYTES} bytes'
             lst = dig(doc, ag['list'])
             if not isinstance(lst, list):
                 return None, None, methods, f'{url}: no list at {ag["list"]}'
-            items += lst
+            if total_items + len(lst) > MAX_AGG_ITEMS:
+                return None, None, methods, f'aggregate contains more than {MAX_AGG_ITEMS} items'
             pages += 1
             methods.append(f'GET {url}')
             nxt = doc.get('nextOffset') if isinstance(doc, dict) else None
-            if m.get('paginate') == 'offset' and doc.get('hasMore') and nxt is not None and pages < 50:
+            has_more = doc.get('hasMore') if isinstance(doc, dict) else False
+            next_url = None
+            if m.get('paginate') == 'offset' and has_more:
+                if pages >= MAX_AGG_PAGES:
+                    return None, None, methods, f'paginated read exceeds {MAX_AGG_PAGES} pages'
+                offset = _bounded_offset(nxt)
+                if offset is None:
+                    return None, None, methods, 'invalid or oversized pagination offset'
                 sp = urllib.parse.urlsplit(m['url'])
                 q = dict(urllib.parse.parse_qsl(sp.query))
-                q['offset'] = str(nxt)
-                url = sp._replace(query=urllib.parse.urlencode(q)).geturl()
+                q['offset'] = offset
+                next_url = sp._replace(query=urllib.parse.urlencode(q)).geturl()
+                if next_url in seen_urls:
+                    return None, None, methods, 'pagination repeated a previously requested URL'
+                seen_urls.add(next_url)
+            for row in lst:
+                matched = True
+                for key, want in (ag.get('where') or {}).items():
+                    value = dig(row, key)
+                    if want == '*':
+                        if value in (None, '', [], {}):
+                            matched = False
+                            break
+                    elif value != want:
+                        matched = False
+                        break
+                total_items += 1
+                if matched:
+                    selected_items += 1
+                    if ag['op'] != 'count':
+                        number = as_number(dig(row, ag['field']))
+                        if number is None:
+                            return None, None, methods, f'non-numeric {ag["field"]} in list'
+                        total_value += number
+            if lst:
+                del row
+            del doc, lst
+            if next_url is not None:
+                url = next_url
                 continue
             break
 
-        def ok(x):
-            for k, want in (ag.get('where') or {}).items():
-                v = dig(x, k)
-                if want == '*':
-                    if v in (None, '', [], {}):
-                        return False
-                elif v != want:
-                    return False
-            return True
-        sel = [x for x in items if ok(x)]
         if ag['op'] == 'count':
-            val = len(sel)
+            val = selected_items
         else:
-            nums = [as_number(dig(x, ag['field'])) for x in sel]
-            if any(n is None for n in nums):
-                return None, None, methods, f'non-numeric {ag["field"]} in list'
-            val = sum(nums)
-            val = int(val) if float(val).is_integer() else round(val, 6)
+            val = int(total_value) if float(total_value).is_integer() else round(total_value, 6)
         where = ', '.join(f'{k}={v}' for k, v in (ag.get('where') or {}).items())
-        quote = f'{len(items)} items read; {len(sel)} with {where}' + (f'; sum {ag["field"]} = {val}' if ag['op'] == 'sum' else '')
+        quote = f'{total_items} items read; {selected_items} with {where}' + (f'; sum {ag["field"]} = {val}' if ag['op'] == 'sum' else '')
         methods.append(f'{ag["op"]} over {ag["list"]}' + (f' of {ag["field"]}' if ag['op'] == 'sum' else '') + (f' where {where}' if where else ''))
         return val, quote, methods, None
     doc, err = get_json(m['url'])
