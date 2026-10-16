@@ -97,6 +97,11 @@ def fmt_window(w):
     return ISO_TS.sub(lambda m: f'{m[1]} {m[2]} UTC', w or '')
 
 
+def window_html(w):
+    """Escaped window text; each date (and 'HH:MM UTC') kept on one line."""
+    return re.sub(r'\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2} UTC)?', lambda m: f'<span class="nw">{m[0]}</span>', e(fmt_window(w)))
+
+
 def domain(u):
     m = re.match(r'https?://([^/]+)', u or '')
     return m[1].removeprefix('www.') if m else (u or '')
@@ -841,7 +846,7 @@ def earn_table(site, rs):
         btag = f'<span class="tag {"t-warn" if basis == "operator_claim" else "t-basis"}">{e(BASIS_LABEL.get(basis, basis or "basis unknown"))}</span>'
         src = ext_link(x['source_url'], e(domain(x['source_url']))) if x.get('source_url') else 'No source link'
         trs.append(f'<tr><td><a href="{c["_url"]}"><b>{e(c["name"])}</b></a><br><a class="catchip" href="{b}/categories/{c["category"]}/"><i style="background:{CAT_COLOR[c["category"]]}"></i>{e(CAT_SHORT[c["category"]])}</a></td>'
-                   f'<td class="earn-val"><b>{fmt_value(x["value"])}</b>{unit}{note}</td><td class="earn-win">{e(fmt_window(x.get("window")) or "—")}</td><td class="earn-basis">{btag}</td>'
+                   f'<td class="earn-val"><b>{fmt_value(x["value"])}</b>{unit}{note}</td><td class="earn-win">{window_html(x.get("window")) or "—"}</td><td class="earn-basis">{btag}</td>'
                    f'<td>{time_tag(r["dt"])}</td><td>{src}</td></tr>')
     return ('<div class="table-wrap"><table class="list earn"><thead><tr><th scope="col">Platform</th><th scope="col">Figure (as on the card)</th>'
             '<th scope="col">Window</th><th scope="col">Basis</th><th scope="col">Observed (UTC)</th><th scope="col">Source</th></tr></thead>'
