@@ -6,7 +6,7 @@
 
 Output (default atlas/site/dist/) is a plain static tree with clean URLs as directories:
   /atlas/index.html, /atlas/platforms/, /atlas/platforms/<slug>/, /atlas/categories/, /atlas/categories/<cat>/,
-  /atlas/closed/, /atlas/about/, /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/sitemap.xml, /atlas/assets/*,
+  /atlas/closed/, /atlas/earn/ (+ /atlas/earn.json), /atlas/about/, /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/sitemap.xml, /atlas/assets/*,
   /privacy/, /terms/ (site-wide Commonworld legal pages; /atlas/privacy|terms/ are noindex redirect stubs + _redirects 301s),
   / (Commonworld landing), /404.html, /robots.txt, /llms.txt, /llms-full.txt, /sitemap.xml, /_headers, /_redirects
 It deploys unchanged to Cloudflare Pages / Workers static assets.
@@ -200,6 +200,7 @@ def sidebar(site, active):
         act = 'page' if active == 'cat:' + k else (True if active == 'in:' + k else False)
         dirs.append((f'{b}/categories/{k}/', CAT_LABEL[k], len(site.by_cat[k]), act, {'data-cat': k}))
     secs = [(f'{b}/#catalog', 'Catalog', None, False, None),
+            (f'{b}/earn/', 'Where agents get paid', len(site.earn['rows']) if getattr(site, 'earn', None) else None, 'page' if active == 'earn' else False, None),
             (f'{b}/closed/', 'Closed history', closed, 'page' if active == 'closed' else False, None),
             (f'{b}/about/', 'How the Atlas works', None, 'page' if active == 'about' else False, None)]
     sc = site.cfg['site']
@@ -209,7 +210,8 @@ def sidebar(site, active):
         xnav = xnav.replace('<a href="', '<a aria-current="page" href="', 1)
     cur = ' class="active" aria-current="page"' if active == 'cw-about' else ''
     xnav += f'<nav class="cw-nav cw-xsub" aria-label="About Commonworld"><a href="{CW_ABOUT}"{cur}>About</a></nav>'
-    return cw.sidebar(site.cfg, b, [('Directions', dirs), ('Sections', secs)], bottom=cw.ad_slot(site.cfg, 'atlas-sidebar'), top=xnav)
+    ad = '' if active == 'earn' else cw.ad_slot(site.cfg, 'atlas-sidebar')  # no sponsored slots on the earn-now view
+    return cw.sidebar(site.cfg, b, [('Directions', dirs), ('Sections', secs)], bottom=ad, top=xnav)
 
 
 def breadcrumbs(site, trail):
@@ -459,7 +461,7 @@ def build_platform(site, c):
     b = site.base
     cat = c['category']
     crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), (CAT_LABEL[cat], f'{b}/categories/{cat}/'), (c['name'], c['_url'])])
-    claims = sorted(c.get('claims', []), key=lambda x: (KIND_ORDER.index(x['kind']) if x.get('kind') in KIND_ORDER else 50 + (x.get('kind') == 'site_reachable')))
+    claims = card_claims(c)
     labels = qa_labels_for(c, claims, site.claim_labels.get(c['slug'], {}))
     lis = []
     for i, x in enumerate(claims):
@@ -551,6 +553,11 @@ def build_platform(site, c):
     desc = pre + trim(c['_desc'], 150 - len(pre)) if c['_desc'] else f"{c['name']}{status}, a verified {CAT_SHORT[cat].lower()} {tl.lower()} in the Commonworld Atlas."
     return page(site, path=c['_url'], title=title, description=desc, body=body, active='in:' + cat, ld=ld, og_type='article', lastmod=c['_verified'], og=og_platform(site, c),
                 alt_json=site.abs(f"{b}/platforms/{c['slug']}.json"))
+
+
+def card_claims(c):
+    """Claims in the order a platform card shows them."""
+    return sorted(c.get('claims', []), key=lambda x: (KIND_ORDER.index(x['kind']) if x.get('kind') in KIND_ORDER else 50 + (x.get('kind') == 'site_reachable')))
 
 
 def history_html(x):
@@ -676,6 +683,164 @@ def build_closed(site):
                 body=body, active='closed', ld=ld,
                 og=og_generic(site, 'page-closed', 'Closed platforms', 'Platforms that shut down keep their card as a history record, with the evidence of closure and dates.',
                               [(f'{len(cs)} closed', 'closed'), ('history', None)], kicker='HISTORY'))
+
+
+# ---------------------------------------------------------------- "Where agents get paid" (earn-now view)
+USD_FAMILY = re.compile(r'^\$|\b(USD|USDC|USDT|USDe|DAI|PYUSD|EURC|stablecoins?)\b', re.I)
+MONEY_UNIT = re.compile(r'^\$|\b(USD|USDC|USDT|DAI|sats?|SOL|ETH|BTC|sBTC|tokens?|credits?)\b', re.I)
+BASIS_RANK = {'direct_observation': 0, 'independent_source': 1, 'inference': 2, 'operator_claim': 3}
+EARN_TIERS = [('measured', 'Measured', 'Observed directly by the Atlas or measured by an independent source (for example an on-chain decoder).'),
+              ('operator', 'Operator claims', 'What the platform says about itself. Shown as stated, not confirmed by us.')]
+
+
+def num_of(v):
+    """Sort key only (never displayed, never combined across units): 1234 -> 1234.0; '$618.6k' -> 618600.0; '145k–390k' -> 145000.0 (low end)."""
+    if isinstance(v, bool) or v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    m = re.search(r'(\d[\d,]*(?:\.\d+)?)\s*([kKmMbB])?', str(v))
+    if not m:
+        return None
+    return float(m[1].replace(',', '')) * {'k': 1e3, 'm': 1e6, 'b': 1e9}.get((m[2] or '').lower(), 1)
+
+
+def earn_claim(c):
+    """The money figure for one live card: its key number when that is a money figure, else its first numeric
+    supported money-flow claim (observed directly first). None when the card has no numeric money figure."""
+    k = c['_key']
+    if k and (k.get('kind') == 'economic_flow' or MONEY_UNIT.search(k.get('unit') or '')):
+        return k
+    flows = [x for x in c.get('claims', []) if x.get('kind') == 'economic_flow' and x.get('outcome') == 'supported' and num_of(x.get('value')) is not None]
+    flows.sort(key=lambda x: x.get('basis') != 'direct_observation')
+    return flows[0] if flows else None
+
+
+def earn_rows(site):
+    rows, no_figure = [], []
+    for c in site.cards:
+        if c['status'] != 'live' or not c['_money']:
+            continue
+        x = earn_claim(c)
+        if not x:
+            no_figure.append(c)
+            continue
+        claims = card_claims(c)
+        labs = qa_labels_for(c, claims, site.claim_labels.get(c['slug'], {}))
+        idx = next((i for i, y in enumerate(claims) if y is x), None)
+        notes = [(h, t) for h, t, _ in labs.get(idx, [])] if idx is not None else []
+        unit = x.get('unit') or ''
+        n = num_of(x.get('value'))
+        rows.append({'c': c, 'x': x, 'n': n, 'unit': unit, 'notes': notes, 'dt': parse_time(x.get('observed_at')),
+                     'family': 'usd' if USD_FAMILY.search(re.sub(r'\(.*?\)', '', unit)) and not re.search(r'\btokens?\b', unit, re.I) else 'other',
+                     'tier': 'operator' if x.get('basis') == 'operator_claim' else 'measured', 'zero': not n})
+    groups = []
+    usd = [r for r in rows if r['family'] == 'usd' and not r['zero']]
+    if usd:
+        groups.append(('usd', 'US dollar & stablecoins', 'USD, USDC, USDT and other dollar stablecoins, sorted by value within each tier. '
+                       'Windows differ (30 days, all time, a prize pool), so compare a row with others of the same window.', usd))
+    other = defaultdict(list)
+    for r in rows:
+        if r['family'] == 'other' and not r['zero']:
+            other[r['unit']].append(r)
+    for u in sorted(other, key=lambda u: (-len(other[u]), u.lower())):
+        groups.append(('unit-' + re.sub(r'[^a-z0-9]+', '-', u.lower()).strip('-'), u, f'Figures in {u}, sorted by value within each tier. Not converted to any other unit.', other[u]))
+    zero = [r for r in rows if r['zero']]
+    if zero:
+        groups.append(('zero', 'Zero at the last observation', 'A money rail exists, but the figure was zero when observed.', zero))
+    for _, _, _, rs in groups:
+        rs.sort(key=lambda r: (r['tier'] != 'measured', -(r['n'] or 0), BASIS_RANK.get(r['x'].get('basis'), 9), r['c']['name'].lower()))
+    return {'rows': rows, 'groups': groups, 'no_figure': no_figure}
+
+
+def earn_record(site, r):
+    c, x = r['c'], r['x']
+    return {'id': c['slug'], 'name': c['name'], 'url': site.abs(c['_url']), 'json_url': site.abs(f"{site.base}/platforms/{c['slug']}.json"),
+            'category': c['category'], 'value': x.get('value'), 'unit': x.get('unit'), 'window': x.get('window'), 'basis': x.get('basis'),
+            'observed_at': iso(r['dt']), 'source_url': x.get('source_url'), 'unit_family': r['family'] if not r['zero'] else 'zero',
+            'tier': r['tier'], 'note': ' '.join(f'{h} {t}' for h, t in r['notes']) or None}
+
+
+def earn_table(site, rs):
+    b = site.base
+    trs = []
+    for r in rs:
+        c, x = r['c'], r['x']
+        unit = f' {e(x["unit"])}' if x.get('unit') else ''
+        note = ''.join(f'<p class="qa-label warn"><b>{e(h)}</b> {e(t)}</p>' for h, t in r['notes'])
+        basis = x.get('basis')
+        btag = f'<span class="tag {"t-warn" if basis == "operator_claim" else "t-basis"}">{e(BASIS_LABEL.get(basis, basis or "basis unknown"))}</span>'
+        src = ext_link(x['source_url'], e(domain(x['source_url']))) if x.get('source_url') else 'No source link'
+        trs.append(f'<tr><td><a href="{c["_url"]}"><b>{e(c["name"])}</b></a><br><a class="catchip" href="{b}/categories/{c["category"]}/"><i style="background:{CAT_COLOR[c["category"]]}"></i>{e(CAT_SHORT[c["category"]])}</a></td>'
+                   f'<td class="earn-val"><b>{fmt_value(x["value"])}</b>{unit}{note}</td><td>{e(x.get("window") or "—")}</td><td>{btag}</td>'
+                   f'<td>{time_tag(r["dt"])}</td><td>{src}</td></tr>')
+    return ('<div class="table-wrap"><table class="list earn"><thead><tr><th scope="col">Platform</th><th scope="col">Figure (as on the card)</th>'
+            '<th scope="col">Window</th><th scope="col">Basis</th><th scope="col">Observed (UTC)</th><th scope="col">Source</th></tr></thead>'
+            f'<tbody>{"".join(trs)}</tbody></table></div>')
+
+
+def build_earn(site):
+    b = site.base
+    E = site.earn
+    rows, groups = E['rows'], E['groups']
+    crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), ('Where agents get paid', f'{b}/earn/')])
+    lm = max((r['dt'] for r in rows if r['dt']), default=None)
+    secs, toc = [], []
+    for gid, title, desc, rs in groups:
+        parts = []
+        for tid, tlabel, tdesc in EARN_TIERS:
+            tr = [r for r in rs if r['tier'] == tid]
+            if tr:
+                parts.append(f'<h3 class="earn-tier">{e(tlabel)} <span class="muted">· {len(tr)}</span></h3><p class="sec-desc">{e(tdesc)}</p>{earn_table(site, tr)}')
+        toc.append(f'<a href="#{gid}">{e(title)} <span>{len(rs)}</span></a>')
+        secs.append(f'<section class="cw-panel cw-panel-gap" id="{gid}" aria-labelledby="h-{gid}"><div class="cw-panel-head"><h2 id="h-{gid}">{e(title)}</h2>'
+                    f'<span class="muted">{len(rs)} platform{"s" if len(rs) != 1 else ""}</span></div><div class="cw-panel-body"><p class="sec-desc">{e(desc)}</p>{"".join(parts)}</div></section>')
+    nf = E['no_figure']
+    nf_links = ', '.join('<a href="' + c['_url'] + '">' + e(c['name']) + '</a>' for c in nf)
+    nf_html = (f'<p class="earn-nofig">Money also flows on {nf_links}, '
+               'but no figure is published, so they are not ranked here.</p>') if nf else ''
+    box = cw.info_box('live', f'{len(rows)} platforms', 'live, with money flow',
+                      f'Figures as observed on the date shown. Last observation {time_tag(lm)}. '
+                      f'Machine-readable: <a href="{b}/earn.json" type="application/json">earn.json</a>.')
+    lead = ('<p>Live platforms in the Atlas where money demonstrably moves: payouts to agents, bounty rewards, paid API settlements, prize pools. '
+            'Each row shows the money figure exactly as on the platform’s card, with its unit, window, basis and source.</p>'
+            '<p>Figures are as observed on the date shown and are never converted between currencies or units. '
+            f'Money never buys a place or a position here; see <a href="{b}/about/#advertise">how the Atlas works</a>.</p>')
+    body = f"""{crumbs}
+{cw.hero('Atlas · money', 'Where agents get paid', lead, box, small=True, kicker_href=f'{b}/')}
+{cw.share_bar(site.cfg, site.abs(f'{b}/earn/'), 'Where agents get paid' + SHARE_SUFFIX, cls='cw-share-earn')}
+<nav class="earn-toc" aria-label="Unit groups">{''.join(toc)}</nav>
+{''.join(secs)}
+{nf_html}
+<p class="sec-desc earn-foot">Ordering is by value only within one unit and one basis tier; there is no cross-unit total. A dollar figure over 30 days and one over all time are different things. Read each card for the full claims, QA re-checks and history. <a href="{b}/about/#money">How money figures are read</a>.</p>"""
+    ordered = [r['c'] for _, _, _, rs in groups for r in rs]
+    ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': 'Where agents get paid', 'url': site.abs(f'{b}/earn/'),
+                     'inLanguage': 'en', 'dateModified': lm.strftime('%Y-%m-%d') if lm else None,
+                     'description': 'Live AI-agent platforms with a sourced money figure, grouped by unit.',
+                     'isPartOf': {'@type': 'WebSite', 'name': 'Commonworld Atlas', 'url': site.abs(f'{b}/')},
+                     'mainEntity': item_list_ld(site, ordered, 'Where agents get paid')}]
+    usd = next((len(rs) for gid, _, _, rs in groups if gid == 'usd'), 0)
+    return page(site, path=f'{b}/earn/', title='Where agents get paid: sourced money figures | Commonworld Atlas',
+                description=f'{len(rows)} live AI-agent platforms where money moves, each with its figure, unit, window, basis and source as observed. Grouped by unit, never converted.',
+                body=body, active='earn', ld=ld, lastmod=lm,
+                og=og_generic(site, 'page-earn', 'Where agents get paid',
+                              'Live platforms where money moves, each figure with its unit, window, basis and source. Grouped by unit, never converted.',
+                              [(f'{len(rows)} platforms', 'olive'), (f'{usd} in dollars', 'live'), ('no paid placement', None)], kicker='MONEY'))
+
+
+def build_earn_json(site, write):
+    b = site.base
+    E = site.earn
+    out = []
+    for gid, title, _, rs in E['groups']:
+        out += [earn_record(site, r) | {'group': title} for r in rs]
+    meta = {'name': 'Commonworld Atlas: where agents get paid', 'url': site.abs(f'{b}/earn/'), 'generated_at': iso(parse_time(site.snapshot.get('generated_at'))),
+            'licence': site.cfg.get('data_licence') or 'not yet specified', 'source': REPO_URL,
+            'fields_note': 'One row per live entry with a supported money figure, as shown on its card. value/unit/window exactly as on the card; '
+                           'values are never converted between units; rows are ordered by value only within one unit group and basis tier '
+                           '(measured first, then operator claims). observed_at is ISO 8601 UTC. Placement is never paid for.',
+            'count': len(out), 'no_figure': [c['slug'] for c in E['no_figure']], 'rows': out}
+    write(f'{b}/earn.json', json.dumps(meta, ensure_ascii=False, indent=1) + '\n')
 
 
 def contact(site, kind='general'):
@@ -928,6 +1093,7 @@ def landing_agents(site):
     rows = [('Site map for agents (llms.txt)', site.abs('/llms.txt')),
             ('All entries (JSON)', site.abs(f'{b}/platforms.json')),
             ('One category (JSON), e.g. Work & bounties', site.abs(f'{b}/categories/work.json')),
+            ('Where agents get paid (JSON: money figures by unit)', site.abs(f'{b}/earn.json')),
             ('One entry (JSON), e.g. BountyBook', site.abs(f'{b}/platforms/bountybook.json')),
             ('Mirror on GitHub if this site cannot be fetched', RAW_BASE + '/platforms.json')]
     items = ''.join(f'<li>{e(t)}: <a href="{e(u)}"' + ('' if u.startswith(site.abs('/')) else ' rel="noopener nofollow"') + f'><code>{e(u)}</code></a></li>' for t, u in rows)
@@ -1091,6 +1257,7 @@ def write_github_mirror(out, b):
     src = os.path.join(out, b.strip('/'))
     shutil.copy(os.path.join(out, 'llms-full.txt'), os.path.join(MIRROR_DIR, 'llms-full.txt'))
     shutil.copy(os.path.join(src, 'platforms.json'), os.path.join(MIRROR_DIR, 'platforms.json'))
+    shutil.copy(os.path.join(src, 'earn.json'), os.path.join(MIRROR_DIR, 'earn.json'))
     os.makedirs(os.path.join(MIRROR_DIR, 'categories'))
     for f in sorted(os.listdir(os.path.join(src, 'categories'))):
         if f.endswith('.json'):
@@ -1102,7 +1269,7 @@ def write_github_mirror(out, b):
             shutil.copy(os.path.join(pdir, f), os.path.join(MIRROR_DIR, 'platforms', f))
     with open(os.path.join(MIRROR_DIR, 'README.md'), 'w', encoding='utf-8') as fh:
         fh.write('# Atlas data mirror\n\nGenerated by `atlas/site/build.py`; do not edit by hand. Same published data as https://commonworld.one '
-                 '(platforms.json, snapshot.json, llms-full.txt, platforms/<id>.json), mirrored here so agent tools that cannot reach the site '
+                 '(platforms.json, earn.json, snapshot.json, llms-full.txt, platforms/<id>.json), mirrored here so agent tools that cannot reach the site '
                  'can read it via raw.githubusercontent.com. The site is canonical; cite Atlas URLs, not this mirror.\n')
 
 
@@ -1150,6 +1317,7 @@ Commonworld is being built as a place where people and AI agents take part as ci
 - [Atlas home]({A(f'{b}/')}): the catalog of agent platforms, searchable and filterable
 - [All entries A-Z]({A(f'{b}/platforms/')}): every published entry
 - [Closed history]({A(f'{b}/closed/')}): platforms that shut down
+- [Where agents get paid]({A(f'{b}/earn/')}): live platforms with a sourced money figure, grouped by unit (never converted); JSON: {A(f'{b}/earn.json')}
 - [How the Atlas works]({A(f'{b}/about/')}): method, basis labels, QA re-checks, freshness, corrections
 - [Verification protocol]({REPO_URL}/blob/main/atlas/PROTOCOL.md): the full protocol each claim goes through
 - [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
@@ -1161,6 +1329,7 @@ Commonworld is being built as a place where people and AI agents take part as ci
 ## Data
 
 - Per category: {A(f'{b}/categories/')}<category>.json, the same fields for one category only (small files; use these if your tool truncates long responses)
+- [earn.json]({A(f'{b}/earn.json')}): where agents get paid: one row per live entry with a supported money figure (value, unit, window, basis, observed_at, source_url), grouped by unit
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
 - Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt)
 - IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
@@ -1176,6 +1345,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 
 - [platforms.json (GitHub mirror)]({RAW_BASE}/platforms.json)
 - Per category: {RAW_BASE}/categories/<category>.json
+- [earn.json (GitHub mirror)]({RAW_BASE}/earn.json): where agents get paid
 - [llms-full.txt (GitHub mirror)]({RAW_BASE}/llms-full.txt)
 - Per entry: {RAW_BASE}/platforms/<id>.json (example: [{exs[0]['slug']}.json]({RAW_BASE}/platforms/{exs[0]['slug']}.json))
 - [snapshot.json (GitHub mirror)]({RAW_BASE}/snapshot.json): the full published dataset
@@ -1241,6 +1411,7 @@ def main():
     site.claim_labels = {k: v for k, v in json.load(open(lab_path)).items() if not k.startswith('_')} if os.path.exists(lab_path) else {}
     tags = json.load(open(a.tags))['tags'] if a.tags and os.path.exists(a.tags) else {}
     enrich(site, tags)
+    site.earn = earn_rows(site)
     css = open(os.path.join(HERE, 'components', 'cw-components.css')).read() + '\n' + open(os.path.join(HERE, 'static', 'atlas.css')).read()
     css += '\n/* category swatches (generated from CATEGORIES) */\n' + cw.color_classes([(k, col) for k, _, _, col, _ in CATEGORIES]) + '\n'
     js = open(os.path.join(HERE, 'components', 'cw-components.js')).read() + '\n' + open(os.path.join(HERE, 'static', 'atlas.js')).read()
@@ -1269,6 +1440,7 @@ def main():
     for k in site.cats:
         write(f'{b}/categories/{k}/', build_category(site, k))
     write(f'{b}/closed/', build_closed(site))
+    write(f'{b}/earn/', build_earn(site))
     write(f'{b}/about/', build_about(site))
     write(CW_ABOUT, build_cw_about(site))  # About Commonworld
     priv_url, terms_url = legal_urls(site)
@@ -1306,6 +1478,7 @@ def main():
     write(f'{b}/data/search-index.json', json.dumps(sidx, ensure_ascii=False, separators=(',', ':')))
 
     build_agent_files(site, write)
+    build_earn_json(site, write)
 
     def sitemap(pages):
         sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
@@ -1334,6 +1507,9 @@ def main():
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
 {b}/platforms/*.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+{b}/earn.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
 /llms.txt
