@@ -4,7 +4,7 @@
 Takes the Commonworld marks from the prototype UI
 (branch prototype/local-runtime-only-2026-10-09, design-preview/assets/commonworld-mark-{light,dark}.png),
 cuts the rounded-square corners to transparency, and writes small web assets into ../static/:
-cw-mark-{light,dark}.png (96px, shown at 46px), favicon.ico, apple-touch-icon.png, icon-192.png,
+cw-mark-{light,dark}.png (96px, shown at 46px), cw-mark-{light,dark}-192.png (landing logo, shown at 96px), favicon.ico, apple-touch-icon.png, icon-192.png,
 og-atlas.png (1200x630 Open Graph image).
 
 Usage:  python3 tools/make_images.py /path/to/commonworld-mark-light.png /path/to/commonworld-mark-dark.png
@@ -42,6 +42,9 @@ def main(light_path, dark_path):
     sz = lambda im, s: im.resize((s, s), Image.LANCZOS)
     sz(L, 96).save(f'{OUT}/cw-mark-light.png', optimize=True)
     sz(D, 96).save(f'{OUT}/cw-mark-dark.png', optimize=True)
+    # 2x marks for the landing logo (shown at 96 CSS px): palette PNG, visually identical, ~7 KB each
+    for name, im in (('light', L), ('dark', D)):
+        sz(im, 192).quantize(colors=256, method=Image.FASTOCTREE, dither=Image.FLOYDSTEINBERG).save(f'{OUT}/cw-mark-{name}-192.png', optimize=True)
     flat = Image.new('RGBA', L.size, (244, 241, 234, 255)); flat.alpha_composite(L)
     sz(flat, 180).convert('RGB').save(f'{OUT}/apple-touch-icon.png', optimize=True)
     sz(L, 192).save(f'{OUT}/icon-192.png', optimize=True)

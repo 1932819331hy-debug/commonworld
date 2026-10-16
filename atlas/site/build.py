@@ -1208,8 +1208,8 @@ def build_landing(site):
         (f'{len(site.cats):,}', 'directions', {}, None, False),
         (f'{claims:,}', 'sourced claims', {}, None, False)], label='Atlas at a glance')
     body = f"""<section class="cw-landing" aria-labelledby="landing-title">
-<img class="cw-mark-l landing-mark" src="{b}/assets/cw-mark-light.png" alt="Commonworld logo" width="96" height="96">
-<img class="cw-mark-d landing-mark" src="{b}/assets/cw-mark-dark.png" alt="Commonworld logo" width="96" height="96">
+<img class="cw-mark-l landing-mark" src="{b}/assets/cw-mark-light-192.png" alt="Commonworld logo" width="96" height="96">
+<img class="cw-mark-d landing-mark" src="{b}/assets/cw-mark-dark-192.png" alt="Commonworld logo" width="96" height="96">
 <h1 id="landing-title">Commonworld</h1>
 <p class="landing-motto">{e(motto)}</p>
 <p class="landing-soon">{e(LANDING_SOON)}</p>

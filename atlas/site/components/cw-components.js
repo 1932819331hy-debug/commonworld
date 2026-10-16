@@ -80,14 +80,28 @@
       btn.textContent = open ? 'collapse tags' : 'all tags (' + n + ') ↓';
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     };
+    // Collapsed shelf: a chip that is cut off by the clip edge or sits under the expander stays visible as a hint
+    // but is made inert (not focusable, not tappable, not announced), so no button has a 3px hit area (WCAG 2.5.8).
+    var clip = function () {
+      var open = el.classList.contains('open') || el.classList.contains('fits');
+      var r = el.getBoundingClientRect(), lim = r.top + el.clientTop + el.clientHeight + 0.5, br = btn.getBoundingClientRect();
+      el.querySelectorAll('[data-tag]').forEach(function (t) {
+        var c = t.getBoundingClientRect(), cut = false;
+        if (!open && !t.hidden) cut = c.bottom > lim || (c.right > br.left && c.left < br.right && c.bottom > br.top && c.top < br.bottom);
+        if (cut) { t.setAttribute('inert', ''); t.classList.add('cw-clip'); } else if (t.classList.contains('cw-clip')) { t.removeAttribute('inert'); t.classList.remove('cw-clip'); }
+      });
+    };
     var fit = function () {
-      if (el.classList.contains('open')) { el.classList.remove('fits'); return; }
+      if (el.classList.contains('open')) { el.classList.remove('fits'); clip(); return; }
       el.classList.remove('fits');
       el.classList.toggle('fits', el.scrollHeight <= el.clientHeight + 2);
+      clip();
     };
     btn.addEventListener('click', function () { el.classList.toggle('open'); label(); fit(); });
     el.cwRefresh = function () { label(); fit(); };
     window.addEventListener('resize', fit);
+    window.addEventListener('load', fit);  // chips can reflow once fonts / styles settle
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
     el.cwRefresh();
   }
   document.querySelectorAll('.cw-tagcloud').forEach(shelf);

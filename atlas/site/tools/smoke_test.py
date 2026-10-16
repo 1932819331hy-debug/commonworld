@@ -303,6 +303,43 @@ with sync_playwright() as p:
             ep.locator('.list.earn').first.scroll_into_view_if_needed()
             ep.screenshot(path=os.path.join(SHOTS, f'earn-{w}.png'), full_page=False)
         ec.close()
+    # Lighthouse follow-ups: counter contrast, footer tap targets, tag shelf has no cut-off tappable chips, landing logo resolution
+    CONTRAST = """(sel) => { const px = c => (c.match(/[\\d.]+/g) || []).map(Number);
+      const lum = ([r, g, b]) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+      const bgOf = el => { for (let e = el; e; e = e.parentElement) { const c = px(getComputedStyle(e).backgroundColor); if (c.length === 3 || c[3] > 0) return c.slice(0, 3); } return [255, 255, 255]; };
+      let worst = 99; document.querySelectorAll(sel).forEach(el => { if (!el.getClientRects().length) return;
+        let op = 1; for (let e = el; e; e = e.parentElement) op *= +getComputedStyle(e).opacity;
+        const f = px(getComputedStyle(el).color), b = bgOf(el), a = (f.length > 3 ? f[3] : 1) * op;
+        const mix = f.slice(0, 3).map((v, i) => a * v + (1 - a) * b[i]); const L1 = lum(mix), L2 = lum(b);
+        worst = Math.min(worst, (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05)); }); return worst; }"""
+    TAGS_OK = """(() => { const el = document.getElementById('tagcloud'); el.scrollIntoView({block: 'center'});
+      const r = el.getBoundingClientRect(), lim = r.top + el.clientTop + el.clientHeight + 0.5;
+      const live = Array.from(el.querySelectorAll('[data-tag]')).filter(t => !t.hidden && !t.inert);
+      const bad = live.filter(t => { const c = t.getBoundingClientRect(); if (c.bottom > lim) return true;
+        const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2); return !(hit && t.contains(hit)); });
+      return [live.length, el.querySelectorAll('[data-tag][inert]').length, bad.map(t => t.dataset.tag)]; })()"""
+    FOOT_OK = "Array.from(document.querySelectorAll('.cw-foot-links > a, .cw-foot-links > .cw-linkbtn, .cw-foot-official')).filter(a => { const r = a.getBoundingClientRect(); return r.height < 24 || r.width < 24; }).map(a => a.textContent.trim())"
+    for w, h, mob in ((1280, 900, False), (390, 844, True)):
+        ac = br.new_context(viewport={'width': w, 'height': h}, **({'is_mobile': True, 'has_touch': True} if mob else {}))
+        ac.add_init_script("try{localStorage.setItem('cw-consent','denied')}catch(e){}")
+        apg = ac.new_page(); apg.goto(B + '/atlas/')
+        for theme in ('light', 'dark'):
+            apg.evaluate(f"document.documentElement.setAttribute('data-theme', '{theme}')")
+            c = apg.evaluate(CONTRAST, '.pill span, .cw-tabs span, #tagcloud .link-pill small')
+            check(f'a11y {w}px {theme}: filter/tag counters contrast >= 4.5:1 (worst {c:.2f})', c >= 4.5)
+        apg.evaluate("document.documentElement.setAttribute('data-theme', 'light')")
+        small = apg.evaluate(FOOT_OK)
+        check(f'a11y {w}px: footer links/buttons are >= 24x24 px ({small or "all ok"})', not small)
+        live, inert, bad = apg.evaluate(TAGS_OK)
+        check(f'a11y {w}px: collapsed tag shelf: {live} tappable chips fully visible and hit-testable, {inert} cut-off chips inert ({bad or "ok"})', live > 0 and not bad)
+        apg.click('.cw-tags-more')
+        check(f'a11y {w}px: expanded tag shelf has no inert chips', apg.evaluate("document.querySelectorAll('#tagcloud [data-tag][inert]').length") == 0)
+        apg.click('.cw-tags-more')
+        apg.goto(B + '/')
+        lg = apg.evaluate("Array.from(document.querySelectorAll('.landing-mark')).filter(i => i.getClientRects().length).map(i => [i.naturalWidth, i.clientWidth])")
+        check(f'a11y {w}px: landing logo has >= 2x pixels ({lg})', lg and all(nw >= 2 * cw for nw, cw in lg))
+        ac.close()
+
     # sidebar hide / show (desktop): toggle, aria state, persistence across reload, applied before atlas.js runs, mobile unchanged
     SIDE_VIS = "(() => { const s = document.getElementById('cw-side'); return !!s && s.getBoundingClientRect().width > 0 && getComputedStyle(s).display !== 'none'; })()"
     NO_HSCROLL = "document.documentElement.scrollWidth <= innerWidth"

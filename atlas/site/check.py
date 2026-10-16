@@ -368,6 +368,29 @@ def api_checks(parsed, locs):
     return fails
 
 
+def a11y_checks(pages):
+    """Lighthouse follow-ups (static part; the browser part is in tools/smoke_test.py): counters are not faded with opacity
+    (contrast >= 4.5:1), footer links have 24x24 tap targets, the landing logo image has >= 2x the pixels it is shown at."""
+    fails = []
+    css = open(os.path.join(DIST, 'atlas', 'assets', 'atlas.css'), encoding='utf-8').read()
+    for sel in ('.cw-tabs span, .pill span', '.link-pill small'):
+        m = re.search(re.escape(sel) + r'\s*\{([^}]*)\}', css)
+        if not m: fails.append(f'css: rule {sel} missing')
+        elif re.search(r'opacity\s*:\s*0?\.\d', m.group(1)): fails.append(f'css: {sel} faded with opacity (counter contrast < 4.5:1)')
+    m = re.search(r'\.cw-foot-links > a, \.cw-foot-links > \.cw-linkbtn\s*\{([^}]*)\}', css)
+    if not m or 'min-height:24px' not in m.group(1) or 'min-width:24px' not in m.group(1): fails.append('css: footer links lack 24x24 tap targets')
+    if '/' in pages:
+        h = open(pages['/'], encoding='utf-8').read()
+        imgs = re.findall(r'<img class="cw-mark-[ld] landing-mark" src="([^"]+)"[^>]*width="(\d+)"', h)
+        if len(imgs) != 2: fails.append('/: landing logo images not found')
+        for src, w in imgs:
+            fp = os.path.join(DIST, src.lstrip('/'))
+            if not os.path.isfile(fp): fails.append(f'/: landing logo {src} missing'); continue
+            pw = struct.unpack('>I', open(fp, 'rb').read(24)[16:20])[0]
+            if pw < 2 * int(w): fails.append(f'/: landing logo {src} is {pw}px for {w} CSS px (needs >= 2x)')
+    return fails
+
+
 def closure_checks(pages):
     """Closure wording matches atlas/refresh.py: two routes (human review / automated weekly check), auto-closed cards labelled."""
     fails = []
@@ -711,6 +734,7 @@ def main():
             fails.append(f"platforms.json {r['id']}: money_flow item without basis")
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)
+    fails += a11y_checks(pages)
     fails += closure_checks(pages)
     biggest = max(pages, key=lambda u: os.path.getsize(pages[u]))
     print(f'pages: {len(pages)} html ({len(want)} indexable + 404); JSON-LD blocks parsed: {jsonld_blocks}; '
