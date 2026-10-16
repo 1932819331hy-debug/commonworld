@@ -1255,6 +1255,8 @@ def main():
     site_level = [x for x in site.pages if not x[0].startswith(b + '/')]
     write(f'{b}/sitemap.xml', sitemap(in_atlas))
     write('/sitemap.xml', sitemap(site_level))  # Commonworld-wide pages (privacy, terms); the main site may take this file over
+    if site.cfg.get('indexnow_key'):  # public IndexNow key file (Bing/Yandex/etc. verify ownership with it)
+        write('/' + site.cfg['indexnow_key'] + '.txt', site.cfg['indexnow_key'])
     write('/robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {site.abs("/sitemap.xml")}\nSitemap: {site.abs(b + "/sitemap.xml")}\n')
     # Cloudflare Pages redirects: old Atlas-only legal URLs -> site-wide ones
     red_path = os.path.join(HERE, '..', 'data', 'redirects.json')  # moved pages: old path -> new path (check.py growth guard)

@@ -1,0 +1,38 @@
+name: IndexNow ping
+# After a push to main changes the Atlas, tell IndexNow search engines (Bing etc.) which URLs are new or changed.
+# Compares sitemaps built from this commit and the previous one; waits for Cloudflare Pages to serve the new build.
+on:
+  push:
+    branches: [main]
+    paths: ['atlas/**']
+  workflow_dispatch:
+    inputs:
+      all:
+        description: 'Submit every sitemap URL (not just changed ones)'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build this commit and the previous one
+        run: |
+          python atlas/site/build.py --out "$RUNNER_TEMP/new" >/dev/null
+          if git rev-parse -q --verify HEAD^ >/dev/null; then
+            git worktree add -q "$RUNNER_TEMP/prev" HEAD^
+            (cd "$RUNNER_TEMP/prev" && python atlas/site/build.py --out "$RUNNER_TEMP/old" >/dev/null) || mkdir -p "$RUNNER_TEMP/old"
+          else mkdir -p "$RUNNER_TEMP/old"; fi
+      - name: Ping IndexNow
+        run: python atlas/tools/indexnow.py "$RUNNER_TEMP/new" "$RUNNER_TEMP/old" ${{ inputs.all && '--all' || '' }}
