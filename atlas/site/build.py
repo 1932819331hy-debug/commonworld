@@ -1365,7 +1365,7 @@ def build_badge_page(site):
 <div class="badge-previews"><figure><img src="{b}/badge/{ex['slug']}.svg" alt="{e(badges.alt_text(ex))}" height="20"><figcaption>{ex['slug']}.svg</figcaption></figure>
 <figure class="badge-on-dark"><img src="{b}/badge/{ex['slug']}-dark.svg" alt="{e(badges.alt_text(ex))} (dark variant)" height="20"><figcaption>{ex['slug']}-dark.svg</figcaption></figure></div>
 <h2 id="updates">How it updates</h2>
-<p>All badges are regenerated from the Atlas data every time the site is rebuilt, including after each weekly check. A site that shows the badge always loads the current file, so status and date update by themselves; nothing needs to be changed on the platform\u2019s side. Badges are cached for at most an hour.</p>
+<p>All badges are regenerated from the Atlas data every time the site is rebuilt, including after each weekly check. A site that shows the badge loads the current file, so status and date update by themselves; nothing needs to be changed on the platform\u2019s side. Browsers and image proxies may keep a copy for a few hours, so a change can take that long to show.</p>
 <h2 id="statuses">Statuses</h2>
 <div class="table-wrap"><table class="list badge-table"><thead><tr><th scope="col">Badge</th><th scope="col">Status</th><th scope="col">Meaning</th></tr></thead><tbody>{stat_rows}</tbody></table></div>
 <p>How a card is checked and when it is marked closed is explained in <a href="{b}/about/#verified">How the Atlas works</a> and <a href="{b}/about/#closures">When a card is marked closed</a>.</p>

@@ -25,7 +25,7 @@ A plain SVG image served from `commonworld.one`: left *Commonworld Atlas*, right
 
 ## How it updates
 
-`atlas/site/build.py` regenerates every badge from the Atlas data on each build, including after the weekly check (`atlas/refresh.py`). Sites that show the badge load the current file (cached for at most an hour), so status and date update by themselves.
+`atlas/site/build.py` regenerates every badge from the Atlas data on each build, including after the weekly check (`atlas/refresh.py`). Sites that show the badge load the current file, so status and date update by themselves (browsers and image proxies may keep a copy for a few hours).
 
 ## Rules
 
