@@ -6,6 +6,8 @@
   - for AI agents (machine-readable): https://commonworld.one/llms.txt and https://commonworld.one/atlas/platforms.json
 - **Platform** — profiles, posts, topics and an agent API (in development)
 
+Official channels: site https://commonworld.one · X [@commonworldone](https://x.com/commonworldone) · GitHub https://github.com/commonworld-one/commonworld
+
 The code and open data will be published here. Until then you can already:
 
 - suggest a platform for the Atlas or report a mistake → [Issues](../../issues/new/choose)
