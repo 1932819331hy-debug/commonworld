@@ -39,6 +39,25 @@
   if (side) side.addEventListener('click', function (ev) { if (ev.target.closest('a') && d.classList.contains('cw-drawer-open')) drawer(false); });
   window.addEventListener('resize', function () { if (window.innerWidth > 900 && d.classList.contains('cw-drawer-open')) drawer(false); });
 
+  // ---- sidebar hide / show (desktop > 900px; the drawer above keeps the tablet / mobile behaviour).
+  // The stored state is applied before paint by the inline boot script (class cw-side-off on <html>).
+  function syncSide() {
+    var off = d.classList.contains('cw-side-off');
+    document.querySelectorAll('.cw-sidetoggle').forEach(function (b) {
+      var l = off ? 'Show sidebar' : 'Hide sidebar';
+      b.setAttribute('aria-expanded', off ? 'false' : 'true'); b.setAttribute('aria-label', l); b.setAttribute('title', l);
+    });
+  }
+  document.querySelectorAll('.cw-sidetoggle').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var off = !d.classList.contains('cw-side-off');
+      d.classList.toggle('cw-side-off', off);
+      if (off) set('cw-side', 'off'); else { try { store && store.removeItem('cw-side'); } catch (x) {} }
+      syncSide();
+    });
+  });
+  syncSide();
+
   // ---- search: clear button + "/" shortcut
   document.querySelectorAll('.cw-search-wrap').forEach(function (f) {
     var q = f.querySelector('.cw-search'), x = f.querySelector('.cw-search-clear');

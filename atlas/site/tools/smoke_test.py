@@ -11,6 +11,7 @@ legal pages + cross-product navigation (sidebar Commonworld item, home icon, foo
 About Commonworld /about/ (H1, motto, live count, sidebar About under Commonworld, links to the Atlas method, banner, share,
 theme, mobile; ABOUT_SHOT=path saves a desktop light screenshot); landing page / (H1, motto, CTA to /atlas/, stats, banner, share, theme, mobile; SHOTS_DIR=... saves screenshots);
 share buttons (placement in the platform header card, canonical links, keyboard copy, GA4 'share' event only with consent, native Web Share on mobile).
+Sidebar hide/show toggle (desktop): aria state, keyboard, persistence across reload, applied before atlas.js (no layout shift), mobile drawer unchanged, no horizontal scroll at 390/1280.
 
     python3 atlas/site/tools/smoke_test.py
 """
@@ -302,6 +303,45 @@ with sync_playwright() as p:
             ep.locator('.list.earn').first.scroll_into_view_if_needed()
             ep.screenshot(path=os.path.join(SHOTS, f'earn-{w}.png'), full_page=False)
         ec.close()
+    # sidebar hide / show (desktop): toggle, aria state, persistence across reload, applied before atlas.js runs, mobile unchanged
+    SIDE_VIS = "(() => { const s = document.getElementById('cw-side'); return !!s && s.getBoundingClientRect().width > 0 && getComputedStyle(s).display !== 'none'; })()"
+    NO_HSCROLL = "document.documentElement.scrollWidth <= innerWidth"
+    sc = br.new_context(viewport={'width': 1280, 'height': 900})
+    sc.add_init_script("try{localStorage.setItem('cw-consent','denied')}catch(e){}")
+    sp = sc.new_page()
+    sp.goto(B + '/atlas/')
+    tg = '.cw-top .cw-sidetoggle'
+    w0 = sp.evaluate("document.getElementById('main').getBoundingClientRect().width")
+    check('sidebar toggle (1280): visible, labelled "Hide sidebar", aria-expanded=true, aria-controls=cw-side, sidebar shown',
+          sp.is_visible(tg) and sp.get_attribute(tg, 'aria-label') == 'Hide sidebar' and sp.get_attribute(tg, 'aria-expanded') == 'true'
+          and sp.get_attribute(tg, 'aria-controls') == 'cw-side' and sp.evaluate(SIDE_VIS))
+    sp.focus(tg); sp.keyboard.press('Enter'); sp.wait_for_timeout(150)
+    w1 = sp.evaluate("document.getElementById('main').getBoundingClientRect().width")
+    check(f'sidebar toggle: keyboard Enter hides the sidebar, content widens ({w0:.0f} -> {w1:.0f}px), label "Show sidebar"',
+          not sp.evaluate(SIDE_VIS) and w1 > w0 + 150 and sp.get_attribute(tg, 'aria-expanded') == 'false'
+          and sp.get_attribute(tg, 'aria-label') == 'Show sidebar' and sp.evaluate("document.activeElement.classList.contains('cw-sidetoggle')"))
+    check('sidebar hidden (1280): no horizontal scroll', sp.evaluate(NO_HSCROLL))
+    if SHOTS:
+        sp.screenshot(path=os.path.join(SHOTS, 'sidebar-hidden-1280.png'))
+    sp.reload()
+    check('sidebar toggle: hidden state persists across reload', not sp.evaluate(SIDE_VIS) and sp.get_attribute(tg, 'aria-expanded') == 'false')
+    sp.route('**/assets/atlas.js*', lambda route: route.abort())
+    sp.goto(B + '/atlas/platforms/the-colony/')
+    check('sidebar toggle: stored state applied without atlas.js (boot script, before first paint: no layout shift)', sp.evaluate("document.documentElement.classList.contains('cw-side-off')") and not sp.evaluate(SIDE_VIS))
+    sp.unroute('**/assets/atlas.js*'); sp.goto(B + '/atlas/')
+    sp.click(tg); sp.wait_for_timeout(150)
+    check('sidebar toggle: click shows it again', sp.evaluate(SIDE_VIS) and sp.get_attribute(tg, 'aria-expanded') == 'true')
+    sp.reload()
+    check('sidebar toggle: shown state persists across reload', sp.evaluate(SIDE_VIS) and sp.evaluate("localStorage.getItem('cw-side')") is None)
+    check('sidebar shown (1280): no horizontal scroll', sp.evaluate(NO_HSCROLL))
+    sp.click(tg); sc.close()
+    mc = br.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
+    mc.add_init_script("try{localStorage.setItem('cw-side','off');localStorage.setItem('cw-consent','denied')}catch(e){}")
+    mp = mc.new_page(); mp.goto(B + '/atlas/')
+    check('sidebar toggle (390): hidden on mobile, menu button and drawer unchanged even with stored "off"', not mp.is_visible(tg) and mp.is_visible('.cw-menu')
+          and (mp.click('.cw-menu') or mp.wait_for_timeout(300) or mp.is_visible('.cw-side .cw-nav')))
+    check('sidebar toggle (390): no horizontal scroll', mp.evaluate(NO_HSCROLL))
+    mc.close()
     br.close()
 srv.shutdown()
 print('SMOKE OK' if ok else 'SMOKE FAILED')

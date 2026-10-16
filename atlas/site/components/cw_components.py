@@ -49,6 +49,8 @@ ICON_HOME = _svg('<path d="M3.5 11 12 4l8.5 7M6 9.5V20h4.5v-5.5h3V20H18V9.5" fil
 ICON_GLOBE = _svg('<circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.8"/>'
                   '<path d="M3.6 12h16.8M12 3.4c2.4 2.4 3.6 5.3 3.6 8.6s-1.2 6.2-3.6 8.6c-2.4-2.4-3.6-5.3-3.6-8.6S9.6 5.8 12 3.4z" '
                   'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>')
+ICON_SIDEBAR = _svg('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>'
+                   '<path d="M9.5 4.5v15" stroke="currentColor" stroke-width="1.8"/>')
 ICON_MENU = _svg('<path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>')
 ICON_CLOSE = ('<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">'
               '<path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>')
@@ -72,6 +74,7 @@ def boot_script(cfg):
     js = ("(function(){var d=document.documentElement,s;try{s=localStorage}catch(x){s=null}"
           f"var t=s&&s.getItem('cw-theme');if(t!=='light'&&t!=='dark'){{t={json.dumps(default)}}}"
           "d.setAttribute('data-theme',t);"
+          "if(s&&s.getItem('cw-side')==='off')d.classList.add('cw-side-off');"
           + (f"if(s&&s.getItem('cw-ann-dismissed')==={json.dumps(a['id'])})d.classList.add('cw-ann-off');" if a else "")
           + "})();")
     if ga:
@@ -160,6 +163,13 @@ def menu_button():
     return f'<button type="button" class="cw-iconbtn cw-menu" aria-label="Open menu" aria-controls="cw-side" aria-expanded="false" title="Menu">{ICON_MENU}</button>'
 
 
+def side_toggle():
+    """Desktop only (>900px): hides / shows the left sidebar so the content uses the full width. The choice is kept in
+    localStorage 'cw-side' and applied by boot_script before first paint (no layout shift); cw-components.js syncs the label."""
+    return (f'<button type="button" class="cw-iconbtn cw-sidetoggle" aria-controls="cw-side" aria-expanded="true" '
+            f'aria-label="Hide sidebar" title="Hide sidebar">{ICON_SIDEBAR}</button>')
+
+
 def search_form(action, placeholder, live=False, value=''):
     return (f'<form class="cw-search-wrap" role="search" action="{e(action)}" method="get"{" data-live-search" if live else ""}>'
             f'<label class="sr" for="q">Search</label>'
@@ -170,7 +180,7 @@ def search_form(action, placeholder, live=False, value=''):
 def top_row(search_html, cfg, product_html=None):
     """product_html: override the top-right product button (default home_link(cfg); the main product passes
     product_icon(atlas_url, 'Commonworld Atlas', 'globe'))."""
-    return f'<header class="cw-top">{menu_button()}{search_html}<span class="spacer"></span>{home_link(cfg) if product_html is None else product_html}{theme_toggle()}</header>'
+    return f'<header class="cw-top">{menu_button()}{side_toggle()}{search_html}<span class="spacer"></span>{home_link(cfg) if product_html is None else product_html}{theme_toggle()}</header>'
 
 
 def footer(left, links_html, official=()):

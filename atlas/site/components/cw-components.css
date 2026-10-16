@@ -74,6 +74,14 @@ h2 { font-size:20px; letter-spacing:-.04em; margin:0; }
 .cw-side-note { margin-top:28px; }
 .cw-side-note .cw-ad { margin:0; }
 
+/* sidebar hide / show (desktop only): class cw-side-off on <html>, set before paint from localStorage 'cw-side' */
+@media (min-width:901px) {
+  .cw-side-off .cw-shell { grid-template-columns:minmax(0,1fr); }
+  .cw-side-off .cw-side { display:none; }
+  .cw-iconbtn.cw-sidetoggle[aria-expanded="false"] { background:var(--soft); }
+}
+@media (max-width:900px) { .cw-iconbtn.cw-sidetoggle { display:none; } }
+
 /* drawer (sidebar on tablet / mobile) */
 .cw-iconbtn.cw-menu { display:none; }
 .cw-scrim { display:none; }
