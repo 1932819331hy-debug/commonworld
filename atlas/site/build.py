@@ -6,9 +6,9 @@
 
 Output (default atlas/site/dist/) is a plain static tree with clean URLs as directories:
   /atlas/index.html, /atlas/platforms/, /atlas/platforms/<slug>/, /atlas/categories/, /atlas/categories/<cat>/,
-  /atlas/closed/, /atlas/about/, /atlas/data/snapshot.json, /atlas/sitemap.xml, /atlas/assets/*,
+  /atlas/closed/, /atlas/about/, /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/sitemap.xml, /atlas/assets/*,
   /privacy/, /terms/ (site-wide Commonworld legal pages; /atlas/privacy|terms/ are noindex redirect stubs + _redirects 301s),
-  / (Commonworld landing), /404.html, /robots.txt, /sitemap.xml, /_headers, /_redirects
+  / (Commonworld landing), /404.html, /robots.txt, /llms.txt, /llms-full.txt, /sitemap.xml, /_headers, /_redirects
 It deploys unchanged to Cloudflare Pages / Workers static assets.
 """
 import argparse, html, json, os, re, shutil, sys
@@ -266,6 +266,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
 <link rel="icon" type="image/png" href="{b}/assets/icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="{b}/assets/apple-touch-icon.png">
 <link rel="alternate" type="application/json" href="{b}/data/snapshot.json" title="Atlas data (JSON)">
+<link rel="alternate" type="application/json" href="{b}/platforms.json" title="Atlas platforms (JSON, for agents)">
 {cw.boot_script(cfg)}
 <link rel="stylesheet" href="{b}/assets/atlas.css?v={site.asset_v}">
 {head_ld}
@@ -707,6 +708,8 @@ def build_about(site):
 <p>Each card has a permanent ID (its URL slug), assigned once and never reused. When a platform closes, its card stays as a history record, labelled <i>Closed</i>. A rebrand gets a new card linked to the old one.</p>
 <h2 id="sources">Sources and data</h2>
 <p>Sources are the platforms' own pages and APIs, public registries, on-chain data and independent analyses, linked on each claim. The full published dataset is available as <a href="{b}/data/snapshot.json">downloadable JSON</a>.{(' It is published under ' + e(lic) + '.') if lic else ''}</p>
+<h2 id="agents">For agents</h2>
+<p>AI agents and other programs can read the Atlas directly: <a href="/llms.txt">/llms.txt</a> is a short map of the site in the llms.txt format (with <a href="/llms-full.txt">/llms-full.txt</a>, one line per entry), and <a href="{b}/platforms.json">{b}/platforms.json</a> lists every published entry with stable fields (ID, category, status, summary, money flow, last verified date, claim count). Each entry is also available as <code>{b}/platforms/&lt;id&gt;.json</code>. All of it is generated from the same data as the cards{(" and published under " + e(lic)) if lic else ""}.</p>
 <h2 id="corrections">Report a correction</h2>
 <p>If a card is wrong or out of date, <a href="{e(s['corrections_url'])}" rel="nofollow noopener">open a correction request on GitHub</a> (you need a free GitHub account; requests there are public){(', or email ' + mailto(gen_mail)) if gen_mail else ''}. Include the card's permanent ID and a link to a source that shows the right fact. Corrections are checked the same way as new cards. Operators can ask for corrections too, but a correction needs a source, not only a statement.</p>
 <h2 id="advertise">Sponsored placements</h2>
@@ -798,6 +801,7 @@ def build_privacy(site):
 <p><b>Share buttons</b> (X, LinkedIn, Telegram, Reddit, Facebook, email) are plain links. They load no scripts and set no cookies. Only when you click one does your browser open that network's site, and its own privacy policy then applies. <i>Copy link</i> uses your browser's clipboard only. If you accepted analytics, the click is counted in Google Analytics as a <code>share</code> event (which network and which page).</p>
 <h2 id="analytics">About Google Analytics</h2>
 <p>We use Google Analytics 4 with Google Consent Mode v2. By default every analytics and advertising storage type is set to <i>denied</i>, and the Google script is not loaded at all until you accept. If you accept, only <code>analytics_storage</code> is granted; advertising storage stays denied. Google says it does not log or store individual IP addresses; it uses them to work out an approximate location and then discards them. Google processes this data for us as our processor (<a href="https://policies.google.com/privacy" rel="nofollow noopener">Google Privacy Policy</a>).</p>
+<p>Alongside Google Analytics we use <b>Cloudflare Web Analytics</b>, which sets no cookies and does not track individual visitors: it only reports aggregated page views, so it does not depend on the cookie banner (<a href="https://www.cloudflare.com/privacypolicy/" rel="nofollow noopener">Cloudflare privacy policy</a>).</p>
 <h2 id="storage">Cookies and browser storage</h2>
 <div class="table-wrap"><table class="list"><thead><tr><th scope="col">Name</th><th scope="col">Type</th><th scope="col">Set when</th><th scope="col">Purpose</th><th scope="col">Lifetime</th></tr></thead><tbody>
 <tr><td><code>_ga</code>, <code>_ga_&lt;ID&gt;</code></td><td>Cookie (Google Analytics)</td><td>Only after <i>Accept</i></td><td>Tell visits apart and keep the session</td><td>Up to 2 years (your browser may shorten this)</td></tr>
@@ -1018,6 +1022,100 @@ def build_404(site):
                 body=body, active='', noindex=True)
 
 
+# ---------------------------------------------------------------- machine-readable files for AI agents
+REPO_URL = 'https://github.com/commonworld-one/commonworld'
+
+
+def iso(dt):
+    return dt.strftime('%Y-%m-%dT%H:%M:%SZ') if dt else None
+
+
+def agent_record(site, c):
+    """Stable public fields for one published entry (same set as the site cards)."""
+    claims = c.get('claims', [])
+    flows = [{'statement': x.get('statement'), 'value': x.get('value'), 'unit': x.get('unit'), 'window': x.get('window'),
+              'observed_at': iso(parse_time(x.get('observed_at'))), 'source_url': x.get('source_url')}
+             for x in claims if x.get('kind') == 'economic_flow' and x.get('outcome') == 'supported']
+    k = c['_key']
+    key = {'kind': k.get('kind'), 'value': k.get('value'), 'unit': k.get('unit'), 'window': k.get('window'),
+           'observed_at': iso(parse_time(k.get('observed_at'))), 'source_url': k.get('source_url')} if k else None
+    return {'id': c['slug'], 'name': c['name'], 'url': site.abs(c['_url']), 'json_url': site.abs(f"{site.base}/platforms/{c['slug']}.json"),
+            'website': c.get('canonical_url'), 'category': c['category'], 'category_label': CAT_LABEL[c['category']],
+            'type': c.get('entity_type'), 'status': c['status'], 'summary': trim(c['_desc'], 300), 'tags': c['_tags'],
+            'has_money_flow': c['_money'], 'money_flow': flows, 'key_number': key,
+            'verified_at': iso(c['_verified']), 'last_checked': iso(c['_verified']), 'claims_count': len(claims)}
+
+
+def build_agent_files(site, write):
+    """/llms.txt, /llms-full.txt, /atlas/platforms.json, /atlas/platforms/<slug>.json (not in sitemaps)."""
+    b, cfg = site.base, site.cfg
+    sc = cfg['site']
+    lic = cfg.get('data_licence') or 'not yet specified'
+    gen = parse_time(site.snapshot.get('generated_at'))
+    recs = [agent_record(site, c) for c in site.cards]
+    meta = {'name': 'Commonworld Atlas of Agent Platforms', 'description': 'Verified catalog of AI-agent platforms',
+            'url': site.abs(f'{b}/'), 'generated_at': iso(gen), 'newest_observation': iso(site.latest),
+            'licence': lic, 'licence_url': f'{REPO_URL}/blob/main/LICENSE-DATA.md', 'source': REPO_URL,
+            'corrections': f'{REPO_URL}/issues/new/choose', 'protocol': f'{REPO_URL}/blob/main/atlas/PROTOCOL.md',
+            'full_data': site.abs(f'{b}/data/snapshot.json'), 'count': len(recs),
+            'fields_note': 'id = permanent slug; verified_at/last_checked = newest observation on the card (UTC); '
+                           'money_flow = supported money-flow claims shown on the card; full claims with sources are in each json_url and in full_data.'}
+    write(f'{b}/platforms.json', json.dumps(meta | {'platforms': recs}, ensure_ascii=False, indent=1) + '\n')
+    for c, r in zip(site.cards, recs):
+        one = {'licence': lic, 'source': REPO_URL, 'generated_at': iso(gen)} | r | {
+            'claims': c.get('claims', []), 'qa_status': c.get('qa_status')}
+        write(f"{b}/platforms/{c['slug']}.json", json.dumps(one, ensure_ascii=False, indent=1) + '\n')
+
+    A = site.abs
+    gm = contact(site, 'general')
+    cats = '\n'.join(f'- [{CAT_LABEL[k]}]({A(f"{b}/categories/{k}/")}): {CAT_DESC[k]} ({len(site.by_cat[k])} entries)' for k in site.cats)
+    live = sum(1 for c in site.cards if c['status'] == 'live')
+    txt = f"""# Commonworld
+
+> {sc.get('motto') or 'A shared world for humans and agents'}. Its first part, the Atlas, is a verified catalog of AI-agent platforms: {len(recs)} entries ({live} live), every fact checked against its own source and dated.
+
+Commonworld is being built as a place where people and AI agents take part as citizens. Today it is the Atlas: each card is a set of claims with source URL, basis and observation time. Closed platforms stay as history records. IDs (URL slugs) are permanent.
+
+## Atlas
+
+- [Atlas home]({A(f'{b}/')}): the catalog of agent platforms, searchable and filterable
+- [All entries A-Z]({A(f'{b}/platforms/')}): every published entry
+- [Closed history]({A(f'{b}/closed/')}): platforms that shut down
+- [How the Atlas works]({A(f'{b}/about/')}): method, basis labels, QA re-checks, freshness, corrections
+- [Verification protocol]({REPO_URL}/blob/main/atlas/PROTOCOL.md): the full protocol each claim goes through
+- [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
+
+## Categories
+
+{cats}
+
+## Data
+
+- [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
+- Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources
+- [snapshot.json]({A(f'{b}/data/snapshot.json')}): the full published dataset
+- [llms-full.txt]({A('/llms-full.txt')}): one line per entry
+- [Sitemap (site)]({A('/sitemap.xml')}) and [Sitemap (Atlas)]({A(f'{b}/sitemap.xml')})
+
+## Licence
+
+- Data: {lic} ([LICENSE-DATA.md]({REPO_URL}/blob/main/LICENSE-DATA.md)); please credit "Commonworld Atlas" with a link
+- Code: MIT ([LICENSE]({REPO_URL}/blob/main/LICENSE))
+
+## Corrections and contact
+
+- [Report a correction or suggest a platform]({REPO_URL}/issues/new/choose): GitHub issue forms "Correct an Atlas card" and "Add a platform"; a correction needs a source
+- [Source repository]({REPO_URL})
+- Contact: {gm}
+"""
+    write('/llms.txt', txt)
+    lines = [f'# Commonworld Atlas: all {len(recs)} published entries',
+             f'> One line per entry: name, Atlas URL, category, status, summary. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '']
+    for r in recs:
+        lines.append(f"- [{r['name']}]({r['url']}): {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}")
+    write('/llms-full.txt', '\n'.join(lines) + '\n')
+
+
 # ---------------------------------------------------------------- main
 PUBLIC_FIELDS = ['id', 'slug', 'name', 'entity_type', 'category', 'census_category', 'status', 'canonical_url', 'description_en', 'claims', 'qa', 'qa_status', 'verdict']
 
@@ -1102,6 +1200,8 @@ def main():
             for c in site.cards}
     write(f'{b}/data/search-index.json', json.dumps(sidx, ensure_ascii=False, separators=(',', ':')))
 
+    build_agent_files(site, write)
+
     def sitemap(pages):
         sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
         for p, lm in pages:
@@ -1119,6 +1219,18 @@ def main():
   Cache-Control: public, max-age=604800
 {b}/og/*
   Cache-Control: public, max-age=86400
+{b}/platforms.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+{b}/platforms/*.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+/llms.txt
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+/llms-full.txt
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
