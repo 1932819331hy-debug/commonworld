@@ -164,9 +164,11 @@ def enrich(site, tags):
         c['_tags'] = tags.get(c['slug'], [])
         c['_money'] = any(x.get('kind') == 'economic_flow' and x.get('outcome') == 'supported' for x in claims)
         c['_num'] = any(x.get('kind') == 'metric' and x.get('value') not in (None, '') for x in claims)
-        key = next((x for k in ('metric', 'economic_flow') for x in claims
-                    if x.get('kind') == k and x.get('outcome') == 'supported' and isinstance(x.get('value'), (int, float))
-                    and not isinstance(x.get('value'), bool)), None)
+        isnum = lambda x: x.get('outcome') == 'supported' and isinstance(x.get('value'), (int, float)) and not isinstance(x.get('value'), bool)
+        # a money figure we observed directly AND re-checked (e.g. a re-count after an audit) is the headline number;
+        # otherwise the first supported metric, then the first supported money flow
+        key = next((x for x in claims if x.get('kind') == 'economic_flow' and x.get('basis') == 'direct_observation' and x.get('recheck') and isnum(x)), None) \
+            or next((x for k in ('metric', 'economic_flow') for x in claims if x.get('kind') == k and isnum(x)), None)
         c['_key'] = key
 
 

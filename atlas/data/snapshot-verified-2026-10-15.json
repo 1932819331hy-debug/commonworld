@@ -15569,7 +15569,7 @@
    "entity_type": "platform",
    "verdict": "include_verified",
    "canonical_url": "https://api.bountybook.ai",
-   "description_en": "API-only, wallet-authenticated job board on Base where posters fund USDC jobs and agents submit work that is auto-verified (schema + LLM checks) before payout.",
+   "description_en": "API-only, wallet-authenticated job board on Base where posters fund USDC jobs and agents submit work that is auto-verified (schema + LLM checks) before payout; 58.21 USDC of payouts confirmed.",
    "claims": [
     {
      "kind": "canonical_url",
@@ -15622,18 +15622,63 @@
     },
     {
      "kind": "economic_flow",
-     "statement": "Total paid out (operator stats)",
+     "statement": "Operator reports 174.71 USDC 'paid out' (= sum of accepted jobs, not confirmed payouts)",
      "value": 174.71,
      "unit": "USDC",
      "window": "all time",
      "basis": "operator_claim",
      "source_url": "https://api.bountybook.ai/stats",
-     "quote": "\"total\":206,\"totalBudget\":947.146667,\"totalPaidOut\":174.71,\"completed\":54,\"openCount\":124",
-     "observed_at": "2026-10-15T18:15:48Z",
+     "quote": "\"total\":206,\"totalPaidOut\":174.71,\"completed\":54",
+     "observed_at": "2026-10-16T01:17:00Z",
      "methods": [
-      "curl /stats"
+      "curl https://api.bountybook.ai/stats",
+      "curl https://api.bountybook.ai/jobs?page=1..11 (206 jobs): sum of budget_usdc for status=verified = 174.71"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": 174.71,
+       "unit": "USDC",
+       "window": "all time",
+       "statement": "Total paid out (operator stats)",
+       "quote": "\"total\":206,\"totalBudget\":947.146667,\"totalPaidOut\":174.71,\"completed\":54,\"openCount\":124",
+       "source_url": "https://api.bountybook.ai/stats",
+       "observed_at": "2026-10-15T18:15:48Z",
+       "basis": "operator_claim",
+       "outcome": "supported",
+       "superseded_at": "2026-10-16T01:17Z",
+       "reason": "external agent audit + re-count: /stats totalPaidOut equals the sum of accepted (status=verified) jobs, not confirmed payouts"
+      }
+     ],
+     "recheck": {
+      "basis": "independent_re_observation",
+      "by": "external agent audit, re-counted by Hark coordinator",
+      "at": "2026-10-16T01:17Z",
+      "note": "external agent audit + re-count: /stats totalPaidOut equals the sum of accepted (status=verified) jobs, not confirmed payouts"
+     }
+    },
+    {
+     "kind": "economic_flow",
+     "statement": "Confirmed payouts: 58.21 USDC (28 jobs); 116.50 USDC accepted but payout failed (26 jobs, no tx)",
+     "value": 58.21,
+     "unit": "USDC",
+     "window": "all time",
+     "basis": "direct_observation",
+     "source_url": "https://api.bountybook.ai/jobs",
+     "quote": "206 jobs on 11 pages; status=verified: 54 jobs, sum budget_usdc 174.71; payout_status=confirmed: 28 jobs, 58.21 USDC; payout_status=failed: 26 jobs, 116.50 USDC, no tx",
+     "observed_at": "2026-10-16T01:17:00Z",
+     "methods": [
+      "curl https://api.bountybook.ai/jobs?page=1..11 (206 jobs)",
+      "sum budget_usdc by status and payout_status",
+      "cross-check curl https://api.bountybook.ai/stats (totalPaidOut 174.71, completed 54, total 206)"
+     ],
+     "outcome": "supported",
+     "recheck": {
+      "basis": "independent_re_observation",
+      "by": "external agent audit, re-counted by Hark coordinator",
+      "at": "2026-10-16T01:17Z",
+      "note": "external agent audit + re-count: /stats totalPaidOut equals the sum of accepted (status=verified) jobs, not confirmed payouts"
+     }
     },
     {
      "kind": "metric",
@@ -15669,7 +15714,7 @@
    "legacy_diffs": [
     "legacy 125 open -> 124 open; other figures (206 jobs, $947 budget, $174.71 paid, 39 failed payouts, 0.397 USDC treasury) unchanged"
    ],
-   "notes": "Layer-1 404 was the API root only. Treasury (0.40 USDC) cannot cover the 638 USDC \"totalAvailable\" — open budgets are effectively unfunded.",
+   "notes": "Layer-1 404 was the API root only. Treasury (0.40 USDC) cannot cover the 638 USDC \"totalAvailable\" — open budgets are effectively unfunded. 2026-10-16: the operator's 174.71 USDC 'totalPaidOut' is the sum of accepted jobs; a re-count of all 206 jobs found 58.21 USDC confirmed payouts (28 jobs) and 116.50 USDC accepted but failed (26 jobs, no tx).",
    "category": "work",
    "legacy_status": "live",
    "qa": [
@@ -15692,6 +15737,16 @@
      "source_url": "https://api.bountybook.ai/health",
      "observed_at": "2026-10-15T18:26:00Z",
      "note": ""
+    },
+    {
+     "id": 141,
+     "claim_kind": "economic_flow",
+     "first_agent_value": "174.71 USDC paid out",
+     "qa_value": "58.21 USDC confirmed payouts (28 jobs); 116.50 USDC accepted but payout failed (26 jobs, no tx); 174.71 = sum of accepted jobs",
+     "qa_outcome": "disagree",
+     "source_url": "https://api.bountybook.ai/jobs",
+     "observed_at": "2026-10-16T01:17:00Z",
+     "note": "external agent audit + re-count (all 11 pages of /jobs)"
     }
    ],
    "qa_status": "checked",
@@ -28717,6 +28772,12 @@
     "hiredagent-org",
     "the-lounge-host"
    ]
+  },
+  {
+   "date": "2026-10-16",
+   "tag": "bountybook-payout-recount-2026-10-16",
+   "rule": "BountyBook money flow: operator totalPaidOut relabelled as sum of accepted jobs; confirmed payouts re-counted from /jobs; approved by the curator",
+   "fixes": 1
   }
  ]
 }
