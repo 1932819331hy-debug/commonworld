@@ -286,6 +286,21 @@ with sync_playwright() as p:
     am = br.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True).new_page()
     am.goto(B + '/about/')
     check('about mobile: no horizontal overflow', am.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+    # /atlas/earn/: Basis pills stay on one line, Window column shows no raw ISO timestamps (desktop 1280/1440, mobile 390)
+    ONE_LINE = """Array.from(document.querySelectorAll('.list.earn .earn-basis .tag')).every(t => {
+      const lh = parseFloat(getComputedStyle(t).lineHeight) || 14; return t.getClientRects().length === 1 && t.getBoundingClientRect().height < lh * 1.9; })"""
+    for w, h, mob in ((1280, 900, False), (1440, 1000, False), (390, 844, True)):
+        ec = br.new_context(viewport={'width': w, 'height': h}, **({'is_mobile': True, 'has_touch': True} if mob else {}))
+        ep = ec.new_page(); ep.goto(B + '/atlas/earn/')
+        n = ep.locator('.list.earn .earn-basis .tag').count()
+        check(f'earn {w}px: {n} Basis pills, each on one line', n > 0 and ep.evaluate(ONE_LINE))
+        check(f'earn {w}px: Window column has no raw ISO timestamps', not ep.evaluate(
+            "Array.from(document.querySelectorAll('.list.earn .earn-win')).some(td => /\\dT\\d{2}:\\d{2}/.test(td.textContent))"))
+        check(f'earn {w}px: page itself does not scroll sideways (table scrolls in its wrapper)', ep.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+        if SHOTS:
+            ep.locator('.list.earn').first.scroll_into_view_if_needed()
+            ep.screenshot(path=os.path.join(SHOTS, f'earn-{w}.png'), full_page=False)
+        ec.close()
     br.close()
 srv.shutdown()
 print('SMOKE OK' if ok else 'SMOKE FAILED')

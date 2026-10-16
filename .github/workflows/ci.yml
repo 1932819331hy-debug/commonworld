@@ -37,4 +37,16 @@ jobs:
           if [ -z "$CW_PRIVATE_TERMS" ]; then echo "::warning::secret CW_PRIVATE_TERMS not set, forbidden-text check skipped"; fi
           python atlas/site/check.py
       - name: Smoke (browser)
-        run: python atlas/site/tools/smoke_test.py
+        env:
+          SHOTS_DIR: atlas/site/screenshots/smoke
+        run: |
+          mkdir -p "$SHOTS_DIR"
+          python atlas/site/tools/smoke_test.py
+      - name: Smoke screenshots (artifact)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: smoke-screenshots
+          path: atlas/site/screenshots/smoke/
+          retention-days: 14
+          if-no-files-found: ignore

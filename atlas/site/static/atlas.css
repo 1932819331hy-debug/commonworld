@@ -145,6 +145,9 @@
 .earn-tier { font-size:13px; margin:18px 0 4px; }
 .list.earn td { white-space:normal; vertical-align:top; }
 .list.earn .earn-val { min-width:180px; }
+.tag { white-space:nowrap; }
+.list.earn .earn-basis { min-width:132px; white-space:nowrap; }
+.list.earn .earn-win { min-width:120px; }
 .list.earn .qa-label { font-size:11px; margin:4px 0 0; max-width:340px; }
 .earn-nofig, .earn-foot { margin-top:18px; }
 /* status badges: card page block + /atlas/badge/ */

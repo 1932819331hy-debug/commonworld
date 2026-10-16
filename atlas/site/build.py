@@ -89,6 +89,14 @@ def fmt_value(v):
     return e(v)
 
 
+ISO_TS = re.compile(r'(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2}(?:\.\d+)?)?Z')
+
+
+def fmt_window(w):
+    """Display form of a claim window: ISO UTC timestamps inside it read '2026-10-15 16:45 UTC' (data unchanged)."""
+    return ISO_TS.sub(lambda m: f'{m[1]} {m[2]} UTC', w or '')
+
+
 def domain(u):
     m = re.match(r'https?://([^/]+)', u or '')
     return m[1].removeprefix('www.') if m else (u or '')
@@ -515,7 +523,7 @@ def build_platform(site, c):
         val = ''
         if x.get('value') not in (None, ''):
             unit = f' {e(x.get("unit"))}' if x.get('unit') else ''
-            win = f' <span class="win">({e(x.get("window"))})</span>' if x.get('window') else ''
+            win = f' <span class="win">({e(fmt_window(x.get("window")))})</span>' if x.get('window') else ''
             val = f'<p class="val">{fmt_value(x["value"])}{unit}{win}</p>'
         q = trim(x.get('quote'), 280)
         quote = f'<blockquote>“{e(q)}”</blockquote>' if q else ''
@@ -833,7 +841,7 @@ def earn_table(site, rs):
         btag = f'<span class="tag {"t-warn" if basis == "operator_claim" else "t-basis"}">{e(BASIS_LABEL.get(basis, basis or "basis unknown"))}</span>'
         src = ext_link(x['source_url'], e(domain(x['source_url']))) if x.get('source_url') else 'No source link'
         trs.append(f'<tr><td><a href="{c["_url"]}"><b>{e(c["name"])}</b></a><br><a class="catchip" href="{b}/categories/{c["category"]}/"><i style="background:{CAT_COLOR[c["category"]]}"></i>{e(CAT_SHORT[c["category"]])}</a></td>'
-                   f'<td class="earn-val"><b>{fmt_value(x["value"])}</b>{unit}{note}</td><td>{e(x.get("window") or "—")}</td><td>{btag}</td>'
+                   f'<td class="earn-val"><b>{fmt_value(x["value"])}</b>{unit}{note}</td><td class="earn-win">{e(fmt_window(x.get("window")) or "—")}</td><td class="earn-basis">{btag}</td>'
                    f'<td>{time_tag(r["dt"])}</td><td>{src}</td></tr>')
     return ('<div class="table-wrap"><table class="list earn"><thead><tr><th scope="col">Platform</th><th scope="col">Figure (as on the card)</th>'
             '<th scope="col">Window</th><th scope="col">Basis</th><th scope="col">Observed (UTC)</th><th scope="col">Source</th></tr></thead>'
