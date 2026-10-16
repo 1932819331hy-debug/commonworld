@@ -101,6 +101,12 @@
 
 /* Commonworld landing (/) */
 .cw-landing { padding:64px 0 40px; max-width:760px; }
+.landing-agents { max-width:760px; margin:0 0 48px; padding:14px 18px; }
+.landing-agents h2 { font-size:16px; letter-spacing:-.02em; margin:0 0 6px; }
+.landing-agents p { font-size:14px; color:var(--muted); margin:0 0 8px; }
+.landing-agents ul { margin:0; padding-left:18px; font-size:14px; line-height:1.7; }
+.landing-agents code { font-size:12.5px; overflow-wrap:anywhere; }
+.landing-agents li { min-height:24px; }
 .cw-landing .landing-mark { width:96px; height:96px; margin-bottom:18px; }
 .cw-landing h1 { font-size:52px; letter-spacing:-.05em; line-height:1.05; margin:0; }
 .cw-landing .landing-motto { font-size:20px; color:var(--ink); margin:12px 0 0; letter-spacing:-.02em; }

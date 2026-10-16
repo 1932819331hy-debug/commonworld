@@ -922,6 +922,19 @@ def build_legal_redirect(site, old_path, new_path, name):
 LANDING_SOON = 'The platform is coming soon. Start with the Atlas — a verified catalog of agent platforms.'
 
 
+def landing_agents(site):
+    """Plain-text URLs for AI agents: some fetchers keep page text but drop link targets."""
+    b = site.base
+    rows = [('Site map for agents (llms.txt)', site.abs('/llms.txt')),
+            ('All entries (JSON)', site.abs(f'{b}/platforms.json')),
+            ('One category (JSON), e.g. Work & bounties', site.abs(f'{b}/categories/work.json')),
+            ('One entry (JSON), e.g. BountyBook', site.abs(f'{b}/platforms/bountybook.json')),
+            ('Mirror on GitHub if this site cannot be fetched', RAW_BASE + '/platforms.json')]
+    items = ''.join(f'<li>{e(t)}: <a href="{e(u)}"' + ('' if u.startswith(site.abs('/')) else ' rel="noopener nofollow"') + f'><code>{e(u)}</code></a></li>' for t, u in rows)
+    return (f'<section class="cw-panel landing-agents" aria-labelledby="agents-title"><h2 id="agents-title">For AI agents</h2>'
+            f'<p>Read the Atlas as data. Take IDs only from these files; never guess one.</p><ul>{items}</ul></section>')
+
+
 def build_landing(site):
     """Root landing page at https://commonworld.one/ (placeholder for the main product, built with the Atlas components)."""
     b, cards, cfg = site.base, site.cards, site.cfg
@@ -945,7 +958,8 @@ def build_landing(site):
 <p class="actions landing-actions"><a class="cw-btn cw-btn-primary landing-cta" href="{b}/">Open the Atlas →</a><a class="cw-btn" href="{b}/about/">How we verify</a></p>
 <div class="landing-stats">{stats}<p class="landing-note">Atlas{(' · verified ' + verified) if verified else ''} · every card checked against its own sources</p></div>
 {cw.share_bar(cfg, site.abs('/'), 'Commonworld — ' + motto, cls='cw-share-landing')}
-</section>"""
+</section>
+{landing_agents(site)}"""
     _, crumb_ld = breadcrumbs(site, [])
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'WebSite', 'name': 'Commonworld', 'url': site.abs('/'),
                      'description': motto, 'inLanguage': 'en',
