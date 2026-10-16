@@ -185,6 +185,106 @@ def growth_guard(locs, update=False):
     return fails
 
 
+SVG_NS = '{http://www.w3.org/2000/svg}'
+
+
+def badge_checks(parsed, pages, locs):
+    """Status badges: both SVGs per card (valid XML, <title>, no script/links/external refs), the card page block,
+    /atlas/badge/ page in sitemap + llms.txt, per-entry JSON badge URLs, _headers rule."""
+    fails = []
+    snap = json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']
+    slugs = {c['slug'] for c in snap}
+    bdir = os.path.join(DIST, 'atlas', 'badge')
+    clash = sorted(s for s in slugs if s + '-dark' in slugs)
+    if clash: fails.append(f'badge file name clash (<slug>-dark is another slug): {clash}')
+    n_ok = 0
+    for c in snap:
+        slug = c['slug']
+        for fn in (f'{slug}.svg', f'{slug}-dark.svg'):
+            fp = os.path.join(bdir, fn)
+            if not os.path.isfile(fp):
+                fails.append(f'missing badge /atlas/badge/{fn}'); continue
+            raw = open(fp, encoding='utf-8').read()
+            try:
+                root = ET.fromstring(raw)
+            except ET.ParseError as ex:
+                fails.append(f'badge {fn}: invalid XML ({ex})'); continue
+            if root.tag != SVG_NS + 'svg': fails.append(f'badge {fn}: root is {root.tag}')
+            t = root.find(SVG_NS + 'title')
+            if t is None or not (t.text or '').startswith('Commonworld Atlas: '): fails.append(f'badge {fn}: no <title>')
+            if root.get('role') != 'img' or not root.get('aria-label'): fails.append(f'badge {fn}: no role=img/aria-label')
+            want = {'closed': 'Closed · history'}.get(c.get('status'))
+            if want and t is not None and not (t.text or '').endswith(want): fails.append(f'badge {fn}: closed card shows {t.text!r}')
+            if c.get('status') == 'live' and t is not None and not re.search(r': (Verified · \d{4}-\d{2}-\d{2}|Listed)$', t.text or ''):
+                fails.append(f'badge {fn}: live card shows {t.text!r}')
+            bad = [el.tag for el in root.iter() if el.tag.split('}')[-1] in ('script', 'foreignObject', 'image', 'use', 'a', 'style', 'iframe')]
+            if bad: fails.append(f'badge {fn}: forbidden elements {bad}')
+            for el in root.iter():
+                for k, v in el.attrib.items():
+                    if k.split('}')[-1] == 'href' or k.lower().startswith('on') or re.search(r'url\((?!#)|https?:|//|javascript:', v):
+                        fails.append(f'badge {fn}: external/active attribute {k}={v[:60]!r}')
+            if re.search(r'<script|@import|https?://(?!www\.w3\.org/2000/svg")', raw, re.I): fails.append(f'badge {fn}: script or external reference')
+            if len(raw) > 4096: fails.append(f'badge {fn}: {len(raw)} bytes > 4 KB')
+            n_ok += 1
+        u = f'/atlas/platforms/{slug}/'
+        if u in pages:
+            h = open(pages[u], encoding='utf-8').read()
+            for need in ('id="badge"', '>Add this badge to your site<', 'Free. Never sold. Updates itself with every weekly check.',
+                         f'src="/atlas/badge/{slug}.svg"', f'src="/atlas/badge/{slug}-dark.svg"',
+                         f'&lt;a href=&quot;{ORIGIN}/atlas/platforms/{slug}/&quot;&gt;&lt;img src=&quot;{ORIGIN}/atlas/badge/{slug}.svg&quot; alt=&quot;Commonworld Atlas: ',
+                         f']({ORIGIN}/atlas/badge/{slug}.svg)]({ORIGIN}/atlas/platforms/{slug}/)', 'href="/atlas/badge/"'):
+                if need not in h: fails.append(f'{u}: badge block lacks {need[:70]!r}')
+        else:
+            fails.append(f'card page missing for badge {slug}')
+        jp = os.path.join(DIST, 'atlas', 'platforms', f'{slug}.json')
+        if os.path.isfile(jp):
+            j = json.load(open(jp, encoding='utf-8'))
+            if j.get('badge_svg') != f'{ORIGIN}/atlas/badge/{slug}.svg' or j.get('badge_svg_dark') != f'{ORIGIN}/atlas/badge/{slug}-dark.svg' \
+                    or j.get('badge_page') != f'{ORIGIN}/atlas/badge/':
+                fails.append(f'{slug}.json: badge_svg/badge_svg_dark/badge_page wrong or missing')
+    extra = sorted(f for f in os.listdir(bdir) if f.endswith('.svg') and f[:-4].removesuffix('-dark') not in slugs) if os.path.isdir(bdir) else []
+    if extra: fails.append(f'badge files without a card: {extra[:5]}')
+    if '/atlas/badge/' not in parsed: fails.append('missing /atlas/badge/ page')
+    else:
+        bh = open(pages['/atlas/badge/'], encoding='utf-8').read()
+        for need in ('<h1>Commonworld Atlas badges</h1>', 'Cannot be bought', 'Does not affect ranking or inclusion', 'No tracking', 'Verified · date',
+                     '>Listed<', 'Closed · history', '-dark.svg', 'href="/atlas/about/#corrections"', 'the-spawn'):
+            if need not in bh: fails.append(f'/atlas/badge/: lacks {need!r}')
+    if ORIGIN + '/atlas/badge/' not in locs: fails.append('/atlas/badge/ not in sitemap')
+    for f_ in ('llms.txt', 'llms-full.txt'):
+        if ORIGIN + '/atlas/badge/' not in open(os.path.join(DIST, f_), encoding='utf-8').read(): fails.append(f'/{f_}: no /atlas/badge/ link')
+    if 'href="/atlas/badge/"' not in open(pages['/atlas/about/'], encoding='utf-8').read(): fails.append('/atlas/about/ does not link /atlas/badge/')
+    hd = open(os.path.join(DIST, '_headers')).read()
+    if '/atlas/badge/*.svg\n  Cache-Control: public, max-age=3600\n  Access-Control-Allow-Origin: *\n  Content-Type: image/svg+xml' not in hd:
+        fails.append('_headers lacks the /atlas/badge/*.svg rule')
+    print(f'badges: {n_ok} SVG files checked for {len(snap)} cards')
+    return fails
+
+
+REFRESH_TOOL = 'atlas/refresh.py'
+
+
+def closure_checks(pages):
+    """Closure wording matches atlas/refresh.py: two routes (human review / automated weekly check), auto-closed cards labelled."""
+    fails = []
+    ch = open(pages['/atlas/closed/'], encoding='utf-8').read()
+    for need in ('Human review:', 'Automated weekly check:', '2 consecutive weekly checks', 'reopen automatically if the site answers again',
+                 'never reopened automatically', 'A single failed page load is never treated as proof.'):
+        if need not in ch: fails.append(f'/atlas/closed/: lacks {need!r}')
+    ab = open(pages['/atlas/about/'], encoding='utf-8').read()
+    for need in ('id="closures"', 'Automated weekly check', 'Human review', 'A single failed page load is never treated as proof'):
+        if need not in ab: fails.append(f'/atlas/about/: closure section lacks {need!r}')
+    if 'a failed page load alone is never treated as proof' in ch: fails.append('/atlas/closed/: old one-route closure wording')
+    for c in json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']:
+        hist = c.get('status_history') or []
+        auto = c.get('status') == 'closed' and hist and hist[-1].get('to') == 'closed' and hist[-1].get('by') == REFRESH_TOOL
+        h = open(pages[f"/atlas/platforms/{c['slug']}/"], encoding='utf-8').read()
+        if auto and '<b>Closed by automated check since' not in h: fails.append(f"{c['slug']}: auto-closed card lacks 'Closed by automated check since'")
+        if not auto and 'Closed by automated check' in h and c.get('status') == 'closed': fails.append(f"{c['slug']}: human-closed card labelled automated")
+        if auto and f"Closed by automated check since" not in ch: fails.append(f"/atlas/closed/: {c['slug']} lacks the automated-check note")
+    return fails
+
+
 def main():
     fails, pages, parsed = [], {}, {}
     for root, _, files in os.walk(DIST):
@@ -221,7 +321,7 @@ def main():
         parsed.pop(u, None); pages.pop(u, None)
     for root, _, files in os.walk(DIST):
         for f in files:
-            if f.endswith(('.html', '.json', '.xml', '.txt', '.js', '.css')) or f in ('_headers', '_redirects'):
+            if f.endswith(('.html', '.json', '.xml', '.txt', '.js', '.css', '.svg')) or f in ('_headers', '_redirects'):
                 fp = os.path.join(root, f)
                 txt = open(fp, encoding='utf-8', errors='replace').read()
                 m = FORBIDDEN_ANY.search(txt.replace(CFG0['contact']['general'], ''))
@@ -486,6 +586,8 @@ def main():
     for r in json.load(open(os.path.join(DIST, 'atlas', 'platforms.json')))['platforms']:
         if any('basis' not in f for f in r.get('money_flow') or []):
             fails.append(f"platforms.json {r['id']}: money_flow item without basis")
+    fails += badge_checks(parsed, pages, locs)
+    fails += closure_checks(pages)
     biggest = max(pages, key=lambda u: os.path.getsize(pages[u]))
     print(f'pages: {len(pages)} html ({len(want)} indexable + 404); JSON-LD blocks parsed: {jsonld_blocks}; '
           f'internal links checked: {sum(len(p.links) for p in parsed.values())}; sitemap URLs: {len(locs)} ({nolm} without lastmod); '

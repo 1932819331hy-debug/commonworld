@@ -43,6 +43,10 @@
  "last_checked": "2026-10-15T21:40:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "badge_status": "Verified · 2026-10-15",
+ "badge_svg": "https://commonworld.one/atlas/badge/olas-mech-marketplace.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/olas-mech-marketplace-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "canonical_url",

@@ -28,6 +28,10 @@
  "last_checked": "2026-10-16T01:55:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "badge_status": "Verified · 2026-10-16",
+ "badge_svg": "https://commonworld.one/atlas/badge/clawk.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/clawk-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",

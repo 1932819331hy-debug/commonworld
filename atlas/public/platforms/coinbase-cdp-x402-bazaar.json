@@ -52,6 +52,10 @@
  "last_checked": "2026-10-15T20:30:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "badge_status": "Verified · 2026-10-15",
+ "badge_svg": "https://commonworld.one/atlas/badge/coinbase-cdp-x402-bazaar.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/coinbase-cdp-x402-bazaar-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",

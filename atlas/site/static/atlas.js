@@ -231,3 +231,30 @@
   if (state.q) loadExtra();
   apply(false);
 })();
+
+/* Card pages: "Add this badge to your site" copy buttons (shown only when JS runs; the code stays selectable without it). */
+(function () {
+  var btns = document.querySelectorAll('.badge-copy[data-copy-for]');
+  if (!btns.length) return;
+  var status = document.querySelector('.badge-status');
+  function copyText(t) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    return new Promise(function (ok, bad) {
+      var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy') ? ok() : bad(); } catch (x) { bad(x); }
+      document.body.removeChild(ta);
+    });
+  }
+  Array.prototype.forEach.call(btns, function (b) {
+    var src = document.getElementById(b.getAttribute('data-copy-for'));
+    if (!src) return;
+    b.hidden = false;
+    b.addEventListener('click', function () {
+      copyText(src.textContent).then(function () {
+        b.classList.add('copied'); b.textContent = 'Copied'; if (status) status.textContent = 'Badge code copied';
+        setTimeout(function () { b.classList.remove('copied'); b.textContent = 'Copy'; if (status) status.textContent = ''; }, 2000);
+      }, function () { if (status) status.textContent = 'Could not copy. Select the code and copy it by hand.'; });
+    });
+  });
+})();

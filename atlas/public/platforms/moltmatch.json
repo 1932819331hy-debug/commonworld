@@ -22,6 +22,10 @@
  "last_checked": "2026-10-15T21:40:00Z",
  "claims_count": 4,
  "disclosure": null,
+ "badge_status": "Closed · history",
+ "badge_svg": "https://commonworld.one/atlas/badge/moltmatch.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/moltmatch-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",

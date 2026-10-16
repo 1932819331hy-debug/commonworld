@@ -147,3 +147,19 @@
 .list.earn .earn-val { min-width:180px; }
 .list.earn .qa-label { font-size:11px; margin:4px 0 0; max-width:340px; }
 .earn-nofig, .earn-foot { margin-top:18px; }
+/* status badges: card page block + /atlas/badge/ */
+.badge-previews { display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; margin:4px 0 14px; }
+.badge-previews figure { margin:0; display:flex; flex-direction:column; gap:6px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--paper); }
+.badge-previews figure img, .badge-previews svg { display:block; height:20px; width:auto; max-width:100%; }
+.badge-previews figcaption { color:var(--muted); font-size:11px; }
+.badge-on-dark { background:#151816 !important; border-color:#151816 !important; }
+.badge-on-dark figcaption, .badge-on-dark code { color:#b9bfb5; }
+.badge-on-dark-row .badge-on-dark { display:flex; flex-wrap:wrap; gap:10px; padding:12px 14px; border-radius:12px; }
+.badge-snippet { margin:10px 0 0; max-width:820px; }
+.badge-snippet-head { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; font-weight:600; color:var(--muted); }
+.badge-snippet pre, .prose pre { margin:6px 0 0; padding:10px 12px; border-radius:10px; background:#151816; color:#e9e6dc; overflow-x:auto; font-size:12px; line-height:1.5; white-space:pre-wrap; word-break:break-all; }
+.badge-snippet pre code, .prose pre code { background:none; color:inherit; padding:0; }
+.badge-copy { padding:4px 12px; font-size:12px; }
+.badge-copy.copied { border-color:var(--st-live, #2f7d4f); }
+.badge-table td:first-child { white-space:nowrap; }
+.badge-table svg { display:block; height:20px; width:auto; }

@@ -16,6 +16,15 @@ Input row fields: legacy data from a scout census on 2026-10-15 (NOT evidence �
 5. `metric` / `economic_flow` (money: volumes, payouts, orders, transactions) — only if the platform or a credible source publishes it. Record exact value, unit, scope, time window, source URL, observed_at. Do NOT copy legacy numbers; re-observe or mark unverified. Separate operator claims from independent observations.
 6. `announced_closed` — if the project appears dead: look for an official shutdown/sunset statement. "Dead" requires either an official statement OR ≥2 independent signals (e.g. domain fails by 2 methods AND no activity anywhere for 90+ days). Otherwise `unresolved`.
 
+## How a card becomes closed (two routes)
+
+A published card is marked closed in one of two ways, and the card says which. A single failed page load is never proof of closure, and a blocked or JavaScript-only page (401/403/429/503, Cloudflare challenge) counts as reachable.
+
+1. **Human review** (this protocol, step 6): an official shutdown/sunset statement, or at least two independent signals (e.g. the domain fails by two methods AND no activity anywhere for 90+ days). Cards closed this way are never reopened automatically: a re-registered or parked domain can answer HTTP 200 too. Reopening needs a new check.
+2. **Automated weekly check** (`atlas/refresh.py`): each week the primary URL is fetched with several attempts plus alternate URLs (http/https, www). The first failed week only marks the entry as suspected in `atlas/data/refresh-state.json`; nothing is published. A second consecutive failed week marks the card closed (`include_closed_history`) with a `site_reachable` claim (`direct_observation`, outcome `contradicted`) and a `status_history` record `by: atlas/refresh.py`. The card then shows "Closed by automated check since <date>". If the site answers again in a later weekly check, the card reopens automatically (back to live, with a new claim and history record).
+
+In both cases the page, the URL and the permanent ID are kept.
+
 ## Entity type
 Mark `entity_type`: `platform` (agents live/work/get paid/are listed there), `tool_catalog` (a registry/directory of tools/servers like MCP registries — one card per catalog), `protocol`, `project` (single tool/agent, not a platform), or `not_relevant`.
 
@@ -24,7 +33,7 @@ Mark `entity_type`: `platform` (agents live/work/get paid/are listed there), `to
 
 ## Row verdict
 - `include_verified` — canonical_url + site_reachable + description all supported.
-- `include_closed_history` — closure supported (official or ≥2 signals); card kept as history.
+- `include_closed_history` — closure supported (human review: official statement or ≥2 signals; or the automated weekly check, see "How a card becomes closed"); card kept as history.
 - `needs_browser` — blocked by JS/Cloudflare; needs a real browser pass.
 - `unresolved` — conflicting or insufficient evidence (explain).
 - `exclude` — not an agent platform / duplicate (explain, name the duplicate id).

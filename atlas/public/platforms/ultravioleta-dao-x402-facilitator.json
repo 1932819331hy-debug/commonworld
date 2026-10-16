@@ -41,6 +41,10 @@
  "last_checked": "2026-10-15T18:19:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "badge_status": "Verified · 2026-10-15",
+ "badge_svg": "https://commonworld.one/atlas/badge/ultravioleta-dao-x402-facilitator.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/ultravioleta-dao-x402-facilitator-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",

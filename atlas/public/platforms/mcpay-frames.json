@@ -23,6 +23,10 @@
  "last_checked": "2026-10-15T18:24:00Z",
  "claims_count": 3,
  "disclosure": null,
+ "badge_status": "Verified · 2026-10-15",
+ "badge_svg": "https://commonworld.one/atlas/badge/mcpay-frames.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/mcpay-frames-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",

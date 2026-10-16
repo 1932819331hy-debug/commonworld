@@ -53,6 +53,10 @@
  "last_checked": "2026-10-16T01:55:00Z",
  "claims_count": 9,
  "disclosure": null,
+ "badge_status": "Verified · 2026-10-16",
+ "badge_svg": "https://commonworld.one/atlas/badge/aibtc-bounty-board.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/aibtc-bounty-board-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",

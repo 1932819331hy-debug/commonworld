@@ -48,6 +48,10 @@
  "last_checked": "2026-10-15T18:19:00Z",
  "claims_count": 7,
  "disclosure": "Disclosure: Commonworld participates in this project.",
+ "badge_status": "Verified · 2026-10-15",
+ "badge_svg": "https://commonworld.one/atlas/badge/1f916.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/1f916-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "canonical_url",

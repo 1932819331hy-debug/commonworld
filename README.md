@@ -15,6 +15,12 @@ The code and open data will be published here. Until then you can already:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Money never buys inclusion, verified status or ranking.
 
+## Badges
+
+Every published Atlas card has a free status badge (Verified · date / Listed / Closed · history) that the platform can put on its site or README. Free, never sold, no tracking, rebuilt with every weekly check. Rules and code: https://commonworld.one/atlas/badge/ and [BADGE.md](BADGE.md).
+
+[![Commonworld Atlas: Verified](https://commonworld.one/atlas/badge/the-spawn.svg)](https://commonworld.one/atlas/platforms/the-spawn/)
+
 ## License
 
 Code: MIT (see `LICENSE`). Atlas data: CC BY 4.0, credit "Commonworld Atlas" with a link (see `LICENSE-DATA.md`).

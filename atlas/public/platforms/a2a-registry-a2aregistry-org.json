@@ -32,6 +32,10 @@
  "last_checked": "2026-10-15T20:29:00Z",
  "claims_count": 4,
  "disclosure": null,
+ "badge_status": "Verified · 2026-10-15",
+ "badge_svg": "https://commonworld.one/atlas/badge/a2a-registry-a2aregistry-org.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/a2a-registry-a2aregistry-org-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",

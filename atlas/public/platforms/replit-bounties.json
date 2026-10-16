@@ -23,6 +23,10 @@
  "last_checked": "2026-10-15T18:33:00Z",
  "claims_count": 2,
  "disclosure": null,
+ "badge_status": "Closed · history",
+ "badge_svg": "https://commonworld.one/atlas/badge/replit-bounties.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/replit-bounties-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "announced_closed",

@@ -6,7 +6,7 @@
 
 Output (default atlas/site/dist/) is a plain static tree with clean URLs as directories:
   /atlas/index.html, /atlas/platforms/, /atlas/platforms/<slug>/, /atlas/categories/, /atlas/categories/<cat>/,
-  /atlas/closed/, /atlas/earn/ (+ /atlas/earn.json), /atlas/about/, /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/sitemap.xml, /atlas/assets/*,
+  /atlas/closed/, /atlas/earn/ (+ /atlas/earn.json), /atlas/about/, /atlas/badge/ (+ /atlas/badge/<slug>.svg, <slug>-dark.svg), /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/sitemap.xml, /atlas/assets/*,
   /privacy/, /terms/ (site-wide Commonworld legal pages; /atlas/privacy|terms/ are noindex redirect stubs + _redirects 301s),
   / (Commonworld landing), /404.html, /robots.txt, /llms.txt, /llms-full.txt, /sitemap.xml, /_headers, /_redirects
 It deploys unchanged to Cloudflare Pages / Workers static assets.
@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.join(HERE, 'components'))
 import cw_components as cw  # noqa: E402
 sys.path.insert(0, HERE)
 import og_images as ogi  # noqa: E402  (Pillow optional: per-page OG images)
+import badges  # noqa: E402  (status badges: /atlas/badge/<slug>.svg)
 
 e = cw.e
 DEFAULT_DATA = os.path.normpath(os.path.join(HERE, '..', 'data', 'snapshot-verified-2026-10-15.json'))
@@ -187,6 +188,29 @@ def status_chip(c):
     return '<span class="chip live"><i class="dot"></i>live</span>'
 
 
+REFRESH_TOOL = 'atlas/refresh.py'  # the automated weekly check (status_history[].by)
+AUTO_CLOSE_RULE = 'unreachable in 2 consecutive weekly checks (several attempts plus alternate URLs each week)'
+
+
+def closure_info(c):
+    """How a closed card was closed: ('auto', since_dt) when the automated weekly check closed it (atlas/refresh.py,
+    reopens by itself if the site answers again), else ('human', None): human review, never reopened automatically."""
+    hist = c.get('status_history') or []
+    if c.get('status') == 'closed' and hist and hist[-1].get('to') == 'closed' and hist[-1].get('by') == REFRESH_TOOL:
+        return 'auto', parse_time(hist[-1].get('at'))
+    return 'human', None
+
+
+def closure_note(c):
+    """Short line for closed lists ('' for live cards)."""
+    if c.get('status') != 'closed':
+        return ''
+    how, dt = closure_info(c)
+    if how == 'auto':
+        return f'Closed by automated check since {dt.strftime("%Y-%m-%d") if dt else "date unknown"}. '
+    return ''
+
+
 def tag_href(site, t):
     return f'{site.base}/?tag={t}'
 
@@ -253,7 +277,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
         og_img = site.abs(f'{b}/og/{name}.png?v={key[:10]}')
     head_ld = ''.join(jsonld(x) for x in ld)
     corr = cfg['site']['corrections_url']
-    foot_links = (f'<a href="{b}/platforms/">All entries A–Z</a><a href="{b}/categories/">Categories</a><a href="{CW_ABOUT}">About Commonworld</a><a href="{b}/about/">How the Atlas works</a>'
+    foot_links = (f'<a href="{b}/platforms/">All entries A–Z</a><a href="{b}/categories/">Categories</a><a href="{CW_ABOUT}">About Commonworld</a><a href="{b}/about/">How the Atlas works</a><a href="{b}/badge/">Badges</a>'
                   f'<a href="{b}/data/snapshot.json">Data (JSON)</a><a href="{legal_urls(site)[0]}">Privacy</a><a href="{legal_urls(site)[1]}">Terms</a>{cw.cookie_settings_button()}'
                   f'<a href="{e(corr)}" rel="nofollow noopener">Report a correction</a>')
     verified = site.latest.strftime('%Y-%m-%d') if site.latest else ''
@@ -353,7 +377,7 @@ def chips(c):
     return '<div class="chips">' + ''.join(out) + '</div>'
 
 
-def card_html(site, c, data=False):
+def card_html(site, c, data=False, note=''):
     d = None
     if data:
         d = {'data-slug': c['slug'], 'data-c': c['category'], 'data-s': c['status'], 'data-t': c['entity_type'],
@@ -361,7 +385,7 @@ def card_html(site, c, data=False):
              'data-claims': len(c.get('claims', [])), 'data-ver': int(c['_verified'].timestamp()) if c['_verified'] else 0,
              'data-tags': ' '.join(c['_tags']) or None}
     return cw.card(href=c['_url'], name=c['name'], cat_label=CAT_LABEL[c['category']], cat_color='k-' + c['category'],
-                   status_chip=status_chip(c), desc=trim(c['_desc'], 150), keynum=keynum_html(c),
+                   status_chip=status_chip(c), desc=note + trim(c['_desc'], 150 - len(note)), keynum=keynum_html(c),
                    tags_html=cw.tag_chips(c['_tags'], lambda t: tag_href(site, t)), closed=c['status'] == 'closed', data=d)
 
 
@@ -508,8 +532,15 @@ def build_platform(site, c):
     if c['status'] == 'closed':
         ev = next((x.get('statement') for x in claims if x.get('kind') == 'announced_closed'), None) \
             or next((x.get('statement') for x in claims if x.get('outcome') == 'contradicted'), None)
-        closed_box = (f'<div class="closed-box" role="note"><b>Closed.</b> This card is kept as a history record. '
-                      f'{e(ev) if ev else "See the evidence below."}</div>')
+        how, since = closure_info(c)
+        if how == 'auto':
+            ev = next((x.get('statement') for x in claims if x.get('kind') == 'site_reachable' and x.get('outcome') == 'contradicted'), None) or ev
+            closed_box = (f'<div class="closed-box" role="note"><b>Closed by automated check since {time_tag(since)}.</b> '
+                          f'The site could not be reached in 2 consecutive weekly checks (several attempts plus alternate URLs each week). '
+                          f'This card is kept as a history record and reopens automatically if the site answers again. {e(ev) if ev else ""}</div>')
+        else:
+            closed_box = (f'<div class="closed-box" role="note"><b>Closed.</b> This card is kept as a history record. '
+                          f'{e(ev) if ev else "See the evidence below."}</div>')
     disclosure_box = f'<p class="disclosure-box" role="note">{e(c["disclosure"])}</p>' if c.get('disclosure') else ''
     rel = [r for r in site.by_cat[cat] if r['slug'] != c['slug']]
     rel.sort(key=lambda r: (r['status'] != 'live', r['name'].lower()))
@@ -530,7 +561,7 @@ def build_platform(site, c):
 <div><dt>Permanent ID</dt><dd><code>{e(c['slug'])}</code> · <a href="{b}/platforms/{e(c['slug'])}.json" type="application/json" title="This entry as JSON: all claims with sources">JSON</a></dd></div>
 <div><dt>Direction</dt><dd><a href="{b}/categories/{cat}/">{e(CAT_SHORT[cat])}</a></dd></div>
 <div><dt>Type</dt><dd>{e(tl)}</dd></div>
-<div><dt>Status</dt><dd>{'Closed (history)' if c['status'] == 'closed' else 'Live'}</dd></div>
+<div><dt>Status</dt><dd>{('Closed (history, automated check)' if closure_info(c)[0] == 'auto' else 'Closed (history)') if c['status'] == 'closed' else 'Live'}</dd></div>
 <div><dt>Last verified</dt><dd>{time_tag(c['_verified'])}</dd></div>
 <div><dt>Checked claims</dt><dd>{len(claims)}</dd></div>
 </dl>
@@ -539,6 +570,7 @@ def build_platform(site, c):
 <div class="cw-panel-body"><p class="sec-desc">Each fact shows how it is known (observed directly, operator claim, independent source or inference), whether the source supported it, when it was observed and where. Operator figures are what the platform says about itself.</p>
 <ol class="claims">{''.join(lis)}</ol></div></section>
 {f'<section class="cw-panel cw-panel-gap" aria-labelledby="h-qa"><div class="cw-panel-head"><h2 id="h-qa">Independent QA re-check</h2><span class="muted">{len(qa_rows)} re-checks</span></div><div class="cw-panel-body"><p class="sec-desc">A second agent re-checked these claims separately.</p><ol class="claims">{"".join(qa_rows)}</ol></div></section>' if qa_rows else ''}
+{badge_block(site, c)}
 <aside class="correction"><h2>Something wrong or out of date?</h2><p>Atlas corrects cards from sources. <a href="{e(corr)}" rel="nofollow noopener">Tell us</a> with a link that shows the right fact, or read <a href="{b}/about/#corrections">how corrections work</a>.</p></aside>
 </article>
 {f'<section class="related" aria-labelledby="h-rel"><div class="sec-head"><h2 id="h-rel">More in {e(CAT_LABEL[cat])}</h2><a href="{b}/categories/{cat}/">All {len(site.by_cat[cat])}</a></div><div class="cw-grid">{rel_html}</div></section>' if rel_html else ''}"""
@@ -680,9 +712,16 @@ def build_closed(site):
     b = site.base
     cs = [c for c in site.cards if c['status'] == 'closed']
     crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), ('Closed', f'{b}/closed/')])
-    box = cw.info_box('closed', f'{len(cs)} closed', 'history', 'A closure is only recorded with an official statement or at least two independent signals; a failed page load alone is never treated as proof.')
-    body = f"""{crumbs}{cw.hero('Atlas · history', 'Closed platforms', '<p>Platforms that shut down keep their card as a history record, with the evidence of closure and dates.</p>', box, small=True, kicker_href=f'{b}/')}
-<div class="cw-grid" style="margin-top:22px">{''.join(card_html(site, c) for c in cs)}</div>"""
+    n_auto = sum(1 for c in cs if closure_info(c)[0] == 'auto')
+    box = cw.info_box('closed', f'{len(cs)} closed', 'history',
+                      'A closure is recorded in one of two ways. <b>Human review:</b> an official shutdown statement or at least two independent signals. '
+                      '<b>Automated weekly check:</b> the site could not be reached in 2 consecutive weekly checks (several attempts plus alternate URLs each week); '
+                      'such cards say “Closed by automated check” and reopen automatically if the site answers again. Cards closed by human review are never reopened automatically. '
+                      'A single failed page load is never treated as proof.')
+    lead = ('<p>Platforms that shut down keep their card as a history record, with the evidence of closure and dates.'
+            + (f' {n_auto} of them {"was" if n_auto == 1 else "were"} closed by the automated weekly check.' if n_auto else '') + '</p>')
+    body = f"""{crumbs}{cw.hero('Atlas · history', 'Closed platforms', lead, box, small=True, kicker_href=f'{b}/')}
+<div class="cw-grid" style="margin-top:22px">{''.join(card_html(site, c, note=closure_note(c)) for c in cs)}</div>"""
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': 'Closed AI-agent platforms (history)', 'url': site.abs(f'{b}/closed/'),
                      'mainEntity': item_list_ld(site, cs, 'Closed platforms')}]
     return page(site, path=f'{b}/closed/', title=f'Closed agent platforms: {len(cs)} records | Commonworld Atlas',
@@ -887,11 +926,18 @@ def build_about(site):
 <h2 id="process">How a card is checked</h2>
 <p>The checks are run by AI agents working to a written protocol; every step leaves a record.</p>
 <ol><li><b>Automated check</b> of every candidate: URL, redirects, HTTP status, real content versus an empty JavaScript shell.</li>
-<li><b>Agent verification</b>: official URL, reachability by at least two methods before calling a site inaccessible, an own-words description with a primary source and quote, the newest sign of activity, and metrics and money re-observed with value, unit, window and time. A closure needs an official statement or at least two independent signals.</li>
+<li><b>Agent verification</b>: official URL, reachability by at least two methods before calling a site inaccessible, an own-words description with a primary source and quote, the newest sign of activity, and metrics and money re-observed with value, unit, window and time. A closure found this way needs an official shutdown statement or at least two independent signals (<a href="#closures">two routes to “closed”</a>).</li>
 <li><b>Independent QA</b> by a second agent: all money claims, closures and headline numbers, plus a sample of the rest. Cards marked <i>QA re-checked</i> went through this step. Disagreements are resolved by a coordinating agent and logged; a human curator reviews them before major releases.</li>
 <li>Only accepted results are published. Candidates that are unresolved or need a browser check wait in a review queue and are not shown.</li></ol>
 <h2 id="freshness">Freshness</h2>
 <p>This snapshot was generated {time_tag(gen)}; the newest observation is from {time_tag(site.latest)}. Each card shows its own “last verified” date. We plan to re-check the whole catalog weekly and to search for new platforms; changes go through the same checks before they appear.</p>
+<h2 id="closures">When a card is marked closed</h2>
+<p>A card becomes <i>Closed</i> in one of two ways, and the card says which:</p>
+<ul><li><b>Human review</b>: an official shutdown statement, or at least two independent signals (for example the domain fails by two methods and there is no activity anywhere for 90+ days). Cards closed this way are never reopened automatically, because a re-registered or parked domain can answer too.</li>
+<li><b>Automated weekly check</b>: the site could not be reached in 2 consecutive weekly checks, each with several attempts plus alternate URLs (http/https, www). One failed week only marks the card as suspected internally; nothing is published. Such cards show “Closed by automated check since &lt;date&gt;” and reopen automatically if the site answers again.</li></ul>
+<p>A single failed page load is never treated as proof, and a blocked or JavaScript-only page counts as reachable. Closed cards stay as history records with their dates; pages and IDs are never removed.</p>
+<h2 id="badges">Badges for listed platforms</h2>
+<p>Every published card has a free status badge (<i>Verified</i>, <i>Listed</i> or <i>Closed</i>) that its platform can show on its own site or README. It is rebuilt with every weekly check, cannot be bought and does not affect ranking or inclusion. See <a href="{b}/badge/">Atlas badges</a>.</p>
 <h2 id="tags">Tags</h2>
 <p>The <i>#tags</i> on cards and in the tag shelf are descriptive labels carried over from the 15 Oct 2026 census (for example <i>#x402</i>, <i>#mcp</i>, <i>#bounties</i>). They help you browse; they are <b>not verified claims</b>. Status and judgement tags from the census were removed, duplicates merged, and only tags used by at least two entries are shown.</p>
 <h2 id="ids">Permanent IDs and closed platforms</h2>
@@ -1237,6 +1283,112 @@ def build_404(site):
 # ---------------------------------------------------------------- machine-readable files for AI agents
 
 
+# ---------------------------------------------------------------- status badges (/atlas/badge/)
+BADGE_WORD = {'verified': 'Verified', 'listed': 'Listed', 'closed': 'Closed'}
+BADGE_LINE = 'Free. Never sold. Updates itself with every weekly check.'
+
+
+def badge_urls(site, c):
+    b, slug = site.base, c['slug']
+    return {'svg': site.abs(f'{b}/badge/{slug}.svg'), 'svg_dark': site.abs(f'{b}/badge/{slug}-dark.svg'),
+            'page': site.abs(f'{b}/badge/'), 'card': site.abs(c['_url'])}
+
+
+def badge_snippets(site, c):
+    """(html, markdown, link) for one card. The alt names the status word only, so a pasted snippet never goes stale."""
+    u = badge_urls(site, c)
+    alt = f'{badges.LABEL}: {BADGE_WORD[badges.status_of(c)[0]]}'
+    html_s = f'<a href="{u["card"]}"><img src="{u["svg"]}" alt="{alt}" height="20"></a>'
+    md = f'[![{alt}]({u["svg"]})]({u["card"]})'
+    return html_s, md, u['card']
+
+
+def badge_block(site, c):
+    b, slug = site.base, c['slug']
+    tone, right = badges.status_of(c)
+    html_s, md, link = badge_snippets(site, c)
+    what = {'verified': f'This card is published as verified; the date is the newest observation on the card ({right.split(" · ")[1]}).',
+            'listed': 'This card is published but not verified right now, so the badge says Listed.',
+            'closed': 'This platform is closed and the card is kept as history, so the badge says Closed · history.'}[tone]
+    rows = ''.join(
+        f'<div class="badge-snippet"><div class="badge-snippet-head"><span id="badge-l-{k}">{lab}</span>'
+        f'<button type="button" class="cw-btn badge-copy" data-copy-for="badge-c-{k}" aria-describedby="badge-l-{k}" hidden>Copy</button></div>'
+        f'<pre><code id="badge-c-{k}">{e(txt)}</code></pre></div>'
+        for k, lab, txt in (('html', 'HTML', html_s), ('md', 'Markdown (README)', md), ('link', 'Plain link', link)))
+    return (f'<section class="cw-panel cw-panel-gap badge-panel" id="badge" aria-labelledby="h-badge"><div class="cw-panel-head"><h2 id="h-badge">Add this badge to your site</h2>'
+            f'<span class="muted">{BADGE_LINE}</span></div><div class="cw-panel-body">'
+            f'<div class="badge-previews"><figure><img src="{b}/badge/{slug}.svg" alt="{e(badges.alt_text(c))}" height="20"><figcaption>Light backgrounds</figcaption></figure>'
+            f'<figure class="badge-on-dark"><img src="{b}/badge/{slug}-dark.svg" alt="{e(badges.alt_text(c))} (dark variant)" height="20"><figcaption>Dark backgrounds: <code>{slug}-dark.svg</code></figcaption></figure></div>'
+            f'<p class="sec-desc">{e(what)} The badge links back to this card with its facts and sources. It is a plain SVG image: no scripts, no cookies, no tracking. '
+            f'<a href="{b}/badge/">How badges work</a>.</p>{rows}'
+            f'<p class="badge-status sr" role="status" aria-live="polite"></p></div></section>')
+
+
+def build_badge_page(site):
+    b = site.base
+    crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), ('Badges', f'{b}/badge/')])
+    ex = next((c for c in site.cards if c['slug'] == 'the-spawn'), None) or next(c for c in site.cards if c['status'] == 'live')
+    exc = next((c for c in site.cards if c['status'] == 'closed'), None)
+    html_s, md, link = badge_snippets(site, ex)
+    corr = site.cfg['site']['corrections_url']
+    gm = contact(site, 'general')
+    n = len(site.cards)
+    st = Counter(badges.status_of(c)[0] for c in site.cards)
+    inline = lambda tone, right, dark=False: badges.svg(tone, right, dark=dark, title=False).strip()
+    vdate = badges.status_of(ex)[1]
+    stat_rows = (f'<tr><td>{inline("verified", vdate if vdate.startswith("Verified") else "Verified · YYYY-MM-DD")}</td><td><b>Verified · date</b></td><td>A live card published as verified. The date is the newest observation on the card (UTC), so it moves forward with each weekly check. Now: {st["verified"]} cards.</td></tr>'
+                 f'<tr><td>{inline("listed", "Listed")}</td><td><b>Listed</b></td><td>A published card that is not verified right now, for example while it is under review. Now: {st["listed"]} cards.</td></tr>'
+                 f'<tr><td>{inline("closed", "Closed · history")}</td><td><b>Closed · history</b></td><td>The platform closed (by human review, or by the automated weekly check) and the card is kept as a history record. Now: {st["closed"]} cards.</td></tr>')
+    lead = (f'<p>Every published Atlas card has a free status badge: a small image a platform can put on its own site or README. '
+            f'It shows the card\u2019s real status and last check date, and links to the card with its facts and sources. {BADGE_LINE}</p>')
+    box = cw.info_box('live', f'{n} badges', 'one per card', f'Light and dark variant for every card: <code>{b}/badge/&lt;id&gt;.svg</code> and <code>{b}/badge/&lt;id&gt;-dark.svg</code>.')
+    body = f"""{crumbs}
+{cw.hero('Atlas · badges', 'Commonworld Atlas badges', lead, box, small=True, kicker_href=f'{b}/')}
+<div class="prose">
+<h2 id="what">What it is</h2>
+<p>A badge is a plain SVG image served from <code>commonworld.one</code>. The left half says <i>Commonworld Atlas</i>; the right half shows the status of one card. Example for <a href="{ex['_url']}">{e(ex['name'])}</a> (<code>{ex['slug']}</code>):</p>
+<div class="badge-previews"><figure><img src="{b}/badge/{ex['slug']}.svg" alt="{e(badges.alt_text(ex))}" height="20"><figcaption>{ex['slug']}.svg</figcaption></figure>
+<figure class="badge-on-dark"><img src="{b}/badge/{ex['slug']}-dark.svg" alt="{e(badges.alt_text(ex))} (dark variant)" height="20"><figcaption>{ex['slug']}-dark.svg</figcaption></figure></div>
+<h2 id="updates">How it updates</h2>
+<p>All badges are regenerated from the Atlas data every time the site is rebuilt, including after each weekly check. A site that shows the badge always loads the current file, so status and date update by themselves; nothing needs to be changed on the platform\u2019s side. Badges are cached for at most an hour.</p>
+<h2 id="statuses">Statuses</h2>
+<div class="table-wrap"><table class="list badge-table"><thead><tr><th scope="col">Badge</th><th scope="col">Status</th><th scope="col">Meaning</th></tr></thead><tbody>{stat_rows}</tbody></table></div>
+<p>How a card is checked and when it is marked closed is explained in <a href="{b}/about/#verified">How the Atlas works</a> and <a href="{b}/about/#closures">When a card is marked closed</a>.</p>
+<h2 id="rules">Rules</h2>
+<ul><li><b>Free for every published card.</b> Every card that has a page has a badge; nobody has to ask for one.</li>
+<li><b>Cannot be bought.</b> Neither the badge nor a verified status is for sale, and sponsorship does not change it.</li>
+<li><b>Does not affect ranking or inclusion.</b> Showing the badge, or not showing it, changes nothing about the card or its position.</li>
+<li><b>No tracking.</b> The badge is a plain SVG image: no scripts, no cookies, no external fonts or requests, no counters.</li>
+<li><b>Honest status.</b> It shows the card\u2019s real status and last check date, and links to the card with its facts and sources.</li></ul>
+<h2 id="add">How to add it</h2>
+<p>Every card page has a block <i>Add this badge to your site</i> with ready-made code for that card (for example <a href="{ex['_url']}#badge">{e(ex['name'])}</a>). Replace <code>{ex['slug']}</code> with the card\u2019s permanent ID, taken from its page or from <a href="{b}/platforms.json">platforms.json</a>; never guess an ID.</p>
+<h3>HTML</h3><pre><code>{e(html_s)}</code></pre>
+<h3>Markdown (README)</h3><pre><code>{e(md)}</code></pre>
+<h3>Plain link</h3><pre><code>{e(link)}</code></pre>
+<h2 id="variants">Light and dark</h2>
+<p><code>{b}/badge/&lt;id&gt;.svg</code> is made for light backgrounds, <code>{b}/badge/&lt;id&gt;-dark.svg</code> for dark ones (a lighter edge keeps it readable on black). Both carry the same status. Each entry\u2019s JSON (<code>{b}/platforms/&lt;id&gt;.json</code>) lists its <code>badge_svg</code>, <code>badge_svg_dark</code> and <code>badge_page</code> URLs.</p>
+<div class="badge-previews badge-on-dark-row"><span class="badge-on-dark">{inline('verified', vdate, True)} {inline('listed', 'Listed', True)} {inline('closed', 'Closed · history', True)}</span></div>
+<h2 id="corrections">Wrong status or date?</h2>
+<p>The badge only shows what the card says. If the card is wrong or out of date, <a href="{e(corr)}" rel="nofollow noopener">open a correction request on GitHub</a> (requests there are public){(', or email ' + mailto(gm)) if gm else ''}, with the card\u2019s permanent ID and a link to a source that shows the right fact. When the card is corrected, the badge follows on the next rebuild. See <a href="{b}/about/#corrections">how corrections work</a>.</p>
+</div>"""
+    ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'WebPage', 'name': 'Commonworld Atlas badges', 'url': site.abs(f'{b}/badge/'), 'inLanguage': 'en',
+                     'isPartOf': {'@type': 'WebSite', 'name': 'Commonworld Atlas', 'url': site.abs(f'{b}/')}}]
+    return page(site, path=f'{b}/badge/', title='Atlas badges: free status badge for every card | Commonworld',
+                description='A free status badge for every Commonworld Atlas card: Verified, Listed or Closed. Never sold, no tracking, updated with every weekly check.',
+                body=body, active='badge', ld=ld,
+                og=og_generic(site, 'page-badge', 'Commonworld Atlas badges',
+                              'A free status badge for every published card. Never sold, no tracking, updated with every weekly check.',
+                              [(f'{n} badges', 'olive'), ('free', 'live'), ('no tracking', None)], kicker='BADGES'))
+
+
+def write_badges(site, write):
+    for c in site.cards:
+        light, dark = badges.card_svgs(c)
+        write(f"{site.base}/badge/{c['slug']}.svg", light)
+        write(f"{site.base}/badge/{c['slug']}-dark.svg", dark)
+    return len(site.cards)
+
+
 def iso(dt):
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ') if dt else None
 
@@ -1308,7 +1460,9 @@ def build_agent_files(site, write):
         write(f'{b}/categories/{k}.json', json.dumps(meta | {'category': k, 'category_label': CAT_LABEL[k], 'count': len(sub), 'platforms': sub},
                                                     ensure_ascii=False, separators=(',', ':')) + '\n')
     for c, r in zip(site.cards, recs):
+        bu = badge_urls(site, c)
         one = {'licence': lic, 'source': REPO_URL, 'generated_at': iso(gen)} | r | {
+            'badge_status': badges.status_of(c)[1], 'badge_svg': bu['svg'], 'badge_svg_dark': bu['svg_dark'], 'badge_page': bu['page'],
             'claims': c.get('claims', []), 'qa_status': c.get('qa_status')}
         write(f"{b}/platforms/{c['slug']}.json", json.dumps(one, ensure_ascii=False, indent=1) + '\n')
 
@@ -1334,7 +1488,8 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [All entries A-Z]({A(f'{b}/platforms/')}): every published entry
 - [Closed history]({A(f'{b}/closed/')}): platforms that shut down
 - [Where agents get paid]({A(f'{b}/earn/')}): live platforms with a sourced money figure, grouped by unit (never converted); JSON: {A(f'{b}/earn.json')}
-- [How the Atlas works]({A(f'{b}/about/')}): method, basis labels, QA re-checks, freshness, corrections
+- [How the Atlas works]({A(f'{b}/about/')}): method, basis labels, QA re-checks, freshness, closures, corrections
+- [Atlas badges]({A(f'{b}/badge/')}): free status badge for every card (Verified · date / Listed / Closed · history), {A(f'{b}/badge/')}<id>.svg and <id>-dark.svg; never sold, no tracking, rebuilt with every weekly check
 - [Verification protocol]({REPO_URL}/blob/main/atlas/PROTOCOL.md): the full protocol each claim goes through
 - [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
 
@@ -1347,7 +1502,8 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - Per category: {A(f'{b}/categories/')}<category>.json, the same fields for one category only (small files; use these if your tool truncates long responses)
 - [earn.json]({A(f'{b}/earn.json')}): where agents get paid: one row per live entry with a supported money figure (value, unit, window, basis, observed_at, source_url), grouped by unit
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
-- Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt)
+- Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt), plus badge_svg, badge_svg_dark and badge_page
+- Closed entries: closed by human review (official statement or at least two independent signals; never reopened automatically) or by the automated weekly check (unreachable in 2 consecutive weekly checks; reopens automatically if the site answers again). A single failed load is never proof.
 - IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
 {ex_lines}
 - All claims and sources are public; no key needed.
@@ -1380,7 +1536,8 @@ Some agent tools cannot reach the site directly. The same published files are mi
     write('/llms.txt', txt)
     lines = [f'# Commonworld Atlas: all {len(recs)} published entries',
              f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '',
-             f"Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}", '']
+             f"Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}",
+             f"Badges: every entry has a free status badge at {A(f'{b}/badge/')}<id>.svg (dark: <id>-dark.svg); rules: {A(f'{b}/badge/')}", '']
     for r in recs:
         lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}" + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
     write('/llms-full.txt', '\n'.join(lines) + '\n')
@@ -1459,6 +1616,8 @@ def main():
     write(f'{b}/closed/', build_closed(site))
     write(f'{b}/earn/', build_earn(site))
     write(f'{b}/about/', build_about(site))
+    write(f'{b}/badge/', build_badge_page(site))
+    n_badges = write_badges(site, write)
     write(CW_ABOUT, build_cw_about(site))  # About Commonworld
     priv_url, terms_url = legal_urls(site)
     write(priv_url, build_privacy(site))
@@ -1520,6 +1679,10 @@ def main():
   Cache-Control: public, max-age=604800
 {b}/og/*
   Cache-Control: public, max-age=86400
+{b}/badge/*.svg
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+  Content-Type: image/svg+xml; charset=utf-8
 {b}/platforms.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
@@ -1543,7 +1706,7 @@ def main():
   Content-Security-Policy: {CSP}
 """)
     total = sum(1 for _ in site.pages)
-    print(f'built {total} indexable pages + 404 into {out} ({len(site.cards)} entries, {len(site.cats)} categories)')
+    print(f'built {total} indexable pages + 404 into {out} ({len(site.cards)} entries, {len(site.cats)} categories, {n_badges} badges x2)')
 
 
 if __name__ == '__main__':

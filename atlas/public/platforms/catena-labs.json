@@ -20,6 +20,10 @@
  "last_checked": "2026-10-15T18:15:00Z",
  "claims_count": 4,
  "disclosure": null,
+ "badge_status": "Verified · 2026-10-15",
+ "badge_svg": "https://commonworld.one/atlas/badge/catena-labs.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/catena-labs-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "canonical_url",
