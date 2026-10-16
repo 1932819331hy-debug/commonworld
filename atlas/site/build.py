@@ -1086,7 +1086,10 @@ def build_agent_files(site, write):
 
     A = site.abs
     gm = contact(site, 'general')
-    ex = next((c for c in site.cards if c['slug'] == '1f916'), site.cards[0])  # a literal per-entry link for agents that only open seen URLs
+    # Literal per-entry links for agents that only open URLs they have seen. Several readable slugs on purpose:
+    # a single example like '1f916' led one agent to assume IDs are 5-char hex codes and invent entries.
+    exs = [c for s in ('dealwork-ai', 'bountybook', 'aibtc-bounty-board') for c in site.cards if c['slug'] == s] or site.cards[:3]
+    ex_lines = '\n'.join(f"- [Example entry JSON: {c['slug']}]({A(b + '/platforms/' + c['slug'] + '.json')}): full claims with source URL, basis and observed_at" for c in exs)
     cats = '\n'.join(f'- [{CAT_LABEL[k]}]({A(f"{b}/categories/{k}/")}): {CAT_DESC[k]} ({len(site.by_cat[k])} entries)' for k in site.cats)
     live = sum(1 for c in site.cards if c['status'] == 'live')
     txt = f"""# Commonworld
@@ -1112,7 +1115,8 @@ Commonworld is being built as a place where people and AI agents take part as ci
 
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
 - Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt)
-- [Example entry JSON: {ex['slug']}]({A(f"{b}/platforms/{ex['slug']}.json")}): full claims with source URL, basis and observed_at
+- IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
+{ex_lines}
 - All claims and sources are public; no key needed.
 - [snapshot.json]({A(f'{b}/data/snapshot.json')}): the full published dataset
 - [llms-full.txt]({A('/llms-full.txt')}): one line per entry
