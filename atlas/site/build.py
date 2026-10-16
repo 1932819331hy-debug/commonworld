@@ -342,7 +342,22 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
 
 
 # ---------------------------------------------------------------- Open Graph image specs + share text
-SHARE_SUFFIX = ' — verified on Commonworld Atlas'
+def share_text_index(site):
+    live = sum(1 for c in site.cards if c['status'] == 'live')
+    return f'Atlas of Agent Platforms: {live} places where AI agents work and get paid'
+
+
+SHARE_TEXT_EARN = 'Where AI agents get paid — Commonworld Atlas'
+
+
+def share_text_entry(c):
+    """Share text by badge status: only verified cards say 'verified'."""
+    tone = badges.status_of(c)[0]
+    if tone == 'verified':
+        return f"{c['name']} — verified on Commonworld Atlas"
+    if tone == 'closed':
+        return f"{c['name']} (closed) — history on Commonworld Atlas"
+    return f"{c['name']} on Commonworld Atlas"
 
 
 def og_foot(site, dt=None):
@@ -450,7 +465,7 @@ def build_index(site):
 {bar}
 {leg}
 {hero}
-{cw.share_bar(cfg, site.abs(f'{b}/'), 'Atlas of Agent Platforms' + SHARE_SUFFIX, cls='cw-share-index')}
+{cw.share_bar(cfg, site.abs(f'{b}/'), share_text_index(site), cls='cw-share-index')}
 {cw.ad_slot(cfg, 'atlas-index-top', 'cw-ad-banner')}
 <div id="catalog-top">{tabs}</div>
 <section class="cw-panel atlas-catalog" id="catalog" aria-labelledby="list-title" data-search-index="{b}/data/search-index.json">
@@ -556,7 +571,7 @@ def build_platform(site, c):
 <article class="entry">
 <header class="entry-head"><div class="cw-meta"><a class="catchip" href="{b}/categories/{cat}/"><i style="background:{CAT_COLOR[cat]}"></i>{e(CAT_LABEL[cat])}</a></div>
 <h1>{e(c['name'])}</h1>{chips(c)}
-<p class="cw-lead">{e(c['_desc'])}</p>{closed_box}{disclosure_box}{tags}<div class="entry-actions">{f'<p class="actions">{visit}</p>' if visit else ''}{cw.share_bar(site.cfg, site.abs(c['_url']), c['name'] + SHARE_SUFFIX, cls='cw-share-head')}</div></header>
+<p class="cw-lead">{e(c['_desc'])}</p>{closed_box}{disclosure_box}{tags}<div class="entry-actions">{f'<p class="actions">{visit}</p>' if visit else ''}{cw.share_bar(site.cfg, site.abs(c['_url']), share_text_entry(c), cls='cw-share-head')}</div></header>
 <dl class="facts">
 <div><dt>Permanent ID</dt><dd><code>{e(c['slug'])}</code> · <a href="{b}/platforms/{e(c['slug'])}.json" type="application/json" title="This entry as JSON: all claims with sources">JSON</a></dd></div>
 <div><dt>Direction</dt><dd><a href="{b}/categories/{cat}/">{e(CAT_SHORT[cat])}</a></dd></div>
@@ -854,7 +869,7 @@ def build_earn(site):
             f'Money never buys a place or a position here; see <a href="{b}/about/#advertise">how the Atlas works</a>.</p>')
     body = f"""{crumbs}
 {cw.hero('Atlas · money', 'Where agents get paid', lead, box, small=True, kicker_href=f'{b}/')}
-{cw.share_bar(site.cfg, site.abs(f'{b}/earn/'), 'Where agents get paid' + SHARE_SUFFIX, cls='cw-share-earn')}
+{cw.share_bar(site.cfg, site.abs(f'{b}/earn/'), SHARE_TEXT_EARN, cls='cw-share-earn')}
 <nav class="earn-toc" aria-label="Unit groups">{''.join(toc)}</nav>
 {''.join(secs)}
 {nf_html}

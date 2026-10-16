@@ -180,7 +180,7 @@ with sync_playwright() as p:
     check('mobile: native Share button visible where navigator.share exists', mp.is_visible('.cw-share [data-share="native"]'))
     check('mobile: share row is in the header card', mp.evaluate("document.querySelector('.entry-head').contains(document.querySelector('.cw-share'))"))
     mp.tap('.cw-share [data-share="native"]'); mp.wait_for_timeout(200)
-    check('mobile: native share gets canonical URL + text', mp.evaluate(f"window.__shared && window.__shared.url === {canon!r} && window.__shared.text.includes('verified on Commonworld Atlas')"))
+    check('mobile: native share gets canonical URL + text', mp.evaluate(f"window.__shared && window.__shared.url === {canon!r} && window.__shared.text === 'The Colony — verified on Commonworld Atlas'"))
     check('mobile: share bar fits (no horizontal overflow)', mp.evaluate("document.documentElement.scrollWidth <= innerWidth"))
     mc.close()
 

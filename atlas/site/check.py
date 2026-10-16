@@ -285,7 +285,24 @@ def closure_checks(pages):
     return fails
 
 
+def _share_expectations():
+    """Expected share text per entry page, by badge status (verified / listed / closed), and the live count for the index."""
+    snap = json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']
+    exp = {}
+    for c in snap:
+        if c.get('status') == 'closed':
+            t = f"{c['name']} (closed) — history on Commonworld Atlas"
+        elif c.get('verdict') == 'include_verified':
+            t = f"{c['name']} — verified on Commonworld Atlas"
+        else:
+            t = f"{c['name']} on Commonworld Atlas"
+        exp[f"/atlas/platforms/{c['slug']}/"] = t
+    return sum(1 for c in snap if c.get('status') == 'live'), exp
+
+
 def main():
+    global SHARE_LIVE, SHARE_ENTRY
+    SHARE_LIVE, SHARE_ENTRY = _share_expectations()
     fails, pages, parsed = [], {}, {}
     for root, _, files in os.walk(DIST):
         for f in files:
@@ -376,8 +393,10 @@ def main():
             for burl, btext in p.share_bars:
                 if burl != p.canon: fails.append(f'{u}: share bar url {burl} != canonical')
                 want_txt = {'/': 'Commonworld — A shared world for humans and agents',
-                            '/about/': 'About Commonworld — A shared world for humans and agents'}.get(u, 'verified on Commonworld Atlas')
-                if not btext or want_txt not in btext: fails.append(f'{u}: share text {btext!r}')
+                            '/about/': 'About Commonworld — A shared world for humans and agents',
+                            '/atlas/': f'Atlas of Agent Platforms: {SHARE_LIVE} places where AI agents work and get paid',
+                            '/atlas/earn/': 'Where AI agents get paid — Commonworld Atlas'}.get(u) or SHARE_ENTRY.get(u)
+                if not btext or btext != want_txt: fails.append(f'{u}: share text {btext!r} != {want_txt!r}')
             enc = quote(p.canon or '', safe='')
             for kind, href, label in p.shares:
                 if not label: fails.append(f'{u}: share button {kind} without aria-label')

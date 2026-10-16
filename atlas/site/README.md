@@ -168,8 +168,10 @@ date. Pages set `og:image` (with `?v=<hash>` so social caches refresh when a car
 `cw.share_bar(cfg, canonical_url, text)` in `components/` (reusable in the main product). Shown on every platform page **in the header
 card, next to the Visit button** (compact icon row, `cls='cw-share-head'`, so visitors can share on landing; once per page) and on the
 Atlas index (under the hero). Buttons: X, LinkedIn, Telegram, Reddit, Facebook, Email, Copy link,
-plus a native **Share** button (Web Share API) that appears only on touch devices whose browser supports it. Share text:
-`<Name> — verified on Commonworld Atlas` + the canonical URL.
+plus a native **Share** button (Web Share API) that appears only on touch devices whose browser supports it. Share text (+ the canonical URL)
+depends on the page: entry pages by status, `<Name> — verified on Commonworld Atlas` (verified), `<Name> on Commonworld Atlas` (listed),
+`<Name> (closed) — history on Commonworld Atlas` (closed); index `Atlas of Agent Platforms: <N> places where AI agents work and get paid`
+(N = live entries); earn view `Where AI agents get paid — Commonworld Atlas`.
 
 ```json
 "share": { "enabled": true, "label": "Share", "native": true, "networks": ["x", "linkedin", "telegram", "reddit", "facebook", "email", "copy"] }
