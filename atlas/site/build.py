@@ -1063,7 +1063,7 @@ def build_privacy(site):
 <li>No advertising cookies, no ad personalisation, no selling of data, no profiling.</li></ul>
 <h2 id="what">What we process, why, and for how long</h2>
 <div class="table-wrap"><table class="list"><thead><tr><th scope="col">What</th><th scope="col">Data</th><th scope="col">Why and legal basis</th><th scope="col">How long</th></tr></thead><tbody>
-<tr><td>Visit statistics (Google Analytics 4), only after you click <i>Accept</i></td><td>Pages viewed, time of visit, referring page, browser and device type, approximate location (country/city), a random ID stored in the <code>_ga</code> cookies, share-button clicks</td><td>To count visits and see which pages are useful. <b>Your consent</b> (GDPR Art. 6(1)(a)). You can withdraw it any time.</td><td>Cookies: up to 2 years. Visit-level data in Google Analytics: {e(ret)}, then deleted automatically. Aggregated reports (totals with no cookie ID) may be kept longer.</td></tr>
+<tr><td>Visit statistics (Google Analytics 4), only after you click <i>Accept</i></td><td>Pages viewed, time of visit, referring page, browser and device type, approximate location (country/city), a random ID stored in the <code>_ga</code> cookies, share-button clicks, and three actions: copying badge code, copying or opening an API file, and clicking a card's Visit button (which page and which link)</td><td>To count visits and see which pages are useful. <b>Your consent</b> (GDPR Art. 6(1)(a)). You can withdraw it any time.</td><td>Cookies: up to 2 years. Visit-level data in Google Analytics: {e(ret)}, then deleted automatically. Aggregated reports (totals with no cookie ID) may be kept longer.</td></tr>
 <tr><td>Hosting and security (Cloudflare)</td><td>IP address, requested page, browser (user agent), time of request</td><td>To deliver pages and protect the site against attacks and abuse. <b>Legitimate interest</b> in a working, secure site (GDPR Art. 6(1)(f)).</td><td>Kept by Cloudflare only as long as needed for delivery, security and troubleshooting, under its <a href="https://www.cloudflare.com/privacypolicy/" rel="nofollow noopener">privacy policy</a>. We do not keep our own server logs.</td></tr>
 <tr><td>Emails you send us (mailbox hosted by Zoho)</td><td>Your email address and what you write</td><td>To answer you and handle corrections, advertising enquiries or privacy requests. <b>Legitimate interest</b> in answering the people who write to us (Art. 6(1)(f)).</td><td>As long as needed to handle your message and any follow-up, then deleted.</td></tr>
 </tbody></table></div>
@@ -1080,7 +1080,7 @@ def build_privacy(site):
 <tr><td><code>cw-side</code></td><td>Local storage</td><td>When you hide the sidebar</td><td>Keep the sidebar hidden on your next visits</td><td>Until you clear it or show the sidebar again</td></tr>
 <tr><td><code>cw-ann-dismissed</code></td><td>Local storage</td><td>When you close the announcement bar</td><td>Do not show the same announcement again</td><td>Until you clear it</td></tr>
 </tbody></table></div>
-<p>Local storage stays in your browser and is never sent to us. These three items only remember choices you made, so they need no consent.</p>
+<p>Local storage stays in your browser and is never sent to us. These four items only remember choices you made, so they need no consent.</p>
 <h2 id="recipients">Who receives data</h2>
 <ul><li><b>Google</b> — Google Analytics, only with your consent, as our processor.</li>
 <li><b>Cloudflare</b> — hosting and security for every visit, as our processor.</li>
@@ -1348,7 +1348,7 @@ def badge_block(site, c):
             'closed': 'This platform is closed and the card is kept as history, so the badge says Closed · history.'}[tone]
     rows = ''.join(
         f'<div class="badge-snippet"><div class="badge-snippet-head"><span id="badge-l-{k}">{lab}</span>'
-        f'<button type="button" class="cw-btn badge-copy" data-copy-for="badge-c-{k}" aria-describedby="badge-l-{k}" hidden>Copy</button></div>'
+        f'<button type="button" class="cw-btn badge-copy" data-copy-for="badge-c-{k}" data-track="badge_copy" data-format="{k}" aria-describedby="badge-l-{k}" hidden>Copy</button></div>'
         f'<pre><code id="badge-c-{k}">{e(txt)}</code></pre></div>'
         for k, lab, txt in (('html', 'HTML', html_s), ('md', 'Markdown (README)', md), ('link', 'Plain link', link)))
     return (f'<section class="cw-panel cw-panel-gap badge-panel" id="badge" aria-labelledby="h-badge"><div class="cw-panel-head"><h2 id="h-badge">Add this badge to your site</h2>'
@@ -1673,7 +1673,9 @@ def build_api_docs(site):
 <h2 id="ids">IDs</h2>
 <p>An entry ID is its permanent URL slug (for example <code>{e(ex)}</code>). Never construct or guess an ID: take it from <a href="{V}/atlas/platforms.json">platforms.json</a> or a category file. An ID that is not listed there does not exist, and the request returns 404.</p>
 <h2 id="examples">Examples</h2>
-<pre><code>{e(curl)}</code></pre>
+<div class="badge-snippet-head"><span id="api-ex-l">curl + jq</span><button type="button" class="cw-btn badge-copy" data-copy-for="api-ex" data-track="api_use" data-format="examples" aria-describedby="api-ex-l" hidden>Copy</button></div>
+<pre><code id="api-ex">{e(curl)}</code></pre>
+<p class="copy-status sr" role="status" aria-live="polite"></p>
 <h2 id="access">Access, caching and CORS</h2>
 <ul><li>Static files served by Cloudflare: no key and no rate limit beyond fair use. Please cache on your side instead of polling.</li>
 <li>CORS is open (<code>Access-Control-Allow-Origin: *</code>), so browser apps can read the files directly. JSON files are served as <code>application/json</code> (UTF-8); a wrong ID returns HTTP 404.</li>
@@ -1734,6 +1736,9 @@ def main():
         cfg['site']['product_url'] = '/'
     data = json.load(open(a.data))
     site = Site(cfg, data)
+    bad = [c.get('slug') for c in site.cards if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,80}', str(c.get('slug') or ''))]
+    if bad:
+        raise SystemExit(f'invalid slug(s) in data (allowed: a-z 0-9 -): {bad[:5]}')
     lab_path = os.path.join(HERE, 'claim-labels.json')
     site.claim_labels = {k: v for k, v in json.load(open(lab_path)).items() if not k.startswith('_')} if os.path.exists(lab_path) else {}
     tags = json.load(open(a.tags))['tags'] if a.tags and os.path.exists(a.tags) else {}
@@ -1750,8 +1755,13 @@ def main():
         shutil.rmtree(out)
     root = os.path.join(out, b.strip('/'))
 
+    out_root = os.path.realpath(out)
+
     def write(rel, content, mode='w'):
         p = os.path.join(out, rel.lstrip('/'))
+        # never write outside dist (a crafted slug like '../x' in untrusted data must fail the build)
+        if os.path.commonpath([out_root, os.path.realpath(p)]) != out_root:
+            raise SystemExit(f'refusing to write outside {out}: {rel!r}')
         if p.endswith('/'):
             p += 'index.html'
         os.makedirs(os.path.dirname(p), exist_ok=True)

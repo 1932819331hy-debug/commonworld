@@ -107,10 +107,13 @@
   document.querySelectorAll('.cw-tagcloud').forEach(shelf);
 
   // ---- share buttons: copy link, native Web Share, GA4 'share' event only with analytics consent
-  function shareEvent(method, url) {
+  // GA4 events are sent only when the visitor accepted analytics; otherwise this does nothing.
+  function track(name, params) {
     if (get('cw-consent') === 'granted' && typeof window.gtag === 'function' && window.CW_GA)
-      window.gtag('event', 'share', { method: method, content_type: 'page', item_id: url });
+      window.gtag('event', name, params || {});
   }
+  window.cwTrack = track;
+  function shareEvent(method, url) { track('share', { method: method, content_type: 'page', item_id: url }); }
   function copyText(t) {
     if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
     return new Promise(function (ok, bad) {

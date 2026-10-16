@@ -190,6 +190,10 @@ depends on the page: entry pages by status, `<Name> — verified on Commonworld 
   is announced through an `aria-live` status.
 - Analytics: a GA4 `share` event (`method` = x / linkedin / telegram / reddit / facebook / email / copy / native) is sent only if
   the visitor accepted analytics cookies; nothing otherwise.
+- Key events (GA4, same consent rule, in `static/atlas.js`): `visit_platform` (Visit button on a card; `item_id` = card ID,
+  `link_domain`), `badge_copy` (Copy on a badge snippet; `format` = html / md / link), `api_use` (`method` = copy for the
+  API page examples, open for a click on an `/api/v1/…json` link). Mark them as key events in GA4 Admin → Events.
+  Agents usually do not run JavaScript, so agent traffic is measured from Cloudflare, not GA4.
 
 ## Theme, analytics, consent
 

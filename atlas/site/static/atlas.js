@@ -232,11 +232,11 @@
   apply(false);
 })();
 
-/* Card pages: "Add this badge to your site" copy buttons (shown only when JS runs; the code stays selectable without it). */
+/* Copy buttons (badge snippets on card pages, examples on the API page): shown only when JS runs; the code stays selectable without it.
+   Key events (GA4, only with analytics consent): badge_copy, api_use, visit_platform. */
 (function () {
-  var btns = document.querySelectorAll('.badge-copy[data-copy-for]');
-  if (!btns.length) return;
-  var status = document.querySelector('.badge-status');
+  var track = window.cwTrack || function () {};
+  var m = location.pathname.match(/\/platforms\/([a-z0-9-]+)\/?$/), slug = m ? m[1] : '';
   function copyText(t) {
     if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
     return new Promise(function (ok, bad) {
@@ -246,15 +246,26 @@
       document.body.removeChild(ta);
     });
   }
-  Array.prototype.forEach.call(btns, function (b) {
+  Array.prototype.forEach.call(document.querySelectorAll('[data-copy-for]'), function (b) {
     var src = document.getElementById(b.getAttribute('data-copy-for'));
     if (!src) return;
+    var panel = b.closest('section, .prose') || document, status = panel.querySelector('.copy-status, .badge-status');
+    var ev = b.getAttribute('data-track') || 'badge_copy', fmt = b.getAttribute('data-format') || '', label = b.textContent;
     b.hidden = false;
     b.addEventListener('click', function () {
       copyText(src.textContent).then(function () {
-        b.classList.add('copied'); b.textContent = 'Copied'; if (status) status.textContent = 'Badge code copied';
-        setTimeout(function () { b.classList.remove('copied'); b.textContent = 'Copy'; if (status) status.textContent = ''; }, 2000);
+        b.classList.add('copied'); b.textContent = 'Copied'; if (status) status.textContent = 'Copied to clipboard';
+        setTimeout(function () { b.classList.remove('copied'); b.textContent = label; if (status) status.textContent = ''; }, 2000);
+        if (ev === 'badge_copy') track('badge_copy', { item_id: slug, format: fmt });
+        else track('api_use', { method: 'copy', item_id: fmt });
       }, function () { if (status) status.textContent = 'Could not copy. Select the code and copy it by hand.'; });
     });
+  });
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    if (a.classList.contains('visit')) track('visit_platform', { item_id: slug, link_domain: a.hostname });
+    else if (document.body.contains(a) && /\/api\/v1\/.+\.json$/.test(a.pathname) && a.hostname === location.hostname)
+      track('api_use', { method: 'open', item_id: a.pathname });
   });
 })();
