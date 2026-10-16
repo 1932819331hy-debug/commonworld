@@ -24,6 +24,7 @@
    "value": 1094753,
    "unit": "USD (raw)",
    "window": "~30d to 2026-10-15T16:45Z (inferred)",
+   "basis": "direct_observation",
    "observed_at": "2026-10-15T18:08:00Z",
    "source_url": "https://www.x402scan.com/"
   }
@@ -33,6 +34,7 @@
   "value": 1094753,
   "unit": "USD (raw)",
   "window": "~30d to 2026-10-15T16:45Z (inferred)",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://www.x402scan.com/"
  },

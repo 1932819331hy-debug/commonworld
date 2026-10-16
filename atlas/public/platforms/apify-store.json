@@ -24,6 +24,7 @@
    "value": 1700000,
    "unit": "USD paid to developers",
    "window": "'last month' (likely Sep 2026; page dates up to 2026-09-24)",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:15:00Z",
    "source_url": "https://apify.com/partners/actor-developers"
   }
@@ -33,6 +34,7 @@
   "value": 1700000,
   "unit": "USD paid to developers",
   "window": "'last month' (likely Sep 2026; page dates up to 2026-09-24)",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:15:00Z",
   "source_url": "https://apify.com/partners/actor-developers"
  },

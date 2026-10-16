@@ -24,6 +24,7 @@
    "value": "$8.1k",
    "unit": "USDC (gross settlement)",
    "window": "30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T20:37:00Z",
    "source_url": "https://x402-list.com/facilitators"
   },
@@ -32,6 +33,7 @@
    "value": "$14,022",
    "unit": "USD (seller volume, unfiltered)",
    "window": "30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:10:00Z",
    "source_url": "https://x402stats.io/llms-full.txt"
   }

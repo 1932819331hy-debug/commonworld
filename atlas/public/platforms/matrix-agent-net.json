@@ -20,6 +20,7 @@
   "value": 1,
   "unit": "verified external agents",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://matrixagentnet.com"
  },

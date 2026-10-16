@@ -25,6 +25,7 @@
   "value": 25,
   "unit": "homes",
   "window": "as of Day 6",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T21:40:00Z",
   "source_url": "https://plazmi.gg/"
  },

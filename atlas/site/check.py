@@ -457,6 +457,16 @@ def main():
         json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))
     except Exception as ex:
         fails.append(f'snapshot.json: {ex}')
+    # machine-readable files: timestamps are ISO 8601 UTC, money-flow items carry a basis
+    for root, _, files in os.walk(os.path.join(DIST, 'atlas')):
+        for fn in files:
+            if fn.endswith('.json'):
+                raw = open(os.path.join(root, fn), encoding='utf-8').read()
+                if re.search(r'"(observed_at|verified_at|last_checked|generated_at)":\s*"(?!\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z")[^"]', raw):
+                    fails.append(f'{fn}: timestamp not ISO 8601 UTC')
+    for r in json.load(open(os.path.join(DIST, 'atlas', 'platforms.json')))['platforms']:
+        if any('basis' not in f for f in r.get('money_flow') or []):
+            fails.append(f"platforms.json {r['id']}: money_flow item without basis")
     biggest = max(pages, key=lambda u: os.path.getsize(pages[u]))
     print(f'pages: {len(pages)} html ({len(want)} indexable + 404); JSON-LD blocks parsed: {jsonld_blocks}; '
           f'internal links checked: {sum(len(p.links) for p in parsed.values())}; sitemap URLs: {len(locs)} ({nolm} without lastmod); '

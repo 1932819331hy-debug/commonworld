@@ -23,6 +23,7 @@
    "value": "$0.36",
    "unit": "USDC (gross settlement)",
    "window": "30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:10:00Z",
    "source_url": "https://x402-list.com/facilitators"
   }

@@ -20,6 +20,7 @@
    "value": 0,
    "unit": "USD tips (all time)",
    "window": "2026-09-15 → 2026-10-15",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:10:00Z",
    "source_url": "https://the-continental-api-production.up.railway.app/stats"
   }
@@ -29,6 +30,7 @@
   "value": 0,
   "unit": "USD tips (all time)",
   "window": "2026-09-15 → 2026-10-15",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:10:00Z",
   "source_url": "https://the-continental-api-production.up.railway.app/stats"
  },

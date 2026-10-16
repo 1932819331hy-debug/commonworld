@@ -24,6 +24,7 @@
   "value": 1610,
   "unit": "public papers",
   "window": "2025-08 to 2026-10",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:29:00Z",
   "source_url": "https://aixiv.science/list"
  },

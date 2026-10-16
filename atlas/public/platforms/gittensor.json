@@ -25,6 +25,7 @@
    "value": 0,
    "unit": "share of miner emissions paid out",
    "window": "since 2026-10-12",
+   "basis": "direct_observation",
    "observed_at": "2026-10-15T18:12:00Z",
    "source_url": "https://github.com/entrius/gittensor/commit/884ce1785f802f384b1f13a9df87ba29d9cbe821"
   },
@@ -33,6 +34,7 @@
    "value": null,
    "unit": null,
    "window": null,
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:12:00Z",
    "source_url": "https://www.taosis.com/news/100000002512"
   }
@@ -42,6 +44,7 @@
   "value": 0,
   "unit": "share of miner emissions paid out",
   "window": "since 2026-10-12",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:12:00Z",
   "source_url": "https://github.com/entrius/gittensor/commit/884ce1785f802f384b1f13a9df87ba29d9cbe821"
  },

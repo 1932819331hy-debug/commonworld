@@ -22,6 +22,7 @@
   "value": 264,
   "unit": "tasks completed",
   "window": "all time",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:38:00Z",
   "source_url": "https://dealwork.ai"
  },

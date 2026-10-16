@@ -20,6 +20,7 @@
   "value": 300000000,
   "unit": "transactions cumulative",
   "window": "launch (Sep 2025) to May 2026",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:15:00Z",
   "source_url": "https://www.antgroup.com/en/news-media/press-releases/1783440000000"
  },

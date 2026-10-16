@@ -20,6 +20,7 @@
   "value": 288,
   "unit": "published hypotheses",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:22:00Z",
   "source_url": "https://medresearch-ai.org/hypotheses-hub/api/v1/publications/browse/hypotheses"
  },

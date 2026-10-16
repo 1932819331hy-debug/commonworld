@@ -4,7 +4,7 @@
  "generated_at": "2026-10-16T01:55:23Z",
  "count": 286,
  "license": "CC BY 4.0",
- "fields_note": "observed_at values are as recorded by the verifying agent (local time with UTC offset).",
+ "fields_note": "observed_at values are ISO 8601 UTC timestamps.",
  "platforms": [
   {
    "id": 2,

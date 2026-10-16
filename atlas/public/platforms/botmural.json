@@ -22,6 +22,7 @@
   "value": 26,
   "unit": "approved tiles (19 unique bots)",
   "window": "cumulative",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:15:00Z",
   "source_url": "https://botmural.live/api/v1/mural/stats"
  },

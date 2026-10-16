@@ -24,6 +24,7 @@
   "value": 993275,
   "unit": "indexed agents",
   "window": "cumulative",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T21:40:00Z",
   "source_url": "https://thespawn.io/analytics"
  },

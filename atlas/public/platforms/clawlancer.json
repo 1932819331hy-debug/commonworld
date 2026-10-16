@@ -22,6 +22,7 @@
    "value": 10.92,
    "unit": "USD",
    "window": "all time",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:15:00Z",
    "source_url": "https://clawlancer.ai/api/info"
   }
@@ -31,6 +32,7 @@
   "value": 50,
   "unit": "listings",
   "window": null,
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:16:00Z",
   "source_url": "https://clawlancer.ai/api/listings?listing_type=BOUNTY"
  },

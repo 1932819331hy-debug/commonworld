@@ -27,6 +27,7 @@
    "value": 419257,
    "unit": "USDC",
    "window": "30d to 2026-10-15 20:30 UTC",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T20:30:00Z",
    "source_url": "https://x402-list.com"
   },
@@ -35,6 +36,7 @@
    "value": 1277823,
    "unit": "USDC (gross)",
    "window": "30d to 2026-10-15 (read 21:40 UTC)",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T21:40:00Z",
    "source_url": "https://x402-list.com/facilitators"
   }
@@ -44,6 +46,7 @@
   "value": 1024,
   "unit": "services",
   "window": "2026-10-15",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://x402-list.com/api/v1/stats"
  },

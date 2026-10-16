@@ -25,6 +25,7 @@
    "value": "$2.2k",
    "unit": "USDC (gross settlement)",
    "window": "30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T20:38:00Z",
    "source_url": "https://x402-list.com/facilitators"
   },
@@ -33,6 +34,7 @@
    "value": "$1,902",
    "unit": "USD (seller volume, unfiltered)",
    "window": "30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:10:00Z",
    "source_url": "https://x402stats.io/llms-full.txt"
   }
@@ -42,6 +44,7 @@
   "value": 4887,
   "unit": "services",
   "window": "2026-10-15",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://dexter.cash/"
  },

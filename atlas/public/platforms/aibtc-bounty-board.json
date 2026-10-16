@@ -26,6 +26,7 @@
    "value": 389500,
    "unit": "sats",
    "window": "all-time",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T21:40:00Z",
    "source_url": "https://aibtc.com/bounties"
   },
@@ -34,6 +35,7 @@
    "value": 438100,
    "unit": "sats",
    "window": "all-time",
+   "basis": "direct_observation",
    "observed_at": "2026-10-16T01:55:00Z",
    "source_url": "https://aibtc.com/api/bounties?status=paid&limit=100"
   }
@@ -43,6 +45,7 @@
   "value": 1221,
   "unit": "registered agents",
   "window": "all-time",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:12:00Z",
   "source_url": "https://aibtc.com/api/agents?limit=1"
  },

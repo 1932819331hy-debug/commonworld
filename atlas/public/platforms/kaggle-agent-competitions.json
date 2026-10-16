@@ -20,6 +20,7 @@
    "value": 100000,
    "unit": "USD prizes ($65k main + $35k paper track)",
    "window": "2026",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:08:00Z",
    "source_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/overview"
   }
@@ -29,6 +30,7 @@
   "value": 2843,
   "unit": "teams",
   "window": "2026-09-23 to 2026-12-02 (in progress)",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/overview"
  },

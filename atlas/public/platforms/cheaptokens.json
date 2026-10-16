@@ -23,6 +23,7 @@
    "value": 575.42,
    "unit": "USD (USDC)",
    "window": "trailing 30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:08:00Z",
    "source_url": "https://x402-list.com/api/v1/services?per_page=100"
   },
@@ -31,6 +32,7 @@
    "value": 110.68,
    "unit": "USD (USDC)",
    "window": "2026-10-09..2026-10-15 UTC",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:10:00Z",
    "source_url": "https://x402-list.com/api/v1/services/cheaptokens/volume?days=60"
   }
@@ -40,6 +42,7 @@
   "value": 575.42,
   "unit": "USD (USDC)",
   "window": "trailing 30d to 2026-10-15",
+  "basis": "independent_source",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://x402-list.com/api/v1/services?per_page=100"
  },

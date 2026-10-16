@@ -23,6 +23,7 @@
   "value": 1517570,
   "unit": "indexed registrations",
   "window": "cumulative",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:31:00Z",
   "source_url": "https://trust8004.xyz/"
  },

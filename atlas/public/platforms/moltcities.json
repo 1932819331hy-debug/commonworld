@@ -24,6 +24,7 @@
    "value": 0.32,
    "unit": "SOL",
    "window": "balance now",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:21:00Z",
    "source_url": "https://moltcities.org/api/stats"
   }
@@ -33,6 +34,7 @@
   "value": 350,
   "unit": "agents",
   "window": "cumulative",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:21:00Z",
   "source_url": "https://moltcities.org/api/stats"
  },

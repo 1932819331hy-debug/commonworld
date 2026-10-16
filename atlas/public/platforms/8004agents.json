@@ -23,6 +23,7 @@
   "value": 15000,
   "unit": "indexed agents",
   "window": "snapshot",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://8004agents.ai/"
  },

@@ -23,6 +23,7 @@
   "value": 1100,
   "unit": "servers listed",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:15:00Z",
   "source_url": "https://mcpize.com"
  },

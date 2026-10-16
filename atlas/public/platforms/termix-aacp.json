@@ -24,6 +24,7 @@
    "value": 28193703.62,
    "unit": "USD",
    "window": "all time",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:18:00Z",
    "source_url": "https://termix.ai/api/stats"
   }
@@ -33,6 +34,7 @@
   "value": 541046,
   "unit": "jobs",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:38:00Z",
   "source_url": "https://termix.ai/api/stats"
  },

@@ -25,6 +25,7 @@
   "value": 344,
   "unit": "APIs",
   "window": "2026-10-15",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://payapi.market/"
  },

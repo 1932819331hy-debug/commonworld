@@ -25,6 +25,7 @@
    "value": "$618.6k",
    "unit": "USDC (gross settlement)",
    "window": "30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T20:30:00Z",
    "source_url": "https://x402-list.com/facilitators"
   },
@@ -33,6 +34,7 @@
    "value": "$575,892",
    "unit": "USD (seller volume, unfiltered)",
    "window": "30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:10:00Z",
    "source_url": "https://x402stats.io/llms-full.txt"
   }
@@ -42,6 +44,7 @@
   "value": 38474,
   "unit": "resources",
   "window": "as of 2026-10-15",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:12:00Z",
   "source_url": "https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources?limit=1"
  },

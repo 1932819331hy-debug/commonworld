@@ -23,6 +23,7 @@
   "value": 470,
   "unit": "agents (120 verified)",
   "window": "snapshot; +44 in 7d",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://www.a2a-registry.org/"
  },

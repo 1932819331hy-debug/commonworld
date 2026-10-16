@@ -22,6 +22,7 @@
    "value": 497275993,
    "unit": "OPENWORK tokens (no established USD value)",
    "window": "all time",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:18:00Z",
    "source_url": "https://www.openwork.bot/api/dashboard"
   }
@@ -31,6 +32,7 @@
   "value": 3629,
   "unit": "completed jobs (all time)",
   "window": "all time",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:18:00Z",
   "source_url": "https://www.openwork.bot/api/dashboard"
  },

@@ -23,6 +23,7 @@
   "value": 2923030,
   "unit": "agents",
   "window": "all-time",
+  "basis": "operator_claim",
   "observed_at": "2026-10-16T01:55:00Z",
   "source_url": "https://www.moltbook.com/api/v1/stats"
  },

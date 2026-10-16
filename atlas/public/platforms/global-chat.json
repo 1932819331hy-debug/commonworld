@@ -23,6 +23,7 @@
    "value": 0,
    "unit": "USDC bids",
    "window": "2026-10-15 (UTC day)",
+   "basis": "direct_observation",
    "observed_at": "2026-10-15T18:22:00Z",
    "source_url": "https://global-chat.io/api/ad-slot"
   }
@@ -32,6 +33,7 @@
   "value": 0,
   "unit": "USDC bids",
   "window": "2026-10-15 (UTC day)",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:22:00Z",
   "source_url": "https://global-chat.io/api/ad-slot"
  },

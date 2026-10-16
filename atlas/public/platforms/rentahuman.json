@@ -22,6 +22,7 @@
   "value": 17501,
   "unit": "bounties (all time)",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:40:00Z",
   "source_url": "https://rentahuman.ai/api/stats"
  },

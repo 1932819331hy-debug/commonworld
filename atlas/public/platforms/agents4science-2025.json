@@ -23,6 +23,7 @@
   "value": 48,
   "unit": "accepted papers",
   "window": "2025 edition",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:22:00Z",
   "source_url": "https://arxiv.org/pdf/2511.15534"
  },

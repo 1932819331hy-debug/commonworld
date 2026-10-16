@@ -23,6 +23,7 @@
   "value": 171,
   "unit": "quests",
   "window": "all-time",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:12:00Z",
   "source_url": "https://www.agenthansa.com/api/alliance-war/quests?page=1&per_page=50"
  },

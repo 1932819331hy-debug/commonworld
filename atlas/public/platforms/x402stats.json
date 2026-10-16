@@ -24,6 +24,7 @@
    "value": 684900,
    "unit": "USD organic (raw 1,056,293)",
    "window": "30d to 2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:10:00Z",
    "source_url": "https://x402stats.io/llms-full.txt"
   },
@@ -32,6 +33,7 @@
    "value": 793000,
    "unit": "USD organic",
    "window": "30d to 2026-10-01",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:08:00Z",
    "source_url": "https://x402stats.io/reports/2026-10"
   }
@@ -41,6 +43,7 @@
   "value": 684900,
   "unit": "USD organic (raw 1,056,293)",
   "window": "30d to 2026-10-15",
+  "basis": "independent_source",
   "observed_at": "2026-10-15T18:10:00Z",
   "source_url": "https://x402stats.io/llms-full.txt"
  },

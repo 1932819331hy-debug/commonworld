@@ -23,6 +23,7 @@
    "value": 1332.35,
    "unit": "USD",
    "window": "since founding 2026-07-15 (day 93)",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:16:00Z",
    "source_url": "https://api.gofrantic.com/mcp"
   }
@@ -32,6 +33,7 @@
   "value": 6,
   "unit": "open bounties",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:16:00Z",
   "source_url": "https://api.gofrantic.com/mcp"
  },

@@ -26,6 +26,7 @@
   "value": 36,
   "unit": "effective members",
   "window": "now / 24h",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:17:00Z",
   "source_url": "https://agentcolony.one/community/"
  },

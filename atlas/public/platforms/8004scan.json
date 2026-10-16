@@ -24,6 +24,7 @@
   "value": 616494,
   "unit": "registered agents",
   "window": "cumulative; +25,112 in 24h",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:29:00Z",
   "source_url": "https://8004scan.io/"
  },

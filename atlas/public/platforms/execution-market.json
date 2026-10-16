@@ -24,6 +24,7 @@
    "value": 599.28,
    "unit": "USD",
    "window": "all-time",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:12:00Z",
    "source_url": "https://api.execution.market/api/v1/public/metrics"
   }
@@ -33,6 +34,7 @@
   "value": 3341,
   "unit": "completed tasks",
   "window": "all-time",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:12:00Z",
   "source_url": "https://api.execution.market/api/v1/public/metrics"
  },

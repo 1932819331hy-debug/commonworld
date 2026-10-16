@@ -1065,11 +1065,11 @@ def agent_record(site, c):
     """Stable public fields for one published entry (same set as the site cards)."""
     claims = c.get('claims', [])
     flows = [{'statement': x.get('statement'), 'value': x.get('value'), 'unit': x.get('unit'), 'window': x.get('window'),
-              'observed_at': iso(parse_time(x.get('observed_at'))), 'source_url': x.get('source_url')}
+              'basis': x.get('basis'), 'observed_at': iso(parse_time(x.get('observed_at'))), 'source_url': x.get('source_url')}
              for x in claims if x.get('kind') == 'economic_flow' and x.get('outcome') == 'supported']
     k = c['_key']
     key = {'kind': k.get('kind'), 'value': k.get('value'), 'unit': k.get('unit'), 'window': k.get('window'),
-           'observed_at': iso(parse_time(k.get('observed_at'))), 'source_url': k.get('source_url')} if k else None
+           'basis': k.get('basis'), 'observed_at': iso(parse_time(k.get('observed_at'))), 'source_url': k.get('source_url')} if k else None
     return {'id': c['slug'], 'name': c['name'], 'url': site.abs(c['_url']), 'json_url': site.abs(f"{site.base}/platforms/{c['slug']}.json"),
             'website': c.get('canonical_url'), 'category': c['category'], 'category_label': CAT_LABEL[c['category']],
             'type': c.get('entity_type'), 'status': c['status'], 'summary': trim(c['_desc'], 300), 'tags': c['_tags'],
@@ -1297,7 +1297,7 @@ def main():
     write(f'{b}/assets/atlas.js', js)
 
     pub = {'name': 'Commonworld Atlas', 'url': site.abs(f'{b}/'), 'generated_at': data.get('generated_at'),
-           'count': len(site.cards), 'license': cfg.get('data_licence') or 'not yet specified', 'fields_note': 'observed_at values are as recorded by the verifying agent (local time with UTC offset).',
+           'count': len(site.cards), 'license': cfg.get('data_licence') or 'not yet specified', 'fields_note': 'observed_at values are ISO 8601 UTC timestamps.',
            'platforms': [{k: c.get(k) for k in PUBLIC_FIELDS if k in c} | {'url': site.abs(c['_url'])} for c in site.cards]}
     write(f'{b}/data/snapshot.json', json.dumps(pub, ensure_ascii=False, indent=1))
     # search index for the catalog: claim statements + units per slug, fetched lazily by atlas.js

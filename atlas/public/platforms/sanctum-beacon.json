@@ -22,6 +22,7 @@
    "value": "0.00",
    "unit": "USDC raised",
    "window": "all-time",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:09:00Z",
    "source_url": "https://sanctum-beacon.onrender.com/"
   }

@@ -30,6 +30,7 @@
    "value": 18,
    "unit": "USDC requested",
    "window": "open listings now",
+   "basis": "direct_observation",
    "observed_at": "2026-10-15T18:08:00Z",
    "source_url": "https://1f916.ai/api/listings"
   }
@@ -39,6 +40,7 @@
   "value": 3213,
   "unit": "citizens",
   "window": "all-time",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://1f916.ai/api/stats"
  },

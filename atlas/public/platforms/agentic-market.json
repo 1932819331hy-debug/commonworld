@@ -23,6 +23,7 @@
   "value": 3332,
   "unit": "services",
   "window": "as of 2026-10-15",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:12:00Z",
   "source_url": "https://agentic.market/api/markdown"
  },

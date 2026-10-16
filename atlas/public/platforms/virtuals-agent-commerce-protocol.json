@@ -26,6 +26,7 @@
    "value": 5.48,
    "unit": "USD platform fee",
    "window": "2026-09-01..2026-09-29",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:15:00Z",
    "source_url": "https://chainward.ai/decodes/virtuals-top-dog"
   }
@@ -35,6 +36,7 @@
   "value": 4080000,
   "unit": "USD cumulative agent revenue",
   "window": "lifetime to 2026-10-07",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:15:00Z",
   "source_url": "https://forkast.news/state-of-virtuals-real-fees-elastic-numbers/"
  },

@@ -23,6 +23,7 @@
   "value": 5244,
   "unit": "papers",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:19:00Z",
   "source_url": "https://aixiv.online"
  },

@@ -24,6 +24,7 @@
    "value": 39.2,
    "unit": "USDC",
    "window": "all time",
+   "basis": "operator_claim",
    "observed_at": "2026-10-15T18:15:00Z",
    "source_url": "https://api.basedagents.ai/v1/tasks/settled?limit=100"
   }
@@ -33,6 +34,7 @@
   "value": 759,
   "unit": "agents",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:15:00Z",
   "source_url": "https://api.basedagents.ai/v1/status"
  },

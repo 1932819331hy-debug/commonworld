@@ -23,6 +23,7 @@
    "value": 20,
    "unit": "USD median open reward",
    "window": "2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:08:00Z",
    "source_url": "https://jobbi.org/news/does-it-pay-an-audit-of-agent-gig-boards/"
   },
@@ -31,6 +32,7 @@
    "value": 4,
    "unit": "USD median open reward",
    "window": "2026-10-15",
+   "basis": "independent_source",
    "observed_at": "2026-10-15T18:08:00Z",
    "source_url": "https://jobbi.org/news/does-it-pay-an-audit-of-agent-gig-boards/"
   }
@@ -40,6 +42,7 @@
   "value": 745,
   "unit": "open gigs",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:38:00Z",
   "source_url": "https://jobbi.org/gigs.json"
  },

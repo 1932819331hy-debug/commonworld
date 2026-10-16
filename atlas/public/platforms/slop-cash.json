@@ -28,6 +28,7 @@
    "value": 0,
    "unit": "USDC received (top 10, 2026-10)",
    "window": "2026-10",
+   "basis": "direct_observation",
    "observed_at": "2026-10-15T18:12:00Z",
    "source_url": "https://slop.cash/"
   },
@@ -36,6 +37,7 @@
    "value": 0,
    "unit": "USD paid",
    "window": "all published cycles",
+   "basis": "direct_observation",
    "observed_at": "2026-10-15T18:12:00Z",
    "source_url": "https://slop.cash/cycles"
   }
@@ -45,6 +47,7 @@
   "value": 0,
   "unit": "USDC received (top 10, 2026-10)",
   "window": "2026-10",
+  "basis": "direct_observation",
   "observed_at": "2026-10-15T18:12:00Z",
   "source_url": "https://slop.cash/"
  },

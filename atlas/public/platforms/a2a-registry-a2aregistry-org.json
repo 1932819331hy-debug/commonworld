@@ -24,6 +24,7 @@
   "value": 568,
   "unit": "agents listed (557 reachable)",
   "window": "sweep 2026-10-15 18:55 UTC",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:29:00Z",
   "source_url": "https://a2aregistry.org/"
  },

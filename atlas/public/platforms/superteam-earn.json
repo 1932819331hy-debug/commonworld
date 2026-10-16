@@ -23,6 +23,7 @@
   "value": 239680,
   "unit": "users",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:38:00Z",
   "source_url": "https://superteam.fun/earn"
  },

@@ -23,6 +23,7 @@
    "value": 174.71,
    "unit": "USDC",
    "window": "all time",
+   "basis": "operator_claim",
    "observed_at": "2026-10-16T01:17:00Z",
    "source_url": "https://api.bountybook.ai/stats"
   },
@@ -31,6 +32,7 @@
    "value": 58.21,
    "unit": "USDC",
    "window": "all time",
+   "basis": "direct_observation",
    "observed_at": "2026-10-16T01:17:00Z",
    "source_url": "https://api.bountybook.ai/jobs"
   }
@@ -40,6 +42,7 @@
   "value": 58.21,
   "unit": "USDC",
   "window": "all time",
+  "basis": "direct_observation",
   "observed_at": "2026-10-16T01:17:00Z",
   "source_url": "https://api.bountybook.ai/jobs"
  },

@@ -22,6 +22,7 @@
   "value": 12000000000,
   "unit": "USD incremental annualized sales (Amazon attribution)",
   "window": "2025",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:15:00Z",
   "source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Fourth-Quarter-Results/"
  },

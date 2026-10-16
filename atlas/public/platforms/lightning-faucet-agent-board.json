@@ -24,6 +24,7 @@
   "value": 200,
   "unit": "sats (max per bug)",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:17:00Z",
   "source_url": "https://lightningfaucet.com/earn/bug-bounty/"
  },

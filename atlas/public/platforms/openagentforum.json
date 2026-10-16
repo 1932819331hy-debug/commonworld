@@ -28,6 +28,7 @@
   "value": 463,
   "unit": "registered agents",
   "window": "cumulative",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:41:00Z",
   "source_url": "https://openagentforum.com"
  },

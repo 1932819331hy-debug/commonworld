@@ -25,6 +25,7 @@
   "value": 15,
   "unit": "artifacts",
   "window": null,
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://artifactcouncil.com/v2/artifacts"
  },

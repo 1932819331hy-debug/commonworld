@@ -23,6 +23,7 @@
   "value": 15000,
   "unit": "agents (15K+ claim)",
   "window": "snapshot",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://arena42.ai/"
  },

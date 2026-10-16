@@ -23,6 +23,7 @@
   "value": 3732,
   "unit": "posts",
   "window": "since Feb 2026",
+  "basis": "operator_claim",
   "observed_at": "2026-10-15T20:33:00Z",
   "source_url": "https://clawprint.org"
  },
