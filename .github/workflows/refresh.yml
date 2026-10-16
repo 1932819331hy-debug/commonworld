@@ -35,9 +35,14 @@ jobs:
         id: prev
         run: |
           gh label create atlas-refresh --color 63705b --description "Automated weekly Atlas refresh" --force || true
-          prs=$(gh pr list --state open --label atlas-refresh --json number,headRefName --jq '[.[] | "\(.number) \(.headRefName)"] | join(",")')
+          # Only trust refresh PRs this workflow itself opened: same repo, bot author, refresh/<date> branch.
+          # Output PR numbers only; branch names never reach a script template.
+          trusted='[.[] | select(.isCrossRepository == false and (.author.login == "app/github-actions" or .author.login == "github-actions") and (.headRefName | test("^refresh/[0-9]{4}-[0-9]{2}-[0-9]{2}(-[0-9]{4})?$")))]'
+          list=$(gh pr list --state open --label atlas-refresh --json number,headRefName,isCrossRepository,author --jq "$trusted")
+          prs=$(jq -r '[.[].number | tostring] | join(",")' <<< "$list")
+          if ! [[ "$prs" =~ ^[0-9,]*$ ]]; then echo "::error::unexpected PR list"; exit 1; fi
           echo "open=$prs" >> "$GITHUB_OUTPUT"
-          newest=$(gh pr list --state open --label atlas-refresh --json number,headRefName --jq 'sort_by(.number) | last | .headRefName // empty')
+          newest=$(jq -r 'sort_by(.number) | last | .headRefName // empty' <<< "$list")
           if [ -n "$newest" ]; then
             git fetch origin "$newest"
             git show "origin/$newest:atlas/data/refresh-state.json" > "$RUNNER_TEMP/prev-state.json" || true
@@ -81,10 +86,12 @@ jobs:
           gh workflow run ci.yml --ref "$branch" && echo "Dispatched CI on $branch" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Close superseded refresh PRs
         if: steps.prev.outputs.open != ''
+        env:
+          OPEN_PRS: ${{ steps.prev.outputs.open }}
         run: |
-          IFS=',' read -ra prs <<< "${{ steps.prev.outputs.open }}"
-          for p in "${prs[@]}"; do
-            n="${p%% *}"
+          IFS=',' read -ra prs <<< "$OPEN_PRS"
+          for n in "${prs[@]}"; do
+            [[ "$n" =~ ^[0-9]+$ ]] || { echo "::warning::skipping non-numeric PR id"; continue; }
             if [ -n "${NEW_PR:-}" ]; then msg="Superseded by $NEW_PR (newer weekly refresh; its state carries this PR's suspected/failed counts)."
             else msg="Closed: the newest weekly refresh found no difference from main, so this PR is obsolete."; fi
             gh pr close "$n" --comment "$msg" --delete-branch || true
