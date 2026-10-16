@@ -10,8 +10,8 @@
 /* ---------- tokens ---------- */
 :root {
   --bg:#f4f1ea; --paper:#fbfaf7; --ink:#202522; --muted:#686e68; --line:#dfded6; --soft:#f1eee5;
-  --accent:#e75b3d; --accent-text:#bf472c; --olive:#63705b;
-  --dm-outgoing:#e7e9e3; --radius:18px; --focus:#bf472c;
+  --accent:#e75b3d; --accent-text:#b34128; --olive:#63705b; /* accent-text >= 4.6:1 on every light surface (bg, paper, soft, dm-outgoing) */
+  --dm-outgoing:#e7e9e3; --radius:18px; --focus:#b34128;
   --st-live:#48a671; --st-live-text:#2f7d4f; --st-dead:#a24e3d; --st-quiet:#a16a3c; --st-unverified:#7c827c;
   --ok:#2f7d4f; --bad:#a33a3a; --warn:#8a5a1c; --ok-bg:#e6efe7; --bad-bg:#f6e4e1; --warn-bg:#f5ecdc;
   --font:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -177,6 +177,9 @@ a.kicker:hover { text-decoration:underline; }
 .cw-card h3 a::after { content:""; position:absolute; inset:0; border-radius:14px; }
 .cw-card h3 a:focus-visible { outline:none; }
 .cw-card h3 a:focus-visible::after { outline:2px solid var(--focus); outline-offset:2px; }
+/* long catalog grids: skip layout/paint of off-screen cards (cheaper filtering on phones); visible again while focused so the focus ring is not clipped */
+.cw-grid > .cw-card { content-visibility:auto; contain-intrinsic-size:auto 230px; }
+.cw-grid > .cw-card:focus-within { content-visibility:visible; }
 .cw-card p { color:var(--muted); font-size:12px; line-height:1.5; }
 .cw-card.is-closed { background:var(--soft); }
 .cw-meta { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:10px; flex-wrap:wrap; }
@@ -290,6 +293,14 @@ a.catchip:hover { color:var(--ink); }
   .cw-filterbar .spacer { display:none; }
   .cw-tagcloud { max-height:112px; }
   .cw-ad { height:auto; min-height:var(--ad-h); }
+}
+/* touch: every small filter / tag control gets a hit area of at least 24x24 CSS px (WCAG 2.5.8) without looking bigger */
+@media (max-width:720px), (pointer:coarse) {
+  .cw-legend { gap:0 14px; }
+  .cw-legend > * { display:inline-block; padding:5px 0; }
+  .card-tags .link-pill, .entry-head .card-tags .link-pill, .link-pill, .text-btn, .pill { min-height:24px; min-width:24px; }
+  .card-tags .link-pill { display:inline-flex; align-items:center; padding-top:2px; padding-bottom:2px; }
+  .text-btn { display:inline-flex; align-items:center; }
 }
 @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
 @media print { .cw-share, .cw-side, .cw-top, .cw-ad, .cw-adcard, .cw-announce, .cw-consent, .cw-foot { display:none !important; } .cw-shell { display:block; } }

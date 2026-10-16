@@ -10,6 +10,7 @@
   var q = document.getElementById('q'), form = q && q.closest('form');
   var cards = Array.prototype.slice.call(grid.querySelectorAll('.cw-card[data-slug]'));
   var total = cards.length;
+  var baseOrder = cards.slice();  // sorts always start from the page order, as before
   var adTpl = grid.querySelector('[data-ad-card]');
   if (adTpl) adTpl = adTpl.cloneNode(true);
   var empty = document.getElementById('f-empty');
@@ -34,20 +35,23 @@
     }).catch(function () {});
   }
 
-  function match(c, skip) {
-    var words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
-    if (skip !== 'cat' && state.cat && c.dataset.c !== state.cat) return false;
-    if (skip !== 'status' && state.status.size && !state.status.has(c.dataset.s)) return false;
-    if (skip !== 'type' && state.type.size && !state.type.has(c.dataset.t)) return false;
-    if (skip !== 'feat') { var ok = true; state.feat.forEach(function (f) { if (c.dataset[f] !== '1') ok = false; }); if (!ok) return false; }
-    if (skip !== 'tags') { var ok2 = true; state.tags.forEach(function (t) { if (c._tags.indexOf(t) === -1) ok2 = false; }); if (!ok2) return false; }
-    for (var i = 0; i < words.length; i++) if (c._hay.indexOf(words[i]) === -1) return false;
-    return true;
+  // Each apply() makes ONE pass over the cards: every card gets a bitmask of the filter groups it fails, so the list,
+  // every chip count and the tag shelf all come from that pass. The DOM is only touched where something changed
+  // (cards are reordered only when the sort changes; hidden / pressed / counts are written only when they differ).
+  var G = { cat: 1, status: 2, type: 4, feat: 8, tags: 16, q: 32 };
+  function failMask(c, words) {
+    var m = 0;
+    if (state.cat && c.dataset.c !== state.cat) m |= G.cat;
+    if (state.status.size && !state.status.has(c.dataset.s)) m |= G.status;
+    if (state.type.size && !state.type.has(c.dataset.t)) m |= G.type;
+    if (state.feat.size) state.feat.forEach(function (f) { if (c.dataset[f] !== '1') m |= G.feat; });
+    if (state.tags.size) state.tags.forEach(function (t) { if (c._tags.indexOf(t) === -1) m |= G.tags; });
+    for (var i = 0; i < words.length; i++) if (c._hay.indexOf(words[i]) === -1) { m |= G.q; break; }
+    return m;
   }
-  function countBy(skip, fn) { var n = 0; cards.forEach(function (c) { if (match(c, skip) && fn(c)) n++; }); return n; }
 
   function sortCards() {
-    var by = state.sort, l = cards.slice();
+    var by = state.sort, l = baseOrder.slice();
     var name = function (a, b) { return a._name < b._name ? -1 : a._name > b._name ? 1 : 0; };
     if (by === 'claims') l.sort(function (a, b) { return (+b.dataset.claims) - (+a.dataset.claims) || name(a, b); });
     else if (by === 'recent') l.sort(function (a, b) { return (+b.dataset.ver) - (+a.dataset.ver) || name(a, b); });
@@ -55,63 +59,92 @@
     return l;
   }
 
+  // sponsored cards: a small pool of nodes moved into place (no re-cloning on every filter)
+  var adPool = Array.prototype.slice.call(grid.querySelectorAll('[data-ad-card]'));
   function placeAds(visible) {
-    grid.querySelectorAll('[data-ad-card]').forEach(function (a) { a.remove(); });
-    if (!adTpl) return;
-    for (var i = EVERY - 1; i < visible.length; i += EVERY) visible[i].after(adTpl.cloneNode(true));
+    var need = adTpl ? Math.floor(visible.length / EVERY) : 0;
+    while (adPool.length < need) adPool.push(adTpl.cloneNode(true));
+    for (var i = 0; i < adPool.length; i++) {
+      var ad = adPool[i];
+      if (i < need) { var anchor = visible[(i + 1) * EVERY - 1]; if (anchor.nextSibling !== ad) anchor.after(ad); }
+      else if (ad.parentNode) ad.remove();
+    }
   }
 
-  function pressed(el, on) { el.setAttribute('aria-pressed', on ? 'true' : 'false'); el.classList.toggle('active', !!on); }
+  function pressed(el, on) {
+    var v = on ? 'true' : 'false';
+    if (el.getAttribute('aria-pressed') !== v) el.setAttribute('aria-pressed', v);
+    if (el.classList.contains('active') !== !!on) el.classList.toggle('active', !!on);
+  }
+  function setText(el, t) { t = String(t); if (el.textContent !== t) el.textContent = t; }
+  function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  var statusBtns = all('[data-f-status]'), typeBtns = all('[data-f-type]'), featBtns = all('[data-f-feat]'), filterBtns = all('[data-filter]');
+  var catBtns = all('#catalog-top [data-cat], .cw-legend [data-cat]'), sideCats = all('.cw-side a[data-cat]');
+  var cardTagLinks = Array.prototype.slice.call(grid.querySelectorAll('.card-tags [data-tag]'));
+  var listTitle = document.getElementById('list-title'), listCount = document.getElementById('list-count');
+  var sortedFor = null, tagsKey = null, activeHTML = null;
 
   function apply(push) {
-    var ordered = sortCards(), visible = [];
-    ordered.forEach(function (c) { grid.appendChild(c); var ok = match(c); c.hidden = !ok; if (ok) visible.push(c); });
-    if (empty) grid.appendChild(empty);
+    var words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (sortedFor !== state.sort) {  // reorder only when the sort changes
+      sortedFor = state.sort;
+      var frag = document.createDocumentFragment();
+      sortCards().forEach(function (c) { frag.appendChild(c); });
+      if (empty) frag.appendChild(empty);
+      grid.appendChild(frag);
+      cards = Array.prototype.slice.call(grid.querySelectorAll('.cw-card[data-slug]'));
+    }
+    var visible = [], cS = {}, cT = {}, cF = { money: 0, num: 0 }, tagCounts = {};
+    var notS = ~G.status, notT = ~G.type, notF = ~G.feat, notTg = ~G.tags;
+    for (var i = 0; i < cards.length; i++) {
+      var c = cards[i], m = failMask(c, words), ok = m === 0;
+      if (c.hidden === ok) c.hidden = !ok;
+      if (ok) visible.push(c);
+      if ((m & notS) === 0) cS[c.dataset.s] = (cS[c.dataset.s] || 0) + 1;
+      if ((m & notT) === 0) cT[c.dataset.t] = (cT[c.dataset.t] || 0) + 1;
+      if ((m & notF) === 0) { if (c.dataset.money === '1') cF.money++; if (c.dataset.num === '1') cF.num++; }
+      if ((m & notTg) === 0) for (var j = 0; j < c._tags.length; j++) tagCounts[c._tags[j]] = (tagCounts[c._tags[j]] || 0) + 1;
+    }
     placeAds(visible);
-    empty.hidden = visible.length !== 0;
-    document.getElementById('list-title').textContent = state.cat ? CATS[state.cat] : 'All platforms';
-    document.getElementById('list-count').textContent = visible.length + ' of ' + total;
+    if (empty && empty.hidden !== (visible.length !== 0)) empty.hidden = visible.length !== 0;
+    setText(listTitle, state.cat ? CATS[state.cat] : 'All platforms');
+    setText(listCount, visible.length + ' of ' + total);
 
     // chip counts (each group counted with every other filter applied)
-    document.querySelectorAll('[data-f-status]').forEach(function (b) {
-      var k = b.getAttribute('data-f-status'); pressed(b, state.status.has(k));
-      b.querySelector('span').textContent = countBy('status', function (c) { return c.dataset.s === k; });
-    });
-    document.querySelectorAll('[data-f-type]').forEach(function (b) {
-      var k = b.getAttribute('data-f-type'); pressed(b, state.type.has(k));
-      b.querySelector('span').textContent = countBy('type', function (c) { return c.dataset.t === k; });
-    });
-    document.querySelectorAll('[data-f-feat]').forEach(function (b) {
-      var k = b.getAttribute('data-f-feat'); pressed(b, state.feat.has(k));
-      b.querySelector('span').textContent = countBy('feat', function (c) { return c.dataset[k] === '1'; });
-    });
-    document.querySelectorAll('[data-filter]').forEach(function (b) {
+    statusBtns.forEach(function (b) { var k = b.getAttribute('data-f-status'); pressed(b, state.status.has(k)); setText(b.querySelector('span'), cS[k] || 0); });
+    typeBtns.forEach(function (b) { var k = b.getAttribute('data-f-type'); pressed(b, state.type.has(k)); setText(b.querySelector('span'), cT[k] || 0); });
+    featBtns.forEach(function (b) { var k = b.getAttribute('data-f-feat'); pressed(b, state.feat.has(k)); setText(b.querySelector('span'), cF[k] || 0); });
+    filterBtns.forEach(function (b) {
       var f = b.getAttribute('data-filter').split(':');
       pressed(b, f[0] === 'status' ? state.status.has(f[1]) : f[0] === 'feat' ? state.feat.has(f[1]) : false);
     });
-    document.querySelectorAll('#catalog-top [data-cat], .cw-legend [data-cat]').forEach(function (b) { pressed(b, (b.getAttribute('data-cat') || '') === state.cat); });
-    document.querySelectorAll('.cw-side a[data-cat]').forEach(function (a) {
-      var on = (a.getAttribute('data-cat') || '') === state.cat; a.classList.toggle('active', on);
-      if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+    catBtns.forEach(function (b) { pressed(b, (b.getAttribute('data-cat') || '') === state.cat); });
+    sideCats.forEach(function (a) {
+      var on = (a.getAttribute('data-cat') || '') === state.cat;
+      if (a.classList.contains('active') !== on) a.classList.toggle('active', on);
+      if (on) { if (a.getAttribute('aria-current') !== 'true') a.setAttribute('aria-current', 'true'); } else if (a.hasAttribute('aria-current')) a.removeAttribute('aria-current');
     });
 
     // tag shelf: counts within the current filters, selected first, then by count; empty tags hidden
     if (shelfEl) {
-      var counts = {};
-      cards.forEach(function (c) { if (match(c, 'tags')) c._tags.forEach(function (t) { counts[t] = (counts[t] || 0) + 1; }); });
+      var prev = tagBtns.slice();
       tagBtns.sort(function (a, b) {
         var ta = a.dataset.tag, tb = b.dataset.tag;
-        return (state.tags.has(tb) - state.tags.has(ta)) || ((counts[tb] || 0) - (counts[ta] || 0)) || (ta < tb ? -1 : 1);
+        return (state.tags.has(tb) - state.tags.has(ta)) || ((tagCounts[tb] || 0) - (tagCounts[ta] || 0)) || (ta < tb ? -1 : 1);
       });
+      var moved = tagBtns.some(function (b, i) { return b !== prev[i]; });
+      var frag2 = moved ? document.createDocumentFragment() : null;
       tagBtns.forEach(function (b) {
-        var t = b.dataset.tag, n = counts[t] || 0;
-        b.querySelector('small').textContent = n; pressed(b, state.tags.has(t));
-        b.hidden = !n && !state.tags.has(t);
-        shelfEl.insertBefore(b, shelfMore);
+        var t = b.dataset.tag, n = tagCounts[t] || 0, hide = !n && !state.tags.has(t);
+        setText(b.querySelector('small'), n); pressed(b, state.tags.has(t));
+        if (b.hidden !== hide) b.hidden = hide;
+        if (frag2) frag2.appendChild(b);
       });
+      if (frag2) shelfEl.insertBefore(frag2, shelfMore);
       shelfEl.cwRefresh && shelfEl.cwRefresh();
     }
-    grid.querySelectorAll('.card-tags [data-tag]').forEach(function (a) { a.classList.toggle('active', state.tags.has(a.dataset.tag)); });
+    var tk = Array.from(state.tags).join(' ');
+    if (tk !== tagsKey) { tagsKey = tk; cardTagLinks.forEach(function (a) { var on = state.tags.has(a.dataset.tag); if (a.classList.contains('active') !== on) a.classList.toggle('active', on); }); }
     renderActive(visible.length);
 
     if (push) {
@@ -138,9 +171,10 @@
     state.tags.forEach(function (t) { parts.push(['tag:' + t, '#' + t]); });
     if (state.q) parts.push(['q', '«' + state.q + '»']);
     var el = document.getElementById('active');
-    el.innerHTML = parts.length
+    var h = parts.length
       ? '<span>Filters (all at once):</span>' + parts.map(function (p) { return '<button class="link-pill active" type="button" data-x="' + esc(p[0]) + '" aria-label="Remove filter ' + esc(p[1]) + '">' + esc(p[1]) + ' ×</button>'; }).join('') + '<span>→ found <b>' + n + '</b></span>'
       : '<span>Click tags, statuses or tabs to narrow the list. Tags combine with AND.</span>';
+    if (h !== activeHTML) { activeHTML = h; el.innerHTML = h; }
   }
 
   function toggle(set, k) { set.has(k) ? set.delete(k) : set.add(k); }

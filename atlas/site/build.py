@@ -98,6 +98,16 @@ def trim(s, n):
     return s if len(s) <= n else s[:n - 1].rsplit(' ', 1)[0].rstrip(',;:.') + '…'
 
 
+def fit_title(*options, n=65):
+    """First candidate title that fits n chars; else the last one, its head trimmed at a word boundary (suffix after ' | ' kept)."""
+    for t in options:
+        if len(t) <= n:
+            return t
+    t = options[-1]
+    head, sep, tail = t.rpartition(' | ')
+    return trim(head, n - len(sep + tail)) + sep + tail if sep else trim(t, n)
+
+
 def ext_link(url, text, cls=''):
     c = f' class="{cls}"' if cls else ''
     return f'<a{c} href="{e(url)}" rel="nofollow noopener" target="_blank">{text}</a>'
@@ -220,6 +230,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
     cfg = site.cfg
     canon = site.abs(path)
     b = site.base
+    description = trim(description, 160)  # search snippets: <=160 chars, cut at a word boundary
     robots = 'noindex,follow' if noindex else 'index,follow,max-image-preview:large'
     og_img = site.abs(f'{b}/assets/og-atlas.png')
     og_alt = 'Commonworld Atlas: verified catalog of AI-agent platforms'
@@ -432,7 +443,7 @@ def build_index(site):
            'description': 'Verified catalog of AI-agent platforms.', 'dateModified': site.latest.strftime('%Y-%m-%d') if site.latest else None,
            'mainEntity': {'@type': 'ItemList', 'name': 'Atlas categories', 'numberOfItems': len(site.cats), 'itemListElement': [
                {'@type': 'ListItem', 'position': i + 1, 'name': CAT_LABEL[k], 'url': site.abs(f'{b}/categories/{k}/')} for i, k in enumerate(site.cats)]}}]
-    return page(site, path=f'{b}/', title='Atlas of Agent Platforms: verified catalog of AI-agent platforms | Commonworld',
+    return page(site, path=f'{b}/', title='Atlas of Agent Platforms: verified catalog | Commonworld',
                 description=f'{n} places where AI agents talk, work, get paid, compete and publish research, each checked against its own sources, with dated numbers you can trace.',
                 body=body, active='index', ld=ld, index_search=True,
                 og=og_generic(site, 'atlas', 'Atlas of Agent Platforms',
@@ -531,7 +542,7 @@ def build_platform(site, c):
                      'about': {'@type': 'Thing', 'name': CAT_LABEL[cat]}, 'dateModified': vd, 'lastReviewed': vd, 'mainEntity': me}]
     status = ' (closed)' if c['status'] == 'closed' else ''
     kind_phrase = 'agent-economy project' if cat == 'projects' else f'{CAT_SHORT[cat]} {tl.lower()}'
-    title = f"{c['name']}{status}: {kind_phrase} | Commonworld Atlas"
+    title = fit_title(f"{c['name']}{status}: {kind_phrase} | Commonworld Atlas", f"{c['name']}{status} | Commonworld Atlas")
     pre = f"{c['name']}{status}: "
     desc = pre + trim(c['_desc'], 150 - len(pre)) if c['_desc'] else f"{c['name']}{status}, a verified {CAT_SHORT[cat].lower()} {tl.lower()} in the Commonworld Atlas."
     return page(site, path=c['_url'], title=title, description=desc, body=body, active='in:' + cat, ld=ld, og_type='article', lastmod=c['_verified'], og=og_platform(site, c))
@@ -596,7 +607,9 @@ def build_category(site, k):
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': f'{CAT_LABEL[k]} in the Commonworld Atlas',
                      'url': site.abs(f'{b}/categories/{k}/'), 'description': CAT_DESC[k], 'inLanguage': 'en',
                      'mainEntity': item_list_ld(site, cs, CAT_LABEL[k])}]
-    return page(site, path=f'{b}/categories/{k}/', title=f'{CAT_LABEL[k]}: {len(cs)} verified AI-agent entries | Commonworld Atlas',
+    return page(site, path=f'{b}/categories/{k}/', title=fit_title(f'{CAT_LABEL[k]}: {len(cs)} verified AI-agent entries | Commonworld Atlas',
+                                                          f'{CAT_LABEL[k]}: {len(cs)} verified entries | Commonworld Atlas',
+                                                          f'{CAT_SHORT[k]}: {len(cs)} verified entries | Commonworld Atlas'),
                 description=trim(f'{CAT_DESC[k]} {len(cs)} entries in the Commonworld Atlas, each checked against its own sources.', 160),
                 body=body, active='cat:' + k, ld=ld, lastmod=lm,
                 og=('category-' + k, {'kind': 'category', 'title': CAT_LABEL[k], 'kicker': 'DIRECTION', 'kicker_color': CAT_COLOR[k],
@@ -619,7 +632,7 @@ def build_categories_index(site):
                      'mainEntity': {'@type': 'ItemList', 'numberOfItems': len(site.cats), 'itemListElement': [
                          {'@type': 'ListItem', 'position': i + 1, 'url': site.abs(f'{b}/categories/{k}/'), 'name': CAT_LABEL[k]} for i, k in enumerate(site.cats)]}}]
     return page(site, path=f'{b}/categories/', title='Directions (categories) | Commonworld Atlas',
-                description='Browse the Commonworld Atlas by direction: ' + ', '.join(CAT_LABEL[k].lower() for k in site.cats) + '.',
+                description=trim('Browse the Commonworld Atlas by direction: ' + ', '.join(CAT_SHORT[k].lower() for k in site.cats) + '.', 160),
                 body=body, active='categories', ld=ld,
                 og=og_generic(site, 'page-categories', 'Directions', 'Browse the Atlas by direction: ' + ', '.join(CAT_LABEL[k].lower() for k in site.cats) + '.',
                               [(f'{len(site.cats)} directions', 'olive'), (f'{len(site.cards)} entries', None)]))
@@ -653,7 +666,7 @@ def build_closed(site):
 <div class="cw-grid" style="margin-top:22px">{''.join(card_html(site, c) for c in cs)}</div>"""
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': 'Closed AI-agent platforms (history)', 'url': site.abs(f'{b}/closed/'),
                      'mainEntity': item_list_ld(site, cs, 'Closed platforms')}]
-    return page(site, path=f'{b}/closed/', title=f'Closed AI-agent platforms: {len(cs)} history records | Commonworld Atlas',
+    return page(site, path=f'{b}/closed/', title=f'Closed agent platforms: {len(cs)} records | Commonworld Atlas',
                 description=f'{len(cs)} AI-agent platforms that have closed, kept as history records with the evidence of closure and dates.',
                 body=body, active='closed', ld=ld,
                 og=og_generic(site, 'page-closed', 'Closed platforms', 'Platforms that shut down keep their card as a history record, with the evidence of closure and dates.',
@@ -717,7 +730,7 @@ def build_about(site):
 <h2 id="privacy">Privacy</h2>
 <p>Analytics cookies (Google Analytics) are set only if you click <i>Accept</i> in the cookie banner; there are no accounts and no advertising cookies. Details are in the Commonworld <a href="{legal_urls(site)[0]}">Privacy Policy</a>; the rules for using the site are in the Commonworld <a href="{legal_urls(site)[1]}">Terms of Use</a>. Both apply to all of Commonworld, including the Atlas.</p>
 </div>"""
-    return page(site, path=f'{b}/about/', title='How the Atlas works: method, sources and corrections | Commonworld Atlas',
+    return page(site, path=f'{b}/about/', title='How the Atlas works: method and sources | Commonworld Atlas',
                 description='How the Commonworld Atlas checks every card: claim-by-claim sources, basis labels, QA re-checks by AI agents, freshness, corrections and sponsorship rules.',
                 body=body, active='about', og=og_generic(site, 'page-about', 'How the Atlas works',
                     'An open, source-checked catalog of AI-agent platforms: claim-by-claim sources, basis labels, QA re-checks and corrections.',
@@ -832,7 +845,7 @@ def build_privacy(site):
     return legal_page(site, path=priv_url, crumb='Privacy', h1='Commonworld Privacy Policy',
                       lead='What Commonworld collects (very little), why, and how to control it.', body_html=body,
                       title='Commonworld Privacy Policy: analytics, cookies and your rights',
-                      description='How Commonworld and its sections, including the Atlas, handle personal data: Google Analytics only after consent, Cloudflare hosting, browser storage, your GDPR rights and how to complain.',
+                      description='How Commonworld, including the Atlas, handles personal data: Google Analytics only after consent, Cloudflare hosting, your GDPR rights.',
                       og_name='page-privacy', og_desc='Google Analytics only after you accept. No accounts, no ad cookies. Your rights under the GDPR.',
                       og_chips=[('privacy', 'olive'), ('GDPR', None), ('cookies', None)])
 
@@ -877,7 +890,7 @@ def build_terms(site):
     return legal_page(site, path=terms_url, crumb='Terms', h1='Commonworld Terms of Use',
                       lead='The rules for using Commonworld, in plain words.', body_html=body,
                       title='Commonworld Terms of Use: catalog, sponsorship and liability',
-                      description='Terms of use for Commonworld and all its sections, including the Atlas: an informational catalog, no endorsement or financial advice, corrections, sponsored-content rules and data reuse.',
+                      description='Terms of use for Commonworld and the Atlas: an informational catalog, no endorsement or financial advice, corrections, sponsorship and data reuse.',
                       og_name='page-terms', og_desc='An informational catalog: no endorsement, no financial advice. Money never buys a place, a verified status or a position.',
                       og_chips=[('terms', 'olive'), ('sponsorship', None), ('corrections', None)])
 
@@ -1009,8 +1022,7 @@ def build_cw_about(site):
                                  alt=f'About Commonworld: {motto}')
     spec.update({'brand': motto, 'foot_left': 'commonworld.one/about'})
     return page(site, path=CW_ABOUT, title='About Commonworld — a shared world for humans and agents',
-                description=f'What Commonworld is: {motto.lower()}, where people and AI agents post, discuss, build and show their work in public. '
-                            'Today: the Atlas, a verified catalog of agent platforms.',
+                description=f'What Commonworld is: {motto.lower()}, where people and AI agents post, discuss and show their work in public. Today: the Atlas.',
                 body=body, active='cw-about', ld=ld, lastmod=site.latest, og=(name, spec, alt))
 
 
@@ -1120,6 +1132,27 @@ Commonworld is being built as a place where people and AI agents take part as ci
 PUBLIC_FIELDS = ['id', 'slug', 'name', 'entity_type', 'category', 'census_category', 'status', 'canonical_url', 'description_en', 'claims', 'qa', 'qa_status', 'verdict']
 
 
+# Security headers for every page (written into /_headers for Cloudflare Pages).
+PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), browsing-topics=(), payment=(), usb=()'
+# script-src keeps 'unsafe-inline': besides our own boot script, Cloudflare injects per-request inline scripts
+# (bot-detection / challenge-platform, email obfuscation) whose content changes on every response, so hashes would block them.
+# style-src needs 'unsafe-inline' for style="" attributes (category swatches, ad slot sizes).
+CSP = '; '.join([
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://*.googletagmanager.com https://static.cloudflareinsights.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com https://*.analytics.google.com",
+    "connect-src 'self' https://*.google-analytics.com https://google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cloudflareinsights.com https://*.cloudflareinsights.com",
+    "font-src 'self' data:",
+    "frame-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    "upgrade-insecure-requests",
+])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--data', default=DEFAULT_DATA)
@@ -1180,6 +1213,7 @@ def main():
     for f in os.listdir(os.path.join(HERE, 'static')):
         if f.endswith(('.png', '.ico', '.svg')):
             shutil.copy(os.path.join(HERE, 'static', f), os.path.join(root, 'assets', f))
+    shutil.copy(os.path.join(HERE, 'static', 'favicon.ico'), os.path.join(out, 'favicon.ico'))  # browsers request /favicon.ico on their own
     if site.og_enabled:
         import time
         t0 = time.time()
@@ -1235,6 +1269,8 @@ def main():
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: {PERMISSIONS_POLICY}
+  Content-Security-Policy: {CSP}
 """)
     total = sum(1 for _ in site.pages)
     print(f'built {total} indexable pages + 404 into {out} ({len(site.cards)} entries, {len(site.cats)} categories)')
