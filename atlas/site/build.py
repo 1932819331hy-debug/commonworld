@@ -1136,7 +1136,7 @@ Commonworld is being built as a place where people and AI agents take part as ci
 
 
 # ---------------------------------------------------------------- main
-PUBLIC_FIELDS = ['id', 'slug', 'name', 'entity_type', 'category', 'census_category', 'status', 'canonical_url', 'description_en', 'claims', 'qa', 'qa_status', 'verdict']
+PUBLIC_FIELDS = ['id', 'slug', 'name', 'entity_type', 'category', 'census_category', 'status', 'canonical_url', 'description_en', 'claims', 'qa', 'qa_status', 'verdict', 'status_history']
 
 
 # Security headers for every page (written into /_headers for Cloudflare Pages).
@@ -1255,7 +1255,10 @@ def main():
     write('/sitemap.xml', sitemap(site_level))  # Commonworld-wide pages (privacy, terms); the main site may take this file over
     write('/robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {site.abs("/sitemap.xml")}\nSitemap: {site.abs(b + "/sitemap.xml")}\n')
     # Cloudflare Pages redirects: old Atlas-only legal URLs -> site-wide ones
-    write('/_redirects', ''.join(f'{old} {new} 301\n{old.rstrip("/")} {new} 301\n' for old, new, _ in old_legal if old != new))
+    red_path = os.path.join(HERE, '..', 'data', 'redirects.json')  # moved pages: old path -> new path (check.py growth guard)
+    moved = (json.load(open(red_path)).get('redirects') or {}) if os.path.exists(red_path) else {}
+    write('/_redirects', ''.join(f'{old} {new} 301\n{old.rstrip("/")} {new} 301\n' for old, new, _ in old_legal if old != new)
+          + ''.join(f'{old} {new} 301\n' for old, new in moved.items()))
     write('/_headers', f"""{b}/assets/*
   Cache-Control: public, max-age=604800
 {b}/og/*

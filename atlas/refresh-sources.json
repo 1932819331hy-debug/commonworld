@@ -1,0 +1,87 @@
+{
+  "_doc": [
+    "Per-slug inputs for atlas/refresh.py (weekly Atlas refresh).",
+    "check_url: URL the reachability check uses instead of canonical_url, only where the canonical page does not answer 2xx by design (e.g. an API root).",
+    "numbers: simple numeric mappings from a public JSON endpoint (no HTML scraping, no money judgments). Each has a stable id.",
+    "  value: either path (dot path to one number in the JSON) or agg over a list: {list, op: count|sum, field, where} with where values compared literally ('*' = present and non-empty).",
+    "  paginate: 'offset' follows nextOffset/hasMore (limit/offset query params).",
+    "  match: an existing claim (by source_url + unit) this mapping continues. If that claim has a different basis, it is left untouched and a new claim is added.",
+    "  A changed value is a re-observation: the claim gets the new value + observed_at (UTC), the previous value goes into claim.history. Past records are never rewritten.",
+    "  basis: direct_observation = counted by us from the raw list; operator_claim = a total the operator's own stats endpoint reports (kept as operator_claim per atlas/PROTOCOL.md).",
+    "  on_change_note: shown in the refresh PR for human follow-up."
+  ],
+  "sources": {
+    "the-colony": {
+      "numbers": [
+        {"id": "the-colony-users", "kind": "metric", "url": "https://thecolony.ai/api/v1/stats", "path": "total_users",
+         "unit": "users", "window": "all-time", "basis": "operator_claim", "statement": "Platform totals (operator API)",
+         "quote_fields": ["total_users", "total_agents", "total_humans"],
+         "match": {"source_url": "https://thecolony.ai/api/v1/stats", "unit": "users"}}
+      ]
+    },
+    "moltbook": {
+      "numbers": [
+        {"id": "moltbook-agents", "kind": "metric", "url": "https://www.moltbook.com/api/v1/stats", "path": "totalAgents",
+         "unit": "agents", "basis": "operator_claim", "quote_fields": ["totalAgents"],
+         "match": {"source_url": "https://www.moltbook.com/api/v1/stats", "unit": "agents"}}
+      ]
+    },
+    "clawk": {
+      "numbers": [
+        {"id": "clawk-agents", "kind": "metric", "url": "https://clawk.ai/api/v1/stats", "path": "agents",
+         "unit": "registered agents", "basis": "operator_claim", "quote_fields": ["agents"],
+         "match": {"source_url": "https://clawk.ai/api/v1/stats", "unit": "registered agents"}}
+      ]
+    },
+    "x402-list": {
+      "numbers": [
+        {"id": "x402-list-services", "kind": "metric", "url": "https://x402-list.com/api/v1/stats", "path": "data.total_services",
+         "unit": "services", "basis": "direct_observation", "quote_fields": ["data.total_services", "data.total_endpoints"],
+         "match": {"source_url": "https://x402-list.com/api/v1/stats", "unit": "services"}}
+      ]
+    },
+    "agent-bounties": {
+      "numbers": [
+        {"id": "agent-bounties-lifetime-usdc", "kind": "economic_flow", "url": "https://api.agentbounties.app/v1/metrics/platform",
+         "path": "marketplace_payout_volume.lifetime.usdc", "unit": "USDC", "basis": "operator_claim",
+         "quote_fields": ["marketplace_payout_volume.lifetime.usdc"],
+         "match": {"source_url": "https://api.agentbounties.app/v1/metrics/platform", "unit": "USDC"}},
+        {"id": "agent-bounties-lifetime-identities", "kind": "metric", "url": "https://api.agentbounties.app/v1/metrics/platform",
+         "path": "platform_active_identities.lifetime", "unit": "identities", "basis": "operator_claim",
+         "quote_fields": ["platform_active_identities.lifetime", "platform_active_identities.latest_week"],
+         "match": {"source_url": "https://api.agentbounties.app/v1/metrics/platform", "unit": "identities"}}
+      ]
+    },
+    "aibtc-bounty-board": {
+      "numbers": [
+        {"id": "aibtc-paid-sats", "kind": "economic_flow", "url": "https://aibtc.com/api/bounties?status=paid&limit=100", "paginate": "offset",
+         "agg": {"list": "bounties", "op": "sum", "field": "rewardSats", "where": {"status": "paid", "paidTxid": "*"}},
+         "unit": "sats", "window": "all-time", "basis": "direct_observation",
+         "statement": "Sum of rewardSats over bounties with status=paid and an on-chain paidTxid (public API): {value} sats",
+         "on_change_note": "AIBTC paid-sats re-counted from the public API; the earlier page figure (operator claim) stays as recorded."},
+        {"id": "aibtc-paid-count", "kind": "metric", "url": "https://aibtc.com/api/bounties?status=paid&limit=100", "paginate": "offset",
+         "agg": {"list": "bounties", "op": "count", "where": {"status": "paid", "paidTxid": "*"}},
+         "unit": "paid bounties", "window": "all-time", "basis": "direct_observation",
+         "statement": "Bounties with status=paid and an on-chain paidTxid (public API): {value}"},
+        {"id": "aibtc-open-count", "kind": "metric", "url": "https://aibtc.com/api/bounties?status=open&limit=100", "paginate": "offset",
+         "agg": {"list": "bounties", "op": "count", "where": {"status": "open"}},
+         "unit": "open bounties", "window": "now", "basis": "direct_observation",
+         "statement": "Bounties with status=open (accepting submissions) in the public API: {value}"}
+      ]
+    },
+    "bountybook": {
+      "check_url": "https://api.bountybook.ai/health",
+      "numbers": [
+        {"id": "bountybook-operator-paid-out", "kind": "economic_flow", "url": "https://api.bountybook.ai/stats", "path": "totalPaidOut",
+         "unit": "USDC", "basis": "operator_claim",
+         "statement": "Operator reports {value} USDC 'paid out' (= sum of accepted jobs, not confirmed payouts)",
+         "quote_fields": ["total", "totalPaidOut", "completed"],
+         "match": {"source_url": "https://api.bountybook.ai/stats", "unit": "USDC"},
+         "on_change_note": "BountyBook operator totalPaidOut changed. The confirmed-payout figure (58.21 USDC, re-counted from /jobs) is NOT updated automatically; a human re-count from /jobs is needed."}
+      ]
+    }
+  },
+  "_skipped": {
+    "frantic": "stats only via MCP JSON-RPC (POST https://api.gofrantic.com/mcp, GET answers 406); not a simple JSON GET, so no mapping."
+  }
+}

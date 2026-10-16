@@ -1,0 +1,4 @@
+{
+ "_doc": "Moved Atlas pages: old path -> new path. build.py emits each as a 301 in dist/_redirects; check.py allows an old URL to leave the sitemap only if it is listed here and the new path is a published page. Slugs are permanent: a rename keeps the old page whenever possible.",
+ "redirects": {}
+}

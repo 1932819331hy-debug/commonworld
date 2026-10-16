@@ -29,6 +29,9 @@ JSON-LD named Commonworld with url and no address, own og:image page-cw-about.pn
 links to /atlas/, /atlas/about/, /privacy/, /terms/, the GitHub issues and privacy@; future features marked planned/coming, no "sign up"
 style wording); every page's sidebar has an "About" link to /about/ right under the Commonworld item (above Directions) and the footer
 links "About Commonworld" + "How the Atlas works"; /atlas/about/ opens with a line linking /about/.
+Growth guard: the sitemap URL set may only grow against atlas/data/sitemap-urls.txt (a removed URL fails unless atlas/data/redirects.json
+maps it to a published page, emitted as a 301 in _redirects); every slug of the committed snapshot must still exist.
+`--update-baseline` adds new URLs to the baseline (never removes any).
 Also: native ad cards sit after every 12th card, the tag shelf exists with its expander, every card links to its page.
 """
 import gzip, json, os, re, struct, sys, xml.etree.ElementTree as ET
@@ -115,6 +118,66 @@ def _private_terms():
 FORBIDDEN_ANY = _private_terms()
 FORBIDDEN_SITE_TEXT = re.compile(r'\w+ \(EU\)|\bbased in\b|\bEU-based\b|European Union', re.I)
 FORBIDDEN_COMMONWORLD_COPY = re.compile(r'\bEU\b', re.I)
+
+
+# --- growth guard: published URLs and slugs may only grow (pages are never deleted; moves need an explicit 301)
+DATA_DIR = os.path.normpath(os.path.join(HERE, '..', 'data'))
+BASELINE = os.path.join(DATA_DIR, 'sitemap-urls.txt')
+REDIRECTS = os.path.join(DATA_DIR, 'redirects.json')
+
+
+def load_redirects():
+    """atlas/data/redirects.json: {"redirects": {"/old/path/": "/new/path/"}} -> dict (paths, emitted by build.py into _redirects as 301s)."""
+    if not os.path.exists(REDIRECTS):
+        return {}
+    return {k: v for k, v in (json.load(open(REDIRECTS)).get('redirects') or {}).items()}
+
+
+def _git_snapshot_slugs():
+    """Slugs of every committed snapshot-verified-*.json at HEAD (and HEAD^1 on a merge commit, i.e. the PR base)."""
+    import subprocess
+    slugs, revs = set(), ['HEAD']
+    try:
+        par = subprocess.run(['git', 'rev-list', '--parents', '-n', '1', 'HEAD'], cwd=HERE, capture_output=True, text=True, check=True).stdout.split()
+        if len(par) > 2:
+            revs.append('HEAD^1')
+        for rev in revs:
+            names = subprocess.run(['git', 'ls-tree', '--name-only', rev, 'atlas/data/'], cwd=os.path.join(HERE, '..', '..'),
+                                   capture_output=True, text=True, check=True).stdout.split()
+            for n in names:
+                if re.search(r'snapshot-verified-.*\.json$', n):
+                    raw = subprocess.run(['git', 'show', f'{rev}:{n}'], cwd=os.path.join(HERE, '..', '..'), capture_output=True, text=True, check=True).stdout
+                    slugs |= {c['slug'] for c in json.loads(raw).get('platforms', [])}
+    except Exception as ex:  # not a git checkout: the sitemap baseline still guards every platform page
+        print(f'note: previous-snapshot slug check skipped ({ex.__class__.__name__})', file=sys.stderr)
+    return slugs
+
+
+def growth_guard(locs, update=False):
+    fails = []
+    red = load_redirects()
+    redfile = open(os.path.join(DIST, '_redirects')).read() if os.path.exists(os.path.join(DIST, '_redirects')) else ''
+    for old, new in red.items():
+        if f'{old} {new} 301' not in redfile: fails.append(f'_redirects lacks 301 {old} -> {new} from atlas/data/redirects.json')
+        if ORIGIN + new not in locs: fails.append(f'redirect target {new} (for {old}) is not a published page')
+    base = {l.strip() for l in open(BASELINE) if l.strip() and not l.startswith('#')} if os.path.exists(BASELINE) else set()
+    if not base:
+        fails.append(f'missing URL baseline {os.path.relpath(BASELINE, HERE)} (run check.py --update-baseline once)')
+    removed = sorted(u for u in base - locs if u[len(ORIGIN):] not in red)
+    if removed:
+        fails.append(f'{len(removed)} published URL(s) disappeared from the sitemap (pages are never removed; add a 301 in atlas/data/redirects.json if moved): {removed[:10]}')
+    cur = {c['slug'] for c in json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']}
+    gone = sorted(s for s in _git_snapshot_slugs() - cur if f'/atlas/platforms/{s}/' not in red)
+    if gone:
+        fails.append(f'slug(s) of the previous committed snapshot missing now: {gone[:10]}')
+    added = len(locs - base)
+    print(f'growth guard: baseline {len(base)} URLs, now {len(locs)} (+{added}, removed {len(removed)}), redirects {len(red)}')
+    if update and not fails and added:
+        with open(BASELINE, 'w') as f:
+            f.write('# Published URL baseline for check.py: the sitemap may only grow (removals need atlas/data/redirects.json).\n')
+            f.write(''.join(u + '\n' for u in sorted(base | locs)))
+        print(f'baseline updated: {len(base | locs)} URLs')
+    return fails
 
 
 def main():
@@ -389,6 +452,7 @@ def main():
     robots = open(os.path.join(DIST, 'robots.txt')).read()
     if f'Sitemap: {ORIGIN}/atlas/sitemap.xml' not in robots: fails.append('robots.txt lacks sitemap')
     if f'Sitemap: {ORIGIN}/sitemap.xml' not in robots: fails.append('robots.txt lacks the site-level sitemap')
+    fails += growth_guard(locs, update='--update-baseline' in sys.argv)
     try:
         json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))
     except Exception as ex:
