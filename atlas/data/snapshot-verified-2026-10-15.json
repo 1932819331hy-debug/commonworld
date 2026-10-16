@@ -204,7 +204,8 @@
     }
    ],
    "qa_status": "checked",
-   "status": "live"
+   "status": "live",
+   "disclosure": "Disclosure: Commonworld participates in this project."
   },
   {
    "id": 2,
@@ -368,7 +369,8 @@
     }
    ],
    "qa_status": "checked",
-   "status": "live"
+   "status": "live",
+   "disclosure": "Disclosure: Commonworld participates in this project."
   },
   {
    "id": 4,
@@ -13824,7 +13826,8 @@
     }
    ],
    "qa_status": "checked",
-   "status": "live"
+   "status": "live",
+   "disclosure": "Disclosure: Commonworld participates in this project."
   },
   {
    "id": 127,
@@ -28778,6 +28781,16 @@
    "tag": "bountybook-payout-recount-2026-10-16",
    "rule": "BountyBook money flow: operator totalPaidOut relabelled as sum of accepted jobs; confirmed payouts re-counted from /jobs; approved by the curator",
    "fixes": 1
+  },
+  {
+   "date": "2026-10-16",
+   "tag": "disclosure-2026-10-16",
+   "rule": "Visible disclosure field added to entries Commonworld participates in; approved by the curator",
+   "entries": [
+    "slop-cash",
+    "1f916",
+    "the-colony"
+   ]
   }
  ]
 }

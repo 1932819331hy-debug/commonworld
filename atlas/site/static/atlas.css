@@ -23,6 +23,7 @@
 @media (max-width:540px) { .cw-share-head .cw-share-label { flex-basis:auto; } .cw-share-head .cw-share-btn { min-width:38px; height:38px; } }
 .closed-box { margin-top:16px; max-width:720px; border-left:3px solid var(--st-dead); background:var(--bad-bg); color:var(--ink); border-radius:12px; padding:11px 12px; font-size:13px; line-height:1.5; }
 .closed-box b { color:var(--bad); }
+.disclosure-box { margin-top:12px; max-width:720px; border-left:3px solid var(--muted); background:var(--soft); color:var(--ink); border-radius:12px; padding:9px 12px; font-size:13px; line-height:1.5; }
 .facts { display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin:22px 0 26px; }
 .facts div { background:var(--paper); padding:12px 14px; min-width:0; }
 .facts dt { font-size:10px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }

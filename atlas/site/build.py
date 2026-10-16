@@ -501,6 +501,7 @@ def build_platform(site, c):
             or next((x.get('statement') for x in claims if x.get('outcome') == 'contradicted'), None)
         closed_box = (f'<div class="closed-box" role="note"><b>Closed.</b> This card is kept as a history record. '
                       f'{e(ev) if ev else "See the evidence below."}</div>')
+    disclosure_box = f'<p class="disclosure-box" role="note">{e(c["disclosure"])}</p>' if c.get('disclosure') else ''
     rel = [r for r in site.by_cat[cat] if r['slug'] != c['slug']]
     rel.sort(key=lambda r: (r['status'] != 'live', r['name'].lower()))
     idx = sum(1 for r in rel if r['name'].lower() < c['name'].lower())
@@ -515,7 +516,7 @@ def build_platform(site, c):
 <article class="entry">
 <header class="entry-head"><div class="cw-meta"><a class="catchip" href="{b}/categories/{cat}/"><i style="background:{CAT_COLOR[cat]}"></i>{e(CAT_LABEL[cat])}</a></div>
 <h1>{e(c['name'])}</h1>{chips(c)}
-<p class="cw-lead">{e(c['_desc'])}</p>{closed_box}{tags}<div class="entry-actions">{f'<p class="actions">{visit}</p>' if visit else ''}{cw.share_bar(site.cfg, site.abs(c['_url']), c['name'] + SHARE_SUFFIX, cls='cw-share-head')}</div></header>
+<p class="cw-lead">{e(c['_desc'])}</p>{closed_box}{disclosure_box}{tags}<div class="entry-actions">{f'<p class="actions">{visit}</p>' if visit else ''}{cw.share_bar(site.cfg, site.abs(c['_url']), c['name'] + SHARE_SUFFIX, cls='cw-share-head')}</div></header>
 <dl class="facts">
 <div><dt>Permanent ID</dt><dd><code>{e(c['slug'])}</code> · <a href="{b}/platforms/{e(c['slug'])}.json" type="application/json" title="This entry as JSON: all claims with sources">JSON</a></dd></div>
 <div><dt>Direction</dt><dd><a href="{b}/categories/{cat}/">{e(CAT_SHORT[cat])}</a></dd></div>
@@ -1059,7 +1060,8 @@ def agent_record(site, c):
             'website': c.get('canonical_url'), 'category': c['category'], 'category_label': CAT_LABEL[c['category']],
             'type': c.get('entity_type'), 'status': c['status'], 'summary': trim(c['_desc'], 300), 'tags': c['_tags'],
             'has_money_flow': c['_money'], 'money_flow': flows, 'key_number': key,
-            'verified_at': iso(c['_verified']), 'last_checked': iso(c['_verified']), 'claims_count': len(claims)}
+            'verified_at': iso(c['_verified']), 'last_checked': iso(c['_verified']), 'claims_count': len(claims),
+            'disclosure': c.get('disclosure')}
 
 
 def build_agent_files(site, write):
@@ -1131,12 +1133,12 @@ Commonworld is being built as a place where people and AI agents take part as ci
     lines = [f'# Commonworld Atlas: all {len(recs)} published entries',
              f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '']
     for r in recs:
-        lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}")
+        lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}" + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
     write('/llms-full.txt', '\n'.join(lines) + '\n')
 
 
 # ---------------------------------------------------------------- main
-PUBLIC_FIELDS = ['id', 'slug', 'name', 'entity_type', 'category', 'census_category', 'status', 'canonical_url', 'description_en', 'claims', 'qa', 'qa_status', 'verdict', 'status_history']
+PUBLIC_FIELDS = ['id', 'slug', 'name', 'entity_type', 'category', 'census_category', 'status', 'canonical_url', 'description_en', 'claims', 'qa', 'qa_status', 'verdict', 'status_history', 'disclosure']
 
 
 # Security headers for every page (written into /_headers for Cloudflare Pages).
