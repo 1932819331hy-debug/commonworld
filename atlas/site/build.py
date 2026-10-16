@@ -225,7 +225,7 @@ CW_ABOUT = '/about/'  # About Commonworld (site-wide); /atlas/about/ stays "How 
 SEARCH_PLACEHOLDER = 'Search: name, category, description, numbers…'
 
 
-def page(site, *, path, title, description, body, active, ld=(), og_type='website', noindex=False, lastmod=None, index_search=False, og=None):
+def page(site, *, path, title, description, body, active, ld=(), og_type='website', noindex=False, lastmod=None, index_search=False, og=None, alt_json=None):
     """og: (image name, spec dict, alt text) -> /atlas/og/<name>.png rendered by og_images.py (static og-atlas.png without Pillow)."""
     cfg = site.cfg
     canon = site.abs(path)
@@ -278,6 +278,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
 <link rel="apple-touch-icon" href="{b}/assets/apple-touch-icon.png">
 <link rel="alternate" type="application/json" href="{b}/data/snapshot.json" title="Atlas data (JSON)">
 <link rel="alternate" type="application/json" href="{b}/platforms.json" title="Atlas platforms (JSON, for agents)">
+{f'<link rel="alternate" type="application/json" href="{e(alt_json)}" title="This entry (JSON: claims and sources)">' if alt_json else ''}
 {cw.boot_script(cfg)}
 <link rel="stylesheet" href="{b}/assets/atlas.css?v={site.asset_v}">
 {head_ld}
@@ -514,7 +515,7 @@ def build_platform(site, c):
 <h1>{e(c['name'])}</h1>{chips(c)}
 <p class="cw-lead">{e(c['_desc'])}</p>{closed_box}{tags}<div class="entry-actions">{f'<p class="actions">{visit}</p>' if visit else ''}{cw.share_bar(site.cfg, site.abs(c['_url']), c['name'] + SHARE_SUFFIX, cls='cw-share-head')}</div></header>
 <dl class="facts">
-<div><dt>Permanent ID</dt><dd><code>{e(c['slug'])}</code></dd></div>
+<div><dt>Permanent ID</dt><dd><code>{e(c['slug'])}</code> · <a href="{b}/platforms/{e(c['slug'])}.json" type="application/json" title="This entry as JSON: all claims with sources">JSON</a></dd></div>
 <div><dt>Direction</dt><dd><a href="{b}/categories/{cat}/">{e(CAT_SHORT[cat])}</a></dd></div>
 <div><dt>Type</dt><dd>{e(tl)}</dd></div>
 <div><dt>Status</dt><dd>{'Closed (history)' if c['status'] == 'closed' else 'Live'}</dd></div>
@@ -545,7 +546,8 @@ def build_platform(site, c):
     title = fit_title(f"{c['name']}{status}: {kind_phrase} | Commonworld Atlas", f"{c['name']}{status} | Commonworld Atlas")
     pre = f"{c['name']}{status}: "
     desc = pre + trim(c['_desc'], 150 - len(pre)) if c['_desc'] else f"{c['name']}{status}, a verified {CAT_SHORT[cat].lower()} {tl.lower()} in the Commonworld Atlas."
-    return page(site, path=c['_url'], title=title, description=desc, body=body, active='in:' + cat, ld=ld, og_type='article', lastmod=c['_verified'], og=og_platform(site, c))
+    return page(site, path=c['_url'], title=title, description=desc, body=body, active='in:' + cat, ld=ld, og_type='article', lastmod=c['_verified'], og=og_platform(site, c),
+                alt_json=site.abs(f"{b}/platforms/{c['slug']}.json"))
 
 
 def history_html(x):
@@ -1080,6 +1082,7 @@ def build_agent_files(site, write):
 
     A = site.abs
     gm = contact(site, 'general')
+    ex = next((c for c in site.cards if c['slug'] == '1f916'), site.cards[0])  # a literal per-entry link for agents that only open seen URLs
     cats = '\n'.join(f'- [{CAT_LABEL[k]}]({A(f"{b}/categories/{k}/")}): {CAT_DESC[k]} ({len(site.by_cat[k])} entries)' for k in site.cats)
     live = sum(1 for c in site.cards if c['status'] == 'live')
     txt = f"""# Commonworld
@@ -1104,7 +1107,9 @@ Commonworld is being built as a place where people and AI agents take part as ci
 ## Data
 
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
-- Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources
+- Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt)
+- [Example entry JSON: {ex['slug']}]({A(f"{b}/platforms/{ex['slug']}.json")}): full claims with source URL, basis and observed_at
+- All claims and sources are public; no key needed.
 - [snapshot.json]({A(f'{b}/data/snapshot.json')}): the full published dataset
 - [llms-full.txt]({A('/llms-full.txt')}): one line per entry
 - [Sitemap (site)]({A('/sitemap.xml')}) and [Sitemap (Atlas)]({A(f'{b}/sitemap.xml')})
@@ -1122,9 +1127,9 @@ Commonworld is being built as a place where people and AI agents take part as ci
 """
     write('/llms.txt', txt)
     lines = [f'# Commonworld Atlas: all {len(recs)} published entries',
-             f'> One line per entry: name, Atlas URL, category, status, summary. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '']
+             f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '']
     for r in recs:
-        lines.append(f"- [{r['name']}]({r['url']}): {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}")
+        lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}")
     write('/llms-full.txt', '\n'.join(lines) + '\n')
 
 
