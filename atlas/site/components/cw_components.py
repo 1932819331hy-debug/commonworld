@@ -173,8 +173,11 @@ def top_row(search_html, cfg, product_html=None):
     return f'<header class="cw-top">{menu_button()}{search_html}<span class="spacer"></span>{home_link(cfg) if product_html is None else product_html}{theme_toggle()}</header>'
 
 
-def footer(left, links_html):
-    return f'<footer class="cw-foot"><span>{left}</span><span class="cw-foot-links">{links_html}</span></footer>'
+def footer(left, links_html, official=()):
+    """official: [(label, url, icon_key)] shown side by side with icons (rel="me": the project's own accounts)."""
+    off = ''.join(f'<a class="cw-foot-official" href="{e(u)}" rel="me noopener">{OFFICIAL_ICONS.get(k, "")}<span>{e(t)}</span></a>' for t, u, k in official)
+    off = f'<span class="cw-foot-officials" aria-label="Official channels">{off}</span>' if off else ''
+    return f'<footer class="cw-foot"><span>{left}</span><span class="cw-foot-links">{links_html}{off}</span></footer>'
 
 
 def consent_banner(cfg):
@@ -374,3 +377,10 @@ def ad_slot(cfg, name, cls=''):
     c2 = f' {cls}' if cls else ''
     return (f'<aside class="cw-ad{c2}" data-ad-slot="{e(name)}" style="{style}" aria-label="Sponsored">'
             f'<span class="cw-ad-label">Sponsored</span>{inner}</aside>')
+
+
+# Icons for the project's own official accounts (footer). X reuses the share icon.
+OFFICIAL_ICONS = {
+    'x': SHARE_ICONS['x'],
+    'github': _si('<path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.3-.5-1.5.2-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/>', True),
+}

@@ -225,6 +225,12 @@ def breadcrumbs(site, trail):
     return f'<nav class="cw-crumbs" aria-label="Breadcrumb"><ol>{"".join(vis)}</ol></nav>', ld
 
 
+X_HANDLE = '@commonworldone'  # official X account (twitter:site, footer, Organization sameAs, llms.txt)
+X_URL = 'https://x.com/commonworldone'
+GITHUB_ORG_URL = 'https://github.com/commonworld-one'
+ORG_SAME_AS = [X_URL, GITHUB_ORG_URL]
+REPO_URL = 'https://github.com/commonworld-one/commonworld'
+OFFICIAL_LINKS = [('X', X_URL, 'x'), ('GitHub', REPO_URL, 'github')]  # footer, side by side
 CW_ABOUT = '/about/'  # About Commonworld (site-wide); /atlas/about/ stays "How the Atlas works"
 SEARCH_PLACEHOLDER = 'Search: name, category, description, numbers…'
 
@@ -273,6 +279,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
 <meta property="og:image:alt" content="{e(og_alt)}">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="{X_HANDLE}">
 <meta name="twitter:title" content="{e(title)}">
 <meta name="twitter:description" content="{e(description)}">
 <meta name="twitter:image" content="{og_img}">
@@ -297,7 +304,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
 <main id="main">
 {body}
 </main>
-{cw.footer(f'Commonworld / Atlas of Agent Platforms · verified {verified}', foot_links)}
+{cw.footer(f'Commonworld / Atlas of Agent Platforms · verified {verified}', foot_links, OFFICIAL_LINKS)}
 </div>
 </div>
 {cw.consent_banner(cfg)}
@@ -1098,7 +1105,13 @@ def landing_agents(site):
             ('Mirror on GitHub if this site cannot be fetched', RAW_BASE + '/platforms.json')]
     items = ''.join(f'<li>{e(t)}: <a href="{e(u)}"' + ('' if u.startswith(site.abs('/')) else ' rel="noopener nofollow"') + f'><code>{e(u)}</code></a></li>' for t, u in rows)
     return (f'<section class="cw-panel landing-agents" aria-labelledby="agents-title"><h2 id="agents-title">For AI agents</h2>'
-            f'<p>Read the Atlas as data. Take IDs only from these files; never guess one.</p><ul>{items}</ul></section>')
+            f'<p>Read the Atlas as data. Take IDs only from these files; never guess one.</p><ul>{items}</ul>{official_line(site)}</section>')
+
+
+def official_line(site):
+    """'Official channels' line (landing For AI agents block and About Commonworld): site, X, GitHub with plain-text targets."""
+    return (f'<p class="official-line">Official channels: <a href="/">{e(site.abs("/").split("//", 1)[1].rstrip("/"))}</a> · '
+            f'<a href="{X_URL}" rel="me noopener">X {X_HANDLE}</a> · <a href="{REPO_URL}" rel="me noopener">GitHub github.com/commonworld-one/commonworld</a></p>')
 
 
 def build_landing(site):
@@ -1130,7 +1143,8 @@ def build_landing(site):
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'WebSite', 'name': 'Commonworld', 'url': site.abs('/'),
                      'description': motto, 'inLanguage': 'en',
                      'potentialAction': {'@type': 'SearchAction', 'target': site.abs(f'{b}/') + '?q={search_term_string}',
-                                         'query-input': 'required name=search_term_string'}}]
+                                         'query-input': 'required name=search_term_string'}},
+          {'@context': 'https://schema.org', '@type': 'Organization', 'name': 'Commonworld', 'url': site.abs('/'), 'sameAs': ORG_SAME_AS}]
     return page(site, path='/', title=f'Commonworld — {motto}',
                 description=f'Commonworld: {motto.lower()}. The platform is coming soon; start with the Atlas, a verified catalog of {n} AI-agent platforms.',
                 body=body, active='home', ld=ld, lastmod=site.latest,
@@ -1194,9 +1208,10 @@ def build_cw_about(site):
 <li><b>Privacy-light by default.</b> No accounts, no advertising cookies; analytics only if you accept them. Details are in the <a href="{priv_url}">Privacy Policy</a> and the <a href="{terms_url}">Terms of Use</a>.</li></ul>
 <h2 id="contact">Contact</h2>
 <p>Commonworld · {gm}</p>
+{official_line(site)}
 </div>"""
     org = {'@type': 'Organization', 'name': 'Commonworld', 'url': site.abs('/'), 'description': motto,
-           'logo': site.abs(f'{b}/assets/icon-192.png'), 'email': contact(site, 'general') or None}
+           'logo': site.abs(f'{b}/assets/icon-192.png'), 'email': contact(site, 'general') or None, 'sameAs': ORG_SAME_AS}
     org = {k: v for k, v in org.items() if v}
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'AboutPage', 'name': 'About Commonworld', 'url': site.abs(CW_ABOUT),
                      'inLanguage': 'en', 'description': f'About Commonworld: {motto.lower()}.',
@@ -1220,7 +1235,6 @@ def build_404(site):
 
 
 # ---------------------------------------------------------------- machine-readable files for AI agents
-REPO_URL = 'https://github.com/commonworld-one/commonworld'
 
 
 def iso(dt):
@@ -1312,6 +1326,8 @@ def build_agent_files(site, write):
 
 Commonworld is being built as a place where people and AI agents take part as citizens. Today it is the Atlas: each card is a set of claims with source URL, basis and observation time. Closed platforms stay as history records. IDs (URL slugs) are permanent.
 
+Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
+
 ## Atlas
 
 - [Atlas home]({A(f'{b}/')}): the catalog of agent platforms, searchable and filterable
@@ -1363,7 +1379,8 @@ Some agent tools cannot reach the site directly. The same published files are mi
 """
     write('/llms.txt', txt)
     lines = [f'# Commonworld Atlas: all {len(recs)} published entries',
-             f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '']
+             f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '',
+             f"Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}", '']
     for r in recs:
         lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}" + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
     write('/llms-full.txt', '\n'.join(lines) + '\n')

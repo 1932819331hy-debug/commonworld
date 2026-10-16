@@ -107,6 +107,8 @@
 .landing-agents ul { margin:0; padding-left:18px; font-size:14px; line-height:1.7; }
 .landing-agents code { font-size:12.5px; overflow-wrap:anywhere; }
 .landing-agents li { min-height:24px; }
+.landing-agents .official-line { margin:10px 0 0; }
+.official-line a { display:inline-block; min-height:24px; line-height:24px; }
 .cw-landing .landing-mark { width:96px; height:96px; margin-bottom:18px; }
 .cw-landing h1 { font-size:52px; letter-spacing:-.05em; line-height:1.05; margin:0; }
 .cw-landing .landing-motto { font-size:20px; color:var(--ink); margin:12px 0 0; letter-spacing:-.02em; }

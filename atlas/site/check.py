@@ -9,7 +9,9 @@ lang=en, <title>, meta description, canonical (= its own clean URL), robots meta
 rel sponsored), sitemap lists exactly the indexable pages, robots.txt references the sitemap, 404 is noindex,
 no page over 150 KB raw (catalog index: 320 KB, it server-renders every card) and none over 60 KB gzipped.
 Open Graph: every indexable page has its own og:image (/atlas/og/<name>.png, exists, 1200x630 PNG, <= 100 KB),
-width/height/alt, twitter:card=summary_large_image, twitter:image = og:image. Share bars: every platform page (and the
+width/height/alt, twitter:card=summary_large_image, twitter:image = og:image, twitter:site = @commonworldone.
+Official channels: every page's footer shows X + GitHub (icon + label, rel="me noopener"); landing and llms.txt/llms-full.txt carry an
+"Official channels" line; landing and /about/ Organization JSON-LD sameAs = [X, GitHub org]. Share bars: every platform page (and the
 index) has one; every share link carries the page's canonical URL; the copy button copies the canonical URL.
 Legal + navigation: the site-wide Commonworld legal pages (site.privacy_url /privacy/, site.terms_url /terms/) exist (WebPage JSON-LD,
 Last updated, draft note only while legal_draft=true and never after, indexable, scope line, required privacy items); no page loads a third-party
@@ -42,6 +44,9 @@ from collections import Counter
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(HERE, 'dist')
 ORIGIN = json.load(open(os.path.join(HERE, 'site-config.json')))['site']['origin'].rstrip('/')
+X_HANDLE, X_URL = '@commonworldone', 'https://x.com/commonworldone'  # official X account: twitter:site on every page, footer, sameAs
+REPO_URL, GITHUB_ORG_URL = 'https://github.com/commonworld-one/commonworld', 'https://github.com/commonworld-one'
+OFFICIAL_URLS = {X_URL, REPO_URL}  # own accounts: linked with rel="me noopener" (no nofollow)
 MAX = 150 * 1024          # raw HTML per page
 MAX_INDEX = 320 * 1024    # the catalog index server-renders all cards (SEO, works without JS)
 MAX_GZ = 60 * 1024        # what actually goes over the wire, every page
@@ -246,6 +251,7 @@ def main():
             titles[p.title] += 1; descs[p.meta.get('description')] += 1
             # --- Open Graph image: unique per page, exists, 1200x630 PNG, small
             img = p.meta.get('og:image') or ''
+            if p.meta.get('twitter:site') != X_HANDLE: fails.append(f'{u}: twitter:site={p.meta.get("twitter:site")} != {X_HANDLE}')
             if p.meta.get('twitter:card') != 'summary_large_image': fails.append(f'{u}: twitter:card={p.meta.get("twitter:card")}')
             if p.meta.get('twitter:image') != img: fails.append(f'{u}: twitter:image != og:image')
             if (p.meta.get('og:image:width'), p.meta.get('og:image:height')) != ('1200', '630'): fails.append(f'{u}: og:image width/height')
@@ -289,6 +295,9 @@ def main():
         for tag, href, rel in p.links:
             if href.startswith(('http://', 'https://')):
                 if href.startswith(ORIGIN) or tag != 'a':
+                    continue
+                if href in OFFICIAL_URLS and 'me' in rel.split():
+                    if 'noopener' not in rel.split(): fails.append(f'{u}: official link without noopener: {href}')
                     continue
                 need = {'sponsored', 'nofollow'} if 'sponsored' in rel else {'nofollow', 'noopener'}
                 if not need <= set(rel.split()): fails.append(f'{u}: external link without rel {need}: {href}')
@@ -359,6 +368,9 @@ def main():
         foot = h[h.find('<footer class="cw-foot"'):]
         if f'href="{PRIV_URL}">Privacy<' not in foot or f'href="{TERMS_URL}">Terms<' not in foot:
             fails.append(f'{u}: footer lacks Privacy/Terms links')
+        for url_, lab_ in ((X_URL, 'X'), (REPO_URL, 'GitHub')):
+            if not re.search(rf'<a class="cw-foot-official" href="{re.escape(url_)}" rel="me noopener"><svg[^>]*>.*?</svg><span>{lab_}</span></a>', foot):
+                fails.append(f'{u}: footer lacks official {lab_} link (icon + label, rel="me noopener")')
         m = side_re.search(h)
         side = m.group(0) if m else ''
         xi, di = side.find('data-xnav="Commonworld"'), side.find('>Directions<')
@@ -381,13 +393,19 @@ def main():
         if lp_.canon != ORIGIN + '/': fails.append(f'/: canonical {lp_.canon} != {ORIGIN}/')
         if 'noindex' in (lp_.meta.get('robots') or ''): fails.append('/: landing is noindex')
         for need in ('<h1 id="landing-title">Commonworld</h1>', 'A shared world for humans and agents', 'The platform is coming soon.',
-                     'class="cw-btn cw-btn-primary landing-cta" href="/atlas/"', 'cw-mark-light.png', 'cw-mark-dark.png', 'class="cw-consent"',
+                     'class="cw-btn cw-btn-primary landing-cta" href="/atlas/"', 'cw-mark-light.png', 'cw-mark-dark.png', 'class="cw-consent"', 'Official channels:', f'href="{X_URL}" rel="me noopener"',
                      '<a aria-current="page" href="' + (CFG['site'].get('product_url') or '/') + '" data-xnav="Commonworld"', '"WebSite"'):
             if need not in lh: fails.append(f'/: landing lacks {need!r}')
         if (lp_.meta.get('og:image') or '').split('?')[0] != ORIGIN + '/atlas/og/page-home.png': fails.append('/: og:image is not its own page-home.png')
         if str(len(json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms'])) not in lh: fails.append('/: Atlas entry count missing')
         if CFG['site'].get('product_url', '/').rstrip('/') not in ('', ORIGIN): fails.append('site.product_url does not point to the landing')
         if (CFG['site'].get('home_url') or '/') != '/': fails.append('site.home_url != /')
+        if f'"@type":"Organization","name":"Commonworld","url":"{ORIGIN}/","sameAs":["{X_URL}","{GITHUB_ORG_URL}"]' not in lh:
+            fails.append('/: no Organization JSON-LD with sameAs [X, GitHub]')
+    for f_ in ('llms.txt', 'llms-full.txt'):
+        fp_ = os.path.join(DIST, f_)
+        if os.path.exists(fp_) and f'Official channels: site {ORIGIN}/ · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}' not in open(fp_, encoding='utf-8').read():
+            fails.append(f'/{f_}: lacks the Official channels line')
     # --- About Commonworld (/about/)
     if '/about/' not in parsed:
         fails.append('missing /about/ (About Commonworld)')
@@ -413,6 +431,7 @@ def main():
             org = abt.get('mainEntity') or {}
             if org.get('@type') != 'Organization' or org.get('name') != 'Commonworld' or org.get('url') != ORIGIN + '/':
                 fails.append(f'/about/: Organization JSON-LD {org}')
+            if org.get('sameAs') != [X_URL, GITHUB_ORG_URL]: fails.append(f'/about/: Organization sameAs {org.get("sameAs")}')
             if re.search(r'address|founder|employee|"person"', json.dumps(abt), re.I): fails.append('/about/: JSON-LD carries address/person data')
         if ah.count('class="cw-share') < 1: fails.append('/about/: no share bar')
     atl_about = open(pages['/atlas/about/'], encoding='utf-8').read()

@@ -259,6 +259,10 @@ a.catchip:hover { color:var(--ink); }
 .cw-foot-links { display:flex; flex-wrap:wrap; gap:4px 14px; }
 .cw-foot a, .cw-foot .cw-linkbtn { color:var(--muted); }
 .cw-foot a:hover, .cw-foot .cw-linkbtn:hover { color:var(--ink); }
+.cw-foot-officials { display:inline-flex; gap:4px 14px; flex-wrap:wrap; }
+.cw-foot .cw-foot-official { display:inline-flex; align-items:center; gap:5px; min-height:24px; min-width:24px; font-size:11px; text-decoration:none; }
+.cw-foot .cw-foot-official svg { width:14px; height:14px; flex:none; }
+.cw-foot .cw-foot-official:hover span, .cw-foot .cw-foot-official:focus-visible span { text-decoration:underline; text-underline-offset:3px; }
 
 /* ---------- breadcrumbs ---------- */
 .cw-crumbs ol { list-style:none; margin:20px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px; font-size:11px; color:var(--muted); }
