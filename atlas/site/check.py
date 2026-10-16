@@ -349,7 +349,9 @@ def api_checks(parsed, locs):
     # headers
     hd = open(os.path.join(DIST, '_headers')).read()
     if not re.search(r'^/api/\*\n  Access-Control-Allow-Origin: \*$', hd, re.M): fails.append('_headers: /api/* lacks CORS *')
-    if not re.search(r'^/api/v1/\*\.json\n  Content-Type: application/json; charset=utf-8$', hd, re.M): fails.append('_headers: /api/v1/*.json content-type')
+    # no forced Content-Type on /api/v1/*.json: Cloudflare serves .json as application/json by itself, and a forced header would
+    # also label the HTML 404 page of a wrong ID as JSON
+    if re.search(r'^/api/v1/\*\.json$', hd, re.M): fails.append('_headers: do not force Content-Type on /api/v1/*.json (404 pages are HTML)')
     # docs page + links to it
     D = '/atlas/api/'
     if D not in parsed: fails.append('api: docs page /atlas/api/ missing')

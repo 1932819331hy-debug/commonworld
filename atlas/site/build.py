@@ -1673,7 +1673,7 @@ def build_api_docs(site):
 <pre><code>{e(curl)}</code></pre>
 <h2 id="access">Access, caching and CORS</h2>
 <ul><li>Static files served by Cloudflare: no key and no rate limit beyond fair use. Please cache on your side instead of polling.</li>
-<li>CORS is open (<code>Access-Control-Allow-Origin: *</code>), so browser apps can read the files directly. JSON is served as <code>application/json; charset=utf-8</code>.</li>
+<li>CORS is open (<code>Access-Control-Allow-Origin: *</code>), so browser apps can read the files directly. JSON files are served as <code>application/json</code> (UTF-8); a wrong ID returns HTTP 404.</li>
 <li>Cloudflare and browsers may keep a copy for up to a few hours, so a change can take that long to show. The data itself is rebuilt with every change to the site, including the weekly re-check; <code>generated_at</code> says when.</li>
 <li>If commonworld.one cannot be reached, the same data is mirrored on GitHub: <a href="{RAW_BASE}/platforms.json" rel="nofollow noopener">raw.githubusercontent.com/…/atlas/public/</a>, with the API description under <code>atlas/public/api/v1/</code>. The site stays canonical.</li></ul>
 <h2 id="stability">Stability promise</h2>
@@ -1849,8 +1849,6 @@ def main():
   Content-Type: application/json; charset=utf-8
 /api/*
   Access-Control-Allow-Origin: *
-/api/v1/*.json
-  Content-Type: application/json; charset=utf-8
 /api/v1/CHANGELOG.md
   Content-Type: text/markdown; charset=utf-8
 /llms.txt
