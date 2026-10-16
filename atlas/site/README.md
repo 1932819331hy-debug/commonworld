@@ -64,11 +64,12 @@ Search from any page goes to `/atlas/?q=…` (also the `SearchAction` target). F
 ```
 atlas/site/
   build.py              generator (stdlib)            serve.py      local server (stdlib)
+  api_v1.py             static API v1: JSON Schemas, OpenAPI 3.1, changelog, tiny stdlib JSON Schema validator (used by check.py)
   check.py              static checks (stdlib)        site-config.json   site settings, announcement, ad slots
   claim-labels.json     curated "Read as" labels for claims whose raw wording could mislead (e.g. TermiX gross vs organic)
   components/           the Commonworld design system (Python + CSS + JS), see "Design system" below
   static/atlas.css      Atlas-only styles (platform page, tables, prose)   static/atlas.js   catalog search/filter/sort/native ads
-  static/*.png|ico      logo, favicon, fallback OG image
+  static/*.png|ico      logo (cw-mark-*.png 96 px for the 46 px sidebar mark; cw-mark-*-192.png for the 96 px landing logo, 2x), favicon, fallback OG image
   og_images.py          per-page Open Graph images (Pillow), cached in .og-cache/
   tools/extract_census_tags.py   maps + cleans census tags -> atlas/data/census-tags-2026-10-15.json
   tools/make_images.py  regenerates logo/favicon/OG image from the prototype marks (needs Pillow; not part of the build)
@@ -83,14 +84,19 @@ palette (`--bg #f4f1ea`, `--paper #fbfaf7`, `--ink #202522`, accent `#e75b3d`), 
 labels, huge tight headlines; light and dark themes. It lives in three framework-free files meant to be reused by the whole
 Commonworld product:
 
-- `cw-components.css` — tokens (both themes) and every shared block: shell + sidebar (drawer under 900 px), top row with icon
+- `cw-components.css` — tokens (both themes) and every shared block: shell + sidebar (drawer under 900 px; above 900 px it can be
+  hidden with the top-row **Hide sidebar / Show sidebar** button, class `cw-side-off` on `<html>`), top row with icon
   buttons, stats strip tiles, colored category bar + legend, hero + info box, pill tabs, panel + filter bar, **tag shelf**
   (“козырек”: the clipped row of `#tag N` chips with the `all tags (N) ↓` expander and the hint line), cards (2 columns, 1 on
   mobile), status/type chips, ad slots, native ad card, announcement bar, consent banner, footer, breadcrumbs.
 - `cw_components.py` — HTML for the same blocks (`sidebar`, `top_row`, `stats_strip`, `catbar`, `legend`, `hero`, `info_box`,
   `tabs`, `tag_shelf`, `tag_chips`, `card`, `ad_card`, `ad_slot`, `announcement_bar`, `consent_banner`, …). No Atlas data inside.
-- `cw-components.js` — theme toggle, announcement dismissal, consent + GA4 loader, drawer, search clear + `/` shortcut, tag shelf
-  expander (`el.cwRefresh()` after changing chips).
+- `cw-components.js` — theme toggle, announcement dismissal, consent + GA4 loader, drawer, sidebar hide/show (`cw_components.side_toggle()`,
+  `aria-expanded`/`aria-controls="cw-side"`, label follows state; stored in localStorage `cw-side`), search clear + `/` shortcut, tag shelf
+  expander (`el.cwRefresh()` after changing chips). Chips cut off by the collapsed shelf or covered by the expander are made `inert`
+  (not focusable or tappable; WCAG 2.5.8), re-fitted on resize, load and `document.fonts.ready`.
+- Accessibility floor: counters in pills, tabs and tag chips use full `--muted` (≥ 4.5:1, no opacity fade); footer links and
+  Cookie settings are ≥ 24×24 px tap targets. `check.py` and `smoke_test.py` assert both.
 
 Two deliberate departures from the draft: light-mode `--muted`/`--accent-text` are a shade darker so small text passes WCAG AA,
 and the theme lives on `<html data-theme>` (set before paint) instead of `body.dark`. Category colors come from `CATEGORIES` in
@@ -188,6 +194,7 @@ depends on the page: entry pages by status, `<Name> — verified on Commonworld 
 ## Theme, analytics, consent
 
 - Light theme by default for first-time visitors (`site.default_theme`, `light` or `dark`), dark theme via the sun/moon icon button; the choice is stored in localStorage (`cw-theme`). An inline head script sets the theme before first paint (no flash).
+- Sidebar hide/show (desktop, > 900 px): stored in localStorage (`cw-side` = `off`; removed when shown again). The same inline head script adds `cw-side-off` to `<html>` before first paint, so a hidden sidebar never flashes or shifts the layout. Listed in the Privacy Policy storage table and explained on /atlas/about/#navigation.
 - GA4 `G-9QB65R36K6` (in `site-config.json` → `site.ga4_measurement_id`; empty string disables analytics and the banner).
   Google Consent Mode v2 defaults: everything denied. `gtag.js` is **not loaded** until the visitor clicks Accept; Accept grants `analytics_storage` only (ad storage stays denied). Reject is remembered; "Cookie settings" in the footer reopens the banner; switching from Accept to Reject deletes `_ga*` cookies.
 
