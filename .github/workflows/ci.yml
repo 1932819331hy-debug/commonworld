@@ -8,6 +8,8 @@ permissions:
   contents: read
 jobs:
   atlas:
+    # Bot-opened refresh PRs get CI via workflow_dispatch from refresh.yml instead (pull_request from GITHUB_TOKEN fails without secrets).
+    if: github.event_name != 'pull_request' || github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

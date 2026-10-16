@@ -1,6 +1,6 @@
 name: Atlas weekly refresh
 # Re-checks every Atlas entry (atlas/refresh.py), rebuilds and validates the site, and opens a PR when data changed.
-# Never auto-merges. PRs opened with GITHUB_TOKEN do not trigger ci.yml, so this job runs the full build + check + smoke itself.
+# Never auto-merges. PRs opened with GITHUB_TOKEN do not trigger ci.yml normally, so this job runs build + check + smoke itself and then dispatches ci.yml on the PR branch (workflow_dispatch is allowed from GITHUB_TOKEN), which shows as the PR's check.
 on:
   schedule:
     - cron: '0 2 * * 0'   # Sundays 02:00 UTC
@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write           # dispatch ci.yml on the refresh branch so the PR gets a CI check
   issues: write            # create the atlas-refresh label
 concurrency:
   group: atlas-refresh
@@ -77,6 +78,7 @@ jobs:
                 --body-file "$RUNNER_TEMP/summary.md" --label atlas-refresh)
           echo "Opened $url" | tee -a "$GITHUB_STEP_SUMMARY"
           echo "NEW_PR=$url" >> "$GITHUB_ENV"
+          gh workflow run ci.yml --ref "$branch" && echo "Dispatched CI on $branch" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Close superseded refresh PRs
         if: steps.prev.outputs.open != ''
         run: |
