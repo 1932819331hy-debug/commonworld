@@ -604,7 +604,7 @@ def build_platform(site, c):
 {badge_block(site, c)}
 <aside class="correction"><h2>Something wrong or out of date?</h2><p>Atlas corrects cards from sources. <a href="{e(corr)}" rel="nofollow noopener">Tell us</a> with a link that shows the right fact, or read <a href="{b}/about/#corrections">how corrections work</a>.</p></aside>
 </article>
-{f'<section class="related" aria-labelledby="h-rel"><div class="sec-head"><h2 id="h-rel">More in {e(CAT_LABEL[cat])}</h2><a href="{b}/categories/{cat}/">All {len(site.by_cat[cat])}</a></div><div class="cw-grid">{rel_html}</div></section>' if rel_html else ''}"""
+{f'<section class="related" aria-labelledby="h-rel" data-nosnippet><div class="sec-head"><h2 id="h-rel">More in {e(CAT_LABEL[cat])}</h2><a href="{b}/categories/{cat}/">All {len(site.by_cat[cat])}</a></div><div class="cw-grid">{rel_html}</div></section>' if rel_html else ''}"""
     mtype = 'WebApplication' if c['entity_type'] in ('platform', 'tool_catalog') else 'SoftwareApplication'
     me = {'@type': mtype, 'name': c['name'], 'description': c['_desc'] or None,
           'applicationCategory': 'DeveloperApplication' if mtype == 'SoftwareApplication' else 'WebApplication', 'operatingSystem': 'Web'}
