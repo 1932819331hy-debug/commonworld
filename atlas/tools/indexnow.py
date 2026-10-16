@@ -52,14 +52,20 @@ def main():
     else:
         sys.exit('IndexNow: live site never matched the new build; not submitting')
     body = json.dumps({'host': host, 'key': KEY, 'keyLocation': f'https://{host}/{KEY}.txt', 'urlList': urls[:10000]}).encode()
-    req = urllib.request.Request('https://api.indexnow.org/indexnow', data=body, method='POST',
-                                 headers={'Content-Type': 'application/json; charset=utf-8'})
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            print('IndexNow response:', r.status)
-    except urllib.error.HTTPError as ex:
-        print('IndexNow response:', ex.code, ex.read()[:300]); sys.exit(1 if ex.code not in (200, 202) else 0)
-
+    for attempt in range(6):  # a brand-new key is verified asynchronously: 403 SiteVerificationNotCompleted for a few minutes
+        req = urllib.request.Request('https://api.indexnow.org/indexnow', data=body, method='POST',
+                                     headers={'Content-Type': 'application/json; charset=utf-8'})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                print('IndexNow response:', r.status); return
+        except urllib.error.HTTPError as ex:
+            msg = ex.read()[:300]
+            print('IndexNow response:', ex.code, msg)
+            if ex.code == 403 and b'SiteVerificationNotCompleted' in msg and attempt < 5:
+                time.sleep(90); continue
+            if ex.code in (403, 429):
+                print(f'::warning::IndexNow not accepted ({ex.code}); will be retried on the next push or manual run'); return
+            sys.exit(1)
 
 if __name__ == '__main__':
     main()
