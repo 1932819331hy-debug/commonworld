@@ -264,6 +264,108 @@ def badge_checks(parsed, pages, locs):
 REFRESH_TOOL = 'atlas/refresh.py'
 
 
+def api_checks(parsed, locs):
+    """Static API v1 (/api/v1/): every JSON file in dist parses; every path promised by openapi.json exists; every API data
+    document validates against its JSON Schema and equals its legacy /atlas/*.json twin (+ schema_version); counts agree
+    across old and new endpoints; CORS/content-type headers; docs page /atlas/api/ is linked from footer, About, llms files, README, sitemap."""
+    sys.path.insert(0, HERE)
+    import api_v1
+    fails = []
+    V = os.path.join(DIST, 'api', 'v1')
+    if not os.path.isdir(V):
+        return ['api: dist/api/v1 missing']
+    docs = {}
+    for root, _, files in os.walk(DIST):
+        for fn in files:
+            if fn.endswith('.json'):
+                fp = os.path.join(root, fn)
+                try:
+                    obj = json.load(open(fp, encoding='utf-8'))
+                except Exception as ex:
+                    fails.append(f'invalid JSON {os.path.relpath(fp, DIST)}: {ex}'); continue
+                rel = '/' + os.path.relpath(fp, DIST).replace(os.sep, '/')
+                if rel.startswith('/api/v1/'):
+                    docs[rel[len('/api/v1'):]] = obj
+    spec = docs.get('/openapi.json') or {}
+    if not str(spec.get('openapi', '')).startswith('3.1'): fails.append('api: openapi.json is not OpenAPI 3.1')
+    if spec.get('info', {}).get('version') != api_v1.SCHEMA_VERSION: fails.append('api: openapi info.version != schema_version')
+    legacy_list = json.load(open(os.path.join(DIST, 'atlas', 'platforms.json')))
+    ids = [r['id'] for r in legacy_list['platforms']]
+    cats = [r['id'] for r in (docs.get('/atlas/index.json') or {}).get('categories', [])]
+    for p in api_v1.expand_paths(spec, ids, cats) if spec else []:
+        if p not in docs: fails.append(f'api: openapi path {p} not in dist')
+    for p, op in (spec.get('paths') or {}).items():
+        for code, r in op['get']['responses'].items():
+            ref = (((r.get('content') or {}).get('application/json') or {}).get('schema') or {}).get('$ref')
+            if ref and ref.lstrip('./').replace('schemas/', '/schemas/', 1) not in docs and '/' + ref.lstrip('./') not in docs:
+                fails.append(f'api: {p} {code} references missing schema {ref}')
+    reg = {k[len('/schemas/'):]: v for k, v in docs.items() if k.startswith('/schemas/')}
+    for name, sch in reg.items():
+        if sch.get('$schema') != 'https://json-schema.org/draft/2020-12/schema': fails.append(f'api: {name} not JSON Schema 2020-12')
+        if sch.get('$id') != f"{ORIGIN}/api/v1/schemas/{name}": fails.append(f'api: {name} $id wrong')
+    n_valid = 0
+    for p, obj in docs.items():
+        if not obj or not isinstance(obj, dict) or 'schema' not in obj or p.startswith('/schemas/'):
+            continue
+        sch = obj['schema'].rsplit('/', 1)[-1]
+        if sch not in reg:
+            fails.append(f'api: {p} names unknown schema {obj["schema"]}'); continue
+        if obj.get('schema_version') != api_v1.SCHEMA_VERSION: fails.append(f'api: {p} schema_version {obj.get("schema_version")}')
+        errs = api_v1.validate(obj, reg[sch], reg, sch, limit=5)
+        n_valid += 1
+        if errs: fails.append(f'api: {p} fails {sch}: {errs[:3]}')
+        twin = os.path.join(DIST, p.lstrip('/'))
+        if not os.path.isfile(twin):
+            fails.append(f'api: {p} has no legacy twin'); continue
+        old = json.load(open(twin, encoding='utf-8'))
+        if {k: v for k, v in obj.items() if k not in ('schema_version', 'schema')} != old:
+            fails.append(f'api: {p} drifted from legacy {p}')
+    want = {'/atlas/platforms.json', '/atlas/earn.json'} | {f'/atlas/platforms/{i}.json' for i in ids} | {f'/atlas/categories/{k}.json' for k in cats}
+    missing = [p for p in want if p not in docs]
+    if missing: fails.append(f'api: data documents missing: {sorted(missing)[:5]}')
+    if n_valid != len(want): fails.append(f'api: validated {n_valid} data documents, expected {len(want)}')
+    # counts equal across old and new endpoints
+    ai, root = docs.get('/atlas/index.json') or {}, docs.get('/index.json') or {}
+    n = len(ids)
+    new_list = docs.get('/atlas/platforms.json') or {}
+    snap_n = len(json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms'])
+    counts = {'legacy platforms.json count': legacy_list['count'], 'api platforms.json count': new_list.get('count'), 'api platforms.json items': len(new_list.get('platforms', [])),
+              'api atlas/index counts.platforms': (ai.get('counts') or {}).get('platforms'), 'api index modules.atlas.count': ((root.get('modules') or {}).get('atlas') or {}).get('count'),
+              'sum of api categories': sum(c['count'] for c in ai.get('categories', [])), 'snapshot.json': snap_n,
+              'legacy per-entry files': len([f for f in os.listdir(os.path.join(DIST, 'atlas', 'platforms')) if f.endswith('.json')]),
+              'api per-entry files': len([f for f in os.listdir(os.path.join(V, 'atlas', 'platforms')) if f.endswith('.json')])}
+    bad = {k: v for k, v in counts.items() if v != n}
+    if bad: fails.append(f'api: counts differ from {n}: {bad}')
+    for k in cats:
+        c_old = json.load(open(os.path.join(DIST, 'atlas', 'categories', f'{k}.json')))['count']
+        c_idx = next(c['count'] for c in ai['categories'] if c['id'] == k)
+        if not c_old == c_idx == (docs.get(f'/atlas/categories/{k}.json') or {}).get('count'): fails.append(f'api: category {k} counts differ')
+    if (ai.get('counts') or {}).get('earn_rows') != (docs.get('/atlas/earn.json') or {}).get('count'): fails.append('api: earn row counts differ')
+    if root.get('schema_version') != api_v1.SCHEMA_VERSION or root.get('version') != 'v1': fails.append('api: index.json version/schema_version')
+    if not re.match(api_v1.UTC_PATTERN, str(root.get('generated_at'))): fails.append('api: index.json generated_at not ISO UTC')
+    for k in ('openapi', 'docs', 'llms_txt', 'license', 'github_mirror', 'changelog'):
+        if not (root.get('links') or {}).get(k): fails.append(f'api: index.json links.{k} missing')
+    if not os.path.isfile(os.path.join(V, 'CHANGELOG.md')): fails.append('api: CHANGELOG.md missing')
+    # headers
+    hd = open(os.path.join(DIST, '_headers')).read()
+    if not re.search(r'^/api/\*\n  Access-Control-Allow-Origin: \*$', hd, re.M): fails.append('_headers: /api/* lacks CORS *')
+    if not re.search(r'^/api/v1/\*\.json\n  Content-Type: application/json; charset=utf-8$', hd, re.M): fails.append('_headers: /api/v1/*.json content-type')
+    # docs page + links to it
+    D = '/atlas/api/'
+    if D not in parsed: fails.append('api: docs page /atlas/api/ missing')
+    if ORIGIN + D not in locs: fails.append('api: /atlas/api/ not in sitemap')
+    for u, p in parsed.items():
+        if u != '/404.html' and D not in [h for t, h, r in p.links]: fails.append(f'{u}: footer lacks link to {D}'); break
+    if '/api/v1/index.json' not in [h for t, h, r in parsed.get('/atlas/about/', P()).links]: fails.append('/atlas/about/: no link to /api/v1/')
+    for f in ('llms.txt', 'llms-full.txt'):
+        if ORIGIN + D not in open(os.path.join(DIST, f), encoding='utf-8').read(): fails.append(f'{f}: no link to {D}')
+    readme = os.path.normpath(os.path.join(HERE, '..', '..', 'README.md'))
+    if os.path.exists(readme) and ORIGIN + D not in open(readme, encoding='utf-8').read(): fails.append(f'README.md: no link to {D}')
+    print(f'api: {len(docs)} JSON files under /api/v1, {n_valid} data documents schema-valid and equal to their legacy twins, '
+          f'{len(api_v1.expand_paths(spec, ids, cats)) if spec else 0} OpenAPI paths resolved')
+    return fails
+
+
 def closure_checks(pages):
     """Closure wording matches atlas/refresh.py: two routes (human review / automated weekly check), auto-closed cards labelled."""
     fails = []
@@ -596,7 +698,7 @@ def main():
     except Exception as ex:
         fails.append(f'snapshot.json: {ex}')
     # machine-readable files: timestamps are ISO 8601 UTC, money-flow items carry a basis
-    for root, _, files in os.walk(os.path.join(DIST, 'atlas')):
+    for root, _, files in [w for d in ('atlas', 'api') for w in os.walk(os.path.join(DIST, d))]:
         for fn in files:
             if fn.endswith('.json'):
                 raw = open(os.path.join(root, fn), encoding='utf-8').read()
@@ -606,6 +708,7 @@ def main():
         if any('basis' not in f for f in r.get('money_flow') or []):
             fails.append(f"platforms.json {r['id']}: money_flow item without basis")
     fails += badge_checks(parsed, pages, locs)
+    fails += api_checks(parsed, locs)
     fails += closure_checks(pages)
     biggest = max(pages, key=lambda u: os.path.getsize(pages[u]))
     print(f'pages: {len(pages)} html ({len(want)} indexable + 404); JSON-LD blocks parsed: {jsonld_blocks}; '

@@ -1,0 +1,419 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://commonworld.one/api/v1/schemas/platform.schema.json",
+ "title": "Commonworld Atlas entry",
+ "description": "One published Atlas entry with all its claims and sources (/api/v1/atlas/platforms/{id}.json).",
+ "type": "object",
+ "allOf": [
+  {
+   "$ref": "#/$defs/platformSummary"
+  }
+ ],
+ "required": [
+  "schema_version",
+  "licence",
+  "source",
+  "generated_at",
+  "badge_status",
+  "badge_svg",
+  "badge_svg_dark",
+  "badge_page",
+  "claims"
+ ],
+ "properties": {
+  "schema_version": {
+   "type": "string"
+  },
+  "licence": {
+   "type": "string"
+  },
+  "source": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "generated_at": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+   "format": "date-time"
+  },
+  "badge_status": {
+   "type": "string"
+  },
+  "badge_svg": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "badge_svg_dark": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "badge_page": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "claims": {
+   "type": "array",
+   "items": {
+    "$ref": "#/$defs/claim"
+   }
+  },
+  "qa_status": {
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "$defs": {
+  "platformSummary": {
+   "type": "object",
+   "description": "Stable public fields of one published Atlas entry (as in platforms.json).",
+   "required": [
+    "id",
+    "name",
+    "url",
+    "json_url",
+    "website",
+    "category",
+    "category_label",
+    "type",
+    "status",
+    "summary",
+    "tags",
+    "has_money_flow",
+    "money_flow",
+    "key_number",
+    "verified_at",
+    "last_checked",
+    "claims_count",
+    "disclosure"
+   ],
+   "properties": {
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z0-9][a-z0-9-]*$",
+     "description": "Permanent ID (URL slug). Never construct one: take it from platforms.json."
+    },
+    "name": {
+     "type": "string"
+    },
+    "url": {
+     "type": "string",
+     "format": "uri",
+     "pattern": "^https?://"
+    },
+    "json_url": {
+     "type": "string",
+     "format": "uri",
+     "pattern": "^https?://"
+    },
+    "website": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "format": "uri"
+    },
+    "category": {
+     "enum": [
+      "social",
+      "worlds",
+      "work",
+      "payments",
+      "research",
+      "verification",
+      "arenas",
+      "registries",
+      "wiki",
+      "projects"
+     ]
+    },
+    "category_label": {
+     "type": "string"
+    },
+    "type": {
+     "enum": [
+      "platform",
+      "tool_catalog",
+      "protocol",
+      "project",
+      null
+     ]
+    },
+    "status": {
+     "enum": [
+      "live",
+      "closed"
+     ]
+    },
+    "summary": {
+     "type": "string"
+    },
+    "tags": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "has_money_flow": {
+     "type": "boolean"
+    },
+    "money_flow": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/moneyFlow"
+     }
+    },
+    "key_number": {
+     "$ref": "#/$defs/keyNumber"
+    },
+    "verified_at": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+     "format": "date-time"
+    },
+    "last_checked": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+     "format": "date-time"
+    },
+    "claims_count": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "disclosure": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  },
+  "moneyFlow": {
+   "type": "object",
+   "description": "A supported money-flow claim as shown on the card.",
+   "required": [
+    "statement",
+    "value",
+    "unit",
+    "window",
+    "basis",
+    "observed_at",
+    "source_url"
+   ],
+   "properties": {
+    "statement": {
+     "type": "string"
+    },
+    "value": {
+     "type": [
+      "number",
+      "string",
+      "null"
+     ]
+    },
+    "unit": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "window": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "basis": {
+     "enum": [
+      "direct_observation",
+      "operator_claim",
+      "independent_source",
+      "inference"
+     ]
+    },
+    "observed_at": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+     "format": "date-time"
+    },
+    "source_url": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "format": "uri"
+    }
+   }
+  },
+  "keyNumber": {
+   "type": [
+    "object",
+    "null"
+   ],
+   "description": "The headline figure shown on the card, or null.",
+   "required": [
+    "kind",
+    "value",
+    "unit",
+    "window",
+    "basis",
+    "observed_at",
+    "source_url"
+   ],
+   "properties": {
+    "kind": {
+     "type": "string"
+    },
+    "value": {
+     "type": [
+      "number",
+      "string",
+      "null"
+     ]
+    },
+    "unit": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "window": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "basis": {
+     "enum": [
+      "direct_observation",
+      "operator_claim",
+      "independent_source",
+      "inference"
+     ]
+    },
+    "observed_at": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+     "format": "date-time"
+    },
+    "source_url": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "format": "uri"
+    }
+   }
+  },
+  "claim": {
+   "type": "object",
+   "description": "One checked statement with its source, basis, outcome and observation time. Extra keys (history, recheck, methods) may appear.",
+   "required": [
+    "kind",
+    "statement",
+    "basis",
+    "outcome"
+   ],
+   "properties": {
+    "kind": {
+     "type": "string"
+    },
+    "statement": {
+     "type": "string"
+    },
+    "value": {
+     "type": [
+      "number",
+      "string",
+      "null"
+     ]
+    },
+    "unit": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "window": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "basis": {
+     "enum": [
+      "direct_observation",
+      "operator_claim",
+      "independent_source",
+      "inference"
+     ]
+    },
+    "outcome": {
+     "enum": [
+      "supported",
+      "contradicted",
+      "unchecked",
+      "inaccessible",
+      "needs_browser"
+     ]
+    },
+    "source_url": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "format": "uri"
+    },
+    "quote": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "observed_at": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+     "format": "date-time"
+    },
+    "methods": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "history": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     }
+    },
+    "recheck": {
+     "type": "object"
+    }
+   }
+  }
+ }
+}

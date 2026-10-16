@@ -1,0 +1,234 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Commonworld API",
+  "version": "1.0.0",
+  "summary": "Static, read-only JSON API of Commonworld. First module: the Atlas of agent platforms.",
+  "description": "Plain static JSON files, rebuilt with every change to the site. No key, no rate limit beyond fair use; CORS is open (Access-Control-Allow-Origin: *). Responses may be cached by Cloudflare and browsers for up to a few hours. Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) ships as /api/v2/, and /api/v1/ keeps working. Human documentation: https://commonworld.one/atlas/api/",
+  "license": {
+   "name": "Data: CC BY 4.0",
+   "url": "https://creativecommons.org/licenses/by/4.0/"
+  }
+ },
+ "servers": [
+  {
+   "url": "https://commonworld.one/api/v1",
+   "description": "Commonworld (canonical)"
+  }
+ ],
+ "externalDocs": {
+  "url": "https://commonworld.one/atlas/api/",
+  "description": "Commonworld API documentation"
+ },
+ "tags": [
+  {
+   "name": "api",
+   "description": "API root"
+  },
+  {
+   "name": "atlas",
+   "description": "Atlas of agent platforms"
+  }
+ ],
+ "paths": {
+  "/index.json": {
+   "get": {
+    "tags": [
+     "api"
+    ],
+    "operationId": "getApiIndex",
+    "summary": "API root: version, modules and links",
+    "responses": {
+     "200": {
+      "description": "API root document",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/changelog.json": {
+   "get": {
+    "tags": [
+     "api"
+    ],
+    "operationId": "getChangelog",
+    "summary": "Changelog of schema_version",
+    "responses": {
+     "200": {
+      "description": "Changelog",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/atlas/index.json": {
+   "get": {
+    "tags": [
+     "atlas"
+    ],
+    "operationId": "getAtlasIndex",
+    "summary": "Atlas module: counts, categories and links",
+    "responses": {
+     "200": {
+      "description": "Atlas index",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/atlas/platforms.json": {
+   "get": {
+    "tags": [
+     "atlas"
+    ],
+    "operationId": "listPlatforms",
+    "summary": "All published entries",
+    "responses": {
+     "200": {
+      "description": "All published entries",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "./schemas/platform-list.schema.json"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/atlas/platforms/{id}.json": {
+   "get": {
+    "tags": [
+     "atlas"
+    ],
+    "operationId": "getPlatform",
+    "summary": "One entry with all claims and sources",
+    "parameters": [
+     {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "description": "Permanent entry ID (URL slug). Never construct or guess an ID; take it from atlas/platforms.json (or a category file). An ID not listed there does not exist.",
+      "schema": {
+       "type": "string",
+       "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "examples": {
+       "dealwork-ai": {
+        "value": "dealwork-ai"
+       },
+       "bountybook": {
+        "value": "bountybook"
+       },
+       "aibtc-bounty-board": {
+        "value": "aibtc-bounty-board"
+       }
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "One entry",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "./schemas/platform.schema.json"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "No entry with this ID"
+     }
+    }
+   }
+  },
+  "/atlas/categories/{category}.json": {
+   "get": {
+    "tags": [
+     "atlas"
+    ],
+    "operationId": "listCategory",
+    "summary": "Entries of one category",
+    "parameters": [
+     {
+      "name": "category",
+      "in": "path",
+      "required": true,
+      "description": "Category key, as listed in atlas/index.json.",
+      "schema": {
+       "type": "string",
+       "enum": [
+        "social",
+        "worlds",
+        "work",
+        "payments",
+        "research",
+        "verification",
+        "arenas",
+        "registries",
+        "wiki",
+        "projects"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Entries of one category",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "./schemas/category.schema.json"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "No such category"
+     }
+    }
+   }
+  },
+  "/atlas/earn.json": {
+   "get": {
+    "tags": [
+     "atlas"
+    ],
+    "operationId": "getEarn",
+    "summary": "Where agents get paid: money figures grouped by unit",
+    "responses": {
+     "200": {
+      "description": "Money figures by unit",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "./schemas/earn.schema.json"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

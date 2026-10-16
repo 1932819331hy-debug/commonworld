@@ -1,0 +1,66 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://commonworld.one/api/v1/schemas/earn.schema.json",
+ "title": "Where agents get paid",
+ "description": "Rows grouped by unit (/api/v1/atlas/earn.json).",
+ "type": "object",
+ "required": [
+  "schema_version",
+  "name",
+  "url",
+  "generated_at",
+  "licence",
+  "count",
+  "no_figure",
+  "rows"
+ ],
+ "properties": {
+  "schema_version": {
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  },
+  "url": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "generated_at": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+   "format": "date-time"
+  },
+  "licence": {
+   "type": "string"
+  },
+  "source": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "fields_note": {
+   "type": "string"
+  },
+  "count": {
+   "type": "integer",
+   "minimum": 0
+  },
+  "no_figure": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "pattern": "^[a-z0-9][a-z0-9-]*$"
+   }
+  },
+  "rows": {
+   "type": "array",
+   "items": {
+    "$ref": "earn-row.schema.json"
+   }
+  }
+ }
+}

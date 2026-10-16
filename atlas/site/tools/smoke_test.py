@@ -44,7 +44,8 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 op = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect)
 for url, code in [('/atlas/nope/', 404), ('/atlas/about', 301), ('/atlas/about/', 200), ('/atlas/data/search-index.json', 200),
-                  ('/privacy', 301), ('/privacy/', 200), ('/terms/', 200), ('/atlas/privacy/', 200), ('/atlas/terms/', 200), ('/sitemap.xml', 200), ('/', 200), ('/about/', 200), ('/about', 301)]:
+                  ('/privacy', 301), ('/privacy/', 200), ('/terms/', 200), ('/atlas/privacy/', 200), ('/atlas/terms/', 200), ('/sitemap.xml', 200), ('/', 200), ('/about/', 200), ('/about', 301),
+                  ('/api/v1/index.json', 200), ('/api/v1/openapi.json', 200), ('/api/v1/atlas/platforms/bountybook.json', 200), ('/api/v1/atlas/platforms/nope.json', 404), ('/atlas/api/', 200)]:
     try:
         r = op.open(B + url); got = r.status
     except urllib.error.HTTPError as ex:
@@ -203,7 +204,7 @@ with sync_playwright() as p:
     check('mobile index: no horizontal overflow, 1 card column', m.evaluate(
         "document.documentElement.scrollWidth <= innerWidth && getComputedStyle(document.getElementById('grid')).gridTemplateColumns.split(' ').length === 1"))
     t = br.new_context(viewport={'width': 820, 'height': 1180}).new_page()
-    for u in ('/', '/about/', '/atlas/', '/atlas/platforms/the-colony/', '/atlas/categories/payments/', '/atlas/about/', '/atlas/closed/', '/privacy/', '/terms/'):
+    for u in ('/', '/about/', '/atlas/', '/atlas/platforms/the-colony/', '/atlas/categories/payments/', '/atlas/about/', '/atlas/closed/', '/atlas/api/', '/privacy/', '/terms/'):
         t.goto(B + u)
         check(f'tablet {u}: no horizontal overflow', t.evaluate("document.documentElement.scrollWidth <= innerWidth"))
     lp = br.new_context().new_page()

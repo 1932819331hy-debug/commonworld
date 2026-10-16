@@ -9,6 +9,7 @@ Output (default atlas/site/dist/) is a plain static tree with clean URLs as dire
   /atlas/closed/, /atlas/earn/ (+ /atlas/earn.json), /atlas/about/, /atlas/badge/ (+ /atlas/badge/<slug>.svg, <slug>-dark.svg), /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/sitemap.xml, /atlas/assets/*,
   /privacy/, /terms/ (site-wide Commonworld legal pages; /atlas/privacy|terms/ are noindex redirect stubs + _redirects 301s),
   / (Commonworld landing), /404.html, /robots.txt, /llms.txt, /llms-full.txt, /sitemap.xml, /_headers, /_redirects
+  /api/v1/ (static API: index.json, openapi.json, changelog, schemas/, atlas/{index,platforms,earn}.json, atlas/platforms|categories/<id>.json; docs /atlas/api/)
 It deploys unchanged to Cloudflare Pages / Workers static assets.
 """
 import argparse, html, json, os, re, shutil, sys
@@ -21,6 +22,7 @@ import cw_components as cw  # noqa: E402
 sys.path.insert(0, HERE)
 import og_images as ogi  # noqa: E402  (Pillow optional: per-page OG images)
 import badges  # noqa: E402  (status badges: /atlas/badge/<slug>.svg)
+import api_v1  # noqa: E402  (static API v1: /api/v1/, schemas, OpenAPI)
 
 e = cw.e
 DEFAULT_DATA = os.path.normpath(os.path.join(HERE, '..', 'data', 'snapshot-verified-2026-10-15.json'))
@@ -156,6 +158,7 @@ class Site:
         self.pages = []  # (path, lastmod) for sitemap
         self.og_jobs = {}  # name -> (spec, key): per-page Open Graph images (og_images.py)
         self.og_enabled = ogi.available()
+        self.api_docs = []  # (path under /api/v1, document, schema file, indented): legacy /atlas/*.json documents, re-served in /api/v1/ + schema_version
 
     def abs(self, path):
         return self.origin + path
@@ -291,7 +294,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
     head_ld = ''.join(jsonld(x) for x in ld)
     corr = cfg['site']['corrections_url']
     foot_links = (f'<a href="{b}/platforms/">All entries A–Z</a><a href="{b}/categories/">Categories</a><a href="{CW_ABOUT}">About Commonworld</a><a href="{b}/about/">How the Atlas works</a><a href="{b}/badge/">Badges</a>'
-                  f'<a href="{b}/data/snapshot.json">Data (JSON)</a><a href="{legal_urls(site)[0]}">Privacy</a><a href="{legal_urls(site)[1]}">Terms</a>{cw.cookie_settings_button()}'
+                  f'<a href="{API_DOCS}">API</a><a href="{b}/data/snapshot.json">Data (JSON)</a><a href="{legal_urls(site)[0]}">Privacy</a><a href="{legal_urls(site)[1]}">Terms</a>{cw.cookie_settings_button()}'
                   f'<a href="{e(corr)}" rel="nofollow noopener">Report a correction</a>')
     verified = site.latest.strftime('%Y-%m-%d') if site.latest else ''
     html_doc = f"""<!doctype html>
@@ -915,6 +918,7 @@ def build_earn_json(site, write):
                            '(measured first, then operator claims). observed_at is ISO 8601 UTC. Placement is never paid for.',
             'count': len(out), 'no_figure': [c['slug'] for c in E['no_figure']], 'rows': out}
     write(f'{b}/earn.json', json.dumps(meta, ensure_ascii=False, indent=1) + '\n')
+    site.api_docs.append(('/atlas/earn.json', meta, 'earn.schema.json', True))
 
 
 def contact(site, kind='general'):
@@ -973,7 +977,7 @@ def build_about(site):
 <h2 id="sources">Sources and data</h2>
 <p>Sources are the platforms' own pages and APIs, public registries, on-chain data and independent analyses, linked on each claim. The full published dataset is available as <a href="{b}/data/snapshot.json">downloadable JSON</a>.{(' It is published under ' + e(lic) + '.') if lic else ''}</p>
 <h2 id="agents">For agents</h2>
-<p>AI agents and other programs can read the Atlas directly: <a href="/llms.txt">/llms.txt</a> is a short map of the site in the llms.txt format (with <a href="/llms-full.txt">/llms-full.txt</a>, one line per entry), and <a href="{b}/platforms.json">{b}/platforms.json</a> lists every published entry with stable fields (ID, category, status, summary, money flow, last verified date, claim count). Each entry is also available as <code>{b}/platforms/&lt;id&gt;.json</code>. All of it is generated from the same data as the cards{(" and published under " + e(lic)) if lic else ""}.</p>
+<p>AI agents and other programs can read the Atlas directly: <a href="/llms.txt">/llms.txt</a> is a short map of the site in the llms.txt format (with <a href="/llms-full.txt">/llms-full.txt</a>, one line per entry), and <a href="{b}/platforms.json">{b}/platforms.json</a> lists every published entry with stable fields (ID, category, status, summary, money flow, last verified date, claim count). Each entry is also available as <code>{b}/platforms/&lt;id&gt;.json</code>. All of it is generated from the same data as the cards{(" and published under " + e(lic)) if lic else ""}. The same data is also served as a versioned static API at <a href="{api_v1.API_BASE}/index.json">{api_v1.API_BASE}/</a>, with an OpenAPI description and JSON Schemas; see <a href="{API_DOCS}">the API documentation</a>.</p>
 <h2 id="corrections">Report a correction</h2>
 <p>If a card is wrong or out of date, <a href="{e(s['corrections_url'])}" rel="nofollow noopener">open a correction request on GitHub</a> (you need a free GitHub account; requests there are public){(', or email ' + mailto(gen_mail)) if gen_mail else ''}. Include the card's permanent ID and a link to a source that shows the right fact. Corrections are checked the same way as new cards. Operators can ask for corrections too, but a correction needs a source, not only a statement.</p>
 <h2 id="advertise">Sponsored placements</h2>
@@ -1176,6 +1180,7 @@ def landing_agents(site):
             ('One category (JSON), e.g. Work & bounties', site.abs(f'{b}/categories/work.json')),
             ('Where agents get paid (JSON: money figures by unit)', site.abs(f'{b}/earn.json')),
             ('One entry (JSON), e.g. BountyBook', site.abs(f'{b}/platforms/bountybook.json')),
+            ('API v1 root (OpenAPI, schemas, versioned)', site.abs(f'{api_v1.API_BASE}/index.json')),
             ('Mirror on GitHub if this site cannot be fetched', RAW_BASE + '/platforms.json')]
     items = ''.join(f'<li>{e(t)}: <a href="{e(u)}"' + ('' if u.startswith(site.abs('/')) else ' rel="noopener nofollow"') + f'><code>{e(u)}</code></a></li>' for t, u in rows)
     return (f'<section class="cw-panel landing-agents" aria-labelledby="agents-title"><h2 id="agents-title">For AI agents</h2>'
@@ -1461,10 +1466,18 @@ def write_github_mirror(out, b):
     for f in sorted(os.listdir(pdir)):
         if f.endswith('.json'):
             shutil.copy(os.path.join(pdir, f), os.path.join(MIRROR_DIR, 'platforms', f))
+    # API v1 description (index, OpenAPI, schemas, changelog); the data documents themselves are the files above
+    api_src, api_dst = os.path.join(out, 'api', 'v1'), os.path.join(MIRROR_DIR, 'api', 'v1')
+    for rel in ['index.json', 'openapi.json', 'changelog.json', 'CHANGELOG.md', os.path.join('atlas', 'index.json')] + \
+            [os.path.join('schemas', f) for f in sorted(os.listdir(os.path.join(api_src, 'schemas')))]:
+        os.makedirs(os.path.dirname(os.path.join(api_dst, rel)), exist_ok=True)
+        shutil.copy(os.path.join(api_src, rel), os.path.join(api_dst, rel))
     with open(os.path.join(MIRROR_DIR, 'README.md'), 'w', encoding='utf-8') as fh:
         fh.write('# Atlas data mirror\n\nGenerated by `atlas/site/build.py`; do not edit by hand. Same published data as https://commonworld.one '
                  '(platforms.json, earn.json, snapshot.json, llms-full.txt, platforms/<id>.json), mirrored here so agent tools that cannot reach the site '
-                 'can read it via raw.githubusercontent.com. The site is canonical; cite Atlas URLs, not this mirror.\n')
+                 'can read it via raw.githubusercontent.com. The site is canonical; cite Atlas URLs, not this mirror.\n\n'
+                 '`api/v1/` holds the API description of https://commonworld.one/api/v1/ (index.json, openapi.json, schemas/, changelog). '
+                 'The API data documents carry the same records as the files above, plus `schema_version`.\n')
 
 
 def build_agent_files(site, write):
@@ -1482,17 +1495,20 @@ def build_agent_files(site, write):
             'fields_note': 'id = permanent slug; verified_at/last_checked = newest observation on the card (UTC); '
                            'money_flow = supported money-flow claims shown on the card; full claims with sources are in each json_url and in full_data.'}
     write(f'{b}/platforms.json', json.dumps(meta | {'platforms': recs}, ensure_ascii=False, indent=1) + '\n')
+    site.api_docs.append(('/atlas/platforms.json', meta | {'platforms': recs}, 'platform-list.schema.json', True))
     # small per-category lists: some agent tools truncate the full platforms.json (~290 KB)
     for k in site.cats:
         sub = [r for c, r in zip(site.cards, recs) if c.get('category') == k]
-        write(f'{b}/categories/{k}.json', json.dumps(meta | {'category': k, 'category_label': CAT_LABEL[k], 'count': len(sub), 'platforms': sub},
-                                                    ensure_ascii=False, separators=(',', ':')) + '\n')
+        cdoc = meta | {'category': k, 'category_label': CAT_LABEL[k], 'count': len(sub), 'platforms': sub}
+        write(f'{b}/categories/{k}.json', json.dumps(cdoc, ensure_ascii=False, separators=(',', ':')) + '\n')
+        site.api_docs.append((f'/atlas/categories/{k}.json', cdoc, 'category.schema.json', False))
     for c, r in zip(site.cards, recs):
         bu = badge_urls(site, c)
         one = {'licence': lic, 'source': REPO_URL, 'generated_at': iso(gen)} | r | {
             'badge_status': badges.status_of(c)[1], 'badge_svg': bu['svg'], 'badge_svg_dark': bu['svg_dark'], 'badge_page': bu['page'],
             'claims': c.get('claims', []), 'qa_status': c.get('qa_status')}
         write(f"{b}/platforms/{c['slug']}.json", json.dumps(one, ensure_ascii=False, indent=1) + '\n')
+        site.api_docs.append((f"/atlas/platforms/{c['slug']}.json", one, 'platform.schema.json', True))
 
     A = site.abs
     gm = contact(site, 'general')
@@ -1527,6 +1543,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 
 ## Data
 
+- [API v1]({A(api_v1.API_BASE + '/index.json')}): versioned static JSON API (schema_version {api_v1.SCHEMA_VERSION}); Atlas module {A(api_v1.API_BASE + '/atlas/index.json')}; [OpenAPI 3.1]({A(api_v1.API_BASE + '/openapi.json')}); JSON Schemas {A(api_v1.API_BASE + '/schemas/')}<name>.schema.json; [docs]({A(API_DOCS)}). Same records as the files below plus schema_version; breaking changes go to /api/v2/ and v1 keeps working
 - Per category: {A(f'{b}/categories/')}<category>.json, the same fields for one category only (small files; use these if your tool truncates long responses)
 - [earn.json]({A(f'{b}/earn.json')}): where agents get paid: one row per live entry with a supported money figure (value, unit, window, basis, observed_at, source_url), grouped by unit
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
@@ -1565,10 +1582,115 @@ Some agent tools cannot reach the site directly. The same published files are mi
     lines = [f'# Commonworld Atlas: all {len(recs)} published entries',
              f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '',
              f"Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}",
+             f"API v1 (versioned, OpenAPI 3.1): {A(api_v1.API_BASE + '/index.json')}; per entry: {A(api_v1.API_BASE + '/atlas/platforms/')}<id>.json; docs: {A(API_DOCS)}",
              f"Badges: every entry has a free status badge at {A(f'{b}/badge/')}<id>.svg (dark: <id>-dark.svg); rules: {A(f'{b}/badge/')}", '']
     for r in recs:
         lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}" + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
     write('/llms-full.txt', '\n'.join(lines) + '\n')
+
+
+# ---------------------------------------------------------------- static API v1 (/api/v1/)
+API_DOCS = '/atlas/api/'  # human documentation page
+
+
+def api_json(obj, indent=True):
+    return json.dumps(obj, ensure_ascii=False, indent=1 if indent else None, separators=None if indent else (',', ':')) + '\n'
+
+
+def build_api(site, write):
+    """/api/v1/: one namespace for the whole platform; the Atlas is its first module. The data documents are the same
+    objects as the legacy /atlas/*.json files (collected in site.api_docs while those were written) plus schema_version,
+    so the two can never drift."""
+    A, b, V = site.abs, site.base, api_v1.API_BASE
+    lic = site.cfg.get('data_licence') or 'not yet specified'
+    gen = iso(parse_time(site.snapshot.get('generated_at')))
+    for path, doc, sch, indent in site.api_docs:
+        write(V + path, api_json({'schema_version': api_v1.SCHEMA_VERSION, 'schema': api_v1.schema_url(site.origin, sch)} | doc, indent))
+    for name, sch in api_v1.schemas(site.origin, site.cats).items():
+        write(f'{V}/schemas/{name}', api_json(sch))
+    ids = [c['slug'] for c in site.cards]
+    exs = [s for s in ('dealwork-ai', 'bountybook', 'aibtc-bounty-board') if s in ids] or ids[:3]
+    write(f'{V}/openapi.json', api_json(api_v1.openapi(site.origin, site.cats, exs, A(API_DOCS), lic)))
+    write(f'{V}/changelog.json', api_json({'schema_version': api_v1.SCHEMA_VERSION, 'versioning': api_v1.VERSIONING, 'releases': api_v1.CHANGELOG}))
+    write(f'{V}/CHANGELOG.md', api_v1.changelog_md())
+    live = sum(1 for c in site.cards if c['status'] == 'live')
+    atlas = {'schema_version': api_v1.SCHEMA_VERSION, 'name': 'Commonworld Atlas of Agent Platforms', 'description': 'Verified catalog of AI-agent platforms',
+             'url': A(f'{b}/'), 'generated_at': gen, 'newest_observation': iso(site.latest), 'licence': lic,
+             'counts': {'platforms': len(site.cards), 'live': live, 'closed': len(site.cards) - live, 'categories': len(site.cats), 'earn_rows': len(site.earn['rows'])},
+             'categories': [{'id': k, 'label': CAT_LABEL[k], 'description': CAT_DESC[k], 'count': len(site.by_cat[k]),
+                             'url': A(f'{b}/categories/{k}/'), 'json_url': A(f'{V}/atlas/categories/{k}.json')} for k in site.cats],
+             'links': {'platforms': A(f'{V}/atlas/platforms.json'), 'platform': A(f'{V}/atlas/platforms/') + '{id}.json',
+                       'category': A(f'{V}/atlas/categories/') + '{category}.json', 'earn': A(f'{V}/atlas/earn.json'),
+                       'html': A(f'{b}/'), 'method': A(f'{b}/about/'), 'docs': A(API_DOCS), 'openapi': A(f'{V}/openapi.json')},
+             'id_rule': 'IDs are permanent readable slugs. Never construct or guess an ID: take it from platforms.json or a category file.'}
+    write(f'{V}/atlas/index.json', api_json(atlas))
+    root = {'name': 'Commonworld API', 'description': 'Static, read-only JSON API of Commonworld, a shared world for humans and agents.',
+            'version': api_v1.API_VERSION, 'schema_version': api_v1.SCHEMA_VERSION, 'generated_at': gen,
+            'modules': {'atlas': {'name': 'Atlas of Agent Platforms', 'url': A(f'{V}/atlas/index.json'), 'count': len(site.cards),
+                                  'description': 'Verified catalog of AI-agent platforms: every fact checked against its own source and dated.'}},
+            'links': {'self': A(f'{V}/index.json'), 'openapi': A(f'{V}/openapi.json'), 'docs': A(API_DOCS), 'schemas': A(f'{V}/schemas/') + '{name}.schema.json',
+                      'changelog': A(f'{V}/changelog.json'), 'llms_txt': A('/llms.txt'), 'llms_full_txt': A('/llms-full.txt'),
+                      'license': f'{REPO_URL}/blob/main/LICENSE-DATA.md', 'source': REPO_URL,
+                      'github_mirror': RAW_BASE + '/', 'github_mirror_api': RAW_BASE + '/api/v1/'},
+            'license': {'data': lic, 'code': 'MIT', 'attribution': 'Credit "Commonworld Atlas" with a link.'},
+            'access': 'No key. Static files with CORS open (Access-Control-Allow-Origin: *). Cloudflare and browsers may cache responses for up to a few hours.',
+            'stability': api_v1.VERSIONING}
+    write(f'{V}/index.json', api_json(root))
+
+
+def build_api_docs(site):
+    b, V, A = site.base, api_v1.API_BASE, site.abs
+    crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), ('API', API_DOCS)])
+    lic = site.cfg.get('data_licence') or 'not yet specified'
+    ids = [c['slug'] for c in site.cards]
+    ex = next((s for s in ('dealwork-ai', 'bountybook') if s in ids), ids[0])
+    rows = [('API root: version, modules, links', f'{V}/index.json'),
+            ('Atlas module: counts, categories, links', f'{V}/atlas/index.json'),
+            ('All published entries', f'{V}/atlas/platforms.json'),
+            ('One entry with all claims and sources', f'{V}/atlas/platforms/&lt;id&gt;.json'),
+            ('Entries of one category', f'{V}/atlas/categories/&lt;category&gt;.json'),
+            ('Where agents get paid (money figures by unit)', f'{V}/atlas/earn.json'),
+            ('OpenAPI 3.1 description', f'{V}/openapi.json'),
+            ('JSON Schemas (2020-12)', f'{V}/schemas/platform.schema.json'),
+            ('Changelog', f'{V}/changelog.json')]
+    trs = ''.join(f'<tr><td>{t}</td><td>' + (f'<a href="{u}"><code>{u}</code></a>' if '&lt;' not in u else f'<code>{u}</code>') + '</td></tr>' for t, u in rows)
+    cats = ', '.join(f'<code>{k}</code>' for k in site.cats)
+    curl = (f'curl -s {A(V + "/index.json")}\n'
+            f'curl -s {A(V + "/atlas/platforms.json")} | jq \'.platforms[] | {{id, name, status}}\'\n'
+            f'curl -s {A(V + "/atlas/platforms/" + ex + ".json")} | jq \'.claims[] | {{kind, statement, basis, source_url}}\'\n'
+            f'curl -s {A(V + "/atlas/categories/work.json")} | jq \'.count\'')
+    lead = ('<p>The Commonworld API is a set of static, read-only JSON files: no key, no sign-up, open CORS. '
+            'It is one namespace for the whole platform; the Atlas of agent platforms is its first module.</p>')
+    body = f"""{crumbs}
+{cw.hero('Atlas · API', 'Commonworld API v1', lead, small=True, kicker_href=f'{b}/')}
+<div class="prose">
+<h2 id="endpoints">What is there</h2>
+<div class="table-wrap"><table class="list"><thead><tr><th scope="col">What</th><th scope="col">URL</th></tr></thead><tbody>{trs}</tbody></table></div>
+<p>Categories: {cats}. Every data document carries <code>schema_version</code> and a link to its JSON Schema.</p>
+<h2 id="ids">IDs</h2>
+<p>An entry ID is its permanent URL slug (for example <code>{e(ex)}</code>). Never construct or guess an ID: take it from <a href="{V}/atlas/platforms.json">platforms.json</a> or a category file. An ID that is not listed there does not exist, and the request returns 404.</p>
+<h2 id="examples">Examples</h2>
+<pre><code>{e(curl)}</code></pre>
+<h2 id="access">Access, caching and CORS</h2>
+<ul><li>Static files served by Cloudflare: no key and no rate limit beyond fair use. Please cache on your side instead of polling.</li>
+<li>CORS is open (<code>Access-Control-Allow-Origin: *</code>), so browser apps can read the files directly. JSON is served as <code>application/json; charset=utf-8</code>.</li>
+<li>Cloudflare and browsers may keep a copy for up to a few hours, so a change can take that long to show. The data itself is rebuilt with every change to the site, including the weekly re-check; <code>generated_at</code> says when.</li>
+<li>If commonworld.one cannot be reached, the same data is mirrored on GitHub: <a href="{RAW_BASE}/platforms.json" rel="nofollow noopener">raw.githubusercontent.com/…/atlas/public/</a>, with the API description under <code>atlas/public/api/v1/</code>. The site stays canonical.</li></ul>
+<h2 id="stability">Stability promise</h2>
+<p>{e(api_v1.VERSIONING)} The older files at <code>{b}/platforms.json</code>, <code>{b}/platforms/&lt;id&gt;.json</code>, <code>{b}/categories/&lt;category&gt;.json</code> and <code>{b}/earn.json</code> carry the same records and keep working. See the <a href="{V}/changelog.json">changelog</a>.</p>
+<h2 id="schemas">Schemas</h2>
+<p>The <a href="{V}/openapi.json">OpenAPI 3.1 description</a> lists every path; response shapes are JSON Schema 2020-12 files: <a href="{V}/schemas/platform.schema.json">platform</a>, <a href="{V}/schemas/platform-list.schema.json">platform list</a>, <a href="{V}/schemas/category.schema.json">category</a>, <a href="{V}/schemas/earn.schema.json">earn</a> and <a href="{V}/schemas/earn-row.schema.json">earn row</a>. Every published file is validated against them before it ships.</p>
+<h2 id="license">License</h2>
+<p>Data: {e(lic)}. Please credit “Commonworld Atlas” with a link. Code: MIT. Details in <a href="{REPO_URL}/blob/main/LICENSE-DATA.md" rel="nofollow noopener">LICENSE-DATA.md</a>. How each fact is checked: <a href="{b}/about/">How the Atlas works</a>. For a short map aimed at AI agents, see <a href="/llms.txt">/llms.txt</a>.</p>
+</div>"""
+    ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'TechArticle', 'name': 'Commonworld API v1', 'url': A(API_DOCS), 'inLanguage': 'en',
+                     'isPartOf': {'@type': 'WebSite', 'name': 'Commonworld Atlas', 'url': A(f'{b}/')}}]
+    return page(site, path=API_DOCS, title='Commonworld API v1: static JSON for the Atlas | Commonworld',
+                description='Read the Commonworld Atlas as data: static JSON files with open CORS, an OpenAPI 3.1 description and JSON Schemas. No key needed.',
+                body=body, active='api', ld=ld,
+                og=og_generic(site, 'page-api', 'Commonworld API v1',
+                              'Static JSON with open CORS, an OpenAPI 3.1 description and JSON Schemas. No key needed.',
+                              [('static JSON', 'olive'), ('OpenAPI 3.1', None), ('CC BY 4.0', None)], kicker='API'))
 
 
 # ---------------------------------------------------------------- main
@@ -1645,6 +1767,7 @@ def main():
     write(f'{b}/earn/', build_earn(site))
     write(f'{b}/about/', build_about(site))
     write(f'{b}/badge/', build_badge_page(site))
+    write(API_DOCS, build_api_docs(site))
     n_badges = write_badges(site, write)
     write(CW_ABOUT, build_cw_about(site))  # About Commonworld
     priv_url, terms_url = legal_urls(site)
@@ -1683,6 +1806,7 @@ def main():
 
     build_agent_files(site, write)
     build_earn_json(site, write)
+    build_api(site, write)
 
     def sitemap(pages):
         sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
@@ -1720,6 +1844,15 @@ def main():
 {b}/earn.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+{b}/categories/*.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+/api/*
+  Access-Control-Allow-Origin: *
+/api/v1/*.json
+  Content-Type: application/json; charset=utf-8
+/api/v1/CHANGELOG.md
+  Content-Type: text/markdown; charset=utf-8
 /llms.txt
   Access-Control-Allow-Origin: *
   Content-Type: text/plain; charset=utf-8

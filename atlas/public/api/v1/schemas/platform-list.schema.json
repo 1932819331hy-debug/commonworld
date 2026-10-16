@@ -1,0 +1,89 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://commonworld.one/api/v1/schemas/platform-list.schema.json",
+ "title": "Commonworld Atlas entry list",
+ "description": "All published entries (/api/v1/atlas/platforms.json).",
+ "type": "object",
+ "required": [
+  "schema_version",
+  "name",
+  "url",
+  "generated_at",
+  "licence",
+  "count",
+  "platforms"
+ ],
+ "properties": {
+  "schema_version": {
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  },
+  "description": {
+   "type": "string"
+  },
+  "url": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "generated_at": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+   "format": "date-time"
+  },
+  "newest_observation": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+   "format": "date-time"
+  },
+  "licence": {
+   "type": "string"
+  },
+  "licence_url": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "source": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "corrections": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "protocol": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "full_data": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "count": {
+   "type": "integer",
+   "minimum": 0
+  },
+  "fields_note": {
+   "type": "string"
+  },
+  "platforms": {
+   "type": "array",
+   "items": {
+    "$ref": "platform.schema.json#/$defs/platformSummary"
+   }
+  }
+ }
+}

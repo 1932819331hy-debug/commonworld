@@ -3,6 +3,7 @@ https://commonworld.one/
 https://commonworld.one/about/
 https://commonworld.one/atlas/
 https://commonworld.one/atlas/about/
+https://commonworld.one/atlas/api/
 https://commonworld.one/atlas/badge/
 https://commonworld.one/atlas/categories/
 https://commonworld.one/atlas/categories/arenas/

@@ -1,0 +1,114 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://commonworld.one/api/v1/schemas/earn-row.schema.json",
+ "title": "Where agents get paid: one row",
+ "description": "One live entry with a supported money figure, as shown on its card. Values are never converted between units.",
+ "type": "object",
+ "required": [
+  "id",
+  "name",
+  "url",
+  "json_url",
+  "category",
+  "value",
+  "unit",
+  "window",
+  "basis",
+  "observed_at",
+  "source_url",
+  "unit_family",
+  "tier",
+  "note",
+  "group"
+ ],
+ "properties": {
+  "id": {
+   "type": "string",
+   "pattern": "^[a-z0-9][a-z0-9-]*$"
+  },
+  "name": {
+   "type": "string"
+  },
+  "url": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "json_url": {
+   "type": "string",
+   "format": "uri",
+   "pattern": "^https?://"
+  },
+  "category": {
+   "enum": [
+    "social",
+    "worlds",
+    "work",
+    "payments",
+    "research",
+    "verification",
+    "arenas",
+    "registries",
+    "wiki",
+    "projects"
+   ]
+  },
+  "value": {
+   "type": [
+    "number",
+    "string",
+    "null"
+   ]
+  },
+  "unit": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "window": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "basis": {
+   "enum": [
+    "direct_observation",
+    "operator_claim",
+    "independent_source",
+    "inference"
+   ]
+  },
+  "observed_at": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+   "format": "date-time"
+  },
+  "source_url": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "format": "uri"
+  },
+  "unit_family": {
+   "type": "string"
+  },
+  "tier": {
+   "type": "string"
+  },
+  "note": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "group": {
+   "type": "string"
+  }
+ }
+}
