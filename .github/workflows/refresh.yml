@@ -71,7 +71,7 @@ jobs:
           branch="refresh/$(date -u +%F)"
           if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then branch="$branch-$(date -u +%H%M)"; fi
           git switch -c "$branch"
-          git add atlas/data
+          git add atlas/data atlas/public
           git commit -m "Atlas weekly refresh $(date -u +%F)" -m "Automated by .github/workflows/refresh.yml (atlas/refresh.py). Review before merging."
           git push origin "$branch"
           url=$(gh pr create --base main --head "$branch" --title "Atlas weekly refresh $(date -u +%F)" \

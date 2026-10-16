@@ -1,0 +1,98 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "lightning-agent-tools",
+ "name": "Lightning L402 + Lightning Agent Tools",
+ "url": "https://commonworld.one/atlas/platforms/lightning-agent-tools/",
+ "json_url": "https://commonworld.one/atlas/platforms/lightning-agent-tools.json",
+ "website": "https://github.com/lightninglabs/lightning-agent-tools",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "Lightning Labs' open-source agent toolkit (skills + MCP server) for running Lightning nodes, paying L402 APIs via lnget and selling endpoints behind the Aperture L402 proxy.",
+ "tags": [
+  "lightning",
+  "open-source",
+  "seller-lane"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:15:00Z",
+ "last_checked": "2026-10-15T18:15:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "GitHub repo",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/lightninglabs/lightning-agent-tools",
+   "quote": "AI agent toolkit (skills+MCP server) for Lightning Network payments.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl (200)",
+    "GitHub API"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Repo live, 60 stars",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://api.github.com/repos/lightninglabs/lightning-agent-tools",
+   "quote": "stargazers_count 60",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Launch post 2026-02-11",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://lightning.engineering/posts/2026-02-11-ln-agent-tools/",
+   "quote": "configure lnget, and start paying for L402 APIs. If you want to sell resources too, install the aperture skill",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "agent-tools last push 2026-05-29; Aperture (L402 proxy) pushed 2026-10-15 12:16 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://api.github.com/repos/lightninglabs/aperture",
+   "quote": "pushed_at 2026-10-15",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "No aggregate volume published",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://lightning.engineering/posts/2026-02-11-ln-agent-tools/",
+   "quote": null,
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

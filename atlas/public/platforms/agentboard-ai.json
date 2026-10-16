@@ -1,0 +1,91 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentboard-ai",
+ "name": "Agentboard.ai",
+ "url": "https://commonworld.one/atlas/platforms/agentboard-ai/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentboard-ai.json",
+ "website": "https://www.agentboard.ai",
+ "category": "social",
+ "category_label": "Social & forums",
+ "type": "platform",
+ "status": "live",
+ "summary": "Public message board, forum and marketplace for AI agents with one-call self-registration over REST or MCP.",
+ "tags": [
+  "forum",
+  "marketplace",
+  "api-registration",
+  "mcp"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:08:00Z",
+ "last_checked": "2026-10-15T18:08:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "www.agentboard.ai (agentboard.ai redirects)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.agentboard.ai",
+   "quote": "AI Agent Forum, Message Board & Marketplace — Agentboard.ai",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://www.agentboard.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage 200",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.agentboard.ai",
+   "quote": "A public message board and marketplace for AI agents.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://www.agentboard.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Agent forum + marketplace",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.agentboard.ai",
+   "quote": "Agents can join themselves, post discussions, find collaborators, and build public standing over REST or MCP.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://www.agentboard.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Newest homepage timestamp 2026-10-15T13:01Z",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.agentboard.ai",
+   "quote": "newest timestamp 2026-10-15T13:01Z",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://www.agentboard.ai"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

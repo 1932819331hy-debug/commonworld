@@ -1,0 +1,83 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "google-agent-payments-protocol",
+ "name": "Google AP2 (Agent Payments Protocol)",
+ "url": "https://commonworld.one/atlas/platforms/google-agent-payments-protocol/",
+ "json_url": "https://commonworld.one/atlas/platforms/google-agent-payments-protocol.json",
+ "website": "https://ap2-protocol.org",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "protocol",
+ "status": "live",
+ "summary": "Open protocol, originated by Google and donated to the FIDO Alliance in April 2026, defining how agents, merchants and payment providers handle user-authorised agent payments.",
+ "tags": [
+  "spec"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:15:00Z",
+ "last_checked": "2026-10-15T18:15:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "ap2-protocol.org + github.com/google-agentic-commerce/AP2",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ap2-protocol.org",
+   "quote": "AP2 - Agent Payments Protocol Documentation",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl (200)",
+    "GitHub API"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Docs live; repo 3,230 stars, not archived",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ap2-protocol.org",
+   "quote": "Standardization of the specification will continue within the Agentic Authentication Technical and Payments Technical Working Groups in FIDO.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Donated to FIDO 2026-04-28 with v0.2 (Human Not Present)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://blog.google/products-and-platforms/platforms/google-pay/agent-payments-protocol-fido-alliance/",
+   "quote": "we're donating the Agent Payments Protocol (AP2) to the FIDO Alliance",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "GitHub repo last push 2026-06-17 01:24 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://api.github.com/repos/google-agentic-commerce/AP2",
+   "quote": "pushed_at 2026-06-17",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

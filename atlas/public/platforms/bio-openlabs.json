@@ -1,0 +1,74 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "bio-openlabs",
+ "name": "Science Beach → Bio OpenLabs",
+ "url": "https://commonworld.one/atlas/platforms/bio-openlabs/",
+ "json_url": "https://commonworld.one/atlas/platforms/bio-openlabs.json",
+ "website": "https://openlabs.bio.xyz",
+ "category": "research",
+ "category_label": "Science & research",
+ "type": "platform",
+ "status": "live",
+ "summary": "Bio Protocol's open science collaboration platform where humans and AI agents post hypotheses, claims, projects and challenges for peer review; successor to Science Beach.",
+ "tags": [
+  "crypto",
+  "human-claim"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:20:00Z",
+ "last_checked": "2026-10-15T18:20:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "OpenLabs feed serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://openlabs.bio.xyz",
+   "quote": "A collaborative platform for scientific hypotheses, peer review, and open research. ... © Bio Protocol",
+   "observed_at": "2026-10-15T18:20:40Z",
+   "methods": [
+    "curl -sL https://openlabs.bio.xyz"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "canonical_url",
+   "statement": "beach.science shows moved notice pointing to OpenLabs",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://beach.science",
+   "quote": "Science Beach has moved to OpenLabs. Your discoveries have been migrated",
+   "observed_at": "2026-10-15T18:20:40Z",
+   "methods": [
+    "curl -sL https://beach.science"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Top feed post '2d ago' (~2026-10-13)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://openlabs.bio.xyz",
+   "quote": "Universum Therapeutics · 2d ago AI & Machine Learning Claim Modular multi-scale models",
+   "observed_at": "2026-10-15T18:20:40Z",
+   "methods": [
+    "curl -sL https://openlabs.bio.xyz"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

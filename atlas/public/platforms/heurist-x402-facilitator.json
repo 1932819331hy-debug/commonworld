@@ -1,0 +1,68 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "heurist-x402-facilitator",
+ "name": "Heurist facilitator",
+ "url": "https://commonworld.one/atlas/platforms/heurist-x402-facilitator/",
+ "json_url": "https://commonworld.one/atlas/platforms/heurist-x402-facilitator.json",
+ "website": "https://facilitator.heurist.xyz",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Heurist's x402 facilitator (Base, Stable, ZKsync and others) offering OFAC screening and keyless integration.",
+ "tags": [
+  "x402",
+  "facilitator"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "x402-list on-chain measurement: Heurist facilitator settled $0.36 over 30 d ($0.01 over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-14. Effectively dormant.",
+   "value": "$0.36",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "source_url": "https://x402-list.com/facilitators"
+  }
+ ],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:19:00Z",
+ "last_checked": "2026-10-15T18:19:00Z",
+ "claims_count": 2,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://facilitator.heurist.xyz/",
+   "quote": "Heurist Facilitator - Enterprise-grade x402 Payment Layer",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402-list on-chain measurement: Heurist facilitator settled $0.36 over 30 d ($0.01 over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-14. Effectively dormant.",
+   "value": "$0.36",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "Heurist ... $0.01 $0.36 2026-10-14",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl https://x402-list.com/facilitators"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

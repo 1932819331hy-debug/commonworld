@@ -1,0 +1,88 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "skyfire-kyapay",
+ "name": "Skyfire (KYAPay)",
+ "url": "https://commonworld.one/atlas/platforms/skyfire-kyapay/",
+ "json_url": "https://commonworld.one/atlas/platforms/skyfire-kyapay.json",
+ "website": "https://skyfire.xyz",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Skyfire provides 'Know Your Agent' identity and KYAPay tokens that bundle verified agent identity with payment intent, for buyer and seller agents.",
+ "tags": [
+  "kya",
+  "identity",
+  "wallet"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:15:00Z",
+ "last_checked": "2026-10-15T18:15:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "skyfire.xyz with docs.skyfire.xyz",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://docs.skyfire.xyz/docs/introduction-to-skyfire",
+   "quote": "Introduction to Skyfire",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl docs.skyfire.xyz (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Main site behind Cloudflare challenge (403 to curl); official docs subdomain serves full content incl. llms.txt",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://docs.skyfire.xyz/llms.txt",
+   "quote": "A KYAPay token is a signed, interoperable credential that packages agent identity and payment intent",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl skyfire.xyz (403 Cloudflare)",
+    "curl docs.skyfire.xyz (200)",
+    "curl docs.skyfire.xyz/llms.txt (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "KYA + KYAPay tokens; seller guide",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://docs.skyfire.xyz/llms.txt",
+   "quote": "Verify a real-world identity and have your agents inherit it, so buyers can access more services and sellers earn trust.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "No dated item captured",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://docs.skyfire.xyz",
+   "quote": null,
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

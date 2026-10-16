@@ -1,0 +1,74 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "allium-x402-data",
+ "name": "Artemis / Allium / Dune (data vendors)",
+ "url": "https://commonworld.one/atlas/platforms/allium-x402-data/",
+ "json_url": "https://commonworld.one/atlas/platforms/allium-x402-data.json",
+ "website": "https://docs.allium.so/historical-data/agents/x402/transfers",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "Allium (enterprise blockchain data vendor) publishes x402 tables including x402_transfers_adjusted with self-dealing and reciprocal-return flags to separate organic from fabricated volume.",
+ "tags": [
+  "x402",
+  "analytics"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:12:00Z",
+ "last_checked": "2026-10-15T18:12:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Docs 200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://docs.allium.so/historical-data/agents/x402/transfers",
+   "quote": "Allium Documentation Hub",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Self-dealing flags exist.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://docs.allium.so/historical-data/agents/x402/transfers",
+   "quote": "is_self_dealing TRUE when the sender and recipient are the same wallet — a server paying itself is_reciprocal_return ...",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Legacy 'Allium ~$3M raw, Artemis $1.6M adjusted (Mar 2026)' only seen second-hand in 402atlas report table; vendors' own figures are paywalled.",
+   "value": null,
+   "unit": null,
+   "window": "30d, Mar 2026",
+   "basis": "independent_source",
+   "source_url": "https://402atlas.com/market-report.html",
+   "quote": "Allium $3M raw on-chain Artemis / a16z $1.6M wash removed",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl 402atlas report"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

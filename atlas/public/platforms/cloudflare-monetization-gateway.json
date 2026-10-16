@@ -1,0 +1,89 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "cloudflare-monetization-gateway",
+ "name": "Cloudflare Pay Per Crawl / Monetization Gateway",
+ "url": "https://commonworld.one/atlas/platforms/cloudflare-monetization-gateway/",
+ "json_url": "https://commonworld.one/atlas/platforms/cloudflare-monetization-gateway.json",
+ "website": "https://blog.cloudflare.com/monetization-gateway-beta/",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Cloudflare's Monetization Gateway lets sites and APIs behind Cloudflare charge AI agents per request using HTTP 402 (x402-compatible), alongside Pay Per Crawl/Pay Per Use for content; currently a closed beta for U.S.-based sellers and buyers.",
+ "tags": [
+  "x402",
+  "us-only"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:08:00Z",
+ "last_checked": "2026-10-15T18:08:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Blog post serves full content (HTTP 200).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://blog.cloudflare.com/monetization-gateway-beta/",
+   "quote": "Monetization Gateway beta: charge AI agents for consumption with HTTP 402",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L https://blog.cloudflare.com/monetization-gateway-beta/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Closed beta, U.S.-only.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://blog.cloudflare.com/monetization-gateway-beta/",
+   "quote": "The Monetization Gateway is available in closed beta to eligible U.S.-based sellers and buyers, with support for new geographies on the way.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Closed beta announced in blog post dated 2026-09-30.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://blog.cloudflare.com/monetization-gateway-beta/",
+   "quote": "September 30, 2026 Monetization Gateway beta ... Today, we're making the Cloudflare Monetization Gateway available as part of a closed beta",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "No payment volume published in the post; legacy '1M+ enabled customers, 1B+ 402s/day' (third-party citing Cloudflare, Apr 2026) not re-observed.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": null,
+   "quote": null,
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl blog post, text search"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

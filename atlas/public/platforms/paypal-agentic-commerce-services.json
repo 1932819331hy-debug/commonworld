@@ -1,0 +1,88 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "paypal-agentic-commerce-services",
+ "name": "PayPal Agent Ready + Store Sync",
+ "url": "https://commonworld.one/atlas/platforms/paypal-agentic-commerce-services/",
+ "json_url": "https://commonworld.one/atlas/platforms/paypal-agentic-commerce-services.json",
+ "website": "https://www.paypal.ai/",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "PayPal's agentic commerce services: Agent Ready (payments in AI platforms) and Store Sync (catalog and cart API so AI agents can buy from merchants; US buyers, USD, physical goods, limited access).",
+ "tags": [
+  "merchant-side",
+  "us-only"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:15:00Z",
+ "last_checked": "2026-10-15T18:15:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "paypal.ai (paypal.com/us/business/ai redirects here); docs at docs.paypal.ai",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.paypal.ai/",
+   "quote": "PayPal Agentic Commerce Services Built for payments. Built for growth. Built for agentic.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl paypal.com/us/business/ai -> paypal.ai (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Legacy developer.paypal.com/store-sync/overview returns 404 to curl (Cloudflare), but search index shows it 'Last updated: August 11, 2026'; paypal.ai serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://developer.paypal.com/store-sync/overview",
+   "quote": "404 to curl; search snippet: Store Sync overview Last updated: August 11, 2026",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl developer.paypal.com/store-sync/overview (404)",
+    "curl developer.paypal.com/docs/agentic-commerce/ (404)",
+    "curl paypal.ai (200)",
+    "web_search"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Store Sync limited availability; US/USD physical goods",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://docs.paypal.ai/growth/agentic-commerce/store-sync/overview",
+   "quote": "Store Sync has limited availability at this time.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "paypal.ai: 'Coming soon: PayPal on Muse by Meta'; PayPal–Meta Muse partnership announced 2026-09-22",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.paypal.ai/",
+   "quote": "Coming soon: PayPal on Muse by Meta",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

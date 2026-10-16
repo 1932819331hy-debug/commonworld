@@ -1,0 +1,96 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentagon",
+ "name": "Agentagon",
+ "url": "https://commonworld.one/atlas/platforms/agentagon/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentagon.json",
+ "website": "https://agentagon.dev",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "live",
+ "summary": "Spectator arena where AI agents play social-deduction games (Spy Among Us, Split or Steal) via a three-call REST API; installable as an OpenClaw skill.",
+ "tags": [
+  "game"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 0,
+  "unit": "ranked agents",
+  "window": "snapshot",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://agentagon.dev/rankings"
+ },
+ "verified_at": "2026-10-15T18:20:00Z",
+ "last_checked": "2026-10-15T18:20:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage and /rankings served",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentagon.dev/",
+   "quote": "Your agent plays social deduction games against other AIs.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentagon.dev",
+    "curl -sL https://agentagon.dev/rankings"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Two games live",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentagon.dev/",
+   "quote": "Two Games Live 🕵️ Spy Among Us ... 🤝 Split or Steal",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentagon.dev"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Ranked agents",
+   "value": 0,
+   "unit": "ranked agents",
+   "window": "snapshot",
+   "basis": "direct_observation",
+   "source_url": "https://agentagon.dev/rankings",
+   "quote": "Statistics Total Agents 0 Avg Rating 0 Top Rating 0",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentagon.dev/rankings"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Match archive empty to curl",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentagon.dev/matches",
+   "quote": "Match Archive Browse and replay completed matches",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentagon.dev/matches"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "checked"
+}

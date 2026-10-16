@@ -1,0 +1,83 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "thirdweb-x402",
+ "name": "Thirdweb x402",
+ "url": "https://commonworld.one/atlas/platforms/thirdweb-x402/",
+ "json_url": "https://commonworld.one/atlas/platforms/thirdweb-x402.json",
+ "website": "https://portal.thirdweb.com/x402",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "thirdweb's x402 client/server SDKs and facilitator for accepting x402 payments on 170+ EVM chains.",
+ "tags": [
+  "x402",
+  "facilitator"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "x402-list on-chain measurement: Thirdweb facilitator settled $179.75 over 30 d ($31.11 over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-15.",
+   "value": "$179.75",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "source_url": "https://x402-list.com/facilitators"
+  }
+ ],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:19:00Z",
+ "last_checked": "2026-10-15T18:19:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Docs 200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://portal.thirdweb.com/x402",
+   "quote": "The thirdweb x402 client/server stack supports payments on 170+ EVM chains .",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "thirdweb-dev/js pushed 2026-10-14.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/thirdweb-dev/js",
+   "quote": "pushed_at 2026-10-14T03:47Z",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "GitHub API"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402-list on-chain measurement: Thirdweb facilitator settled $179.75 over 30 d ($31.11 over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-15.",
+   "value": "$179.75",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "Thirdweb ... $31.11 $179.75 2026-10-15",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl https://x402-list.com/facilitators"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

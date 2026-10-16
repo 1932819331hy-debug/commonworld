@@ -1,0 +1,74 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "x402watch-printmoneylab",
+ "name": "x402watch (PrintMoneyLab)",
+ "url": "https://commonworld.one/atlas/platforms/x402watch-printmoneylab/",
+ "json_url": "https://commonworld.one/atlas/platforms/x402watch-printmoneylab.json",
+ "website": "https://x402.printmoneylab.com/wash-report",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "x402watch labels every active x402 buyer wallet (organic, developer bot, self-test, suspected wash, etc.) and publishes a wash report.",
+ "tags": [
+  "x402",
+  "analytics"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:20:00Z",
+ "last_checked": "2026-10-15T18:20:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://x402.printmoneylab.com/wash-report",
+   "quote": "Wash Report — x402watch ... Most x402 dashboards count transactions. We classify them.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Page says 'Updated daily' but last update is 2026-10-02 02:27 UTC (13 days stale at observation).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://x402.printmoneylab.com/wash-report",
+   "quote": "Updated daily. Updated 2026-10-02 02:27 UTC",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "15,421 active buyers (30 d); 86.8% real volume after wash filter; 58 buyers suspected wash (0.4%), 106 self-test (0.7%).",
+   "value": "86.8%",
+   "unit": "share of volume deemed real",
+   "window": "30d to 2026-10-02",
+   "basis": "independent_source",
+   "source_url": "https://x402.printmoneylab.com/wash-report",
+   "quote": "Active buyers (30d) 15,421 Real volume % 86.8% after wash filter Suspected wash 58 0.4% Self-test detected 106 0.7%",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

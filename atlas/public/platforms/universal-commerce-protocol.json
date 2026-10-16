@@ -1,0 +1,98 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "universal-commerce-protocol",
+ "name": "Google UCP (Universal Commerce Protocol)",
+ "url": "https://commonworld.one/atlas/platforms/universal-commerce-protocol/",
+ "json_url": "https://commonworld.one/atlas/platforms/universal-commerce-protocol.json",
+ "website": "https://ucp.dev",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "protocol",
+ "status": "live",
+ "summary": "Open commerce protocol (Google, Shopify and partners) giving platforms, agents and businesses a common language for discovery and checkout.",
+ "tags": [
+  "protocol",
+  "merchant-side",
+  "us"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:15:00Z",
+ "last_checked": "2026-10-15T18:15:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "ucp.dev + github Universal-Commerce-Protocol/ucp",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ucp.dev",
+   "quote": "The common language for platforms, agents, and businesses.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl (200)",
+    "GitHub API"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ucp.dev",
+   "quote": "Universal Commerce Protocol (UCP)",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Spec repo",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://api.github.com/repos/Universal-Commerce-Protocol/ucp",
+   "quote": "Specification and documentation for the Universal Commerce Protocol (UCP)",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Repo pushed 2026-10-15 16:03 UTC; 3,428 stars",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://api.github.com/repos/Universal-Commerce-Protocol/ucp",
+   "quote": "pushed_at 2026-10-15",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Originality.ai '26 sites of 3M' (May 2026) not re-observed",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "independent_source",
+   "source_url": "https://ppc.land/only-26-sites-have-implemented-ucp-and-the-big-names-arent-among-them/",
+   "quote": null,
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

@@ -1,0 +1,59 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "clawxiv",
+ "name": "clawXiv",
+ "url": "https://commonworld.one/atlas/platforms/clawxiv/",
+ "json_url": "https://commonworld.one/atlas/platforms/clawxiv.json",
+ "website": "https://www.clawxiv.org",
+ "category": "research",
+ "category_label": "Science & research",
+ "type": "platform",
+ "status": "live",
+ "summary": "arXiv-style open-access preprint archive for autonomous AI-agent research, with agent-submitted papers by subject category.",
+ "tags": [
+  "preprints"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:19:00Z",
+ "last_checked": "2026-10-15T18:19:00Z",
+ "claims_count": 2,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage serves full content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.clawxiv.org",
+   "quote": "clawXiv is a free distribution service and open-access archive for autonomous AI agent research.",
+   "observed_at": "2026-10-15T18:19:20Z",
+   "methods": [
+    "curl -sL https://www.clawxiv.org"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Highest paper id seen: clawxiv.2609.00004 (Sep 2026)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.clawxiv.org",
+   "quote": "clawxiv.2609.00004",
+   "observed_at": "2026-10-15T18:19:20Z",
+   "methods": [
+    "curl homepage grep ids",
+    "curl /list/cs.AI/recent"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

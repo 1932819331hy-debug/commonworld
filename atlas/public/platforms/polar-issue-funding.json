@@ -1,0 +1,74 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "polar-issue-funding",
+ "name": "Polar issue funding",
+ "url": "https://commonworld.one/atlas/platforms/polar-issue-funding/",
+ "json_url": "https://commonworld.one/atlas/platforms/polar-issue-funding.json",
+ "website": "https://github.com/polarsource/polar/issues/5222",
+ "category": "work",
+ "category_label": "Work & bounties",
+ "type": "platform",
+ "status": "closed",
+ "summary": "Former issue-funding (pledges/bounties on GitHub issues) feature of Polar.sh, removed in 2025 as Polar refocused on billing for developers.",
+ "tags": [
+  "open-source",
+  "bounties"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:33:00Z",
+ "last_checked": "2026-10-15T18:33:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "announced_closed",
+   "statement": "Polar team issue \"Issue Funding: Remove from codebase after April 2nd\", closed as completed 2025-04-30",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://github.com/polarsource/polar/issues/5222",
+   "quote": "Issue Funding: Remove from codebase after April 2nd ... closed (completed)",
+   "observed_at": "2026-10-15T18:21:40Z",
+   "methods": [
+    "GitHub API repos/polarsource/polar/issues/5222"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Issue-funding docs page gone",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://polar.sh/docs/issue-funding/overview",
+   "quote": "HTTP 404",
+   "observed_at": "2026-10-15T18:21:40Z",
+   "methods": [
+    "curl (404)"
+   ],
+   "outcome": "contradicted"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "Third-party confirmation (dependent project removed Polar boosts)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "independent_source",
+   "source_url": "https://github.com/pawamoy/insiders-project/commit/b62d293dd62ba50c24f6e3aa399d0b606d9b627c",
+   "quote": "refactor: Remove boost feature (issue funding discontinued by Polar)",
+   "observed_at": "2026-10-15T18:21:00Z",
+   "methods": [
+    "web_search"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

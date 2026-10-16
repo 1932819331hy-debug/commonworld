@@ -1,0 +1,209 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "the-spawn",
+ "name": "The Spawn",
+ "url": "https://commonworld.one/atlas/platforms/the-spawn/",
+ "json_url": "https://commonworld.one/atlas/platforms/the-spawn.json",
+ "website": "https://thespawn.io",
+ "category": "registries",
+ "category_label": "Registries & directories",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "ERC-8004 agent catalog ('onchain AI agent app store') that probes endpoints and grades agents by liveness.",
+ "tags": [
+  "erc-8004",
+  "indexer",
+  "liveness"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 993275,
+  "unit": "indexed agents",
+  "window": "cumulative",
+  "observed_at": "2026-10-15T21:40:00Z",
+  "source_url": "https://thespawn.io/analytics"
+ },
+ "verified_at": "2026-10-15T21:40:00Z",
+ "last_checked": "2026-10-15T21:40:00Z",
+ "claims_count": 7,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage and /analytics served",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://thespawn.io/analytics",
+   "quote": "990,752 ERC-8004 AI agents registered across 30 blockchains",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://thespawn.io",
+    "curl -sL https://thespawn.io/analytics"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Catalog with quality checks",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://thespawn.io/",
+   "quote": "Discover AI agents registered on-chain with ERC-8004. Explore their capabilities, endpoints and quality checks",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://thespawn.io"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Indexed agents",
+   "value": 993275,
+   "unit": "indexed agents",
+   "window": "cumulative",
+   "basis": "operator_claim",
+   "source_url": "https://thespawn.io/analytics",
+   "quote": "993,275 ERC-8004 AI agents registered across 30 blockchains",
+   "observed_at": "2026-10-15T21:40Z",
+   "methods": [
+    "curl -sL https://thespawn.io/analytics"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": 990752,
+     "unit": "indexed agents",
+     "window": "cumulative",
+     "statement": "Indexed agents",
+     "quote": "990,752 ERC-8004 AI agents registered across 30 blockchains",
+     "source_url": "https://thespawn.io/analytics",
+     "observed_at": "2026-10-15T18:08:00Z",
+     "basis": "operator_claim",
+     "outcome": "supported",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "re-read after Codex comparison"
+    }
+   ],
+   "recheck": {
+    "basis": "coordinator_re_read",
+    "by": "Hark coordinator",
+    "at": "2026-10-15T21:40Z",
+    "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
+    "codex_claim_id": "legacy-html:the-spawn:metric:1"
+   }
+  },
+  {
+   "kind": "metric",
+   "statement": "Agents responding when called",
+   "value": 11503,
+   "unit": "responsive agents",
+   "window": "last check",
+   "basis": "operator_claim",
+   "source_url": "https://thespawn.io/analytics",
+   "quote": "11,503 of 993,275 respond when called.",
+   "observed_at": "2026-10-15T21:40Z",
+   "methods": [
+    "curl -sL https://thespawn.io/analytics"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": 11504,
+     "unit": "responsive agents",
+     "window": "last check",
+     "statement": "Agents responding when called",
+     "quote": "11,504 of 990,752 respond when called.",
+     "source_url": "https://thespawn.io/analytics",
+     "observed_at": "2026-10-15T18:08:00Z",
+     "basis": "operator_claim",
+     "outcome": "supported",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "re-read after Codex comparison"
+    }
+   ],
+   "recheck": {
+    "basis": "coordinator_re_read",
+    "by": "Hark coordinator",
+    "at": "2026-10-15T21:40Z",
+    "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
+    "codex_claim_id": "legacy-html:the-spawn:metric:2"
+   }
+  },
+  {
+   "kind": "metric",
+   "statement": "Verified working tier",
+   "value": 3,
+   "unit": "agents (tier S)",
+   "window": "last check",
+   "basis": "operator_claim",
+   "source_url": "https://thespawn.io/analytics",
+   "quote": "S Verified working 3",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://thespawn.io/analytics"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Dead/spam share",
+   "value": 864755,
+   "unit": "agents dead/spam",
+   "window": "last check",
+   "basis": "operator_claim",
+   "source_url": "https://thespawn.io/analytics",
+   "quote": "F Dead / Spam 864,755 87 % are dead or spam.",
+   "observed_at": "2026-10-15T21:40Z",
+   "methods": [
+    "curl -sL https://thespawn.io/analytics"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": 862594,
+     "unit": "agents dead/spam",
+     "window": "last check",
+     "statement": "Dead/spam share",
+     "quote": "F Dead / Spam 862,594 87 % are dead or spam.",
+     "source_url": "https://thespawn.io/analytics",
+     "observed_at": "2026-10-15T18:08:00Z",
+     "basis": "operator_claim",
+     "outcome": "supported",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "re-read after Codex comparison"
+    }
+   ],
+   "recheck": {
+    "basis": "coordinator_re_read",
+    "by": "Hark coordinator",
+    "at": "2026-10-15T21:40Z",
+    "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
+    "codex_claim_id": "legacy-html:the-spawn:metric:4"
+   }
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "'alive at last check' counters live",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://thespawn.io/",
+   "quote": "11,504 alive at last check",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://thespawn.io"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

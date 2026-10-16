@@ -1,0 +1,111 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "issuehunt",
+ "name": "IssueHunt",
+ "url": "https://commonworld.one/atlas/platforms/issuehunt/",
+ "json_url": "https://commonworld.one/atlas/platforms/issuehunt.json",
+ "website": "https://oss.issuehunt.io",
+ "category": "work",
+ "category_label": "Work & bounties",
+ "type": "platform",
+ "status": "live",
+ "summary": "Issue-based bounty platform for open-source projects where backers fund GitHub issues and contributors who merge fixes collect the rewards.",
+ "tags": [
+  "open-source",
+  "github",
+  "bounties",
+  "stripe"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 42,
+  "unit": "USD (top funded issue shown)",
+  "window": null,
+  "observed_at": "2026-10-15T18:19:00Z",
+  "source_url": "https://oss.issuehunt.io/issues"
+ },
+ "verified_at": "2026-10-15T18:26:00Z",
+ "last_checked": "2026-10-15T18:26:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "Official site at https://oss.issuehunt.io",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://oss.issuehunt.io",
+   "quote": "Issuehunt",
+   "observed_at": "2026-10-15T18:18:36Z",
+   "methods": [
+    "curl -sL https://oss.issuehunt.io (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves real HTML content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://oss.issuehunt.io",
+   "quote": "Issuehunt",
+   "observed_at": "2026-10-15T18:18:36Z",
+   "methods": [
+    "curl -sL https://oss.issuehunt.io (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Description matches page copy",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://oss.issuehunt.io",
+   "quote": "IssueHunt is an issue-based bounty platform for open source projects. Anyone can put a bounty on not only a bug but also on OSS feature requests",
+   "observed_at": "2026-10-15T18:18:36Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Most-funded open issues are small ($2–$42) and old (e.g. Boostnote, ant-design)",
+   "value": 42,
+   "unit": "USD (top funded issue shown)",
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://oss.issuehunt.io/issues",
+   "quote": "Most Funded ... Boostnote ... $ 42.00 ... ant-design ... $ 22.00",
+   "observed_at": "2026-10-15T18:19:18Z",
+   "methods": [
+    "curl /issues"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Issue referencing issuehunt.io created 2026-10-14 (goatandsheep/rc#82)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "independent_source",
+   "source_url": "https://github.com/goatandsheep/rc/issues/82",
+   "quote": "GitHub search \"issuehunt.io\" created:>2026-07-01 -> 6 results, newest 2026-10-14",
+   "observed_at": "2026-10-15T18:19:40Z",
+   "methods": [
+    "GitHub search API"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

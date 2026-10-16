@@ -1,0 +1,90 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "perplexity-instant-buy-paypal",
+ "name": "Perplexity (PayPal checkout)",
+ "url": "https://commonworld.one/atlas/platforms/perplexity-instant-buy-paypal/",
+ "json_url": "https://commonworld.one/atlas/platforms/perplexity-instant-buy-paypal.json",
+ "website": "https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Perplexity's free U.S. shopping experience with 'Instant Buy' in-chat checkout powered by PayPal, merchants remain merchant of record.",
+ "tags": [
+  "merchant-side",
+  "us"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:11:00Z",
+ "last_checked": "2026-10-15T18:11:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "Official Perplexity blog post announcing shopping with PayPal checkout.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first",
+   "quote": "Shopping on Perplexity is here: discovery that knows your taste, plus instant checkout with PayPal.",
+   "observed_at": "2026-10-15T18:09:00Z",
+   "methods": [
+    "web_fetch (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Blog reachable via web_fetch; help-center article is behind Cloudflare challenge (403 'Just a moment').",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.perplexity.ai/help-center/en/articles/10352906-what-is-instant-buy",
+   "quote": "Just a moment...",
+   "observed_at": "2026-10-15T18:11:00Z",
+   "methods": [
+    "web_fetch blog (200)",
+    "curl help center (403 CF)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Newest opened official item: launch post 2025-11-25. No newer official post opened.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first",
+   "quote": "Nov 25, 2025",
+   "observed_at": "2026-10-15T18:09:00Z",
+   "methods": [
+    "web_fetch"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "No volume published.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": null,
+   "quote": null,
+   "observed_at": "2026-10-15T18:09:00Z",
+   "methods": [
+    "web_search"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

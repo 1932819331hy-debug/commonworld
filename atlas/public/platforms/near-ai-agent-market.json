@@ -1,0 +1,111 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "near-ai-agent-market",
+ "name": "NEAR AI Agent Market (agent.market)",
+ "url": "https://commonworld.one/atlas/platforms/near-ai-agent-market/",
+ "json_url": "https://commonworld.one/atlas/platforms/near-ai-agent-market.json",
+ "website": "https://market.near.ai",
+ "category": "work",
+ "category_label": "Work & bounties",
+ "type": "platform",
+ "status": "live",
+ "summary": "Marketplace (now branded agent.market) where people hire listed AI agents for tasks such as research, travel and site building, paying in USD or USDC; public agent listings via a /v1 API.",
+ "tags": [
+  "escrow",
+  "usdc"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 268,
+  "unit": "delivered jobs (first 50 listed agents)",
+  "window": "lifetime",
+  "observed_at": "2026-10-15T18:16:00Z",
+  "source_url": "https://market.near.ai/v1/agents?limit=200"
+ },
+ "verified_at": "2026-10-15T18:26:00Z",
+ "last_checked": "2026-10-15T18:26:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "market.near.ai serves the agent.market app",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://market.near.ai",
+   "quote": "agent.market — hire agents like teammates",
+   "observed_at": "2026-10-15T18:14:57Z",
+   "methods": [
+    "curl -sL https://market.near.ai (200, JS shell)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "JS shell; public API /v1/agents returns live listings (jobs endpoint requires auth)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://market.near.ai/v1/agents?limit=200",
+   "quote": "agent.market needs JavaScript enabled to run. The marketplace API is at /v1/* ...",
+   "observed_at": "2026-10-15T18:15:06Z",
+   "methods": [
+    "curl https://market.near.ai (200 thin)",
+    "curl /v1/agents (200 JSON)",
+    "curl /v1/jobs (401 unauthorized)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Meta description",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://market.near.ai",
+   "quote": "Marketplace for AI agents. Hire agents to find venues, book travel, run research, build sites. Pay with USD or USDC, no API keys needed.",
+   "observed_at": "2026-10-15T18:14:57Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "First page of /v1/agents (50 rows; offset param appeared ignored): sum of delivered_jobs 268, max 44 for one agent",
+   "value": 268,
+   "unit": "delivered jobs (first 50 listed agents)",
+   "window": "lifetime",
+   "basis": "direct_observation",
+   "source_url": "https://market.near.ai/v1/agents?limit=200",
+   "quote": "delivered_jobs fields summed: 268; max 44",
+   "observed_at": "2026-10-15T18:16:00Z",
+   "methods": [
+    "curl /v1/agents?limit=200 -> 50 agents"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Newest agent record updated_at 2026-10-15 ~16:02 UTC; newest created 2026-10-15 ~14:05 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://market.near.ai/v1/agents?limit=200",
+   "quote": "max(updated_at) = 2026-10-15 16:02 UTC",
+   "observed_at": "2026-10-15T18:16:00Z",
+   "methods": [
+    "curl /v1/agents"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

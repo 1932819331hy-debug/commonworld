@@ -1,0 +1,72 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "lightspark",
+ "name": "Lightspark",
+ "url": "https://commonworld.one/atlas/platforms/lightspark/",
+ "json_url": "https://commonworld.one/atlas/platforms/lightspark.json",
+ "website": "https://www.lightspark.com/",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Lightspark provides a money-movement API (Grid Global Accounts, payouts, stablecoins, cards) and lets account holders give AI agents bounded, policy-enforced spending authority.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:12:00Z",
+ "last_checked": "2026-10-15T18:12:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage and agentic-payments capability page serve content (200).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.lightspark.com/capabilities/agentic-payments",
+   "quote": "Give AI agents bounded spending authority. Lightspark enforces permissions, limits, and approval flows at the account layer.",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "curl -L homepage",
+    "curl -L /capabilities/agentic-payments"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "'Introducing AI Agent Support for Grid Global Accounts' dated 2026-05-04.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.lightspark.com/news/lightspark/introducing-ai-agent-support-for-grid-global-accounts",
+   "quote": null,
+   "observed_at": "2026-10-15T18:09:00Z",
+   "methods": [
+    "web_search (excerpt)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "No agent-specific volume published.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": null,
+   "quote": null,
+   "observed_at": "2026-10-15T18:09:00Z",
+   "methods": [
+    "web_search"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

@@ -1,0 +1,175 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "cluster-protocol",
+ "name": "Cluster Protocol",
+ "url": "https://commonworld.one/atlas/platforms/cluster-protocol/",
+ "json_url": "https://commonworld.one/atlas/platforms/cluster-protocol.json",
+ "website": "https://www.clusterprotocol.ai",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "Cluster Protocol is an AI orchestration project whose x402 gateway (api.clusterprotocol.ai) sold pay-per-request inference: chat, embeddings, images, speech.",
+ "tags": [
+  "x402",
+  "x402-service"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "x402 settlement to this service's payout address: $54,507.49 in 30d from 722 distinct buyers, 65,680 settlements; top buyer share 0.5%",
+   "value": 54507.49,
+   "unit": "USD (USDC)",
+   "window": "trailing 30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "source_url": "https://x402-list.com/api/v1/services?per_page=100"
+  },
+  {
+   "statement": "Sum of daily volume for UTC days 2026-10-09..2026-10-15 (last day partial): $1.00",
+   "value": 1.0,
+   "unit": "USD (USDC)",
+   "window": "2026-10-09..2026-10-15 UTC",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "source_url": "https://x402-list.com/api/v1/services/cluster-protocol/volume?days=60"
+  }
+ ],
+ "key_number": {
+  "kind": "economic_flow",
+  "value": 54507.49,
+  "unit": "USD (USDC)",
+  "window": "trailing 30d to 2026-10-15",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://x402-list.com/api/v1/services?per_page=100"
+ },
+ "verified_at": "2026-10-15T18:24:00Z",
+ "last_checked": "2026-10-15T18:24:00Z",
+ "claims_count": 8,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Official site returns HTTP 200 with real content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.clusterprotocol.ai",
+   "quote": "Orchestration layer for autonomous workflows",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://www.clusterprotocol.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "canonical_url",
+   "statement": "Official URL (x402-list base_url/website for this service, operator-owned)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.clusterprotocol.ai",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/services?per_page=100",
+    "curl -sL https://www.clusterprotocol.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Cluster Protocol is an AI orchestration project whose x402 gateway (api.clusterprotocol.ai) sold pay-per-request inference: chat, embeddings, images, speech.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.clusterprotocol.ai",
+   "quote": "Orchestration layer for autonomous workflows",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://www.clusterprotocol.ai",
+    "GET https://x402-list.com/api/v1/services?per_page=100"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402 settlement to this service's payout address: $54,507.49 in 30d from 722 distinct buyers, 65,680 settlements; top buyer share 0.5%",
+   "value": 54507.49,
+   "unit": "USD (USDC)",
+   "window": "trailing 30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/services?per_page=100",
+   "quote": "traction.volume_usd_30d=54507.49, unique_buyers_30d=722, top_buyer_share_30d=0.0054",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/services?per_page=100"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Sum of daily volume for UTC days 2026-10-09..2026-10-15 (last day partial): $1.00",
+   "value": 1.0,
+   "unit": "USD (USDC)",
+   "window": "2026-10-09..2026-10-15 UTC",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/services/cluster-protocol/volume?days=60",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/services/cluster-protocol/volume?days=60"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Last UTC day with ≥$1 settled: 2026-10-10 ($1.00; last material day 2026-10-01 $2,529, 2026-10-02 $99); first settlement 2026-05-15",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/services/cluster-protocol/volume?days=60",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/services/cluster-protocol/volume?days=60"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "x402 API host api.clusterprotocol.ai answers HTTP 401 (alive, auth required)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://api.clusterprotocol.ai",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://api.clusterprotocol.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "No official shutdown found; site live",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": null,
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://www.clusterprotocol.ai"
+   ],
+   "outcome": "contradicted"
+  }
+ ],
+ "qa_status": "checked"
+}

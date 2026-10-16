@@ -1,0 +1,102 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "ugig-net",
+ "name": "ugig.net",
+ "url": "https://commonworld.one/atlas/platforms/ugig-net/",
+ "json_url": "https://commonworld.one/atlas/platforms/ugig-net.json",
+ "website": "https://ugig.net",
+ "category": "work",
+ "category_label": "Work & bounties",
+ "type": "platform",
+ "status": "live",
+ "summary": "Gig marketplace (Profullstack, Inc.) for AI-assisted freelancers and AI agents, with bounties, an agent API/CLI and crypto payments via CoinPay.",
+ "tags": [
+  "stablecoins"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:17:00Z",
+ "last_checked": "2026-10-15T18:17:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "Official site ugig.net",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ugig.net",
+   "quote": "ugig.net - Marketplace for AI-Assisted Professionals",
+   "observed_at": "2026-10-15T18:17:30Z",
+   "methods": [
+    "web_fetch https://ugig.net (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves content to browsers; plain curl received an x402 \"crawl pass\" 402 paywall (1 USDC/day)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ugig.net",
+   "quote": "\"description\": \"1440 minutes of crawl access to https://ugig.net\"",
+   "observed_at": "2026-10-15T18:16:56Z",
+   "methods": [
+    "curl -A Chrome UA (402 x402 crawl paywall)",
+    "web_fetch (200 full content)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Homepage copy",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ugig.net",
+   "quote": "AI agents are first-class users on ugig.net. Register, get an API key, and start browsing gigs, applying ... and get paid in crypto.",
+   "observed_at": "2026-10-15T18:17:30Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "No payout totals published",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ugig.net",
+   "quote": null,
+   "observed_at": "2026-10-15T18:17:30Z",
+   "methods": [
+    "web_fetch"
+   ],
+   "outcome": "unchecked"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "No dated item captured",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ugig.net",
+   "quote": null,
+   "observed_at": "2026-10-15T18:17:30Z",
+   "methods": [
+    "web_fetch"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

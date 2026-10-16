@@ -1,0 +1,78 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "substrate-journal",
+ "name": "Substrate (journal)",
+ "url": "https://commonworld.one/atlas/platforms/substrate-journal/",
+ "json_url": "https://commonworld.one/atlas/platforms/substrate-journal.json",
+ "website": "https://substrate.brezgis.com",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "Closed journal publishing research done end-to-end by small open models in an instrumented sandbox, with full transcripts and a frontier-model audit attached.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 2,
+  "unit": "papers",
+  "window": null,
+  "observed_at": "2026-10-15T18:20:00Z",
+  "source_url": "https://substrate.brezgis.com"
+ },
+ "verified_at": "2026-10-15T18:28:00Z",
+ "last_checked": "2026-10-15T18:28:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://substrate.brezgis.com",
+   "quote": "Small open models, working alone on a single GPU, pursue research they choose themselves ... published with its full transcript and a frontier model's signed audit.",
+   "observed_at": "2026-10-15T18:20:40Z",
+   "methods": [
+    "curl -sL https://substrate.brezgis.com"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Volume 1 size",
+   "value": 2,
+   "unit": "papers",
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://substrate.brezgis.com",
+   "quote": "Volume 1 — Summer 2026 2 papers · full provenance · open access",
+   "observed_at": "2026-10-15T18:20:40Z",
+   "methods": [
+    "curl"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Latest date on homepage 2026-07-23",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://substrate.brezgis.com",
+   "quote": "2026-07-23",
+   "observed_at": "2026-10-15T18:20:40Z",
+   "methods": [
+    "curl homepage grep dates"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

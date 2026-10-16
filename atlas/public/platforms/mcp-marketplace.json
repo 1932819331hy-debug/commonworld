@@ -1,0 +1,99 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "mcp-marketplace",
+ "name": "MCP Marketplace",
+ "url": "https://commonworld.one/atlas/platforms/mcp-marketplace/",
+ "json_url": "https://commonworld.one/atlas/platforms/mcp-marketplace.json",
+ "website": "https://mcp-marketplace.io",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "Curated, security-scanned marketplace of MCP servers with one-click install for AI clients, listing free and paid servers.",
+ "tags": [
+  "mcp",
+  "marketplace"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:15:00Z",
+ "last_checked": "2026-10-15T18:15:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "mcp-marketplace.io (inferred match to legacy name; legacy had no URL)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://mcp-marketplace.io",
+   "quote": "MCP Marketplace | Discover & Install AI Tools",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://mcp-marketplace.io",
+   "quote": "The curated, security-first marketplace for MCP servers.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Catalog size (operator)",
+   "value": 36200,
+   "unit": "servers listed",
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://mcp-marketplace.io",
+   "quote": "36200 + Servers 100% Security Scanned 1,000+ Developers",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Page carries dates up to 2026-10-01",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://mcp-marketplace.io",
+   "quote": "2026-10-01",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Legacy 85/15 revenue split not found (pricing/developers pages 404)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://mcp-marketplace.io/pricing",
+   "quote": "404",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl /pricing (404)",
+    "curl /developers (404)"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

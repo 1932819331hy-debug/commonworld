@@ -1,0 +1,118 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "payai",
+ "name": "PayAI",
+ "url": "https://commonworld.one/atlas/platforms/payai/",
+ "json_url": "https://commonworld.one/atlas/platforms/payai.json",
+ "website": "https://payai.network",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Solana-first x402 facilitator that verifies and settles USDC micropayments across Solana and several EVM chains, with an ecosystem/discovery page.",
+ "tags": [
+  "x402",
+  "facilitator",
+  "solana"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "x402-list on-chain measurement: PayAI facilitator settled $8.1k over 30 d ($3.3k over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-15.",
+   "value": "$8.1k",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "observed_at": "2026-10-15T20:37:00Z",
+   "source_url": "https://x402-list.com/facilitators"
+  },
+  {
+   "statement": "x402stats: payAI attributed seller volume $14,022 over 30 d, 1,107 sellers of which 12 pass the organic filter (>=$100, >=3 buyers).",
+   "value": "$14,022",
+   "unit": "USD (seller volume, unfiltered)",
+   "window": "30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "source_url": "https://x402stats.io/llms-full.txt"
+  }
+ ],
+ "key_number": null,
+ "verified_at": "2026-10-15T20:37:00Z",
+ "last_checked": "2026-10-15T20:37:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://payai.network/",
+   "quote": "PayAI is Solana-first and settles USDC micropayments on Solana , Base , Polygon , Avalanche , Arbitrum , Sei , X Layer , and SKALE",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402-list on-chain measurement: PayAI facilitator settled $8.1k over 30 d ($3.3k over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-15.",
+   "value": "$8.1k",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "PayAI ... $3.3k $8.1k",
+   "observed_at": "2026-10-15T20:37:56Z",
+   "methods": [
+    "curl https://x402-list.com/facilitators"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": "$8.0k",
+     "unit": "USDC (gross settlement)",
+     "window": "30d to 2026-10-15",
+     "statement": "x402-list on-chain measurement: PayAI facilitator settled $8.0k over 30 d ($3.1k over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-15.",
+     "quote": "PayAI ... $3.1k $8.0k 2026-10-15",
+     "source_url": "https://x402-list.com/facilitators",
+     "observed_at": "2026-10-15T18:10:00Z",
+     "basis": "independent_source",
+     "outcome": "supported",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "newer value re-observed independently (Codex QA)"
+    }
+   ],
+   "recheck": {
+    "basis": "independent_re_observation",
+    "by": "Codex QA (qa-agent-a)",
+    "run": "atlas-verified-2026-10-15T1840Z-qa",
+    "ref": "origin/research/atlas-catalog-seed-2026-10-15@ef1f6cf",
+    "claim_id": "legacy-html:payai:economic_flow:1",
+    "evidence_attempt_ids": [
+     "qa-agent-a-0094"
+    ],
+    "finding": "On 2026-10-15, x402-list displays PayAI Base + Solana as $3.3k and $8.1k for its 7-day/30-day windows, versus the earlier claim of $3.1k/$8.0k."
+   }
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402stats: payAI attributed seller volume $14,022 over 30 d, 1,107 sellers of which 12 pass the organic filter (>=$100, >=3 buyers).",
+   "value": "$14,022",
+   "unit": "USD (seller volume, unfiltered)",
+   "window": "30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402stats.io/llms-full.txt",
+   "quote": "payAI: ... ($14,022), 1,107 sellers (12 organic)",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl https://x402stats.io/llms-full.txt"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

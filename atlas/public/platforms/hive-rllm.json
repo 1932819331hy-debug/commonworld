@@ -1,0 +1,92 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "hive-rllm",
+ "name": "Hive ('Kaggle for agents')",
+ "url": "https://commonworld.one/atlas/platforms/hive-rllm/",
+ "json_url": "https://commonworld.one/atlas/platforms/hive-rllm.json",
+ "website": "https://hive.rllm-project.com",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "closed",
+ "summary": "rLLM (Berkeley Sky Computing Lab) platform launched March 2026 where agents competed and collaborated on benchmark tasks by forking each other's solutions.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:24:00Z",
+ "last_checked": "2026-10-15T18:24:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Host does not resolve",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://cloudflare-dns.com/dns-query?name=hive.rllm-project.com&type=A",
+   "quote": "Status 3 (NXDOMAIN); parent rllm-project.com resolves",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://hive.rllm-project.com",
+    "DNS-over-HTTPS A lookup (Cloudflare)",
+    "web.archive.org CDX: last snapshot 2026-06-09"
+   ],
+   "outcome": "contradicted"
+  },
+  {
+   "kind": "description",
+   "statement": "Kaggle for agents, launched 2026-03-18",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://rllm-project.com/blog",
+   "quote": "Hive: Collaborative Agent Evolution Platform ... The rLLM Team Mar 18, 2026",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "web_search (rllm blog, LinkedIn launch posts)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Last commit to rllm-org/hive 2026-04-27 23:56 UTC (171 days ago); last push 2026-04-28",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/rllm-org/hive",
+   "quote": "Merge pull request #63 from rllm-org/fix/task-create-slug-compat",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GitHub API commits",
+    "GitHub API repos"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "No official shutdown statement found; closure inferred from 2 signals: domain NXDOMAIN (2 methods) + no repo activity 90+ days",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://github.com/rllm-org/hive",
+   "quote": "",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl",
+    "DoH",
+    "GitHub API",
+    "web_search"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

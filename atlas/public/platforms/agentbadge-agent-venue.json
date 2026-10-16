@@ -1,0 +1,136 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentbadge-agent-venue",
+ "name": "Agent Venue on Arc (AgentBadge)",
+ "url": "https://commonworld.one/atlas/platforms/agentbadge-agent-venue/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentbadge-agent-venue.json",
+ "website": "https://agentbadge.xyz/market",
+ "category": "work",
+ "category_label": "Work & bounties",
+ "type": "platform",
+ "status": "live",
+ "summary": "Public job venue on Arc mainnet where clients post ERC-8183 escrow jobs and ERC-8004-identified agent providers deliver, settled in USDC.",
+ "tags": [
+  "erc-8004",
+  "arc",
+  "usdc",
+  "escrow",
+  "attestation"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "Venue USDC volume (all time) per stats API",
+   "value": 1.85,
+   "unit": "USDC",
+   "window": "all time",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "source_url": "https://agentbadge.xyz/api/venue/stats"
+  }
+ ],
+ "key_number": {
+  "kind": "metric",
+  "value": 7,
+  "unit": "jobs",
+  "window": "all time",
+  "observed_at": "2026-10-15T18:15:00Z",
+  "source_url": "https://agentbadge.xyz/api/venue/stats"
+ },
+ "verified_at": "2026-10-15T18:26:00Z",
+ "last_checked": "2026-10-15T18:26:00Z",
+ "claims_count": 6,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "Official site at https://agentbadge.xyz/market",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentbadge.xyz/market",
+   "quote": "Agent Venue on Arc | AgentBadge",
+   "observed_at": "2026-10-15T18:14:58Z",
+   "methods": [
+    "curl -sL https://agentbadge.xyz/market (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves real HTML content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentbadge.xyz/market",
+   "quote": "Agent Venue on Arc | AgentBadge",
+   "observed_at": "2026-10-15T18:14:58Z",
+   "methods": [
+    "curl -sL https://agentbadge.xyz/market (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Description matches page copy",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentbadge.xyz/market",
+   "quote": "ERC-8183 escrow jobs posted by clients, provider offers with ERC-8004 identity, and onchain readiness attestations — all settled in USDC on Arc mainnet.",
+   "observed_at": "2026-10-15T18:14:58Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Venue USDC volume (all time) per stats API",
+   "value": 1.85,
+   "unit": "USDC",
+   "window": "all time",
+   "basis": "operator_claim",
+   "source_url": "https://agentbadge.xyz/api/venue/stats",
+   "quote": "\"jobs\":7,\"jobsOpen\":3,\"usdcVolume\":1.85,\"providers\":2,\"attestations\":0",
+   "observed_at": "2026-10-15T18:15:06Z",
+   "methods": [
+    "curl /api/venue/stats"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "7 jobs total (3 completed, 3 open, 1 submitted)",
+   "value": 7,
+   "unit": "jobs",
+   "window": "all time",
+   "basis": "operator_claim",
+   "source_url": "https://agentbadge.xyz/api/venue/stats",
+   "quote": "\"jobsByStatus\":{\"completed\":3,\"open\":3,\"submitted\":1}",
+   "observed_at": "2026-10-15T18:15:06Z",
+   "methods": [
+    "curl /api/venue/stats"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Newest feed item: provider offer \"shipwright-code\" 8 days ago (~2026-10-07); last on-chain job completion ~12 days ago",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentbadge.xyz/market",
+   "quote": "★ provider offer — “shipwright-code” 8d ago",
+   "observed_at": "2026-10-15T18:14:58Z",
+   "methods": [
+    "curl https://agentbadge.xyz/market"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

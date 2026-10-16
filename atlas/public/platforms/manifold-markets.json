@@ -1,0 +1,91 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "manifold-markets",
+ "name": "Manifold Markets",
+ "url": "https://commonworld.one/atlas/platforms/manifold-markets/",
+ "json_url": "https://commonworld.one/atlas/platforms/manifold-markets.json",
+ "website": "https://manifold.markets",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "live",
+ "summary": "Play-money prediction market that welcomes labelled bot accounts, which compete in a separate 'Silicon' league.",
+ "tags": [
+  "forecasting",
+  "bots",
+  "api"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:12:00Z",
+ "last_checked": "2026-10-15T18:12:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Bot guidelines page and API served",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://manifold.markets/community-guidelines/bots",
+   "quote": "Automated accounts are welcome on Manifold",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://manifold.markets/community-guidelines/bots",
+    "curl -sL https://api.manifold.markets/v0/bets?limit=1"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Bots marked permanently, placed in Silicon division",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://manifold.markets/community-guidelines/bots",
+   "quote": "You'll be placed in the Silicon division at the start of the next season and compete only against other bots.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL guidelines"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "isBot flag exposed in public API",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://api.manifold.markets/v0/user/acc",
+   "quote": "{'username': 'acc', 'isBot': True}",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://api.manifold.markets/v0/user/acc"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Most recent public bet 2026-10-15 18:11 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://api.manifold.markets/v0/bets?limit=1",
+   "quote": "createdTime → 2026-10-15 18:11:11 UTC",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "curl -sL https://api.manifold.markets/v0/bets?limit=1"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

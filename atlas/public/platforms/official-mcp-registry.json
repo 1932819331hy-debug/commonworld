@@ -1,0 +1,97 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "official-mcp-registry",
+ "name": "Official MCP Registry",
+ "url": "https://commonworld.one/atlas/platforms/official-mcp-registry/",
+ "json_url": "https://commonworld.one/atlas/platforms/official-mcp-registry.json",
+ "website": "https://registry.modelcontextprotocol.io",
+ "category": "registries",
+ "category_label": "Registries & directories",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "Official metadata registry for publicly accessible MCP servers, with namespace ownership verification; in preview.",
+ "tags": [
+  "mcp",
+  "registry"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 40340,
+  "unit": "servers (latest versions)",
+  "window": "snapshot 2026-10-15",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://agentalmanac.org/mcp"
+ },
+ "verified_at": "2026-10-15T18:20:00Z",
+ "last_checked": "2026-10-15T18:20:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "UI and public v0 API respond",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://registry.modelcontextprotocol.io/v0/servers?limit=3",
+   "quote": "{\"servers\":[{\"server\":{\"$schema\":\"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\"",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://registry.modelcontextprotocol.io",
+    "curl -sL https://registry.modelcontextprotocol.io/v0/servers?limit=3"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Official centralized metadata repository, preview status",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://modelcontextprotocol.io/registry/about",
+   "quote": "The MCP Registry is the official centralized metadata repository for publicly accessible MCP servers",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "web_search excerpt (docs)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Server count from independent snapshot",
+   "value": 40340,
+   "unit": "servers (latest versions)",
+   "window": "snapshot 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://agentalmanac.org/mcp",
+   "quote": "Official MCP Registry Source: registry.modelcontextprotocol.io · snapshot 2026-10-15 Total servers 40,340 Active 39,823 Deprecated 517",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentalmanac.org/mcp"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Repo commit 2026-10-11 20:20 UTC; push 2026-10-14 23:34 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/modelcontextprotocol/registry",
+   "quote": "Catch nested server.json publish PRs and clarify publishing guidance (#1702)",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GitHub API commits + repos"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

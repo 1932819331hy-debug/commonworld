@@ -1,0 +1,73 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "corbits",
+ "name": "Corbits",
+ "url": "https://commonworld.one/atlas/platforms/corbits/",
+ "json_url": "https://commonworld.one/atlas/platforms/corbits.json",
+ "website": "https://www.corbits.dev/",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "Corbits now sells agent operations and governance software (identity, grants, signed audit records, a model router, coding TUI); it no longer presents itself as an x402 API platform.",
+ "tags": [
+  "x402"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:24:00Z",
+ "last_checked": "2026-10-15T18:24:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.corbits.dev/",
+   "quote": "Corbits — Agent operations and governance for modern teams",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Pivot visible: product list is governance tooling.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.corbits.dev/",
+   "quote": "Corbits Identity, grants, and a signed record for every agent ... Corbits Router A smart gateway for AI model requests",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "Not closed — live, pivoted. Solana's x402 page still lists Corbits as an x402 pay-per-use platform (stale).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://solana.com/x402",
+   "quote": "Corbits Platforms any API or data endpoint for pay-per-use via the x402 standard",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl solana.com/x402"
+   ],
+   "outcome": "contradicted"
+  }
+ ],
+ "qa_status": "checked"
+}

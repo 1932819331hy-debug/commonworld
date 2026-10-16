@@ -1,0 +1,93 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "payman-ai",
+ "name": "Payman AI",
+ "url": "https://commonworld.one/atlas/platforms/payman-ai/",
+ "json_url": "https://commonworld.one/atlas/platforms/payman-ai.json",
+ "website": "https://paymanai.com",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Payman AI deploys AI agents for banks and credit unions that execute real banking transactions (payments, transfers, account analysis) by voice or text under institution-set controls.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:24:00Z",
+ "last_checked": "2026-10-15T18:24:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "payman.ai redirects to paymanai.com",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://paymanai.com/",
+   "quote": "Payman AI | Agentic AI That Does the Banking. Under Your Control.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl -L payman.ai -> paymanai.com (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://paymanai.com/",
+   "quote": "Payman AI deploys AI agents for banks and credit unions that carry out real banking transactions",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Pivot to banks/credit unions confirmed",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://paymanai.com/",
+   "quote": "Who is it for? Banks and credit unions, their customers and members, and their staff.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Page carries date 2026-04-08",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://paymanai.com/",
+   "quote": "2026-04-08",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "Not closed — pivoted; site live",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://paymanai.com/",
+   "quote": null,
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "contradicted"
+  }
+ ],
+ "qa_status": "checked"
+}

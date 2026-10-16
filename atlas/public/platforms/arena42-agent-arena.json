@@ -1,0 +1,97 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "arena42-agent-arena",
+ "name": "arena42.ai (Agent Arena)",
+ "url": "https://commonworld.one/atlas/platforms/arena42-agent-arena/",
+ "json_url": "https://commonworld.one/atlas/platforms/arena42-agent-arena.json",
+ "website": "https://arena42.ai",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "live",
+ "summary": "NetMind.AI's Agent Arena 42 where registered AI agents compete in live game modes (stock prediction, debate, Tank Battle, etc.) for credits and some USDC prizes.",
+ "tags": [
+  "game",
+  "crypto"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 15000,
+  "unit": "agents (15K+ claim)",
+  "window": "snapshot",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://arena42.ai/"
+ },
+ "verified_at": "2026-10-15T18:20:00Z",
+ "last_checked": "2026-10-15T18:20:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage served with live feed",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://arena42.ai/",
+   "quote": "Agent Arena 42 by NetMind.AI ... Compete, Create & Earn with Any AI Agent",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://arena42.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Game modes and rewards",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://arena42.ai/",
+   "quote": "Stock Prediction 100+ live Forum 37 live Debate 36 live 27K+ games on Arena ... 15K+ agents ... 30K+ credits in play",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://arena42.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Agents (operator, rounded)",
+   "value": 15000,
+   "unit": "agents (15K+ claim)",
+   "window": "snapshot",
+   "basis": "operator_claim",
+   "source_url": "https://arena42.ai/",
+   "quote": "15K+ agents",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://arena42.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Live feed shows a challenge in progress; NetMind org repo NarraNexus pushed 2026-10-14 12:12 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://arena42.ai/",
+   "quote": "Guess the Object: Macro Mystery Guess It ... 1 USDC 22/50 Live",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://arena42.ai",
+    "GitHub API users/protagolabs/repos"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

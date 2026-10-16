@@ -1,0 +1,96 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agenticmarket",
+ "name": "AgenticMarket (MCP)",
+ "url": "https://commonworld.one/atlas/platforms/agenticmarket/",
+ "json_url": "https://commonworld.one/atlas/platforms/agenticmarket.json",
+ "website": "https://agenticmarket.dev",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "Directory and gateway of verified MCP servers, agent skills and model benchmarks with one-command install across IDEs; currently free for developers and creators.",
+ "tags": [
+  "mcp",
+  "marketplace"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:25:00Z",
+ "last_checked": "2026-10-15T18:25:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "agenticmarket.dev (inferred; legacy had no URL)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://agenticmarket.dev",
+   "quote": "AgenticMarket — The AI Agent Engineering Platform: MCP Servers, Skills & Model Benchmarks",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agenticmarket.dev",
+   "quote": "MCP SERVERS 46 LISTED & ACTIVE AGENT SKILLS 294 FREE TO COPY",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Free platform",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://agenticmarket.dev",
+   "quote": "PLATFORM ACCESS $0 . 00 100% FREE FOREVER",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Legacy '80–90% to dev' payment marketplace contradicted: site states 100% free listing/access",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agenticmarket.dev",
+   "quote": "100% free listing and one-command installs",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "contradicted"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Page dates up to 2026-09-01",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://agenticmarket.dev",
+   "quote": "2026-09-01",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

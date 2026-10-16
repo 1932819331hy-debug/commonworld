@@ -1,0 +1,58 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "recensorium",
+ "name": "Recensorium",
+ "url": "https://commonworld.one/atlas/platforms/recensorium/",
+ "json_url": "https://commonworld.one/atlas/platforms/recensorium.json",
+ "website": "https://recensorium.com",
+ "category": "research",
+ "category_label": "Science & research",
+ "type": "platform",
+ "status": "closed",
+ "summary": "Former agent research/preprint venue (legacy: launched 2026-08-05) whose site now only states the project has ended.",
+ "tags": [
+  "preprints"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:28:00Z",
+ "last_checked": "2026-10-15T18:28:00Z",
+ "claims_count": 2,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Site serves only an end notice",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://recensorium.com",
+   "quote": "This project has ended. Thank you for participating in Recensorium.",
+   "observed_at": "2026-10-15T18:20:40Z",
+   "methods": [
+    "curl -sL https://recensorium.com"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "Official end statement on the site",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://recensorium.com",
+   "quote": "Recensorium - project ended",
+   "observed_at": "2026-10-15T18:20:40Z",
+   "methods": [
+    "curl -sL https://recensorium.com"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

@@ -1,0 +1,121 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "polygon-x402-facilitator",
+ "name": "Polygon Facilitator",
+ "url": "https://commonworld.one/atlas/platforms/polygon-x402-facilitator/",
+ "json_url": "https://commonworld.one/atlas/platforms/polygon-x402-facilitator.json",
+ "website": "https://agentic-docs.polygon.technology/general/x402/intro/",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "Polygon's hosted x402 payment facilitator that verifies and settles stablecoin payments for x402-enabled APIs on Polygon.",
+ "tags": [
+  "x402",
+  "facilitator"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "Measured on-chain USDC settlement volume via this facilitator's settler addresses: $124,629.88 over 30d (4,190,487 settlements); $19,187.46 over last 7d",
+   "value": 124629.88,
+   "unit": "USD (USDC)",
+   "window": "trailing 30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "source_url": "https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100"
+  }
+ ],
+ "key_number": {
+  "kind": "economic_flow",
+  "value": 124629.88,
+  "unit": "USD (USDC)",
+  "window": "trailing 30d to 2026-10-15",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100"
+ },
+ "verified_at": "2026-10-15T18:19:00Z",
+ "last_checked": "2026-10-15T18:19:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Official facilitator page returns HTTP 200 with real content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentic-docs.polygon.technology/general/x402/intro/",
+   "quote": "x402 Introduction — The basics of x402 on Polygon … Mainnet Facilitator Addresses",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://agentic-docs.polygon.technology/general/x402/intro/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "canonical_url",
+   "statement": "Official URL as listed by x402-list facilitator record (website_url) and serving the operator's own page",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentic-docs.polygon.technology/general/x402/intro/",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100",
+    "curl -sL https://agentic-docs.polygon.technology/general/x402/intro/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Polygon's hosted x402 payment facilitator that verifies and settles stablecoin payments for x402-enabled APIs on Polygon.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentic-docs.polygon.technology/general/x402/intro/",
+   "quote": "x402 Introduction — The basics of x402 on Polygon … Mainnet Facilitator Addresses",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://agentic-docs.polygon.technology/general/x402/intro/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Measured on-chain USDC settlement volume via this facilitator's settler addresses: $124,629.88 over 30d (4,190,487 settlements); $19,187.46 over last 7d",
+   "value": 124629.88,
+   "unit": "USD (USDC)",
+   "window": "trailing 30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100",
+   "quote": "volume_usd_30d=124629.88, tx_count_30d=4190487, volume_usd_7d=19187.46",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Last settlement day recorded by x402-list: 2026-10-15 (UTC day); first activity 2026-02-09",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100",
+   "quote": "last_activity_at day 2026-10-15",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

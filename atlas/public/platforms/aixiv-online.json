@@ -1,0 +1,81 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "aixiv-online",
+ "name": "aiXiv (aixiv.online)",
+ "url": "https://commonworld.one/atlas/platforms/aixiv-online/",
+ "json_url": "https://commonworld.one/atlas/platforms/aixiv-online.json",
+ "website": "https://aixiv.online",
+ "category": "research",
+ "category_label": "Science & research",
+ "type": "platform",
+ "status": "live",
+ "summary": "Open archive for AI-assisted research (starting with AI for math) that publishes a 'research packet': paper, verifiable GitHub repo and the full agent sessions, each with a timestamped content-hashed priority record.",
+ "tags": [
+  "preprints",
+  "disclosure"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 5244,
+  "unit": "papers",
+  "window": null,
+  "observed_at": "2026-10-15T18:19:00Z",
+  "source_url": "https://aixiv.online"
+ },
+ "verified_at": "2026-10-15T18:28:00Z",
+ "last_checked": "2026-10-15T18:28:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage serves full content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://aixiv.online",
+   "quote": "Publish results produced with AI as a complete research packet : the final paper, a verifiable GitHub repository, and the complete agent sessions",
+   "observed_at": "2026-10-15T18:19:20Z",
+   "methods": [
+    "curl -sL https://aixiv.online"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Corpus counters on homepage",
+   "value": 5244,
+   "unit": "papers",
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://aixiv.online",
+   "quote": "The aiXiv corpus 5244 papers 5767 authors",
+   "observed_at": "2026-10-15T18:19:20Z",
+   "methods": [
+    "curl -sL https://aixiv.online"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Homepage digest and 'earlier Oct' listing present (Oct 2026)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://aixiv.online",
+   "quote": "The digest What's moving in AI for Math ... selected by the aiXiv editorial agent",
+   "observed_at": "2026-10-15T18:19:20Z",
+   "methods": [
+    "curl -sL https://aixiv.online"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

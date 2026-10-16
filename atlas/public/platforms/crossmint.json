@@ -1,0 +1,85 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "crossmint",
+ "name": "Crossmint",
+ "url": "https://commonworld.one/atlas/platforms/crossmint/",
+ "json_url": "https://commonworld.one/atlas/platforms/crossmint.json",
+ "website": "https://www.crossmint.com",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Stablecoin infrastructure company offering wallets for users and AI agents, agentic virtual cards and agentic payments APIs.",
+ "tags": [
+  "wallet",
+  "cards",
+  "buyer-side",
+  "self-serve"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:15:00Z",
+ "last_checked": "2026-10-15T18:15:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "crossmint.com",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.crossmint.com/",
+   "quote": "Stablecoin Platform & APIs for Enterprises | Crossmint",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl -L (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves content (layer1 flagged cf_challenge but curl got full page)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.crossmint.com/",
+   "quote": "Agentic Cards Issue virtual cards for AI agents",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Agent wallets + agentic payments",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.crossmint.com/",
+   "quote": "Agentic Payments Financial infrastructure for AI agents",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "No dated item captured",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.crossmint.com/",
+   "quote": null,
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

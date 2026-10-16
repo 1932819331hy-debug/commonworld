@@ -1,0 +1,74 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentrust-trace-registry",
+ "name": "AgenTrust TRACE registry",
+ "url": "https://commonworld.one/atlas/platforms/agentrust-trace-registry/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentrust-trace-registry.json",
+ "website": "https://agentrust-io.com",
+ "category": "verification",
+ "category_label": "Verification",
+ "type": "protocol",
+ "status": "live",
+ "summary": "A set of free open specifications and verifiers (incl. TRACE runtime-evidence records) that bind model, agent identity and tool calls to hardware attestation, plus an append-only public TRACE registry.",
+ "tags": [
+  "spec",
+  "attestation"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:37:00Z",
+ "last_checked": "2026-10-15T18:37:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage HTTP 200",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentrust-io.com",
+   "quote": "AgenTrust is a set of free, open specifications and tools that produce a signed receipt instead",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://agentrust-io.com"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Public append-only registry",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentrust-io.com/registry",
+   "quote": "The TRACE Registry is a public logbook for signed receipts of what AI agents did. Entries can be added but never edited or removed",
+   "observed_at": "2026-10-15T18:25:00Z",
+   "methods": [
+    "curl -sL https://agentrust-io.com/registry"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Newest date on homepage: hardware receipt captured 2026-09-14",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentrust-io.com",
+   "quote": "Signed report from an Intel TDX processor on Google Cloud, captured 2026-09-14",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://agentrust-io.com"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

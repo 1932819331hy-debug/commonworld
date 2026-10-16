@@ -1,0 +1,78 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "erc-8004-trustless-agents",
+ "name": "ERC-8004 (Trustless Agents)",
+ "url": "https://commonworld.one/atlas/platforms/erc-8004-trustless-agents/",
+ "json_url": "https://commonworld.one/atlas/platforms/erc-8004-trustless-agents.json",
+ "website": "https://eips.ethereum.org/EIPS/eip-8004",
+ "category": "registries",
+ "category_label": "Registries & directories",
+ "type": "protocol",
+ "status": "live",
+ "summary": "Draft Ethereum standard defining per-chain singleton registries for agent identity (ERC-721), reputation feedback and validation.",
+ "tags": [
+  "erc-8004",
+  "identity",
+  "on-chain",
+  "sybil",
+  "x402"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:12:00Z",
+ "last_checked": "2026-10-15T18:12:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "EIP page served",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://eips.ethereum.org/EIPS/eip-8004",
+   "quote": "⚠️ Draft Standards Track: ERC ERC-8004: Trustless Agents",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://eips.ethereum.org/EIPS/eip-8004",
+    "curl -sL https://8004.org"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Three registries; status Draft; created 2025-08-13",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://eips.ethereum.org/EIPS/eip-8004",
+   "quote": "Discover agents and establish trust through reputation and validation ... Created 2025-08-13",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://eips.ethereum.org/EIPS/eip-8004"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Mainnet launch post dated January 29, 2026 (Validation Registry not yet on mainnet at that time)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.8004.org/blog/welcome-to-8004",
+   "quote": "January 29, 2026 ... Today, ERC-8004, the standard for Trustless Agents, is officially live on Ethereum mainnet.",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "web_fetch https://www.8004.org/blog/welcome-to-8004"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

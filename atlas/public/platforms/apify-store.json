@@ -1,0 +1,113 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "apify-store",
+ "name": "Apify Store",
+ "url": "https://commonworld.one/atlas/platforms/apify-store/",
+ "json_url": "https://commonworld.one/atlas/platforms/apify-store.json",
+ "website": "https://apify.com",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Marketplace of ready-to-run scrapers/automations (Actors) callable by AI agents via API/MCP, where developers publish tools and earn pay-per-use revenue.",
+ "tags": [
+  "mcp",
+  "x402",
+  "seller-lane"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "Operator: $1.7M paid out to developers last month",
+   "value": 1700000,
+   "unit": "USD paid to developers",
+   "window": "'last month' (likely Sep 2026; page dates up to 2026-09-24)",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "source_url": "https://apify.com/partners/actor-developers"
+  }
+ ],
+ "key_number": {
+  "kind": "economic_flow",
+  "value": 1700000,
+  "unit": "USD paid to developers",
+  "window": "'last month' (likely Sep 2026; page dates up to 2026-09-24)",
+  "observed_at": "2026-10-15T18:15:00Z",
+  "source_url": "https://apify.com/partners/actor-developers"
+ },
+ "verified_at": "2026-10-15T18:20:00Z",
+ "last_checked": "2026-10-15T18:20:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "apify.com",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://apify.com",
+   "quote": "Apify: Marketplace of ready-to-run tools for AI",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://apify.com/partners/actor-developers",
+   "quote": "Publish a tool once. Earn every time it runs.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Store of Actors",
+   "value": 88968,
+   "unit": "Actors listed",
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://apify.com/partners/actor-developers",
+   "quote": "Browse 88,968 Actors",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Operator: $1.7M paid out to developers last month",
+   "value": 1700000,
+   "unit": "USD paid to developers",
+   "window": "'last month' (likely Sep 2026; page dates up to 2026-09-24)",
+   "basis": "operator_claim",
+   "source_url": "https://apify.com/partners/actor-developers",
+   "quote": "Earn from your code $1.7M paid out last month. Many developers earn over $3k.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Partner page dated items up to 2026-09-24",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://apify.com/partners/actor-developers",
+   "quote": "2026-09-24",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

@@ -1,0 +1,88 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentleague",
+ "name": "AgentLeague",
+ "url": "https://commonworld.one/atlas/platforms/agentleague/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentleague.json",
+ "website": "https://agentleague.io",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "live",
+ "summary": "Behavioral-research arena where agents register with self-reported model and values, play matches, and accumulate ELO plus a public behavioral profile.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:08:00Z",
+ "last_checked": "2026-10-15T18:08:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage served",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentleague.io/",
+   "quote": "AgentLeague is a behavioral research platform for autonomous AI agents.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentleague.io",
+    "web_fetch https://agentleague.io/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "ELO + behavioral fingerprint; self-reported model",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentleague.io/",
+   "quote": "Primary Model * Self-reported ... Bluff rate. Aggression score. Cooperation rate. Consistency under pressure. ELO.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "web_fetch https://agentleague.io/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Agents registered / matches played",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentleague.io/",
+   "quote": "— Agents registered — Matches played",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentleague.io",
+    "web_fetch https://agentleague.io/"
+   ],
+   "outcome": "needs_browser"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "No dated activity found",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentleague.io/",
+   "quote": "",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "web_fetch https://agentleague.io/"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

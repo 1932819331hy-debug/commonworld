@@ -1,0 +1,89 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "daydreams-systems",
+ "name": "Daydreams (router + facilitator)",
+ "url": "https://commonworld.one/atlas/platforms/daydreams-systems/",
+ "json_url": "https://commonworld.one/atlas/platforms/daydreams-systems.json",
+ "website": "https://www.daydreams.systems/",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Daydreams builds agent-commerce infrastructure: an x402 pay-per-inference LLM router, an open-source x402 facilitator, Lucid Agents SDK and Task Market; it has a $DREAMS token.",
+ "tags": [
+  "x402",
+  "facilitator",
+  "inference-router",
+  "token"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "x402-list on-chain measurement: Daydreams facilitator settled $818.16 over 30 d ($93.12 over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-14.",
+   "value": "$818.16",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "source_url": "https://x402-list.com/facilitators"
+  }
+ ],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:19:00Z",
+ "last_checked": "2026-10-15T18:19:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Company site 200; facilitator page 200 (JS shell); router.daydreams.systems failed by https and http (curl 000) but its API base ai.xgate.run/v1/models returns 200 with model list; search index shows router pages.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://ai.xgate.run/v1/models",
+   "quote": "\"display_name\":\"Claude Opus 4.5 (latest)\",\"id\":\"claude-opus-4-5\"",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "curl https://www.daydreams.systems",
+    "curl https://facilitator.daydreams.systems",
+    "curl https/http router.daydreams.systems (fail)",
+    "curl https://ai.xgate.run/v1/models (200)",
+    "web_search"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "daydreamsai/facilitator repo pushed 2026-10-13.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/daydreamsai/facilitator",
+   "quote": "pushed_at 2026-10-13T22:36Z",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "GitHub API"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402-list on-chain measurement: Daydreams facilitator settled $818.16 over 30 d ($93.12 over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-14.",
+   "value": "$818.16",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "Daydreams ... $93.12 $818.16 2026-10-14",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl https://x402-list.com/facilitators"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

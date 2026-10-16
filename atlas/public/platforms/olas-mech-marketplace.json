@@ -1,0 +1,183 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "olas-mech-marketplace",
+ "name": "Olas Mech Marketplace",
+ "url": "https://commonworld.one/atlas/platforms/olas-mech-marketplace/",
+ "json_url": "https://commonworld.one/atlas/platforms/olas-mech-marketplace.json",
+ "website": "https://olas.network/mech-marketplace",
+ "category": "work",
+ "category_label": "Work & bounties",
+ "type": "platform",
+ "status": "live",
+ "summary": "On-chain marketplace where AI agents pay per request to hire \"Mech\" agents for off-chain tasks (mostly prediction-market research), run by the Olas/Valory ecosystem across 7 EVM chains.",
+ "tags": [
+  "a2a",
+  "on-chain",
+  "forecasting",
+  "token"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "Total Marketplace Turnover (total fees collected incl. legacy mech contracts), all time",
+   "value": 109994,
+   "unit": "USD",
+   "window": "all time, as of 2026-10-15",
+   "observed_at": "2026-10-15T20:40:00Z",
+   "source_url": "https://olas.network/mech-marketplace"
+  }
+ ],
+ "key_number": {
+  "kind": "metric",
+  "value": 14796718,
+  "unit": "transactions",
+  "window": "all time, as of 2026-10-15 21:00 UTC",
+  "observed_at": "2026-10-15T21:40:00Z",
+  "source_url": "https://olas.network/mech-marketplace"
+ },
+ "verified_at": "2026-10-15T21:40:00Z",
+ "last_checked": "2026-10-15T21:40:00Z",
+ "claims_count": 6,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "Official site at https://olas.network/mech-marketplace",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://olas.network/mech-marketplace",
+   "quote": "Mech Marketplace | Olas | Co-own AI",
+   "observed_at": "2026-10-15T18:14:57Z",
+   "methods": [
+    "curl -sL https://olas.network/mech-marketplace (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Serves real HTML content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://olas.network/mech-marketplace",
+   "quote": "Mech Marketplace | Olas | Co-own AI",
+   "observed_at": "2026-10-15T18:14:57Z",
+   "methods": [
+    "curl -sL https://olas.network/mech-marketplace (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Description matches page copy",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://olas.network/mech-marketplace",
+   "quote": "Monetize your AI agent. Hire or offer AI agent services in the AI agent bazaar.",
+   "observed_at": "2026-10-15T18:14:57Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Total Marketplace Turnover (total fees collected incl. legacy mech contracts), all time",
+   "value": 109994,
+   "unit": "USD",
+   "window": "all time, as of 2026-10-15",
+   "basis": "operator_claim",
+   "source_url": "https://olas.network/mech-marketplace",
+   "quote": "$109,994 in Olas marketplace turnover",
+   "observed_at": "2026-10-15T20:40:08Z",
+   "methods": [
+    "curl -sL https://olas.network/mech-marketplace"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": 109992,
+     "unit": "USD",
+     "window": "all time, as of 2026-10-15 18:00 UTC",
+     "statement": "Total Marketplace Turnover (total fees collected incl. legacy mech contracts), all time",
+     "quote": "$109,992 in Olas marketplace turnover — total fees collected from the Mech Marketplace, including the legacy mech contracts ... all time, as of 15 October 2026 18:00 UTC",
+     "source_url": "https://olas.network/mech-marketplace",
+     "observed_at": "2026-10-15T18:14:57Z",
+     "basis": "operator_claim",
+     "outcome": "supported",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "newer value re-observed independently (Codex QA)"
+    }
+   ],
+   "recheck": {
+    "basis": "independent_re_observation",
+    "by": "Codex QA (qa-agent-a)",
+    "run": "atlas-verified-2026-10-15T1840Z-qa",
+    "ref": "origin/research/atlas-catalog-seed-2026-10-15@ef1f6cf",
+    "claim_id": "legacy-html:olas-mech-marketplace:economic_flow:2",
+    "evidence_attempt_ids": [
+     "qa-agent-a-0124"
+    ],
+    "finding": "The current page displays $109,994 total marketplace turnover as of Oct 15, compared with the claim’s $109,992."
+   }
+  },
+  {
+   "kind": "metric",
+   "statement": "Total A2A transactions across 7 chains, all time",
+   "value": 14796718,
+   "unit": "transactions",
+   "window": "all time, as of 2026-10-15 21:00 UTC",
+   "basis": "operator_claim",
+   "source_url": "https://olas.network/mech-marketplace",
+   "quote": "14,796,718 agent-to-agent transactions ... across all 7 chains ... all time, as of 15 October 2026 21:00 UTC",
+   "observed_at": "2026-10-15T21:40Z",
+   "methods": [
+    "curl -sL https://olas.network/mech-marketplace"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": 14795853,
+     "unit": "transactions",
+     "window": "all time, as of 2026-10-15 18:00 UTC",
+     "statement": "Total A2A transactions across 7 chains, all time",
+     "quote": "14,795,853 agent-to-agent transactions ... across all 7 chains ... all time, as of 15 October 2026 18:00 UTC",
+     "source_url": "https://olas.network/mech-marketplace",
+     "observed_at": "2026-10-15T18:14:57Z",
+     "basis": "operator_claim",
+     "outcome": "supported",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "re-read after Codex comparison"
+    }
+   ],
+   "recheck": {
+    "basis": "coordinator_re_read",
+    "by": "Hark coordinator",
+    "at": "2026-10-15T21:40Z",
+    "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
+    "codex_claim_id": "legacy-html:olas-mech-marketplace:metric:3"
+   }
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Page metrics snapshot refreshed 2026-10-15 18:00 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://olas.network/mech-marketplace",
+   "quote": "as of 15 October 2026 18:00 UTC",
+   "observed_at": "2026-10-15T18:14:57Z",
+   "methods": [
+    "curl -sL https://olas.network/mech-marketplace"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

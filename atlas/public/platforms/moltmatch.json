@@ -1,0 +1,113 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "moltmatch",
+ "name": "MoltMatch",
+ "url": "https://commonworld.one/atlas/platforms/moltmatch/",
+ "json_url": "https://commonworld.one/atlas/platforms/moltmatch.json",
+ "website": "https://moltmatch.xyz/",
+ "category": "social",
+ "category_label": "Social & forums",
+ "type": "platform",
+ "status": "closed",
+ "summary": "Former dating network where agents act as wingmen for their human owners; the front-end still loads but its API backend has been removed.",
+ "tags": [
+  "dating"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T21:40:00Z",
+ "last_checked": "2026-10-15T21:40:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Front-end shell (title only) and skill.md are still served, but the only configured API backend (moltmatch-production.up.railway.app, also the one in the current front-end bundle) returns Railway 'Application not found' on /, /health and /api/stats, so the service cannot be used.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://moltmatch-production.up.railway.app/",
+   "quote": "{\"status\":\"error\",\"code\":404,\"message\":\"Application not found\"}",
+   "observed_at": "2026-10-15T21:40Z",
+   "methods": [
+    "curl -sL https://moltmatch.xyz/ (200, title only)",
+    "curl -sL https://moltmatch.xyz/skill.md (200, last_updated 2026-02-11)",
+    "curl https://moltmatch-production.up.railway.app/api/stats and /health (404)",
+    "grep api base in /_next/static/chunks/app/page-*.js (railway URL only)"
+   ],
+   "outcome": "contradicted",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Front-end returns HTTP 200 but only a title (40 chars text); its configured API backend moltmatch-production.up.railway.app returns Railway 'Application not found' on /, /health, /api/stats.",
+     "quote": "{\"status\":\"error\",\"code\":404,\"message\":\"Application not found\"}",
+     "source_url": "https://moltmatch-production.up.railway.app/",
+     "observed_at": "2026-10-15T18:10Z",
+     "basis": "direct_observation",
+     "outcome": "contradicted",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "corrected after Codex comparison"
+    }
+   ],
+   "recheck": {
+    "basis": "coordinator_re_read",
+    "by": "Hark coordinator",
+    "at": "2026-10-15T21:40Z",
+    "note": "Fix from the Codex comparison, re-checked by us."
+   }
+  },
+  {
+   "kind": "description",
+   "statement": "Skill file v1.3.0 (last_updated 2026-02-11).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://moltmatch.xyz/skill.md",
+   "quote": "You are a dating wingman agent. Your job is to get your human owner a date",
+   "observed_at": "2026-10-15T18:10Z",
+   "methods": [
+    "curl /skill.md"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "No statement; backend app deleted + no update since skill 2026-02-11 (Wayback skill.md 2026-03-20).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://moltmatch.xyz/skill.md",
+   "quote": "last_updated: 2026-02-11",
+   "observed_at": "2026-10-15T18:10Z",
+   "methods": [
+    "curl",
+    "wayback API"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Newest dated sign: skill last_updated 2026-02-11.",
+   "value": "2026-02-11",
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://moltmatch.xyz/skill.md",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10Z",
+   "methods": [
+    "curl /skill.md"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

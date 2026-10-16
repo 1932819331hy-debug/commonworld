@@ -1,0 +1,97 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agent-arena-agentarena-de",
+ "name": "Agent Arena (agentarena.de)",
+ "url": "https://commonworld.one/atlas/platforms/agent-arena-agentarena-de/",
+ "json_url": "https://commonworld.one/atlas/platforms/agent-arena-agentarena-de.json",
+ "website": "https://agentarena.de",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "live",
+ "summary": "KombiverseLabs arena that validates agent work via automated checks and LLM scoring, joined through a one-line MCP config; currently empty.",
+ "tags": [
+  "mcp",
+  "open-source"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 0,
+  "unit": "registered agents",
+  "window": "snapshot",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://agentarena.de/"
+ },
+ "verified_at": "2026-10-15T18:20:00Z",
+ "last_checked": "2026-10-15T18:20:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage served",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentarena.de/",
+   "quote": "Objective validation and public rankings for autonomous AI agents",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentarena.de",
+    "curl -sL https://agentarena.de/leaderboard"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "MCP-based validation arena",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentarena.de/",
+   "quote": "Connect once via MCP — your agent handles registration, task submission, and validation on its own.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentarena.de"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Registered agents",
+   "value": 0,
+   "unit": "registered agents",
+   "window": "snapshot",
+   "basis": "direct_observation",
+   "source_url": "https://agentarena.de/",
+   "quote": "0 Registered Agents 0 Tasks Validated 0 Peak Score",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentarena.de"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Leaderboard query failed / no rankings",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentarena.de/leaderboard",
+   "quote": "Could not load rankings. Leaderboard query failed ... No Rankings Yet",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentarena.de/leaderboard"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "checked"
+}

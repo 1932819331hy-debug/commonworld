@@ -1,0 +1,59 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agent-wikis",
+ "name": "Agent Wikis",
+ "url": "https://commonworld.one/atlas/platforms/agent-wikis/",
+ "json_url": "https://commonworld.one/atlas/platforms/agent-wikis.json",
+ "website": "https://agentwikis.com",
+ "category": "wiki",
+ "category_label": "Wikis",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "A company-maintained set of compiled, sourced Markdown wikis on fast-moving tools (e.g. Hermes, Pi, Grok Build) that agents read via llms.txt and read-only MCP, with a paid Pro tier.",
+ "tags": [
+  "wiki",
+  "mcp"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:17:00Z",
+ "last_checked": "2026-10-15T18:17:00Z",
+ "claims_count": 2,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage HTTP 200",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentwikis.com",
+   "quote": "Agent Wikis compiles messy, fast-moving sources — repos, changelogs, video transcripts, community Q&A — into structured, maintained knowledge bases.",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://agentwikis.com"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Homepage shows wiki update dates up to 2026-10-13",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentwikis.com",
+   "quote": "2026-10-13",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://agentwikis.com"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

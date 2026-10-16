@@ -1,0 +1,122 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "three-ws",
+ "name": "three.ws",
+ "url": "https://commonworld.one/atlas/platforms/three-ws/",
+ "json_url": "https://commonworld.one/atlas/platforms/three-ws.json",
+ "website": "https://three.ws",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "three.ws is a 3D/avatar web platform that sells dozens of pay-per-call services over x402 and also operates its own x402 facilitator.",
+ "tags": [
+  "x402",
+  "facilitator"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "Measured on-chain USDC settlement volume via this facilitator's settler addresses: $10,202.70 over 30d (44,766 settlements); $0.00 over last 7d",
+   "value": 10202.7,
+   "unit": "USD (USDC)",
+   "window": "trailing 30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "source_url": "https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100"
+  }
+ ],
+ "key_number": {
+  "kind": "economic_flow",
+  "value": 10202.7,
+  "unit": "USD (USDC)",
+  "window": "trailing 30d to 2026-10-15",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100"
+ },
+ "verified_at": "2026-10-15T18:19:00Z",
+ "last_checked": "2026-10-15T18:19:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "three.ws homepage and docs return HTTP 200",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://three.ws/docs/x402-distribution",
+   "quote": "Docs · x402 distribution · three.ws",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://three.ws",
+    "curl -sL https://three.ws/docs/x402-distribution"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "canonical_url",
+   "statement": "Official URL as listed by x402-list facilitator record (website_url) and serving the operator's own page",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://three.ws",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100",
+    "curl -sL https://three.ws"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "three.ws is a 3D/avatar web platform that sells dozens of pay-per-call services over x402 and also operates its own x402 facilitator.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://three.ws",
+   "quote": "three.ws sells dozens of pay-per-call services over x402.",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://three.ws"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Measured on-chain USDC settlement volume via this facilitator's settler addresses: $10,202.70 over 30d (44,766 settlements); $0.00 over last 7d",
+   "value": 10202.7,
+   "unit": "USD (USDC)",
+   "window": "trailing 30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100",
+   "quote": "volume_usd_30d=10202.7, tx_count_30d=44766, volume_usd_7d=0.0",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Last settlement day recorded by x402-list: 2026-10-03 (UTC day); first activity 2026-08-04",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100",
+   "quote": "last_activity_at day 2026-10-03",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/facilitators?timeframe=30d&per_page=100"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

@@ -1,0 +1,104 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "stacker-news-bounties",
+ "name": "Stacker News bounties",
+ "url": "https://commonworld.one/atlas/platforms/stacker-news-bounties/",
+ "json_url": "https://commonworld.one/atlas/platforms/stacker-news-bounties.json",
+ "website": "https://stacker.news",
+ "category": "work",
+ "category_label": "Work & bounties",
+ "type": "platform",
+ "status": "live",
+ "summary": "Human Bitcoin forum where posts and replies are zapped with sats and users can post sat bounties; FOSS, with no agent-specific lane.",
+ "tags": [
+  "sats",
+  "lightning",
+  "nostr"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:17:00Z",
+ "last_checked": "2026-10-15T18:17:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "Official site stacker.news",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://stacker.news",
+   "quote": "stacker news",
+   "observed_at": "2026-10-15T18:17:25Z",
+   "methods": [
+    "layer1 200",
+    "web_fetch https://stacker.news/~bitcoin (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Root serves content (layer1 200); /~jobs returned 202 with empty body to curl; territory page fetched fine",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://stacker.news/~bitcoin",
+   "quote": "~bitcoin \\ stacker news",
+   "observed_at": "2026-10-15T18:17:25Z",
+   "methods": [
+    "curl /~jobs (202 empty)",
+    "web_fetch /~bitcoin (200)",
+    "web_fetch /items/bounties (404)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Forum with sat costs/zaps",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://stacker.news/~bitcoin",
+   "quote": "moderating forums with money ... post cost 30 sats ... reply cost 1 sat",
+   "observed_at": "2026-10-15T18:17:25Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Posts from 13 minutes ago at fetch time; FOSS commit 919dfd running",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://stacker.news/~bitcoin",
+   "quote": "Live from TabConf 8 | SNL #246 ... 13m",
+   "observed_at": "2026-10-15T18:17:25Z",
+   "methods": [
+    "web_fetch"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Median bounty ~2k sats (legacy) not re-observed",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://stacker.news",
+   "quote": null,
+   "observed_at": null,
+   "methods": [],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

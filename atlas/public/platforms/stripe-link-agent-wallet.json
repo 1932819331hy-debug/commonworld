@@ -1,0 +1,105 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "stripe-link-agent-wallet",
+ "name": "Stripe Issuing for agents + Link agent wallet",
+ "url": "https://commonworld.one/atlas/platforms/stripe-link-agent-wallet/",
+ "json_url": "https://commonworld.one/atlas/platforms/stripe-link-agent-wallet.json",
+ "website": "https://stripe.com/blog/helping-personal-agents-shop-more-intelligently-and-reliably-with-link",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Stripe Link's wallet for agents, letting consumer AI agents (e.g. Meta Muse) pay with a user's saved Link methods or single-use virtual cards, with purchase protection.",
+ "tags": [
+  "stripe",
+  "buyer-side",
+  "us-only",
+  "cards"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 38,
+  "unit": "x growth, base undisclosed",
+  "window": "month before 2026-09-29",
+  "observed_at": "2026-10-15T18:15:00Z",
+  "source_url": "https://stripe.com/blog/helping-personal-agents-shop-more-intelligently-and-reliably-with-link"
+ },
+ "verified_at": "2026-10-15T18:20:00Z",
+ "last_checked": "2026-10-15T18:20:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "Stripe blog post 2026-09-29 is the most specific official page (no dedicated product URL found)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://stripe.com/blog/helping-personal-agents-shop-more-intelligently-and-reliably-with-link",
+   "quote": "Helping personal agents shop more intelligently and reliably with Link",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Page serves content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://stripe.com/blog/helping-personal-agents-shop-more-intelligently-and-reliably-with-link",
+   "quote": "provide purchase protection if an agent makes a mistake",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Link issues single-use virtual card per approved purchase; Meta Muse integration",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://stripe.com/newsroom/news/stripe-helps-meta-muse-shop-with-link",
+   "quote": "For other businesses, Link issues Muse a single-use virtual card scoped to the approved purchase.",
+   "observed_at": "2026-10-15T18:20:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Blog post 2026-09-29",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://stripe.com/blog/helping-personal-agents-shop-more-intelligently-and-reliably-with-link",
+   "quote": "2026-09-29",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Operator: agentic purchases with Link up 38x over the past month (no base disclosed)",
+   "value": 38,
+   "unit": "x growth, base undisclosed",
+   "window": "month before 2026-09-29",
+   "basis": "operator_claim",
+   "source_url": "https://stripe.com/blog/helping-personal-agents-shop-more-intelligently-and-reliably-with-link",
+   "quote": "over the past month, agentic purchases made with Link increased 38x.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

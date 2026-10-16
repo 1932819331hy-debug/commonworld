@@ -1,0 +1,146 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "blockrun",
+ "name": "BlockRun",
+ "url": "https://commonworld.one/atlas/platforms/blockrun/",
+ "json_url": "https://commonworld.one/atlas/platforms/blockrun.json",
+ "website": "https://blockrun.ai",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "BlockRun is an OpenAI-compatible routing and payment layer giving agents pay-per-call access to many LLMs and tool/data APIs via x402.",
+ "tags": [
+  "x402",
+  "x402-service",
+  "llm"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "x402 settlement to this service's payout address: $1,682.55 in 30d from 468 distinct buyers, 94,987 settlements; top buyer share 36.3%",
+   "value": 1682.55,
+   "unit": "USD (USDC)",
+   "window": "trailing 30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "source_url": "https://x402-list.com/api/v1/services?per_page=100"
+  },
+  {
+   "statement": "Sum of daily volume for UTC days 2026-10-09..2026-10-15 (last day partial): $435.96",
+   "value": 435.96,
+   "unit": "USD (USDC)",
+   "window": "2026-10-09..2026-10-15 UTC",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "source_url": "https://x402-list.com/api/v1/services/blockrun/volume?days=60"
+  }
+ ],
+ "key_number": {
+  "kind": "economic_flow",
+  "value": 1682.55,
+  "unit": "USD (USDC)",
+  "window": "trailing 30d to 2026-10-15",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://x402-list.com/api/v1/services?per_page=100"
+ },
+ "verified_at": "2026-10-15T18:25:00Z",
+ "last_checked": "2026-10-15T18:25:00Z",
+ "claims_count": 6,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Official site returns HTTP 200 with real content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://blockrun.ai",
+   "quote": "BlockRun lets agents pay for the outcome — every model, tool and data source, best value per dollar. 115 models and 100 tool APIs, OpenAI-compatible.",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://blockrun.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "canonical_url",
+   "statement": "Official URL (x402-list base_url/website for this service, operator-owned)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://blockrun.ai",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/services?per_page=100",
+    "curl -sL https://blockrun.ai"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "BlockRun is an OpenAI-compatible routing and payment layer giving agents pay-per-call access to many LLMs and tool/data APIs via x402.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://blockrun.ai",
+   "quote": "BlockRun lets agents pay for the outcome — every model, tool and data source, best value per dollar. 115 models and 100 tool APIs, OpenAI-compatible.",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl -sL https://blockrun.ai",
+    "GET https://x402-list.com/api/v1/services?per_page=100"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402 settlement to this service's payout address: $1,682.55 in 30d from 468 distinct buyers, 94,987 settlements; top buyer share 36.3%",
+   "value": 1682.55,
+   "unit": "USD (USDC)",
+   "window": "trailing 30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/services?per_page=100",
+   "quote": "traction.volume_usd_30d=1682.55, unique_buyers_30d=468, top_buyer_share_30d=0.3627",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/services?per_page=100"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "Sum of daily volume for UTC days 2026-10-09..2026-10-15 (last day partial): $435.96",
+   "value": 435.96,
+   "unit": "USD (USDC)",
+   "window": "2026-10-09..2026-10-15 UTC",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/services/blockrun/volume?days=60",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/services/blockrun/volume?days=60"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Last UTC day with ≥$1 settled: 2026-10-15; first settlement 2026-01-01",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/api/v1/services/blockrun/volume?days=60",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "GET https://x402-list.com/api/v1/services/blockrun/volume?days=60"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

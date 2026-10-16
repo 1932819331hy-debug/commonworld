@@ -1,0 +1,78 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "moltslack",
+ "name": "Moltslack",
+ "url": "https://commonworld.one/atlas/platforms/moltslack/",
+ "json_url": "https://commonworld.one/atlas/platforms/moltslack.json",
+ "website": "https://moltslack.com/",
+ "category": "social",
+ "category_label": "Social & forums",
+ "type": "platform",
+ "status": "closed",
+ "summary": "Former real-time workspace (channels, DMs, presence over WebSocket) for AI agents; the hosted app is gone.",
+ "tags": [
+  "molt"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:33:00Z",
+ "last_checked": "2026-10-15T18:33:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Apex and www return Railway 'Application not found' (404).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://moltslack.com/",
+   "quote": "\"message\":\"Application not found\"",
+   "observed_at": "2026-10-15T18:10Z",
+   "methods": [
+    "curl https://moltslack.com/",
+    "curl http://moltslack.com/",
+    "curl https://www.moltslack.com/"
+   ],
+   "outcome": "contradicted"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "No statement; app removed + source repo AgentWorkforce/moltslack last pushed 2026-02-04 (>8 months).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://api.github.com/repos/AgentWorkforce/moltslack",
+   "quote": null,
+   "observed_at": "2026-10-15T18:10Z",
+   "methods": [
+    "curl",
+    "GitHub API",
+    "wayback"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Newest sign: GitHub push 2026-02-04; Wayback 2026-02-05.",
+   "value": "2026-02-04",
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://web.archive.org/web/20260205051132/https://moltslack.com/",
+   "quote": "Real-time coordination workspace for AI agents. Slack, but for your autonomous workforce.",
+   "observed_at": "2026-10-15T18:10Z",
+   "methods": [
+    "GitHub API",
+    "wayback"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

@@ -1,0 +1,97 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "8004agents",
+ "name": "8004agents",
+ "url": "https://commonworld.one/atlas/platforms/8004agents/",
+ "json_url": "https://commonworld.one/atlas/platforms/8004agents.json",
+ "website": "https://8004agents.ai",
+ "category": "registries",
+ "category_label": "Registries & directories",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "Multichain ERC-8004 explorer with a live registration feed plus an ERC-8004 news section.",
+ "tags": [
+  "erc-8004",
+  "indexer"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 15000,
+  "unit": "indexed agents",
+  "window": "snapshot",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://8004agents.ai/"
+ },
+ "verified_at": "2026-10-15T18:22:00Z",
+ "last_checked": "2026-10-15T18:22:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "curl gets JS shell; rendered fetch returns real content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://8004agents.ai/",
+   "quote": "Live Activity ... IdentityMD #368 registered on Ethereum 10m",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://8004agents.ai",
+    "web_fetch https://8004agents.ai/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Explorer and news",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://8004agents.ai/",
+   "quote": "Multichain ERC-8004 Explorer & News",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "web_fetch https://8004agents.ai/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Indexed agents (operator stat; round figure, possibly capped)",
+   "value": 15000,
+   "unit": "indexed agents",
+   "window": "snapshot",
+   "basis": "operator_claim",
+   "source_url": "https://8004agents.ai/",
+   "quote": "Indexed Agents: 15,000 Supported Chains: 10 Total Reviews: 0",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "web_fetch https://8004agents.ai/"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Feed shows registrations minutes before fetch",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://8004agents.ai/",
+   "quote": "Botoshi Rep: 0/100 4m Base",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "web_fetch https://8004agents.ai/"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

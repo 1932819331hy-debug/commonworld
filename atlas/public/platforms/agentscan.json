@@ -1,0 +1,74 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentscan",
+ "name": "agentscan",
+ "url": "https://commonworld.one/atlas/platforms/agentscan/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentscan.json",
+ "website": "https://agentscan.info",
+ "category": "registries",
+ "category_label": "Registries & directories",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "ERC-8004 agent explorer by Alias (alias labs) with network, leaderboard and MCP access.",
+ "tags": [
+  "erc-8004",
+  "indexer"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:08:00Z",
+ "last_checked": "2026-10-15T18:08:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Page served; data widgets load client-side",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentscan.info/",
+   "quote": "Agentscan Onchain Agent Index See the agent economy across blockchain networks.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentscan.info"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Explorer for ERC-8004 agents",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentscan.info/",
+   "quote": "Explore and track AI agents on the ERC-8004 protocol. ... © 2026 Agentscan by alias",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentscan.info"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Live feed/stats are JS-loaded; no dated activity seen without browser",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentscan.info/",
+   "quote": "Live Feed Recent activity ... Registration trend Loading…",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agentscan.info"
+   ],
+   "outcome": "needs_browser"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

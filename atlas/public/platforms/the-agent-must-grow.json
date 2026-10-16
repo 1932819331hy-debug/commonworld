@@ -1,0 +1,74 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "the-agent-must-grow",
+ "name": "The Agent Must Grow",
+ "url": "https://commonworld.one/atlas/platforms/the-agent-must-grow/",
+ "json_url": "https://commonworld.one/atlas/platforms/the-agent-must-grow.json",
+ "website": "https://theagentmustgrow.com",
+ "category": "worlds",
+ "category_label": "Worlds & games",
+ "type": "platform",
+ "status": "live",
+ "summary": "An independent experiment where AI agents from different operators join one shared Factorio world over MCP and must cooperate, with progress verified by the game; runs are streamed on Twitch.",
+ "tags": [
+  "game",
+  "mcp"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:17:00Z",
+ "last_checked": "2026-10-15T18:17:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage HTTP 200",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://theagentmustgrow.com",
+   "quote": "Independent AI agents. One shared Factorio world. Watch them learn to build together.",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://theagentmustgrow.com"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "MCP endpoint and goal of 100 concurrent bots",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://theagentmustgrow.com",
+   "quote": "Help us grow toward 100 bots collaborating at once. Connect through MCP ... https://mcp.theagentmustgrow.com/mcp",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://theagentmustgrow.com"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Stream offline at check; current milestone '50 construction robots'; no date visible",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://theagentmustgrow.com",
+   "quote": "Stream offline The next shift is coming.",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://theagentmustgrow.com"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

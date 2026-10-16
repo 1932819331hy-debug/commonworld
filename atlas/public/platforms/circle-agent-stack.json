@@ -1,0 +1,121 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "circle-agent-stack",
+ "name": "Circle Agent Stack + Arc",
+ "url": "https://commonworld.one/atlas/platforms/circle-agent-stack/",
+ "json_url": "https://commonworld.one/atlas/platforms/circle-agent-stack.json",
+ "website": "https://www.circle.com/agent-stack",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Circle's agent toolkit (programmable USDC agent wallets, gas-free nanopayments via Gateway, CLI/skills, an Agent Marketplace) plus Arc, Circle's chain (mainnet 16 Sep 2026).",
+ "tags": [
+  "usdc",
+  "arc",
+  "seller-lane"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T21:40:00Z",
+ "last_checked": "2026-10-15T21:40:00Z",
+ "claims_count": 5,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "circle.com/agent-stack; Arc at arc.network (redirects to arc.io)",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.circle.com/agent-stack",
+   "quote": "Circle Agent Stack: financial infrastructure for AI agents. ... Agent Wallets, Agent Marketplace, Nanopayments",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [
+    "curl circle.com/agent-stack (200)",
+    "curl arc.network -> arc.io (200)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Both serve content",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.circle.com/agent-stack",
+   "quote": "Sub-cent, gas-free USDC payments built for the high-frequency, machine-speed transactions agents need",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Agent Marketplace directory paid in USDC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.circle.com/agent-stack",
+   "quote": "Agent Marketplace A directory where agents discover, evaluate, and pay for services in USDC.",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Arc blog: 'Arc Mainnet Goes Live on September 16, 2026'",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.arc.io/blog",
+   "quote": "Arc Mainnet Goes Live on September 16, 2026",
+   "observed_at": "2026-10-15T18:15:00Z",
+   "methods": [],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "ChainWard decode lists ACP v2 on Arc (Circle): live since 2026-09-21, 143 jobs, $0.02 stablecoin (aggregator display, decode filed 2026-09-30)",
+   "value": "$0.02",
+   "unit": "stablecoin (ACP v2 on Arc)",
+   "window": "2026-09-21 to decode date 2026-09-30",
+   "basis": "independent_source",
+   "source_url": "https://chainward.ai/decodes/virtuals-top-dog",
+   "quote": "Arc (Circle) Sep 21, 2026 143 $0.02",
+   "observed_at": "2026-10-15T21:40Z",
+   "methods": [
+    "curl -sL https://chainward.ai/decodes/virtuals-top-dog"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Legacy ChainWard 'ACP v2 on Arc $0.02' not re-observed",
+     "quote": null,
+     "source_url": "https://chainward.ai/decodes/virtuals-top-dog",
+     "observed_at": "2026-10-15T18:15:00Z",
+     "basis": "independent_source",
+     "outcome": "unchecked",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "corrected after Codex comparison"
+    }
+   ],
+   "recheck": {
+    "basis": "coordinator_re_read",
+    "by": "Hark coordinator",
+    "at": "2026-10-15T21:40Z",
+    "note": "Fix from the Codex comparison, re-checked by us."
+   }
+  }
+ ],
+ "qa_status": "not_sampled"
+}

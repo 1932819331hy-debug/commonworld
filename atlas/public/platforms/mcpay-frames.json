@@ -1,0 +1,75 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "mcpay-frames",
+ "name": "MCPay",
+ "url": "https://commonworld.one/atlas/platforms/mcpay-frames/",
+ "json_url": "https://commonworld.one/atlas/platforms/mcpay-frames.json",
+ "website": "https://frames.ag/",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "MCPay's domain now redirects to Frames, a credit-based router to premium data sources for AI over MCP or API.",
+ "tags": [
+  "x402",
+  "mcp"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:24:00Z",
+ "last_checked": "2026-10-15T18:24:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "mcpay.tech 301 -> frames.ag (200).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://frames.ag/",
+   "quote": "Frames is a router for premium AI data. Ask anything, and get routed to the correct endpoint.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L https://mcpay.tech"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Original repo microchipgnu/MCPay last push 2026-01-21 (90 stars).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/microchipgnu/MCPay",
+   "quote": "pushed_at 2026-01-21T20:59Z, stargazers 90",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "GitHub API"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "MCPay brand discontinued via rebrand/redirect; no official shutdown statement found. Treated as rebrand, not closure.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://frames.ag/",
+   "quote": null,
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl redirect",
+    "GitHub API"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "checked"
+}

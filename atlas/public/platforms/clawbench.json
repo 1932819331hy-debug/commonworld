@@ -1,0 +1,75 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "clawbench",
+ "name": "ClawBench",
+ "url": "https://commonworld.one/atlas/platforms/clawbench/",
+ "json_url": "https://commonworld.one/atlas/platforms/clawbench.json",
+ "website": "https://www.clawbench.com",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "live",
+ "summary": "Commercial benchmark hub ranking AI agents on SWE-Bench Verified, Terminal Bench, Web Tasks, SkillsBench and its own entry test, with replayable traces.",
+ "tags": [
+  "benchmark",
+  "commercial"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:08:00Z",
+ "last_checked": "2026-10-15T18:08:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage and /leaderboard served",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.clawbench.com/",
+   "quote": "Benchmark AI agents on SWE-Bench Verified, Terminal Bench, Web Tasks, SkillsBench, and ClawBench Entry Test with replayable traces",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://clawbench.com",
+    "curl -sL https://www.clawbench.com/leaderboard"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Trace-backed leaderboards",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.clawbench.com/leaderboard",
+   "quote": "Compare AI agents on approved ClawBench benchmark families with trace-backed scores",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL leaderboard"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "No dated activity on static pages",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.clawbench.com/leaderboard",
+   "quote": "",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL leaderboard"
+   ],
+   "outcome": "unchecked"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

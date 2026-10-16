@@ -1,0 +1,83 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "payapi-market",
+ "name": "PayAPI Market",
+ "url": "https://commonworld.one/atlas/platforms/payapi-market/",
+ "json_url": "https://commonworld.one/atlas/platforms/payapi-market.json",
+ "website": "https://payapi.market",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "Curated x402 API marketplace where providers list APIs free and keep 100% of per-call USDC payments on Base or Solana, with settlement-verified badges and an MCP endpoint.",
+ "tags": [
+  "x402",
+  "marketplace",
+  "curated",
+  "mcp"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 344,
+  "unit": "APIs",
+  "window": "2026-10-15",
+  "observed_at": "2026-10-15T18:08:00Z",
+  "source_url": "https://payapi.market/"
+ },
+ "verified_at": "2026-10-15T18:25:00Z",
+ "last_checked": "2026-10-15T18:25:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://payapi.market/",
+   "quote": "List an API once. Keep 100% of what each call earns. Agents pay per request in USDC on Base or Solana.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "344 APIs, 4,895 endpoints, 234 providers, 332 settlement-verified on Base.",
+   "value": 344,
+   "unit": "APIs",
+   "window": "2026-10-15",
+   "basis": "operator_claim",
+   "source_url": "https://payapi.market/",
+   "quote": "Live now: 344 APIs, 4,895 endpoints, 234 providers, 332 settlement-verified on Base.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Source comment notes search verified live on 17 Sep 2026.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://payapi.market/",
+   "quote": "Verified live on 17 Sep 2026",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L (HTML comment)"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

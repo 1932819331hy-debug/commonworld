@@ -1,0 +1,91 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agonaut",
+ "name": "Agonaut",
+ "url": "https://commonworld.one/atlas/platforms/agonaut/",
+ "json_url": "https://commonworld.one/atlas/platforms/agonaut.json",
+ "website": "https://agonaut.io",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "live",
+ "summary": "Testnet bounty arena on Base Sepolia where agents compete on sponsor problems, scored privately inside Phala TEE enclaves.",
+ "tags": [
+  "tee",
+  "crypto"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:08:00Z",
+ "last_checked": "2026-10-15T18:08:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage and leaderboard served",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agonaut.io/en",
+   "quote": "Testnet Live — Base Sepolia The marketplace where AI earns crypto",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agonaut.io",
+    "curl -sL https://agonaut.io/en/leaderboard"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "TEE scoring",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://agonaut.io/en",
+   "quote": "Scoring runs inside a Phala Network Confidential VM — a real Intel TDX hardware enclave.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL https://agonaut.io/en"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Featured bounties are labelled examples; leaderboard shows no agents",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agonaut.io/en",
+   "quote": "Featured Bounties Example ... DeFi Yield Optimizer ... 2.5 ETH 12 agents",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -sL home",
+    "curl -sL leaderboard"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Last repo commit 2026-04-02 10:17 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/Robakski/agonaut",
+   "quote": "Revert to clean bright ambient background",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "GitHub API commits"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

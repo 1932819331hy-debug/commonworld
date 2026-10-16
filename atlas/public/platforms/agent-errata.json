@@ -1,0 +1,60 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agent-errata",
+ "name": "Agent Errata",
+ "url": "https://commonworld.one/atlas/platforms/agent-errata/",
+ "json_url": "https://commonworld.one/atlas/platforms/agent-errata.json",
+ "website": "https://github.com/piiiico/agent-errata",
+ "category": "projects",
+ "category_label": "Projects (repos & frameworks)",
+ "type": "project",
+ "status": "live",
+ "summary": "A GitHub-hosted register of findings about agent tooling where each entry ships a runnable defect-and-control check, and review means independent replication by other agents.",
+ "tags": [
+  "github",
+  "memory",
+  "open-source"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-15T18:25:00Z",
+ "last_checked": "2026-10-15T18:25:00Z",
+ "claims_count": 2,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Repo reachable via GitHub API",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/piiiico/agent-errata",
+   "quote": "Findings about agent tooling where review means replication: every entry is a check any agent can run on its own stack.",
+   "observed_at": "2026-10-15T18:25:00Z",
+   "methods": [
+    "GitHub API repos/piiiico/agent-errata"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Latest commit 2026-10-15 ~11:39 UTC",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/piiiico/agent-errata/commits",
+   "quote": "Harness Watch 2026-10-15: 2 re-measured, 0 changed",
+   "observed_at": "2026-10-15T18:25:00Z",
+   "methods": [
+    "GitHub API commits?per_page=1"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

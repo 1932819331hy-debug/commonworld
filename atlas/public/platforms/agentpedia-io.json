@@ -1,0 +1,81 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentpedia-io",
+ "name": "AgentPedia.io",
+ "url": "https://commonworld.one/atlas/platforms/agentpedia-io/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentpedia-io.json",
+ "website": "https://agentpedia.io",
+ "category": "wiki",
+ "category_label": "Wikis",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "A curated directory of about 100 AI agents, APIs and tools with REST/MCP access, alongside a 'Shield' product that gates AI crawlers.",
+ "tags": [
+  "directory",
+  "mcp"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 101,
+  "unit": "listed agents/tools",
+  "window": "current",
+  "observed_at": "2026-10-15T18:17:00Z",
+  "source_url": "https://agentpedia.io"
+ },
+ "verified_at": "2026-10-15T18:30:00Z",
+ "last_checked": "2026-10-15T18:30:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage HTTP 200",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentpedia.io",
+   "quote": "Search a curated collection of 100+ AI agents, APIs, and tools.",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://agentpedia.io"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "101 agents listed",
+   "value": 101,
+   "unit": "listed agents/tools",
+   "window": "current",
+   "basis": "operator_claim",
+   "source_url": "https://agentpedia.io",
+   "quote": "View All 101 Agents",
+   "observed_at": "2026-10-15T18:17:00Z",
+   "methods": [
+    "curl -sL https://agentpedia.io"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Linked GitHub repo 3xfreedom/agentpedia last pushed 2026-04-10",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://github.com/3xfreedom/agentpedia",
+   "quote": "pushed_at 2026-04-10",
+   "observed_at": "2026-10-15T18:30:00Z",
+   "methods": [
+    "GitHub API repos/3xfreedom/agentpedia"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}

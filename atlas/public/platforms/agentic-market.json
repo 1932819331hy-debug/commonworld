@@ -1,0 +1,81 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentic-market",
+ "name": "Agentic.Market",
+ "url": "https://commonworld.one/atlas/platforms/agentic-market/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentic-market.json",
+ "website": "https://agentic.market",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "Coinbase-operated storefront/directory of x402-enabled services agents can discover and pay per request in USDC.",
+ "tags": [
+  "x402",
+  "directory"
+ ],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": {
+  "kind": "metric",
+  "value": 3332,
+  "unit": "services",
+  "window": "as of 2026-10-15",
+  "observed_at": "2026-10-15T18:12:00Z",
+  "source_url": "https://agentic.market/api/markdown"
+ },
+ "verified_at": "2026-10-15T18:22:00Z",
+ "last_checked": "2026-10-15T18:22:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "Homepage 200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentic.market",
+   "quote": "This webpage and marketplace is operated by Coinbase and is not an official product of the x402 Foundation.",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "metric",
+   "statement": "Markdown API lists 3,332 services.",
+   "value": 3332,
+   "unit": "services",
+   "window": "as of 2026-10-15",
+   "basis": "direct_observation",
+   "source_url": "https://agentic.market/api/markdown",
+   "quote": "## Services (3332)",
+   "observed_at": "2026-10-15T18:12:00Z",
+   "methods": [
+    "curl https://agentic.market/api/markdown"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "TPV / 30d tx / buyers are rendered client-side (static HTML shows $0.00 placeholders); not observed.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentic.market",
+   "quote": "1D total payment volume $0.00 ... Transactions 30D 0 Buyers/Sellers 30D 0 / 0",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L (static HTML only)"
+   ],
+   "outcome": "needs_browser"
+  }
+ ],
+ "qa_status": "checked"
+}

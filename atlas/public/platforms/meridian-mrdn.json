@@ -1,0 +1,135 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "meridian-mrdn",
+ "name": "Meridian (mrdn)",
+ "url": "https://commonworld.one/atlas/platforms/meridian-mrdn/",
+ "json_url": "https://commonworld.one/atlas/platforms/meridian-mrdn.json",
+ "website": "https://mrdn.finance",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Meridian is an x402-paid inference router exposing 400+ models from several providers through one API, settling on 19 chains, partly via prepaid top-ups.",
+ "tags": [
+  "x402",
+  "facilitator",
+  "inference-router",
+  "throughput",
+  "prepaid"
+ ],
+ "has_money_flow": true,
+ "money_flow": [
+  {
+   "statement": "x402-list on-chain measurement: Meridian facilitator settled $127.0k over 30 d ($20.5k over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-15.",
+   "value": "$127.0k",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "observed_at": "2026-10-15T20:38:00Z",
+   "source_url": "https://x402-list.com/facilitators"
+  },
+  {
+   "statement": "x402stats: mrdn attributed seller volume $128,789 over 30 d, 14 sellers of which 7 pass the organic filter (>=$100, >=3 buyers).",
+   "value": "$128,789",
+   "unit": "USD (seller volume, unfiltered)",
+   "window": "30d to 2026-10-15",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "source_url": "https://x402stats.io/llms-full.txt"
+  }
+ ],
+ "key_number": null,
+ "verified_at": "2026-10-15T20:38:00Z",
+ "last_checked": "2026-10-15T20:38:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "claims": [
+  {
+   "kind": "site_reachable",
+   "statement": "200.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://mrdn.finance/",
+   "quote": "Decentralized Inference Router Powered by x402 ... 400+ models 3 providers 19 settlement chains",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Some vendors are prepaid top-ups.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://mrdn.finance/",
+   "quote": "Venice topup balance payment: prepaid Surplus topup balance payment: x402",
+   "observed_at": "2026-10-15T18:08:00Z",
+   "methods": [
+    "curl -L"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402-list on-chain measurement: Meridian facilitator settled $127.0k over 30 d ($20.5k over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-15.",
+   "value": "$127.0k",
+   "unit": "USDC (gross settlement)",
+   "window": "30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "Meridian ... $20.5k $127.0k",
+   "observed_at": "2026-10-15T20:38:24Z",
+   "methods": [
+    "curl https://x402-list.com/facilitators"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": "$126.7k",
+     "unit": "USDC (gross settlement)",
+     "window": "30d to 2026-10-15",
+     "statement": "x402-list on-chain measurement: Meridian facilitator settled $126.7k over 30 d ($20.2k over 7 d), settlement to anyone (gross, not seller revenue); last settlement day 2026-10-15.",
+     "quote": "Meridian ... $20.2k $126.7k 2026-10-15",
+     "source_url": "https://x402-list.com/facilitators",
+     "observed_at": "2026-10-15T18:10:00Z",
+     "basis": "independent_source",
+     "outcome": "supported",
+     "superseded_at": "2026-10-15T21:45Z",
+     "reason": "newer value re-observed independently (Codex QA)"
+    }
+   ],
+   "recheck": {
+    "basis": "independent_re_observation",
+    "by": "Codex QA (qa-agent-c)",
+    "run": "atlas-verified-2026-10-15T1840Z-qa",
+    "ref": "origin/research/atlas-catalog-seed-2026-10-15@ef1f6cf",
+    "claim_id": "legacy-html:meridian-mrdn:economic_flow:1",
+    "evidence_attempt_ids": [
+     "qa-agent-c-0145"
+    ],
+    "finding": "At 2026-10-15T20:38:24Z the x402-list facilitator table showed Meridian $20.5k (7d) and $127.0k (30d), versus the pinned $20.2k/$126.7k."
+   }
+  },
+  {
+   "kind": "economic_flow",
+   "statement": "x402stats: mrdn attributed seller volume $128,789 over 30 d, 14 sellers of which 7 pass the organic filter (>=$100, >=3 buyers).",
+   "value": "$128,789",
+   "unit": "USD (seller volume, unfiltered)",
+   "window": "30d to 2026-10-15",
+   "basis": "independent_source",
+   "source_url": "https://x402stats.io/llms-full.txt",
+   "quote": "mrdn: ... ($128,789), 14 sellers (7 organic)",
+   "observed_at": "2026-10-15T18:10:00Z",
+   "methods": [
+    "curl https://x402stats.io/llms-full.txt"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "checked"
+}
