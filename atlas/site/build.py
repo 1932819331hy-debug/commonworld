@@ -1834,6 +1834,9 @@ def main():
     write('/sitemap.xml', sitemap(site_level))  # Commonworld-wide pages (privacy, terms); the main site may take this file over
     if site.cfg.get('indexnow_key'):  # public IndexNow key file (Bing/Yandex/etc. verify ownership with it)
         write('/' + site.cfg['indexnow_key'] + '.txt', site.cfg['indexnow_key'])
+    # RFC 9116 security contact (Cloudflare Security Insights flagged it missing). Expires must stay in the future: refreshed on every build.
+    _exp = (datetime.now(timezone.utc) + timedelta(days=365)).strftime('%Y-%m-%dT00:00:00Z')
+    write('/.well-known/security.txt', f"Contact: mailto:{site.cfg['contact']['general']}\nExpires: {_exp}\nPreferred-Languages: en\nCanonical: {site.abs('/.well-known/security.txt')}\n")
     write('/robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {site.abs("/sitemap.xml")}\nSitemap: {site.abs(b + "/sitemap.xml")}\n')
     # Cloudflare Pages redirects: old Atlas-only legal URLs -> site-wide ones
     red_path = os.path.join(HERE, '..', 'data', 'redirects.json')  # moved pages: old path -> new path (check.py growth guard)
@@ -1871,6 +1874,7 @@ def main():
   Access-Control-Allow-Origin: *
   Content-Type: text/plain; charset=utf-8
 /*
+  Strict-Transport-Security: max-age=15552000
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
