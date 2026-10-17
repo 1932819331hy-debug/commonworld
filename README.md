@@ -26,7 +26,7 @@ Every change to the site passes the same public bar before it ships, and anyone 
 - **Links.** [lychee](https://github.com/lycheeverse/lychee) checks every link of the built site ([`lychee.toml`](lychee.toml)). Links between our own pages must all resolve; outbound links are retried and cached, and the weekly sweep keeps one "Outbound link report" issue up to date.
 - **Lighthouse.** Five representative pages (`/`, `/atlas/`, `/atlas/about/`, `/atlas/decisions/`, a platform page), mobile and desktop, median of 3 runs: performance, accessibility, best practices and SEO each **95 or higher** ([`atlas/site/tools/lighthouse/`](atlas/site/tools/lighthouse/)).
 
-Workflows: `CI` (build, data mirror, `check.py`, browser smoke test) and `Quality (links + Lighthouse)`.
+Workflows: `CI` (build, data mirror, `check.py`, browser smoke test), `Quality (links + Lighthouse)` and `Live CSP check` (daily and on demand: production pages in headless Chromium, including the scripts Cloudflare adds at the edge, with zero CSP reports).
 
 ## Badges
 
