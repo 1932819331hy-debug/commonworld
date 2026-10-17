@@ -120,8 +120,8 @@ button.cw-stat:hover { background:var(--soft); }
 /* ---------- category bar + legend ---------- */
 .cw-catbar { display:flex; height:8px; border-radius:999px; overflow:hidden; margin:10px 0 0; background:var(--line); gap:1px; }
 .cw-catbar i { display:block; height:100%; }
-.cw-legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:8px; font-size:10px; color:var(--muted); }
-.cw-legend > * { border:0; background:transparent; padding:0; color:inherit; font-size:inherit; text-align:left; text-decoration:none; line-height:1.5; }
+.cw-legend { display:flex; flex-wrap:wrap; gap:0 14px; margin-top:3px; font-size:10px; color:var(--muted); }
+.cw-legend > * { display:inline-block; border:0; background:transparent; padding:5px 0; /* 24px hit area on every screen (WCAG 2.5.8, Lighthouse target-size) */ color:inherit; font-size:inherit; text-align:left; text-decoration:none; line-height:1.5; }
 .cw-legend button:hover, .cw-legend a:hover { color:var(--ink); }
 .cw-legend [aria-pressed="true"] { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
 .cw-legend i { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:5px; vertical-align:0; }
