@@ -11,6 +11,7 @@ entry in the JSON exports carries `link_safety` {status, checked_at} for its own
 
 Statuses: clean (Safe Browsing found no unsafe content), flagged (any unsafe-content flag), no_data (Safe Browsing has
 no data for the host, or the query failed after retries and there was no earlier result to keep).
+Superseded for the daily run by atlas/tools/link_safety.py (trust engine, all sources); kept for its helpers and as a single-source fallback.
 Hosts of entries removed by the link-safety rule (atlas/data/removed.json) are re-checked too and reported under
 `removed_hosts`, so the curator can see when a flag has cleared; they are never published on the site.
 

@@ -2,6 +2,14 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-17 — Trust engine: four sources, any single flag removes
+
+- Link safety now runs on the **Commonworld trust engine** ([`../trust/`](../trust/), standard [`../TRUST.md`](../TRUST.md)): Google Safe Browsing, MetaMask eth-phishing-detect (exact blacklist), ScamSniffer scam-database and the CERT Polska Warning List. All free, no keys; OpenPhish is built in but off (its terms do not allow automated checks).
+- Rule: if **any one source** flags a domain, the daily workflow removes every entry that links to it at once, records the decision (actor `hark`, source and what it said, evidence link), rebuilds, runs the full check and commits; the issue "Link safety: flagged domains" says what was done. New [`tools/link_safety.py`](tools/link_safety.py); [`data/trust-hold.json`](data/trust-hold.json) lists domains a curator is looking at (reported, not removed; empty).
+- [`/atlas/safety.json`](https://commonworld.one/atlas/safety.json) shows each source's answer per domain (verdict, checked_at, evidence link), the sources, the rule and the appeal path. First run: none of the 385 linked domains is flagged by any source; the domain of the one removed entry is still flagged by Google Safe Browsing.
+- Appeals: an issue titled "Appeal: <domain>" or the contact address; we reply within 7 days ([About](https://commonworld.one/atlas/about/#link-safety), [`CURATION.md`](CURATION.md#link-safety)).
+- `check.py`: safety.json must come from the trust engine with Google Safe Browsing among its sources, every domain must carry an answer from every source with an https evidence link, and its status must equal the combined answers. Unit tests: `tests/test_link_safety_engine.py`; engine tests in `trust/test/`.
+
 ## 2026-10-17 — Link safety decision log
 
 - New page [`/atlas/decisions/`](https://commonworld.one/atlas/decisions/): every removal and return in the Atlas as a public, dated decision, newest first, with the entry ID, the domain as plain text (written with `[.]`), who acted (actor ID from [`data/trust-roles.json`](data/trust-roles.json)), the reason and the evidence link. Generated from `data/removed.json` at build time.

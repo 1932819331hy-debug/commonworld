@@ -42,7 +42,7 @@ height, lazy, dated caption; closed = "Last captured"; placeholder without an im
 (alt="", 600x250, lazy, own slug) or the placeholder; _headers caches /atlas/screens/*. CW_SCREENS_REQUIRED=1 (CI) fails a build without previews.
 Link safety: every slug in atlas/data/removed.json has a noindex stub page ("This entry was removed from the Atlas after a safety check.",
 no outbound link, not in the sitemap; the growth guard accepts it in place of the old page), is absent from snapshot/platforms/earn/search
-index, has no per-entry JSON, badge or screenshot, and no built file names its host. /atlas/safety.json (daily Google Safe Browsing
+index, has no per-entry JSON, badge or screenshot, and no built file names its host. /atlas/safety.json (daily trust engine
 report) is valid, in the Dataset distribution and /atlas/llms.txt; every exported record carries link_safety {status, checked_at}.
 Decision log: /atlas/decisions/ (+ index.md twin, /atlas/decisions.json) lists every decision of removed.json, newest first,
 hosts as defanged plain text, evidence links rel nofollow noopener. Markdown twins: every index.md is linked from its HTML page.
@@ -214,7 +214,8 @@ def removed_checks(parsed, pages):
 
 
 def safety_report_checks(parsed):
-    """/atlas/safety.json exists (source Google Safe Browsing, run_at, summary counts that match its hosts, ISO UTC checked_at), is in the
+    """/atlas/safety.json exists (source = the trust engine with Google Safe Browsing among its sources, every host with a per-source
+    answer {name, verdict, checked_at, evidence_url} that agrees with its status (any flag = flagged), an appeal line, run_at, summary counts that match its hosts, ISO UTC checked_at), is in the
     /atlas/ Dataset distribution and /atlas/llms.txt, and every record of platforms.json / snapshot.json carries link_safety {status, checked_at}."""
     fails = []
     fp = os.path.join(DIST, 'atlas', 'safety.json')
@@ -223,12 +224,21 @@ def safety_report_checks(parsed):
     d = json.load(open(fp, encoding='utf-8'))
     st = {'clean', 'flagged', 'no_data'}
     utc = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
-    if d.get('source') != 'Google Safe Browsing': fails.append('safety.json: source is not Google Safe Browsing')
+    if d.get('source') != 'Commonworld trust engine': fails.append('safety.json: source is not the Commonworld trust engine')
+    src_ids = [x.get('id') for x in d.get('sources') or []]
+    if 'google_safe_browsing' not in src_ids: fails.append(f'safety.json: sources {src_ids} lack google_safe_browsing')
+    if '7 days' not in str(d.get('appeal') or ''): fails.append('safety.json: appeal line (reply within 7 days) missing')
     if not utc.match(str(d.get('run_at') or '')): fails.append(f"safety.json: run_at {d.get('run_at')!r} is not ISO 8601 UTC")
     hosts, sm = d.get('hosts') or {}, d.get('summary') or {}
     for h, r in hosts.items():
         if r.get('status') not in st: fails.append(f'safety.json: {h} status {r.get("status")!r}')
         if r.get('checked_at') is not None and not utc.match(str(r['checked_at'])): fails.append(f'safety.json: {h} checked_at not ISO 8601 UTC')
+        ss = r.get('sources') or []
+        if src_ids and sorted(x.get('name') for x in ss) != sorted(src_ids): fails.append(f'safety.json: {h} lacks an answer from every source'); continue
+        if any(x.get('verdict') not in st or not str(x.get('evidence_url') or '').startswith('https://') for x in ss):
+            fails.append(f'safety.json: {h} has a source answer without verdict or https evidence_url')
+        comb = 'flagged' if any(x.get('verdict') == 'flagged' for x in ss) else 'clean' if any(x.get('verdict') == 'clean' for x in ss) else 'no_data'
+        if ss and comb != r.get('status'): fails.append(f"safety.json: {h} status {r.get('status')} != combined source answers {comb}")
     want = {'hosts': len(hosts)} | {k: sum(1 for r in hosts.values() if r.get('status') == k) for k in st}
     if any(sm.get(k) != v for k, v in want.items()): fails.append(f'safety.json: summary {sm} != {want}')
     for fn in ('atlas/platforms.json', 'atlas/data/snapshot.json'):

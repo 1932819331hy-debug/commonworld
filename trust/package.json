@@ -1,0 +1,20 @@
+{
+  "name": "@commonworld/trust",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Commonworld trust engine: checks domains against free, key-free safety sources (plugins) and combines the answers. Runs from GitHub Actions (CLI) and inside a Cloudflare Worker (vendored).",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22.6" },
+  "exports": "./src/index.ts",
+  "bin": { "cw-trust": "./src/cli.ts" },
+  "scripts": {
+    "test": "node --experimental-strip-types --no-warnings --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "node --experimental-strip-types --no-warnings src/cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,14 +1,17 @@
 name: Atlas link safety
-# Daily Google Safe Browsing check of every domain linked from the Atlas (atlas/tools/safebrowsing_check.py, policy: atlas/CURATION.md#link-safety).
-# Commits ONLY the report file atlas/data/link-safety.json (the push triggers the normal Cloudflare Pages build, which publishes
-# /atlas/safety.json and the link_safety field of every entry). Never edits other Atlas data: removing a flagged entry is a curator step.
-# Flagged domains open or update the issue "Link safety: flagged domains"; the issue is closed when a later run is clear.
+# Daily check of every domain linked from the Atlas by the Commonworld trust engine (trust/, standard: TRUST.md):
+# Google Safe Browsing, MetaMask eth-phishing-detect, ScamSniffer, CERT Polska. atlas/tools/link_safety.py --apply.
+# Rule: ANY single source flag -> every entry linking to that domain is removed at once, with a decision in
+# atlas/data/removed.json (actor hark, reason, evidence link). The workflow then rebuilds and runs the full build check;
+# only when it passes does it commit the data, the GitHub mirror (atlas/public) and the report. If the check fails, it
+# commits only the report and the issue says a curator step is needed. Hosts in atlas/data/trust-hold.json are reported, not removed.
+# Any flag opens or updates the issue "Link safety: flagged domains"; it is closed when a later run is clear.
 on:
   schedule:
     - cron: '17 4 * * *'   # daily 04:17 UTC
   workflow_dispatch:
 permissions:
-  contents: write          # commit the report file
+  contents: write          # commit the report (and removals)
   issues: write            # open/update the flagged-domains issue
 concurrency:
   group: atlas-link-safety
@@ -16,7 +19,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ISSUE_TITLE: 'Link safety: flagged domains'
@@ -25,55 +28,90 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - name: Check every linked domain (Google Safe Browsing)
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: Check every linked domain (trust engine) and apply the rule
         id: check
         run: |
           set +e
-          python atlas/tools/safebrowsing_check.py | tee "$RUNNER_TEMP/out.txt"
+          python atlas/tools/link_safety.py --apply --actions-out "$RUNNER_TEMP/actions.json" | tee "$RUNNER_TEMP/out.txt"
           code=${PIPESTATUS[0]}
           set -e
           if [ "$code" -gt 1 ]; then echo "::error::check crashed (exit $code)"; exit "$code"; fi
           echo "flagged=$([ "$code" -eq 1 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "removed=$(python -c "import json;print(len(json.load(open('$RUNNER_TEMP/actions.json'))['removed']))")" >> "$GITHUB_OUTPUT"
           { echo '## Link safety'; echo; echo '```'; cat "$RUNNER_TEMP/out.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-      - name: Commit the report (only atlas/data/link-safety.json)
+      - name: Rebuild and check after a removal
+        id: rebuild
+        if: steps.check.outputs.removed != '0'
+        env:
+          CW_PRIVATE_TERMS: ${{ secrets.CW_PRIVATE_TERMS }}
+        run: |
+          set +e
+          python -m pip install -r requirements.txt && \
+          git fetch --depth=1 --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens && \
+          python atlas/site/build.py && python atlas/site/check.py | tee "$RUNNER_TEMP/check.txt"
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "ok=$([ "$code" -eq 0 ] && grep -q 'ALL CHECKS PASSED' "$RUNNER_TEMP/check.txt" && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - name: Commit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add atlas/data/link-safety.json
-          if git diff --cached --quiet; then echo "report unchanged"; exit 0; fi
-          git commit -m "atlas: daily link safety report $(date -u +%F)" -- atlas/data/link-safety.json
+          if [ "${{ steps.check.outputs.removed }}" != "0" ] && [ "${{ steps.rebuild.outputs.ok }}" = "true" ]; then
+            git add atlas/data atlas/public
+            msg="atlas: link safety — remove flagged entries $(python -c "import json;print(', '.join(a['slug'] for a in json.load(open('$RUNNER_TEMP/actions.json'))['removed']))") ($(date -u +%F))"
+            body="Rule: any single trust source flag removes the entry (TRUST.md). Decisions in atlas/data/removed.json (by hark)."
+          else
+            if [ "${{ steps.check.outputs.removed }}" != "0" ]; then
+              echo "::error::build check failed after the removal; committing only the report, a curator step is needed"
+              git checkout -- atlas/data/removed.json atlas/data/snapshot-verified-*.json atlas/data/census-tags-*.json atlas/public 2>/dev/null || true
+            fi
+            git add atlas/data/link-safety.json
+            msg="atlas: daily link safety report $(date -u +%F)"
+            body=""
+          fi
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "$msg" -m "$body" -m "Contributed-by: hark"
           for i in 1 2 3; do
             if git pull --rebase origin main && git push origin HEAD:main; then exit 0; fi
             sleep $((i * 10))
           done
-          echo "::error::could not push the report"; exit 1
-      - name: Open or update the issue
+          echo "::error::could not push"; exit 1
+      - name: Open, update or close the issue
         run: |
           num=$(gh issue list --state open --search "\"$ISSUE_TITLE\" in:title" --json number,title \
                 --jq "[.[] | select(.title == env.ISSUE_TITLE)][0].number // empty")
           if [ "${{ steps.check.outputs.flagged }}" = "true" ]; then
-            python - > "$RUNNER_TEMP/body.md" <<'PY'
-          import json
-          r = json.load(open('atlas/data/link-safety.json'))
-          print(f"Google Safe Browsing flags {len(r['flagged'])} domain(s) linked from the Atlas (run {r['run_at']}).\n")
-          print('| domain | flags | linked from |\n|---|---|---|')
-          for h in r['flagged']:
-              x = r['hosts'][h]
-              print(f"| `{h}` | {', '.join(x['threats']) or 'code ' + str(x['code'])} | {', '.join(x['entries'])} |")
-          print('\nPer [CURATION.md](https://github.com/commonworld-one/commonworld/blob/main/atlas/CURATION.md#link-safety): remove the entry (add it to `atlas/data/removed.json`, '
-                'drop it from the snapshot), rebuild and check. This workflow never edits Atlas data itself.\n')
-          print(f"Status lookup: {r['source_url']}")
+            REBUILD_OK="${{ steps.rebuild.outputs.ok }}" python - > "$RUNNER_TEMP/body.md" <<'PY'
+          import json, os
+          a = json.load(open(os.path.join(os.environ['RUNNER_TEMP'], 'actions.json')))
+          print(f"The trust engine flagged {len(a['flagged'])} domain(s) linked from the Atlas (run {a['run_at']}). "
+                "Rule: any single source flag removes the entry ([TRUST.md](https://github.com/commonworld-one/commonworld/blob/main/TRUST.md)).\n")
+          print('| domain | what the sources said | entries | action |\n|---|---|---|---|')
+          removed = {}
+          for x in a['removed']: removed.setdefault(x['host'], []).append(x['slug'])
+          ok = os.environ.get('REBUILD_OK') == 'true'
+          for h, f in a['flagged'].items():
+              if h in a['held']: act = 'held for curator review (atlas/data/trust-hold.json)'
+              elif h in removed: act = ('removed: ' if ok else 'removal NOT committed (build check failed), curator step needed: ') + ', '.join(removed[h])
+              else: act = 'already removed'
+              ev = ' '.join(f'<{u}>' for u in f['evidence'])
+              print(f"| `{h.replace('.', '[.]')}` | {f['reason']} {ev} | {', '.join(f['entries']) or '-'} | {act} |")
+          print('\nDecisions: atlas/data/removed.json and https://commonworld.one/atlas/decisions/. '
+                'To return an entry: a restore decision with a clean re-check (atlas/CURATION.md#link-safety).')
           PY
             if [ -n "$num" ]; then
               gh issue edit "$num" --body-file "$RUNNER_TEMP/body.md"
-              gh issue comment "$num" --body "Still flagged in the run of $(date -u +%F): $(python -c "import json;print(', '.join(json.load(open('atlas/data/link-safety.json'))['flagged']))")"
+              gh issue comment "$num" --body "Flagged again in the run of $(date -u +%F); see the issue text for the current state."
             else
               gh issue create --title "$ISSUE_TITLE" --body-file "$RUNNER_TEMP/body.md"
             fi
           elif [ -n "$num" ]; then
             gh issue close "$num" --comment "No flagged domains in the run of $(date -u +%F). Closing."
           fi
-      - name: Fail when a domain is flagged
+      - name: Fail when a domain was flagged (GitHub sends the failure email)
         if: steps.check.outputs.flagged == 'true'
         run: |
           echo "::error::flagged domains linked from the Atlas; see the issue \"$ISSUE_TITLE\""

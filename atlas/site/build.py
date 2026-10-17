@@ -602,7 +602,7 @@ def build_index(site):
                                 (f'{b}/earn.json', 'application/json', 'Where agents get paid: sourced money figures (earn.json)'),
                                 (api_v1.API_BASE + '/atlas/platforms.json', 'application/json', 'API v1: all entries'),
                                 (f'{b}/llms.txt', 'text/plain', 'Atlas guide for AI agents (llms.txt)'),
-                                (SAFETY_PATH, 'application/json', 'Link safety report: Google Safe Browsing status of every linked domain (safety.json)'),
+                                (SAFETY_PATH, 'application/json', 'Link safety report: trust engine status of every linked domain, with each source\'s answer (safety.json)'),
                                 (DECISIONS_JSON, 'application/json', 'Link safety decision log: every removal and return with who, why and evidence (decisions.json)'),
                                 ('/llms-full.txt', 'text/plain', 'One line per entry (llms-full.txt)')])]
     return page(site, path=f'{b}/', title='Atlas of Agent Platforms: verified catalog | Commonworld',
@@ -1070,8 +1070,9 @@ def build_about(site):
 <li><b>Automated weekly check</b>: the site could not be reached in 2 consecutive weekly checks, each with several attempts plus alternate URLs (http/https, www). One failed week only marks the card as suspected internally; nothing is published. Such cards show “Closed by automated check since &lt;date&gt;” and reopen automatically if the site answers again.</li></ul>
 <p>A single failed page load is never treated as proof, and a blocked or JavaScript-only page counts as reachable. Closed cards stay as history records with their dates; pages and IDs are never removed.</p>
 <h2 id="link-safety">Link safety</h2>
-<p>Every domain the Atlas links to is checked daily against Google Safe Browsing. If a domain is flagged, its entry is removed from the Atlas, its links disappear from every page and data file, and its page becomes a short “entry removed” note, so the permanent ID keeps working. An entry can return once the flag clears and a fresh check passes.</p>
-<p>The latest result is published as <a href="{SAFETY_PATH}">safety.json</a> (status of every linked domain, check time, summary counts), and every entry in the JSON files carries a <code>link_safety</code> field with the status of its official URL and when it was checked.</p>
+<p>Every domain the Atlas links to is checked daily by the Commonworld trust engine against {TRUST_SOURCES_TEXT}. If any one of these sources flags a domain, its entry is removed from the Atlas at once, its links disappear from every page and data file, and its page becomes a short “entry removed” note, so the permanent ID keeps working. An entry can return once the flag clears and a fresh check passes.</p>
+<p>The latest result is published as <a href="{SAFETY_PATH}">safety.json</a> (status of every linked domain with the answer of each source, check time, evidence link, summary counts), and every entry in the JSON files carries a <code>link_safety</code> field with the status of its official URL and when it was checked.</p>
+<p>Think an entry was removed by mistake? Open an issue titled “Appeal: <i>domain</i>” in the <a href="{REPO_URL}/issues" rel="nofollow noopener">public repository</a> or write to <a href="mailto:{e(site.cfg['contact']['general'])}">{e(site.cfg['contact']['general'])}</a>. We reply within 7 days. The full standard (sources, schedule, roles, appeals) is in <a href="{TRUST_URL}" rel="nofollow noopener">TRUST.md</a>.</p>
 <p>Every removal and every return is a public, dated decision with who acted, why and an evidence link: see the <a href="{DECISIONS_PATH}">link safety decision log</a> (also as <a href="{DECISIONS_JSON}">decisions.json</a>).</p>
 <h2 id="badges">Badges for listed platforms</h2>
 <p>Every published card has a free status badge (<i>Verified</i>, <i>Listed</i> or <i>Closed</i>) that its platform can show on its own site or README. It is rebuilt with every weekly check. See <a href="{b}/badge/">Atlas badges</a>.</p>
@@ -1436,6 +1437,10 @@ def load_removed():
 
 LINK_SAFETY_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'link-safety.json'))  # written daily by atlas/tools/safebrowsing_check.py
 SAFETY_PATH = '/atlas/safety.json'
+TRUST_ENGINE = 'Commonworld trust engine'  # trust/ (TRUST.md): one engine, plugin sources, any single flag = flagged
+TRUST_URL = REPO_URL + '/blob/main/TRUST.md'
+TRUST_SOURCE_NAMES = ['Google Safe Browsing', 'MetaMask eth-phishing-detect', 'ScamSniffer scam-database', 'CERT Polska Warning List']
+TRUST_SOURCES_TEXT = 'Google Safe Browsing, MetaMask eth-phishing-detect, ScamSniffer and the CERT Polska Warning List'
 
 
 def _host(url):
@@ -1448,7 +1453,7 @@ def _host(url):
 
 
 def load_link_safety():
-    """atlas/data/link-safety.json (latest daily Google Safe Browsing report) -> dict, or {} before the first run."""
+    """atlas/data/link-safety.json (latest daily trust engine report, atlas/tools/link_safety.py) -> dict, or {} before the first run."""
     if not os.path.exists(LINK_SAFETY_FILE):
         return {}
     return json.load(open(LINK_SAFETY_FILE, encoding='utf-8'))
@@ -1473,13 +1478,19 @@ def safety_doc(site):
         ents = [x for x in r.get('entries') or [] if x in live]
         if h in gone or not ents:
             continue
-        hosts[h] = {'status': r.get('status') or 'no_data', 'checked_at': r.get('checked_at'), 'entries': ents}
+        srcs = [{k: x[k] for k in ('name', 'verdict', 'checked_at', 'evidence_url', 'detail', 'stale') if x.get(k) is not None}
+                for x in r.get('sources') or []]
+        hosts[h] = {'status': r.get('status') or 'no_data', 'checked_at': r.get('checked_at'), 'entries': ents, 'sources': srcs}
     cnt = Counter(r['status'] for r in hosts.values())
     return {'name': 'Commonworld Atlas link safety report', 'url': site.abs(SAFETY_PATH),
-            'source': rep_.get('source') or 'Google Safe Browsing', 'source_url': rep_.get('source_url') or 'https://transparencyreport.google.com/safe-browsing/search',
-            'method': 'Every domain linked from the published Atlas data is checked daily against Google Safe Browsing. clean = no unsafe content found; '
-                      'flagged = an unsafe-content flag; no_data = Safe Browsing has no data for the domain. A flagged domain is removed from the Atlas and '
+            'source': TRUST_ENGINE, 'standard': TRUST_URL,
+            'sources': [{k: x.get(k) for k in ('id', 'name', 'covers', 'url')} for x in rep_.get('sources') or []],
+            'rule': 'A domain is flagged when ANY one source flags it, and every Atlas entry that links to it is removed at once with a public decision. '
+                    'clean = at least one source answered and none flags it; no_data = no source could answer.',
+            'method': f'Every domain linked from the published Atlas data is checked daily by the {TRUST_ENGINE} against every source listed under sources; '
+                      'each domain carries the answer of each source (verdict, checked_at, evidence_url). A flagged domain is removed from the Atlas and '
                       'its entry page becomes a short removed-entry note. Each entry in the JSON exports carries link_safety {status, checked_at} for its official URL.',
+            'appeal': f'Open an issue titled "Appeal: <domain>" in {REPO_URL}/issues or email the contact address on /atlas/about/; we reply within 7 days.',
             'policy': site.abs(f'{site.base}/about/#link-safety'), 'decisions': site.abs(DECISIONS_JSON), 'licence': site.cfg.get('data_licence') or 'not yet specified',
             'run_at': rep_.get('run_at'),
             'summary': {'hosts': len(hosts), 'clean': cnt['clean'], 'flagged': cnt['flagged'], 'no_data': cnt['no_data'], 'removed_entries': len(site.removed)},
@@ -1556,7 +1567,7 @@ def build_decisions(site):
     body = f"""{crumbs}
 {cw.hero('About the Atlas', 'Link safety decision log', lead, small=True, kicker_href=f'{b}/about/')}
 <div class="prose">
-<p>The Atlas checks every linked domain daily against Google Safe Browsing (<a href="{b}/about/#link-safety">how link safety works</a>). When a domain is flagged, its entry is removed; when the flag clears and a fresh check comes back clean, the entry can return. Each of these steps is written down here, newest first.</p>
+<p>The Atlas checks every linked domain daily against {TRUST_SOURCES_TEXT} (<a href="{b}/about/#link-safety">how link safety works</a>). When any one source flags a domain, its entry is removed; when the flag clears and a fresh check comes back clean, the entry can return. Each of these steps is written down here, newest first.</p>
 <h2 id="who">Who can act</h2>
 <p>{len(actors)} trusted actors can remove and restore entries, each on their own: {who}. The list is published in <a href="{REPO_URL}/blob/main/atlas/data/trust-roles.json" rel="nofollow noopener">trust-roles.json</a>. A return needs a clean re-check.</p>
 <h2 id="log">Decisions</h2>
@@ -1585,7 +1596,7 @@ def decisions_ld(site, rows):
               'description': f"By {d.get('by')}: {d.get('reason')}"} for i, d in enumerate(rows)]
     ds = {'@type': 'Dataset', 'name': 'Commonworld Atlas link safety decision log', 'description': DECISIONS_LEAD,
           'url': site.abs(DECISIONS_PATH), 'sameAs': f'{REPO_URL}/blob/main/atlas/data/removed.json', 'creator': org, 'publisher': org,
-          'isAccessibleForFree': True, 'inLanguage': 'en', 'keywords': ['link safety', 'Google Safe Browsing', 'trust decisions', 'AI agents', 'open data'],
+          'isAccessibleForFree': True, 'inLanguage': 'en', 'keywords': ['link safety', 'Google Safe Browsing', 'phishing', 'crypto scams', 'trust decisions', 'AI agents', 'open data'],
           'dateModified': rows[0].get('on') if rows else None, 'size': f'{len(rows)} decision' + ('' if len(rows) == 1 else 's'),
           'variableMeasured': ['date', 'action (remove or restore)', 'entry ID', 'domain (defanged)', 'actor ID', 'reason', 'evidence link'],
           'distribution': [{'@type': 'DataDownload', 'name': 'Decision log with trust roles (decisions.json)', 'encodingFormat': 'application/json', 'contentUrl': site.abs(DECISIONS_JSON)},
@@ -1607,7 +1618,7 @@ def build_decisions_md(site):
     cell = lambda v: str(v or '').replace('|', '\\|').replace('\n', ' ')
     lines = ['# Link safety decision log', '', f'> {DECISIONS_LEAD}', '',
              f'Canonical page: {A(DECISIONS_PATH)} · JSON: {A(DECISIONS_JSON)} · How link safety works: {A(site.base + "/about/#link-safety")}', '',
-             'The Atlas checks every linked domain daily against Google Safe Browsing. A flagged domain\'s entry is removed; it can return once the flag clears and a fresh check comes back clean.', '',
+             f'The Atlas checks every linked domain daily against {TRUST_SOURCES_TEXT}. When any one source flags a domain, its entry is removed; it can return once the flag clears and a fresh check comes back clean. Appeals: open an issue titled "Appeal: domain" in {REPO_URL}/issues; we reply within 7 days.', '',
              '## Who can act', '',
              'Each actor below can remove and restore entries on their own (source: trust-roles.json). A return needs a clean re-check.', '']
     lines += [f"- `{a['id']}` ({a.get('kind') or 'actor'})" for a in roles.get('actors') or []]
@@ -1629,8 +1640,9 @@ def decisions_doc(site):
     gen = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
     return {'name': 'Commonworld Atlas link safety decision log', 'url': site.abs(DECISIONS_JSON), 'page': site.abs(DECISIONS_PATH),
             'generated_at': gen, 'licence': site.cfg.get('data_licence') or 'not yet specified',
-            'link_safety': {'policy': site.abs(f'{site.base}/about/#link-safety'), 'report': site.abs(SAFETY_PATH), 'source': 'Google Safe Browsing',
-                            'rule': 'Every linked domain is checked daily against Google Safe Browsing. A flagged domain\'s entry is removed from every listing '
+            'link_safety': {'policy': site.abs(f'{site.base}/about/#link-safety'), 'report': site.abs(SAFETY_PATH), 'source': TRUST_ENGINE, 'sources': TRUST_SOURCE_NAMES, 'standard': TRUST_URL,
+                            'appeal': f'Open an issue titled "Appeal: <domain>" in {REPO_URL}/issues or email the contact address; we reply within 7 days.',
+                            'rule': f'Every linked domain is checked daily against {TRUST_SOURCES_TEXT}. When any one source flags a domain, its entry is removed from every listing '
                                     'and data file and its ID shows a short removed-entry note. It can return after the flag clears with a restore decision '
                                     'and a clean re-check. Every removal and return is recorded here.',
                             'host_format': 'Domains are defanged ("." written as "[.]") so they are never turned into links.'},
@@ -1878,7 +1890,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [How the Atlas works]({A(f'{b}/about/')}): method, basis labels, QA re-checks, freshness, closures, corrections
 - [Atlas badges]({A(f'{b}/badge/')}): free status badge for every card (Verified · date / Listed / Closed · history), {A(f'{b}/badge/')}<id>.svg and <id>-dark.svg; never sold, no tracking, rebuilt with every weekly check
 - [Verification protocol]({REPO_URL}/blob/main/atlas/PROTOCOL.md): the full protocol each claim goes through
-- [Link safety]({A(f'{b}/about/#link-safety')}): every linked domain is checked daily against Google Safe Browsing; a flagged domain's entry is removed and its ID shows a short "entry removed" page
+- [Link safety]({A(f'{b}/about/#link-safety')}): every linked domain is checked daily against {TRUST_SOURCES_TEXT}; if any one source flags a domain, its entry is removed and its ID shows a short "entry removed" page
 - [Link safety decision log]({A(DECISIONS_PATH)}): every removal and return as a public, dated decision (who acted, why, evidence link); Markdown {A(DECISIONS_MD)}, JSON {A(DECISIONS_JSON)} with the trust roles
 - [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
 
@@ -1899,7 +1911,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - All claims and sources are public; no key needed.
 - Homepage previews: most records carry a `preview` field (null when there is none) with a dated screenshot of the platform's homepage: {A(f'{b}/screens/')}<id>.webp (1200x750 WebP) and a 600x250 top-band thumbnail {A(f'{b}/screens/t/')}<id>.webp, plus captured_at and source_url; list: {A(f'{b}/screens/manifest.json')}. Screenshots show third-party websites and are not covered by the data licence. Do not construct these URLs; take them from `preview` (absent from the GitHub mirror)
 - [snapshot.json]({A(f'{b}/data/snapshot.json')}): the full published dataset
-- [safety.json]({A(SAFETY_PATH)}): link safety report, Google Safe Browsing status of every linked domain (checked daily); records carry link_safety {{status, checked_at}} for their official URL
+- [safety.json]({A(SAFETY_PATH)}): link safety report, status of every linked domain with each source's answer (checked daily); records carry link_safety {{status, checked_at}} for their official URL
 - [llms-full.txt]({A('/llms-full.txt')}): one line per entry
 - [Sitemap (site)]({A('/sitemap.xml')}) and [Sitemap (Atlas)]({A(f'{b}/sitemap.xml')})
 
@@ -1941,7 +1953,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - All entries: {A(f'{b}/platforms.json')}
 - Full published dataset: {A(f'{b}/data/snapshot.json')}
 - Where agents get paid: {A(f'{b}/earn.json')}
-- Link safety report: {A(SAFETY_PATH)} (every linked domain checked daily against Google Safe Browsing: status clean/flagged/no_data, checked_at UTC, summary counts; each entry in the JSON files carries link_safety {{status, checked_at}})
+- Link safety report: {A(SAFETY_PATH)} (every linked domain checked daily against {TRUST_SOURCES_TEXT}: status clean/flagged/no_data with each source's verdict and evidence link, checked_at UTC, summary counts; each entry in the JSON files carries link_safety {{status, checked_at}})
 - Link safety decision log: {A(DECISIONS_JSON)} (every removal and return: date, action, entry ID, domain written with [.], actor id from the trust roles, reason, evidence link); page {A(DECISIONS_PATH)}, Markdown {A(DECISIONS_MD)}
 - One line per entry: {A('/llms-full.txt')}
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}

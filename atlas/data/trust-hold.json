@@ -1,0 +1,4 @@
+{
+ "_doc": "Domains a curator is looking at: atlas/tools/link_safety.py --apply reports them as flagged but does not remove their entries (TRUST.md, Auto-hide rule). Keep this list short and add a reason and date for each; an empty list means the rule applies to every flagged domain.",
+ "hold": []
+}
