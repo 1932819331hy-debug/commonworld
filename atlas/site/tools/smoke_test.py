@@ -70,6 +70,18 @@ def _watch(pg):
           if m.type == 'error' and ('Content Security Policy' in m.text or 'CSP-VIOLATION' in m.text) else None)
 
 
+def wait_js(pg, expr, timeout=10.0):
+    """Poll a JS expression with page.evaluate (DevTools protocol, not page eval): page.wait_for_function compiles its
+    predicate inside the page, which the strict CSP (no 'unsafe-eval') rightly refuses."""
+    import time
+    end = time.time() + timeout
+    while time.time() < end:
+        if pg.evaluate(expr):
+            return True
+        pg.wait_for_timeout(100)
+    raise TimeoutError(f'wait_js timed out: {expr[:80]}')
+
+
 def launch(p):
     exe = os.environ.get('CHROMIUM') or ('/usr/bin/chromium' if os.path.exists('/usr/bin/chromium') else None)
     br = p.chromium.launch(**({'executable_path': exe} if exe else {}))
@@ -224,12 +236,12 @@ with sync_playwright() as p:
     if os.path.exists(os.path.join(HERE, '..', 'dist', 'atlas', 'screens', 'manifest.json')):  # previews published (branch atlas-screens fetched)
         m.goto(B + '/atlas/')
         th = m.locator('#grid .cw-card > img').first
-        th.scroll_into_view_if_needed(); m.wait_for_function("(() => { const i = document.querySelector('#grid .cw-card > img'); return i && i.complete; })()", timeout=10000)
+        th.scroll_into_view_if_needed(); wait_js(m, "(() => { const i = document.querySelector('#grid .cw-card > img'); return !!(i && i.complete); })()")
         check('screens: first grid thumbnail decodes (600 px top band)', m.evaluate("document.querySelector('#grid .cw-card > img').naturalWidth") == 600)
         slug = m.evaluate("document.querySelector('#grid .cw-card > img').src.split('/').pop().replace('.webp','')")
         m.goto(B + f'/atlas/platforms/{slug}/')
         fig = m.locator('figure.entry-shot img'); fig.scroll_into_view_if_needed()
-        m.wait_for_function("document.querySelector('figure.entry-shot img').complete", timeout=10000)
+        wait_js(m, "document.querySelector('figure.entry-shot img').complete")
         check('screens: card page shows the full screenshot (1200 px)', m.evaluate("document.querySelector('figure.entry-shot img').naturalWidth") == 1200)
     m.goto(B + '/atlas/')
     check('mobile index: no horizontal overflow, 1 card column', m.evaluate(
