@@ -1596,7 +1596,7 @@ def decisions_ld(site, rows):
               'description': f"By {d.get('by')}: {d.get('reason')}"} for i, d in enumerate(rows)]
     ds = {'@type': 'Dataset', 'name': 'Commonworld Atlas link safety decision log', 'description': DECISIONS_LEAD,
           'url': site.abs(DECISIONS_PATH), 'sameAs': f'{REPO_URL}/blob/main/atlas/data/removed.json', 'creator': org, 'publisher': org,
-          'isAccessibleForFree': True, 'inLanguage': 'en', 'keywords': ['link safety', 'Google Safe Browsing', 'phishing', 'crypto scams', 'trust decisions', 'AI agents', 'open data'],
+          'isAccessibleForFree': True, 'inLanguage': 'en', 'keywords': ['link safety', *TRUST_SOURCE_NAMES, 'phishing', 'crypto scams', 'trust decisions', 'AI agents', 'open data'],
           'dateModified': rows[0].get('on') if rows else None, 'size': f'{len(rows)} decision' + ('' if len(rows) == 1 else 's'),
           'variableMeasured': ['date', 'action (remove or restore)', 'entry ID', 'domain (defanged)', 'actor ID', 'reason', 'evidence link'],
           'distribution': [{'@type': 'DataDownload', 'name': 'Decision log with trust roles (decisions.json)', 'encodingFormat': 'application/json', 'contentUrl': site.abs(DECISIONS_JSON)},
