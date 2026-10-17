@@ -27,13 +27,15 @@ def font(names, size):
 
 
 def main(src):
-    import shutil
     png = lambda n: os.path.join(src, 'png-exports', f'cw-mark-{n}-1024.png')
     L, D = Image.open(png('light')).convert('RGBA'), Image.open(png('dark')).convert('RGBA')
     sz = lambda im, s: im.resize((s, s), Image.LANCZOS)
-    for name in ('light', 'dark'):
-        shutil.copy(os.path.join(src, f'cw-mark-{name}.svg'), f'{OUT}/cw-mark-{name}.svg')
-    shutil.copy(os.path.join(src, 'cw-mark-light.svg'), f'{OUT}/favicon.svg')
+    def svg(name, dest):  # same drawing, plus an intrinsic size (768 px) so <img>.naturalWidth is not the 300x150 default
+        s = open(os.path.join(src, f'cw-mark-{name}.svg'), encoding='utf-8').read()
+        if ' width=' not in s.split('>', 1)[0]:
+            s = s.replace('<svg ', '<svg width="768" height="768" ', 1)
+        open(f'{OUT}/{dest}', 'w', encoding='utf-8').write(s)
+    svg('light', 'cw-mark-light.svg'); svg('dark', 'cw-mark-dark.svg'); svg('light', 'favicon.svg')
     sz(L, 96).save(f'{OUT}/cw-mark-light.png', optimize=True)
     sz(D, 96).save(f'{OUT}/cw-mark-dark.png', optimize=True)
     # 2x marks for the landing logo (shown at 96 CSS px): palette PNG, visually identical, ~7 KB each
