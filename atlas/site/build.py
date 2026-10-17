@@ -23,6 +23,7 @@ sys.path.insert(0, HERE)
 import og_images as ogi  # noqa: E402  (Pillow optional: per-page OG images)
 import badges  # noqa: E402  (status badges: /atlas/badge/<slug>.svg)
 import api_v1  # noqa: E402  (static API v1: /api/v1/, schemas, OpenAPI)
+import screens  # noqa: E402  (homepage screenshots from the orphan branch atlas-screens)
 
 e = cw.e
 DEFAULT_DATA = os.path.normpath(os.path.join(HERE, '..', 'data', 'snapshot-verified-2026-10-15.json'))
@@ -158,6 +159,7 @@ class Site:
         self.pages = []  # (path, lastmod) for sitemap
         self.og_jobs = {}  # name -> (spec, key): per-page Open Graph images (og_images.py)
         self.og_enabled = ogi.available()
+        self.shots, self.shot_dir, self.shot_src, self.thumbs_ok = {}, None, 'not loaded', False  # screens.load() in main()
         self.api_docs = []  # (path under /api/v1, document, schema file, indented): legacy /atlas/*.json documents, re-served in /api/v1/ + schema_version
 
     def abs(self, path):
@@ -408,6 +410,55 @@ def chips(c):
     return '<div class="chips">' + ''.join(out) + '</div>'
 
 
+SHOTS_PATH = '/screens'  # under site.base: /atlas/screens/<slug>.webp, thumbnails /atlas/screens/t/<slug>.webp
+
+
+def shot_paths(site, c):
+    """(full image path, grid thumbnail path) for a card with a screenshot, else None."""
+    if c['slug'] not in site.shots:
+        return None
+    full = f"{site.base}{SHOTS_PATH}/{c['slug']}.webp"
+    return full, (f"{site.base}{SHOTS_PATH}/t/{c['slug']}.webp" if site.thumbs_ok else full)
+
+
+def preview_record(site, c):
+    """The `preview` field of the public JSON records (null without a screenshot)."""
+    p = shot_paths(site, c)
+    if not p:
+        return None
+    r = site.shots[c['slug']]
+    return {'path': p[0], 'url': site.abs(p[0]), 'thumb_url': site.abs(p[1]), 'width': screens.SHOT_W, 'height': screens.SHOT_H,
+            'captured_at': r['captured_at'], 'source_url': r['source_url'], 'rights': screens.RIGHTS}
+
+
+def thumb_html(site, c):
+    """Grid thumbnail: the top band of the screenshot (decorative: the card title names it), or a sized placeholder."""
+    p = shot_paths(site, c)
+    if not p:
+        return '<i class="ph" aria-hidden="true"></i>'
+    w, h = (screens.THUMB_W, screens.THUMB_H) if site.thumbs_ok else (screens.SHOT_W, screens.SHOT_H)
+    return f'<img src="{p[1]}" alt="" width="{w}" height="{h}" loading="lazy">'
+
+
+def shot_figure(site, c):
+    """Card page: the full 8:5 screenshot with a dated caption, or a placeholder note."""
+    p = shot_paths(site, c)
+    closed = c['status'] == 'closed'
+    if not p:
+        txt = ('No homepage preview: the site closed before screenshots were taken.' if closed
+               else 'No homepage preview yet. A dated screenshot appears here once a capture succeeds.')
+        return f'<figure class="entry-shot is-empty"><div class="ph">{txt}</div></figure>'
+    r = site.shots[c['slug']]
+    dt = parse_time(r['captured_at'])
+    alt = f"Homepage of {c['name']} ({domain(c.get('canonical_url') or r['source_url'])}), screenshot captured {dt.strftime('%Y-%m-%d')}"
+    href = c.get('canonical_url') or r['source_url']
+    lead = (f'<b>Last captured {time_tag(dt)}</b>, before the site was marked closed. Kept as history.' if closed
+            else f'Homepage as captured {time_tag(dt)} from {e(domain(r["source_url"]))}.')
+    return (f'<figure class="entry-shot{" is-closed" if closed else ""}"><a href="{e(href)}" rel="nofollow noopener">'
+            f'<img src="{p[0]}" width="{screens.SHOT_W}" height="{screens.SHOT_H}" loading="lazy" decoding="async" alt="{e(alt)}"></a>'
+            f'<figcaption>{lead} Screenshot © the site owner, not part of the CC BY data.</figcaption></figure>')
+
+
 def card_html(site, c, data=False, note=''):
     d = None
     if data:
@@ -417,7 +468,8 @@ def card_html(site, c, data=False, note=''):
              'data-tags': ' '.join(c['_tags']) or None}
     return cw.card(href=c['_url'], name=c['name'], cat_label=CAT_LABEL[c['category']], cat_color='k-' + c['category'],
                    status_chip=status_chip(c), desc=note + trim(c['_desc'], 150 - len(note)), keynum=keynum_html(c),
-                   tags_html=cw.tag_chips(c['_tags'], lambda t: tag_href(site, t)), closed=c['status'] == 'closed', data=d)
+                   tags_html=cw.tag_chips(c['_tags'], lambda t: tag_href(site, t)), closed=c['status'] == 'closed', data=d,
+                   thumb=thumb_html(site, c))
 
 
 def cards_with_ads(site, cs, data=False):
@@ -588,6 +640,8 @@ def build_platform(site, c):
 <header class="entry-head"><div class="cw-meta"><a class="catchip" href="{b}/categories/{cat}/"><i style="background:{CAT_COLOR[cat]}"></i>{e(CAT_LABEL[cat])}</a></div>
 <h1>{e(c['name'])}</h1>{chips(c)}
 <p class="cw-lead">{e(c['_desc'])}</p>{closed_box}{disclosure_box}{tags}<div class="entry-actions">{f'<p class="actions">{visit}</p>' if visit else ''}{cw.share_bar(site.cfg, site.abs(c['_url']), share_text_entry(c), cls='cw-share-head')}</div></header>
+{cw.ad_slot(site.cfg, 'atlas-platform-top', 'cw-ad-banner')}
+{shot_figure(site, c)}
 <dl class="facts">
 <div><dt>Permanent ID</dt><dd><code>{e(c['slug'])}</code> · <a href="{b}/platforms/{e(c['slug'])}.json" type="application/json" title="This entry as JSON: all claims with sources">JSON</a></dd></div>
 <div><dt>Direction</dt><dd><a href="{b}/categories/{cat}/">{e(CAT_SHORT[cat])}</a></dd></div>
@@ -596,7 +650,6 @@ def build_platform(site, c):
 <div><dt>Last verified</dt><dd>{time_tag(c['_verified'])}</dd></div>
 <div><dt>Checked claims</dt><dd>{len(claims)}</dd></div>
 </dl>
-{cw.ad_slot(site.cfg, 'atlas-platform-top', 'cw-ad-banner')}
 <section class="cw-panel" aria-labelledby="h-claims"><div class="cw-panel-head"><h2 id="h-claims">Verified facts</h2><span class="muted">{len(claims)} claims · last verified {time_tag(c['_verified'])}</span></div>
 <div class="cw-panel-body"><p class="sec-desc">Each fact shows how it is known (observed directly, operator claim, independent source or inference), whether the source supported it, when it was observed and where. Operator figures are what the platform says about itself.</p>
 <ol class="claims">{''.join(lis)}</ol></div></section>
@@ -976,6 +1029,9 @@ def build_about(site):
 <p>Each card has a permanent ID (its URL slug), assigned once and never reused. When a platform closes, its card stays as a history record, labelled <i>Closed</i>. A rebrand gets a new card linked to the old one.</p>
 <h2 id="sources">Sources and data</h2>
 <p>Sources are the platforms' own pages and APIs, public registries, on-chain data and independent analyses, linked on each claim. The full published dataset is available as <a href="{b}/data/snapshot.json">downloadable JSON</a>.{(' It is published under ' + e(lic) + '.') if lic else ''}</p>
+<h2 id="screenshots">Homepage screenshots</h2>
+<p>Most cards show a dated screenshot of the platform's homepage, so you can recognise the site at a glance. Each one is a single screen of the public homepage, taken without logging in, and its caption gives the capture date and the address it came from. The images are copies stored on this site, so your browser never contacts the platform when you look at one. A closed platform keeps its last screenshot as part of its history. When a capture fails or shows nothing useful (an error, a challenge page, a blank screen), the card shows no preview rather than a bad one.</p>
+<p>The screenshots show third-party websites. Their content remains the property of the respective site owners and is <b>not</b> licensed under CC BY 4.0 (nor MIT). They are shown to identify each catalogued site at a stated date. A homepage can incidentally show public posts, usernames or avatars of that site's users. Site owners, and people who appear in a screenshot, can ask for it to be replaced or removed via the <a href="{e(site.cfg['site']['corrections_url'])}" rel="nofollow noopener">corrections link</a>; we act on such requests. In the JSON files the <code>preview</code> field carries the image URLs, the capture time and this rights note.</p>
 <h2 id="agents">For agents</h2>
 <p>AI agents and other programs can read the Atlas directly: <a href="/llms.txt">/llms.txt</a> is a short map of the site in the llms.txt format (with <a href="/llms-full.txt">/llms-full.txt</a>, one line per entry), and <a href="{b}/platforms.json">{b}/platforms.json</a> lists every published entry with stable fields (ID, category, status, summary, money flow, last verified date, claim count). Each entry is also available as <code>{b}/platforms/&lt;id&gt;.json</code>. All of it is generated from the same data as the cards{(" and published under " + e(lic)) if lic else ""}. The same data is also served as a versioned static API at <a href="{api_v1.API_BASE}/index.json">{api_v1.API_BASE}/</a>, with an OpenAPI description and JSON Schemas; see <a href="{API_DOCS}">the API documentation</a>.</p>
 <h2 id="navigation">Reading the site</h2>
@@ -1440,11 +1496,23 @@ def agent_record(site, c):
             'type': c.get('entity_type'), 'status': c['status'], 'summary': trim(c['_desc'], 300), 'tags': c['_tags'],
             'has_money_flow': c['_money'], 'money_flow': flows, 'key_number': key,
             'verified_at': iso(c['_verified']), 'last_checked': iso(c['_verified']), 'claims_count': len(claims),
-            'disclosure': c.get('disclosure')}
+            'disclosure': c.get('disclosure'), 'preview': preview_record(site, c)}
 
 
 MIRROR_DIR = os.path.normpath(os.path.join(HERE, '..', 'public'))
 RAW_BASE = 'https://raw.githubusercontent.com/commonworld-one/commonworld/main/atlas/public'
+
+
+def _mirror_json(src, dst, indent):
+    """Copy one agent JSON file into the mirror without the `preview` field: screenshots live on the orphan branch
+    atlas-screens, so keeping the field here would make the committed mirror stale whenever that branch moves."""
+    doc = json.load(open(src, encoding='utf-8'))
+    doc.pop('preview', None)
+    for r in doc.get('platforms') or []:
+        r.pop('preview', None)
+    txt = json.dumps(doc, ensure_ascii=False, indent=1) if indent else json.dumps(doc, ensure_ascii=False, separators=(',', ':'))
+    with open(dst, 'w', encoding='utf-8') as fh:
+        fh.write(txt + '\n')
 
 
 def write_github_mirror(out, b):
@@ -1455,17 +1523,17 @@ def write_github_mirror(out, b):
     os.makedirs(os.path.join(MIRROR_DIR, 'platforms'))
     src = os.path.join(out, b.strip('/'))
     shutil.copy(os.path.join(out, 'llms-full.txt'), os.path.join(MIRROR_DIR, 'llms-full.txt'))
-    shutil.copy(os.path.join(src, 'platforms.json'), os.path.join(MIRROR_DIR, 'platforms.json'))
+    _mirror_json(os.path.join(src, 'platforms.json'), os.path.join(MIRROR_DIR, 'platforms.json'), indent=1)
     shutil.copy(os.path.join(src, 'earn.json'), os.path.join(MIRROR_DIR, 'earn.json'))
     os.makedirs(os.path.join(MIRROR_DIR, 'categories'))
     for f in sorted(os.listdir(os.path.join(src, 'categories'))):
         if f.endswith('.json'):
-            shutil.copy(os.path.join(src, 'categories', f), os.path.join(MIRROR_DIR, 'categories', f))
+            _mirror_json(os.path.join(src, 'categories', f), os.path.join(MIRROR_DIR, 'categories', f), indent=None)
     shutil.copy(os.path.join(src, 'data', 'snapshot.json'), os.path.join(MIRROR_DIR, 'snapshot.json'))
     pdir = os.path.join(src, 'platforms')
     for f in sorted(os.listdir(pdir)):
         if f.endswith('.json'):
-            shutil.copy(os.path.join(pdir, f), os.path.join(MIRROR_DIR, 'platforms', f))
+            _mirror_json(os.path.join(pdir, f), os.path.join(MIRROR_DIR, 'platforms', f), indent=1)
     # API v1 description (index, OpenAPI, schemas, changelog); the data documents themselves are the files above
     api_src, api_dst = os.path.join(out, 'api', 'v1'), os.path.join(MIRROR_DIR, 'api', 'v1')
     for rel in ['index.json', 'openapi.json', 'changelog.json', 'CHANGELOG.md', os.path.join('atlas', 'index.json')] + \
@@ -1477,7 +1545,9 @@ def write_github_mirror(out, b):
                  '(platforms.json, earn.json, snapshot.json, llms-full.txt, platforms/<id>.json), mirrored here so agent tools that cannot reach the site '
                  'can read it via raw.githubusercontent.com. The site is canonical; cite Atlas URLs, not this mirror.\n\n'
                  '`api/v1/` holds the API description of https://commonworld.one/api/v1/ (index.json, openapi.json, schemas/, changelog). '
-                 'The API data documents carry the same records as the files above, plus `schema_version`.\n')
+                 'The API data documents carry the same records as the files above, plus `schema_version`.\n\n'
+                 'The `preview` field (homepage screenshot URLs on commonworld.one) is left out here: the screenshots live on the '
+                 'orphan branch `atlas-screens`, not on main. Read it from the site\'s JSON files.\n')
 
 
 def build_agent_files(site, write):
@@ -1552,6 +1622,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
 {ex_lines}
 - All claims and sources are public; no key needed.
+- Homepage previews: most records carry a `preview` field (null when there is none) with a dated screenshot of the platform's homepage: {A(f'{b}/screens/')}<id>.webp (1200x750 WebP) and a 600x250 top-band thumbnail {A(f'{b}/screens/t/')}<id>.webp, plus captured_at and source_url; list: {A(f'{b}/screens/manifest.json')}. Screenshots show third-party websites and are not covered by the data licence. Do not construct these URLs; take them from `preview` (absent from the GitHub mirror)
 - [snapshot.json]({A(f'{b}/data/snapshot.json')}): the full published dataset
 - [llms-full.txt]({A('/llms-full.txt')}): one line per entry
 - [Sitemap (site)]({A('/sitemap.xml')}) and [Sitemap (Atlas)]({A(f'{b}/sitemap.xml')})
@@ -1570,6 +1641,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 ## Licence
 
 - Data: {lic} ([LICENSE-DATA.md]({REPO_URL}/blob/main/LICENSE-DATA.md)); please credit "Commonworld Atlas" with a link
+- Homepage screenshots (`preview`, {A(f'{b}/screens/')}): third-party website content, not covered by {lic} or MIT; removal on request via the corrections link
 - Code: MIT ([LICENSE]({REPO_URL}/blob/main/LICENSE))
 
 ## Corrections and contact
@@ -1583,7 +1655,8 @@ Some agent tools cannot reach the site directly. The same published files are mi
              f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '',
              f"Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}",
              f"API v1 (versioned, OpenAPI 3.1): {A(api_v1.API_BASE + '/index.json')}; per entry: {A(api_v1.API_BASE + '/atlas/platforms/')}<id>.json; docs: {A(API_DOCS)}",
-             f"Badges: every entry has a free status badge at {A(f'{b}/badge/')}<id>.svg (dark: <id>-dark.svg); rules: {A(f'{b}/badge/')}", '']
+             f"Badges: every entry has a free status badge at {A(f'{b}/badge/')}<id>.svg (dark: <id>-dark.svg); rules: {A(f'{b}/badge/')}",
+             f"Homepage previews: the `preview` field of each entry's JSON (dated screenshot URLs, or null); third-party content, not covered by the data licence", '']
     for r in recs:
         lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}" + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
     write('/llms-full.txt', '\n'.join(lines) + '\n')
@@ -1740,6 +1813,18 @@ def main():
     site.claim_labels = {k: v for k, v in json.load(open(lab_path)).items() if not k.startswith('_')} if os.path.exists(lab_path) else {}
     tags = json.load(open(a.tags))['tags'] if a.tags and os.path.exists(a.tags) else {}
     enrich(site, tags)
+    site.shot_dir, shots, site.shot_src = screens.load()
+    site.shots = {c['slug']: shots[c['slug']] for c in site.cards if c['slug'] in shots}
+    try:
+        import PIL  # noqa: F401  thumbnails need Pillow; without it the grids reuse the full image
+        site.thumbs_ok = bool(site.shots)
+    except ImportError:
+        site.thumbs_ok = False
+    if not site.shots:
+        msg = f'no homepage screenshots ({site.shot_src}): pages show placeholders'
+        if os.environ.get('CW_SCREENS_REQUIRED') == '1':
+            raise SystemExit('screens required (CW_SCREENS_REQUIRED=1) but ' + msg)
+        print('WARNING: ' + msg, file=sys.stderr)
     site.earn = earn_rows(site)
     css = open(os.path.join(HERE, 'components', 'cw-components.css')).read() + '\n' + open(os.path.join(HERE, 'static', 'atlas.css')).read()
     css += '\n/* category swatches (generated from CATEGORIES) */\n' + cw.color_classes([(k, col) for k, _, _, col, _ in CATEGORIES]) + '\n'
@@ -1794,6 +1879,23 @@ def main():
         if f.endswith(('.png', '.ico', '.svg')):
             shutil.copy(os.path.join(HERE, 'static', f), os.path.join(root, 'assets', f))
     shutil.copy(os.path.join(HERE, 'static', 'favicon.ico'), os.path.join(out, 'favicon.ico'))  # browsers request /favicon.ico on their own
+    if site.shots:  # homepage screenshots (orphan branch atlas-screens) -> /atlas/screens/, top-band thumbnails -> /atlas/screens/t/
+        sdir = os.path.join(root, SHOTS_PATH.strip('/'))
+        os.makedirs(os.path.join(sdir, 't'), exist_ok=True)
+        sb = tb = 0
+        for slug, r in sorted(site.shots.items()):
+            shutil.copy(os.path.join(site.shot_dir, r['file']), os.path.join(sdir, r['file']))
+            sb += r['bytes']
+            if site.thumbs_ok:
+                t = screens.thumb(os.path.join(site.shot_dir, r['file']), r['sha256'])
+                with open(os.path.join(sdir, 't', r['file']), 'wb') as fh:
+                    fh.write(t)
+                tb += len(t)
+        man = {'note': screens.RIGHTS + ' Site owners can ask for a screenshot to be replaced or removed via the corrections link.',
+               'source': f'{REPO_URL}/tree/{screens.BRANCH}', 'count': len(site.shots),
+               'screens': {s: {k: r.get(k) for k in ('file', 'sha256', 'source_url', 'captured_at', 'width', 'height', 'bytes')} for s, r in sorted(site.shots.items())}}
+        write(f'{b}{SHOTS_PATH}/manifest.json', json.dumps(man, ensure_ascii=False, indent=1) + '\n')
+        print(f'screens: {len(site.shots)} of {len(site.cards)} cards from {site.shot_src}; {sb // 1024} KB full + {tb // 1024} KB thumbnails')
     if site.og_enabled:
         import time
         t0 = time.time()
@@ -1843,6 +1945,8 @@ def main():
     write('/_headers', f"""{b}/assets/*
   Cache-Control: public, max-age=604800
 {b}/og/*
+  Cache-Control: public, max-age=86400
+{b}{SHOTS_PATH}/*
   Cache-Control: public, max-age=86400
 {b}/badge/*.svg
   Cache-Control: public, max-age=3600

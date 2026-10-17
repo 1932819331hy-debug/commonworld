@@ -6,7 +6,7 @@ Covers: HTTP 404 / trailing-slash redirect; light default theme + toggle + persi
 before paint); icon buttons (home, theme, menu); announcement dismissal per id; consent banner (gtag.js only
 after Accept); instant search incl. claim statements; status / type / feature / tag / category filters combined
 with AND and live counts; stats tiles and legend as filters; tag shelf expander; native sponsored cards after
-every 12 visible cards (re-inserted on filter); sort; URL state; mobile drawer; platform page sponsored slot;
+every 12 visible cards (re-inserted on filter); sort; URL state; mobile drawer; platform page sponsored slot + screenshot order; screenshot previews decode;
 legal pages + cross-product navigation (sidebar Commonworld item, home icon, footer links, banner link);
 About Commonworld /about/ (H1, motto, live count, sidebar About under Commonworld, links to the Atlas method, banner, share,
 theme, mobile; ABOUT_SHOT=path saves a desktop light screenshot); landing page / (H1, motto, CTA to /atlas/, stats, banner, share, theme, mobile; SHOTS_DIR=... saves screenshots);
@@ -196,13 +196,23 @@ with sync_playwright() as p:
     check('mobile: drawer opens', m.is_visible('.cw-side .cw-nav') and m.get_attribute('.cw-menu', 'aria-expanded') == 'true')
     m.keyboard.press('Escape'); m.wait_for_timeout(300)
     check('mobile: Escape closes drawer', m.get_attribute('.cw-menu', 'aria-expanded') == 'false')
-    check('platform page: sponsored banner under header + info box, before verified facts (same banner as index)', m.evaluate(
+    check('platform page: sponsored banner directly under the header, then the screenshot figure, then the facts', m.evaluate(
         "(() => { const s = document.querySelector('[data-ad-slot=\"atlas-platform-top\"]'), f = document.getElementById('h-claims'), h = document.querySelector('.entry-head'), d = document.querySelector('.entry > dl.facts');"
         " return !!s && s.classList.contains('cw-ad-banner') && s.querySelector('.cw-ad-label').textContent === 'Sponsored'"
         " && /sponsored/.test(s.querySelector('a').rel) && /nofollow/.test(s.querySelector('a').rel)"
-        " && !!(h.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING) && d.nextElementSibling === s"
+        " && !!(h.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING) && h.nextElementSibling === s && s.nextElementSibling.matches('figure.entry-shot') && s.nextElementSibling.nextElementSibling === d"
         " && !!(s.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING); })()"))
     check('mobile: no horizontal overflow', m.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+    if os.path.exists(os.path.join(HERE, '..', 'dist', 'atlas', 'screens', 'manifest.json')):  # previews published (branch atlas-screens fetched)
+        m.goto(B + '/atlas/')
+        th = m.locator('#grid .cw-card > img').first
+        th.scroll_into_view_if_needed(); m.wait_for_function("(() => { const i = document.querySelector('#grid .cw-card > img'); return i && i.complete; })()", timeout=10000)
+        check('screens: first grid thumbnail decodes (600 px top band)', m.evaluate("document.querySelector('#grid .cw-card > img').naturalWidth") == 600)
+        slug = m.evaluate("document.querySelector('#grid .cw-card > img').src.split('/').pop().replace('.webp','')")
+        m.goto(B + f'/atlas/platforms/{slug}/')
+        fig = m.locator('figure.entry-shot img'); fig.scroll_into_view_if_needed()
+        m.wait_for_function("document.querySelector('figure.entry-shot img').complete", timeout=10000)
+        check('screens: card page shows the full screenshot (1200 px)', m.evaluate("document.querySelector('figure.entry-shot img').naturalWidth") == 1200)
     m.goto(B + '/atlas/')
     check('mobile index: no horizontal overflow, 1 card column', m.evaluate(
         "document.documentElement.scrollWidth <= innerWidth && getComputedStyle(document.getElementById('grid')).gridTemplateColumns.split(' ').length === 1"))

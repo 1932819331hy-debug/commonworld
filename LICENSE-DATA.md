@@ -5,6 +5,16 @@ The Commonworld Atlas data (platform cards, claims and the downloadable JSON, e.
 
 Attribution: "Commonworld Atlas" with a link to https://commonworld.one/atlas/
 
+## Homepage screenshots
+
+Homepage screenshots (the orphan branch `atlas-screens` of this repository, `/atlas/screens/` on the site, and the `preview` field in
+the JSON files) show third-party websites. Their content remains the property of the respective site owners and is **not**
+licensed under CC BY 4.0 (nor MIT). They are shown to identify each catalogued site at a stated date. Site owners can ask for a
+screenshot to be replaced or removed via the corrections link (https://github.com/commonworld-one/commonworld/issues/new/choose);
+we act on such requests.
+
+## Third-party content
+
 Quotes from third-party sources belong to their authors. Plain facts (a URL, a date, a number) are not owned by anyone.
 
 Code in this repository is licensed under the MIT License (see LICENSE).

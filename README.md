@@ -25,3 +25,4 @@ Every published Atlas card has a free status badge (Verified · date / Listed / 
 ## License
 
 Code: MIT (see `LICENSE`). Atlas data: CC BY 4.0, credit "Commonworld Atlas" with a link (see `LICENSE-DATA.md`).
+Homepage screenshots (orphan branch `atlas-screens`, `/atlas/screens/` on the site, the `preview` field) show third-party websites and are **not** covered by CC BY 4.0 or MIT; see `LICENSE-DATA.md`.

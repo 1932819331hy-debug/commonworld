@@ -55,6 +55,7 @@ Another port: `python3 atlas/site/serve.py 9000`.
 | `/atlas/privacy/`, `/atlas/terms/` | Old URLs: tiny noindex stubs (meta refresh + canonical to the new URL); on Cloudflare `dist/_redirects` answers them with a 301 first |
 | `/sitemap.xml`, `/_redirects` | Site-level sitemap (the legal pages; `/atlas/sitemap.xml` keeps the Atlas pages, robots.txt names both) and Cloudflare Pages redirects |
 | `/atlas/data/snapshot.json` | Open data copy (published fields only) |
+| `/atlas/screens/<slug>.webp`, `/atlas/screens/t/<slug>.webp`, `/atlas/screens/manifest.json` | Homepage screenshots (1200×750) and their 600×250 top-band thumbnails, copied from the orphan branch `atlas-screens` (see "Homepage screenshots" below) |
 | `/atlas/sitemap.xml`, `/robots.txt`, `/404.html`, `/_headers` | SEO and hosting files |
 
 Search from any page goes to `/atlas/?q=…` (also the `SearchAction` target). Filters are kept in the URL (`?q=x402&status=live&category=payments&type=platform&feature=money&tag=x402,mcp&sort=claims`). Search covers name, description, direction, type, tags and every claim statement (claim text is fetched once from `/atlas/data/search-index.json` on first use).
@@ -71,6 +72,7 @@ atlas/site/
   static/atlas.css      Atlas-only styles (platform page, tables, prose)   static/atlas.js   catalog search/filter/sort/native ads
   static/*.png|ico      logo (cw-mark-*.png 96 px for the 46 px sidebar mark; cw-mark-*-192.png for the 96 px landing logo, 2x), favicon, fallback OG image
   og_images.py          per-page Open Graph images (Pillow), cached in .og-cache/
+  screens.py            homepage screenshots: fetches the orphan branch atlas-screens, validates, makes top-band thumbnails (cached in .screens-cache/)
   tools/extract_census_tags.py   maps + cleans census tags -> atlas/data/census-tags-2026-10-15.json
   tools/make_images.py  regenerates logo/favicon/OG image from the prototype marks (needs Pillow; not part of the build)
   tools/screenshots.py, tools/smoke_test.py   optional, need Playwright + Chromium (a system Chromium works: CHROMIUM=/path)
@@ -171,6 +173,34 @@ date. Pages set `og:image` (with `?v=<hash>` so social caches refresh when a car
 - Without Pillow the build still works and every page falls back to `static/og-atlas.png` (with a warning); `check.py` then fails
   on purpose, because images are no longer unique per page. The repo-root `requirements.txt` (`Pillow>=10`) covers Cloudflare Pages.
 
+## Homepage screenshots (`screens.py`)
+
+The screenshots are **not stored on `main`**. They live on the orphan branch `atlas-screens` of this repo, which holds only
+`atlas/screens/<slug>.webp` (1200×750 WebP, one 1280×800 viewport of the public homepage, no login) and `atlas/screens/manifest.json`
+(per slug: file, sha256, dhash, website, source_url, http_status, title, captured_at UTC, width, height, bytes). History stays on that
+branch; it never merges into `main`.
+
+- `build.py` calls `screens.load()`: `CW_SCREENS=off` disables previews; `CW_SCREENS_DIR=/path` uses a local folder (manifest.json +
+  `<slug>.webp`); otherwise `git fetch origin atlas-screens` (`--depth=1` in shallow clones) and `git archive` into
+  `atlas/site/.screens-cache/branch/` (gitignored), with the public tarball from codeload.github.com as fallback (Cloudflare Pages only
+  clones the branch it builds). Files with a wrong sha256, size or non-https source are skipped with a warning.
+- Nothing found → the build still succeeds and every card shows a placeholder. CI sets `CW_SCREENS_REQUIRED=1`, which makes that an error.
+- Output: `dist/atlas/screens/<slug>.webp`, `dist/atlas/screens/t/<slug>.webp` (600×250 top band, Pillow, cached by sha256 in
+  `.screens-cache/thumbs/`; without Pillow the grids reuse the full image), `dist/atlas/screens/manifest.json`, and a `preview` field
+  (path, url, thumb_url, width, height, captured_at, source_url, rights; or null) on every record in `platforms.json`,
+  `platforms/<id>.json`, `categories/<k>.json` and `/api/v1/` (schema_version 1.1.0). The GitHub mirror `atlas/public/` leaves `preview`
+  out on purpose, so a new screenshot never makes the committed mirror stale.
+- Layout: catalog grids show the top band of the screenshot as a decorative thumbnail (`alt=""`, the card title names it); the card
+  page shows the full 8:5 screenshot with a dated caption, directly under the header and the sponsored slot, above the facts. Closed
+  cards keep their last capture ("Last captured …", greyed). No og:image change: share cards stay the generated OG images.
+- `check.py` checks files, sizes (screenshot ≤ 256 KB, thumbnail ≤ 25 KB), manifest/preview drift, orphans, that no branch image of a
+  published card was dropped, the card-page order and markup, grid thumbnails and the `_headers` cache rule.
+- Capture rules for new screenshots: homepage only, honest bot User-Agent (`CommonworldAtlasBot/1.0 (+https://commonworld.one/atlas/about/)`,
+  as in `atlas/refresh.py`), cookie banners/modals hidden, network idle + a few seconds with animations off, every new image compared
+  with the previous one before it replaces it, failed or empty captures never published (placeholder instead). Commit new images to
+  `atlas-screens` only, never to `main`.
+- Rights: third-party content, not CC BY (see `LICENSE-DATA.md` and `/atlas/about/#screenshots`); removal on request via the corrections link.
+
 ## Share buttons (`site-config.json` → `share`)
 
 `cw.share_bar(cfg, canonical_url, text)` in `components/` (reusable in the main product). Shown on every platform page **in the header
@@ -241,7 +271,7 @@ components. Operator is just "Commonworld"; the pages name no country or locatio
 
 ## Deploy to Cloudflare (later)
 
-Build command `python3 atlas/site/build.py`, output directory `atlas/site/dist`. The repo-root `requirements.txt` (`Pillow>=10`) makes Cloudflare Pages install Pillow for the OG images. Pages serves `dist/atlas/...` at `/atlas/...`, uses `dist/404.html` for missing pages and applies `dist/_headers`. If `/atlas` is mounted inside a bigger Commonworld site, copy `dist/atlas/` into that site's output and merge `robots.txt` (it only has to contain the `Sitemap:` line for `https://commonworld.one/atlas/sitemap.xml`).
+Build command `python3 atlas/site/build.py`, output directory `atlas/site/dist`. The build fetches the screenshots itself (branch `atlas-screens` via git, else the public tarball); Pages builds of the `atlas-screens` branch itself fail harmlessly (no build.py there) and can be excluded in the Pages branch settings. The repo-root `requirements.txt` (`Pillow>=10`) makes Cloudflare Pages install Pillow for the OG images. Pages serves `dist/atlas/...` at `/atlas/...`, uses `dist/404.html` for missing pages and applies `dist/_headers`. If `/atlas` is mounted inside a bigger Commonworld site, copy `dist/atlas/` into that site's output and merge `robots.txt` (it only has to contain the `Sitemap:` line for `https://commonworld.one/atlas/sitemap.xml`).
 
 ## Data notes
 

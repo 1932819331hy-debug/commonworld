@@ -19,7 +19,7 @@ Blocks
   info_box(dot, strong, muted, text_html)
   tabs(items)                      pill tabs: (label, count, attrs, active)
   tag_shelf(tags, total, shelf_id) clipped row of tag chips with counts + "all tags (N) ↓" expander
-  card(...) / ad_card(cfg, name)   catalog card and the native sponsored card in the same style
+  card(...) / ad_card(cfg, name)   catalog card (optional thumb= HTML first) and the native sponsored card in the same style
   ad_slot(cfg, name, cls='')       named ad slot: creative, neutral placeholder or nothing; size reserved
   share_bar(cfg, url, text)        share buttons: X, LinkedIn, Telegram, Reddit, Facebook, Email, Copy link, native Web Share
 Icons/buttons
@@ -331,8 +331,9 @@ def tag_chips(tags, href_for, limit=6):
 
 
 def card(*, href, name, cat_label, cat_color,  # cat_color: a CSS class such as 'k-social' (see color_classes)
-         status_chip, desc, keynum='', tags_html='', preview='', closed=False, data=None):
-    return (f'<article class="cw-card{" is-closed" if closed else ""}"{attrs(data)}>'
+         status_chip, desc, keynum='', tags_html='', preview='', closed=False, data=None, thumb=''):
+    # thumb: optional HTML rendered first inside the card (e.g. a screenshot band <img>, or a placeholder)
+    return (f'<article class="cw-card{" is-closed" if closed else ""}"{attrs(data)}>{thumb}'
             f'<div class="cw-meta"><span class="catchip"><i class="{e(cat_color)}"></i>{e(cat_label)}</span>{status_chip}</div>'
             f'<h3><a href="{e(href)}">{e(name)}</a></h3><p>{e(desc)}</p>{keynum}{tags_html}'
             + (f'<div class="preview">{preview}</div>' if preview else '') + '</article>')

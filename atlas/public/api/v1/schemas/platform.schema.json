@@ -199,6 +199,9 @@
       "string",
       "null"
      ]
+    },
+    "preview": {
+     "$ref": "#/$defs/preview"
     }
    }
   },
@@ -412,6 +415,58 @@
     },
     "recheck": {
      "type": "object"
+    }
+   }
+  },
+  "preview": {
+   "type": [
+    "object",
+    "null"
+   ],
+   "description": "Dated homepage screenshot of the entry, or null. Third-party website content: not covered by the Atlas CC BY 4.0 data licence (see rights). Added in schema_version 1.1.0.",
+   "required": [
+    "path",
+    "url",
+    "width",
+    "height",
+    "captured_at",
+    "source_url"
+   ],
+   "properties": {
+    "path": {
+     "type": "string",
+     "pattern": "^/atlas/screens/[a-z0-9-]+\\.webp$"
+    },
+    "url": {
+     "type": "string",
+     "format": "uri",
+     "pattern": "^https?://"
+    },
+    "thumb_url": {
+     "type": "string",
+     "format": "uri",
+     "pattern": "^https?://"
+    },
+    "width": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "height": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "captured_at": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+     "format": "date-time"
+    },
+    "source_url": {
+     "type": "string",
+     "format": "uri",
+     "pattern": "^https://"
+    },
+    "rights": {
+     "type": "string"
     }
    }
   }

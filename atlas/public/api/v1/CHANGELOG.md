@@ -2,6 +2,11 @@
 
 Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) ships as /api/v2/, and /api/v1/ keeps working.
 
+## 1.1.0 (2026-10-17)
+
+- New optional field `preview` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): a dated homepage screenshot (path, url, thumb_url, width, height, captured_at, source_url, rights), or null when there is none.
+- Screenshots show third-party websites and are not covered by the CC BY 4.0 data licence (see `rights`). Files live at /atlas/screens/<id>.webp (1200x750 WebP) with 600x250 top-band thumbnails at /atlas/screens/t/<id>.webp.
+
 ## 1.0.0 (2026-10-16)
 
 - First release of the Commonworld static API v1 at /api/v1/ with the Atlas module at /api/v1/atlas/.

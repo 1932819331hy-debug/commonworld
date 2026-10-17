@@ -8,7 +8,7 @@ and ships as /api/v2/ while /api/v1/ keeps working.
 import re
 
 API_VERSION = 'v1'
-SCHEMA_VERSION = '1.0.0'
+SCHEMA_VERSION = '1.1.0'
 API_BASE = '/api/v1'
 STATUSES = ['live', 'closed']
 ENTITY_TYPES = ['platform', 'tool_catalog', 'protocol', 'project']
@@ -19,6 +19,11 @@ UTC_PATTERN = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$'  # ISO 8601 U
 
 # newest first; build.py writes changelog.json and CHANGELOG.md from this list
 CHANGELOG = [
+    {'schema_version': '1.1.0', 'date': '2026-10-17', 'changes': [
+        'New optional field `preview` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): '
+        'a dated homepage screenshot (path, url, thumb_url, width, height, captured_at, source_url, rights), or null when there is none.',
+        'Screenshots show third-party websites and are not covered by the CC BY 4.0 data licence (see `rights`). Files live at /atlas/screens/<id>.webp '
+        '(1200x750 WebP) with 600x250 top-band thumbnails at /atlas/screens/t/<id>.webp.']},
     {'schema_version': '1.0.0', 'date': '2026-10-16', 'changes': [
         'First release of the Commonworld static API v1 at /api/v1/ with the Atlas module at /api/v1/atlas/.',
         'Endpoints: index.json, atlas/index.json, atlas/platforms.json, atlas/platforms/{id}.json, atlas/categories/{category}.json, atlas/earn.json.',
@@ -70,10 +75,19 @@ def schemas(origin, categories):
         'status': {'enum': STATUSES}, 'summary': {'type': 'string'}, 'tags': {'type': 'array', 'items': {'type': 'string'}},
         'has_money_flow': {'type': 'boolean'}, 'money_flow': {'type': 'array', 'items': {'$ref': '#/$defs/moneyFlow'}},
         'key_number': {'$ref': '#/$defs/keyNumber'}, 'verified_at': utc_n, 'last_checked': utc_n,
-        'claims_count': {'type': 'integer', 'minimum': 0}, 'disclosure': {'type': ['string', 'null']}}
+        'claims_count': {'type': 'integer', 'minimum': 0}, 'disclosure': {'type': ['string', 'null']},
+        'preview': {'$ref': '#/$defs/preview'}}
+    optional = {'preview'}  # added in 1.1.0: optional, so 1.0.0 records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
-               'required': list(summary_props), 'properties': summary_props}
-    defs = {'platformSummary': summary, 'moneyFlow': money_flow, 'keyNumber': key_number, 'claim': claim}
+               'required': [k for k in summary_props if k not in optional], 'properties': summary_props}
+    preview = {'type': ['object', 'null'], 'description': 'Dated homepage screenshot of the entry, or null. Third-party website content: '
+               'not covered by the Atlas CC BY 4.0 data licence (see rights). Added in schema_version 1.1.0.',
+               'required': ['path', 'url', 'width', 'height', 'captured_at', 'source_url'],
+               'properties': {'path': {'type': 'string', 'pattern': '^/atlas/screens/[a-z0-9-]+\\.webp$'}, 'url': uri, 'thumb_url': uri,
+                              'width': {'type': 'integer', 'minimum': 1}, 'height': {'type': 'integer', 'minimum': 1},
+                              'captured_at': utc, 'source_url': {'type': 'string', 'format': 'uri', 'pattern': '^https://'},
+                              'rights': {'type': 'string'}}}
+    defs = {'platformSummary': summary, 'moneyFlow': money_flow, 'keyNumber': key_number, 'claim': claim, 'preview': preview}
     platform = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': S('platform.schema.json'),
                 'title': 'Commonworld Atlas entry', 'description': 'One published Atlas entry with all its claims and sources (/api/v1/atlas/platforms/{id}.json).',
                 'type': 'object', 'allOf': [{'$ref': '#/$defs/platformSummary'}],

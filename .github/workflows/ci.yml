@@ -24,7 +24,12 @@ jobs:
         run: |
           python -m pip install -r requirements.txt playwright
           python -m playwright install --with-deps chromium
+      - name: Fetch homepage screenshots (orphan branch atlas-screens)
+        # images live only on that branch; build.py would fetch it too (and falls back to the public tarball)
+        run: git fetch --depth=1 --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens
       - name: Build
+        env:
+          CW_SCREENS_REQUIRED: '1'   # CI must publish the previews; a local build without the branch shows placeholders
         run: python atlas/site/build.py
       - name: GitHub data mirror is up to date
         run: |
@@ -35,6 +40,7 @@ jobs:
       - name: Check
         env:
           CW_PRIVATE_TERMS: ${{ secrets.CW_PRIVATE_TERMS }}
+          CW_SCREENS_REQUIRED: '1'
         run: |
           if [ -z "$CW_PRIVATE_TERMS" ]; then echo "::warning::secret CW_PRIVATE_TERMS not set, forbidden-text check skipped"; fi
           python atlas/site/check.py

@@ -7,7 +7,7 @@ Checks: every internal link/asset resolves (incl. #fragments), trailing-slash co
 lang=en, <title>, meta description, canonical (= its own clean URL), robots meta, JSON-LD that parses
 (+ BreadcrumbList), unique titles/descriptions, external links carry rel nofollow+noopener (sponsored links
 rel sponsored), sitemap lists exactly the indexable pages, robots.txt references the sitemap, 404 is noindex,
-no page over 150 KB raw (catalog index: 320 KB, it server-renders every card) and none over 60 KB gzipped.
+no page over 150 KB raw (catalog index: 360 KB, it server-renders every card) and none over 60 KB gzipped.
 Open Graph: every indexable page has its own og:image (/atlas/og/<name>.png, exists, 1200x630 PNG, <= 100 KB),
 width/height/alt, twitter:card=summary_large_image, twitter:image = og:image, twitter:site = @commonworldone.
 Official channels: every page's footer shows X + GitHub (icon + label, rel="me noopener"); landing and llms.txt/llms-full.txt carry an
@@ -34,6 +34,12 @@ links "About Commonworld" + "How the Atlas works"; /atlas/about/ opens with a li
 Growth guard: the sitemap URL set may only grow against atlas/data/sitemap-urls.txt (a removed URL fails unless atlas/data/redirects.json
 maps it to a published page, emitted as a 301 in _redirects); every slug of the committed snapshot must still exist.
 `--update-baseline` adds new URLs to the baseline (never removes any).
+Screenshots (homepage previews from the orphan branch atlas-screens): every record with `preview` has its 1200x750 WebP
+(<= 256 KB) and 600x250 top-band thumbnail (<= 25 KB) in dist, matching dist/atlas/screens/manifest.json (no drift, no orphans,
+preview null <=> no image); every image of the fetched branch manifest that belongs to a published card is published (none dropped);
+card pages carry exactly one figure.entry-shot right after the header and the sponsored slot, before the facts (alt, width,
+height, lazy, dated caption; closed = "Last captured"; placeholder without an image); grid cards start with the band thumbnail
+(alt="", 600x250, lazy, own slug) or the placeholder; _headers caches /atlas/screens/*. CW_SCREENS_REQUIRED=1 (CI) fails a build without previews.
 Also: native ad cards sit after every 12th card, the tag shelf exists with its expander, every card links to its page.
 """
 import gzip, json, os, re, struct, sys, xml.etree.ElementTree as ET
@@ -48,7 +54,7 @@ X_HANDLE, X_URL = '@commonworldone', 'https://x.com/commonworldone'  # official 
 REPO_URL, GITHUB_ORG_URL = 'https://github.com/commonworld-one/commonworld', 'https://github.com/commonworld-one'
 OFFICIAL_URLS = {X_URL, REPO_URL}  # own accounts: linked with rel="me noopener" (no nofollow)
 MAX = 150 * 1024          # raw HTML per page
-MAX_INDEX = 320 * 1024    # the catalog index and the A-Z list server-render every entry (SEO, works without JS)
+MAX_INDEX = 360 * 1024    # the catalog index and the A-Z list server-render every entry (SEO, works without JS) + a screenshot band per card
 MAX_GZ = 60 * 1024        # what actually goes over the wire, every page
 MAX_OG = 100 * 1024       # per OG image (target < 80 KB)
 SHARE_ON = json.load(open(os.path.join(HERE, 'site-config.json'))).get('share', {}).get('enabled', True)
@@ -365,6 +371,124 @@ def api_checks(parsed, locs):
     if os.path.exists(readme) and ORIGIN + D not in open(readme, encoding='utf-8').read(): fails.append(f'README.md: no link to {D}')
     print(f'api: {len(docs)} JSON files under /api/v1, {n_valid} data documents schema-valid and equal to their legacy twins, '
           f'{len(api_v1.expand_paths(spec, ids, cats)) if spec else 0} OpenAPI paths resolved')
+    return fails
+
+
+MAX_SHOT, MAX_THUMB = 256 * 1024, 25 * 1024
+SHOT_WH, THUMB_WH = (1200, 750), (600, 250)
+
+
+def webp_size(b):
+    """(width, height) of a WebP file without Pillow (VP8, VP8L, VP8X), or None."""
+    if len(b) < 30 or b[:4] != b'RIFF' or b[8:12] != b'WEBP':
+        return None
+    ch = b[12:16]
+    if ch == b'VP8 ' and b[23:26] == b'\x9d\x01\x2a':
+        w, h = struct.unpack('<HH', b[26:30])
+        return w & 0x3fff, h & 0x3fff
+    if ch == b'VP8L' and b[20] == 0x2f:
+        v = int.from_bytes(b[21:25], 'little')
+        return (v & 0x3fff) + 1, ((v >> 14) & 0x3fff) + 1
+    if ch == b'VP8X':
+        return int.from_bytes(b[24:27], 'little') + 1, int.from_bytes(b[27:30], 'little') + 1
+    return None
+
+
+def screens_checks(pages):
+    fails = []
+    sdir = os.path.join(DIST, 'atlas', 'screens')
+    mpath = os.path.join(sdir, 'manifest.json')
+    man = json.load(open(mpath))['screens'] if os.path.exists(mpath) else {}
+    recs = {r['id']: r for r in json.load(open(os.path.join(DIST, 'atlas', 'platforms.json')))['platforms']}
+    utc = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z$')
+    with_prev = {k for k, r in recs.items() if r.get('preview')}
+    if 'preview' not in next(iter(recs.values()), {}):
+        fails.append('platforms.json: records lack the preview field')
+    if os.environ.get('CW_SCREENS_REQUIRED') == '1' and not with_prev:
+        fails.append('screens: CW_SCREENS_REQUIRED=1 but no card has a preview (branch atlas-screens not fetched?)')
+    if set(man) != with_prev:
+        fails.append(f'screens: manifest vs preview drift: no preview {sorted(set(man) - with_prev)[:5]}, no manifest record {sorted(with_prev - set(man))[:5]}')
+    files = {f[:-5] for f in os.listdir(sdir) if f.endswith('.webp')} if os.path.isdir(sdir) else set()
+    tfiles = {f[:-5] for f in os.listdir(os.path.join(sdir, 't')) if f.endswith('.webp')} if os.path.isdir(os.path.join(sdir, 't')) else set()
+    if files - set(man): fails.append(f'screens: orphan image(s) without manifest record: {sorted(files - set(man))[:5]}')
+    if tfiles - set(man): fails.append(f'screens: orphan thumbnail(s): {sorted(tfiles - set(man))[:5]}')
+    if set(man) - set(recs): fails.append(f'screens: manifest slug(s) that are not published cards: {sorted(set(man) - set(recs))[:5]}')
+    thumbs_on = bool(tfiles)
+    for k in sorted(with_prev):
+        p, m = recs[k]['preview'], man.get(k) or {}
+        if p.get('path') != f'/atlas/screens/{k}.webp' or p.get('url') != ORIGIN + p.get('path', ''):
+            fails.append(f'{k}: preview path/url {p.get("path")} {p.get("url")}')
+        if not utc.match(str(p.get('captured_at'))): fails.append(f'{k}: preview.captured_at not ISO UTC')
+        if not str(p.get('source_url', '')).startswith('https://'): fails.append(f'{k}: preview.source_url not https')
+        if (p.get('captured_at'), p.get('source_url')) != (m.get('captured_at'), m.get('source_url')): fails.append(f'{k}: preview differs from screens manifest')
+        if (p.get('width'), p.get('height')) != SHOT_WH: fails.append(f'{k}: preview size {p.get("width")}x{p.get("height")}')
+        if 'not covered' not in str(p.get('rights')): fails.append(f'{k}: preview.rights missing')
+        fp = os.path.join(sdir, f'{k}.webp')
+        if not os.path.exists(fp):
+            fails.append(f'{k}: screenshot file missing in dist'); continue
+        b = open(fp, 'rb').read()
+        if webp_size(b) != SHOT_WH: fails.append(f'{k}: screenshot is not a {SHOT_WH[0]}x{SHOT_WH[1]} WebP ({webp_size(b)})')
+        if len(b) > MAX_SHOT: fails.append(f'{k}: screenshot {len(b)} bytes > {MAX_SHOT // 1024} KB')
+        if m.get('bytes') != len(b): fails.append(f'{k}: screenshot bytes differ from manifest')
+        if thumbs_on:
+            tp = os.path.join(sdir, 't', f'{k}.webp')
+            if not os.path.exists(tp):
+                fails.append(f'{k}: thumbnail missing'); continue
+            tb = open(tp, 'rb').read()
+            if webp_size(tb) != THUMB_WH: fails.append(f'{k}: thumbnail is not {THUMB_WH[0]}x{THUMB_WH[1]} ({webp_size(tb)})')
+            if len(tb) > MAX_THUMB: fails.append(f'{k}: thumbnail {len(tb)} bytes > {MAX_THUMB // 1024} KB')
+            if p.get('thumb_url') != f'{ORIGIN}/atlas/screens/t/{k}.webp': fails.append(f'{k}: preview.thumb_url {p.get("thumb_url")}')
+    # nothing dropped: every image of the fetched branch that belongs to a published card is published
+    src_dir = os.environ.get('CW_SCREENS_DIR') or os.path.join(HERE, '.screens-cache', 'branch')
+    if os.path.exists(os.path.join(src_dir, 'manifest.json')) and os.environ.get('CW_SCREENS', '').lower() not in ('0', 'off', 'no', 'false'):
+        branch = set((json.load(open(os.path.join(src_dir, 'manifest.json'))).get('screens') or {}))
+        dropped = sorted((branch & set(recs)) - with_prev)
+        if dropped: fails.append(f'screens: {len(dropped)} image(s) on the branch not published (bad file/hash?): {dropped[:5]}')
+    # card pages
+    for k, r in recs.items():
+        u = f'/atlas/platforms/{k}/'
+        if u not in pages: continue
+        h = open(pages[u], encoding='utf-8').read()
+        figs = re.findall(r'<figure class="entry-shot[^"]*">.*?</figure>', h, re.S)
+        if len(figs) != 1:
+            fails.append(f'{u}: {len(figs)} figure.entry-shot'); continue
+        f = figs[0]
+        hd = h.find('</header>', h.find('<header class="entry-head"'))
+        fi, fa = h.find('<figure class="entry-shot'), h.find('<dl class="facts">')
+        ad = h.find('data-ad-slot="atlas-platform-top"')
+        if not (hd < fi < fa) or (ad != -1 and not (hd < ad < fi)):
+            fails.append(f'{u}: order must be header, sponsored slot, screenshot, facts')
+        between = re.sub(r'<aside class="cw-ad[^>]*data-ad-slot="atlas-platform-top".*?</aside>', '', h[hd + len('</header>'):fi], flags=re.S)
+        if between.strip(): fails.append(f'{u}: unexpected content between header and screenshot')
+        if r.get('preview'):
+            im = re.search(r'<img ([^>]*)>', f)
+            a = dict(re.findall(r'(\w[\w-]*)="([^"]*)"', im.group(1))) if im else {}
+            if a.get('src') != f'/atlas/screens/{k}.webp' or not a.get('alt') or a.get('width') != '1200' or a.get('height') != '750' or a.get('loading') != 'lazy':
+                fails.append(f'{u}: screenshot <img> attributes {a}')
+            if not re.search(r'captured <time datetime=', f, re.I): fails.append(f'{u}: screenshot caption lacks "captured <time>"')
+            if r['status'] == 'closed' and 'Last captured' not in f: fails.append(f'{u}: closed card caption lacks "Last captured"')
+            if 'not part of the CC BY data' not in f: fails.append(f'{u}: screenshot caption lacks the rights line')
+        elif 'is-empty' not in f or '<img' in f:
+            fails.append(f'{u}: card without preview must show the placeholder')
+    # grids: index, category pages, closed page, "More in" blocks
+    nthumb = 0
+    for u, fp in pages.items():
+        if not u.startswith('/atlas/'): continue
+        h = open(fp, encoding='utf-8').read()
+        for m in re.finditer(r'<article class="cw-card(?! cw-adcard)[^"]*"[^>]*>(.*?)<div class="cw-meta">.*?<h3><a href="/atlas/platforms/([a-z0-9-]+)/"', h, re.S):
+            lead, slug = m.group(1), m.group(2)
+            if recs.get(slug, {}).get('preview'):
+                a = dict(re.findall(r'(\w[\w-]*)="([^"]*)"', lead))
+                want = f'/atlas/screens/t/{slug}.webp' if thumbs_on else f'/atlas/screens/{slug}.webp'
+                wh = ('600', '250') if thumbs_on else ('1200', '750')
+                if not lead.startswith('<img ') or a.get('src') != want or a.get('alt') != '' or (a.get('width'), a.get('height')) != wh or a.get('loading') != 'lazy':
+                    fails.append(f'{u}: grid card {slug} thumbnail markup {lead[:120]!r}'); continue
+                nthumb += 1
+            elif lead != '<i class="ph" aria-hidden="true"></i>':
+                fails.append(f'{u}: grid card {slug} without preview lacks the placeholder')
+    hd = open(os.path.join(DIST, '_headers')).read()
+    if '/atlas/screens/*\n  Cache-Control: public, max-age=86400' not in hd: fails.append('_headers lacks the /atlas/screens/* cache block')
+    print(f'screens: {len(with_prev)} of {len(recs)} cards with preview, {len(files)} images, {len(tfiles)} thumbnails, {nthumb} grid thumbnails checked')
     return fails
 
 
@@ -736,6 +860,7 @@ def main():
     fails += api_checks(parsed, locs)
     fails += a11y_checks(pages)
     fails += closure_checks(pages)
+    fails += screens_checks(pages)
     biggest = max(pages, key=lambda u: os.path.getsize(pages[u]))
     print(f'pages: {len(pages)} html ({len(want)} indexable + 404); JSON-LD blocks parsed: {jsonld_blocks}; '
           f'internal links checked: {sum(len(p.links) for p in parsed.values())}; sitemap URLs: {len(locs)} ({nolm} without lastmod); '

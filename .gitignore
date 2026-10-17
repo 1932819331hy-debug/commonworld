@@ -4,3 +4,4 @@ atlas/site/.private-terms
 __pycache__/
 *.pyc
 .DS_Store
+atlas/site/.screens-cache/

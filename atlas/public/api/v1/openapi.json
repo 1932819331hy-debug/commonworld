@@ -2,7 +2,7 @@
  "openapi": "3.1.0",
  "info": {
   "title": "Commonworld API",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "summary": "Static, read-only JSON API of Commonworld. First module: the Atlas of agent platforms.",
   "description": "Plain static JSON files, rebuilt with every change to the site. No key, no rate limit beyond fair use; CORS is open (Access-Control-Allow-Origin: *). Responses may be cached by Cloudflare and browsers for up to a few hours. Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) ships as /api/v2/, and /api/v1/ keeps working. Human documentation: https://commonworld.one/atlas/api/",
   "license": {
