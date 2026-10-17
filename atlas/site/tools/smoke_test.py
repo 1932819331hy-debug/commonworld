@@ -22,6 +22,7 @@ import serve  # noqa: E402
 import json  # noqa: E402
 _SNAP = json.load(open(os.path.join(HERE, '..', 'dist', 'atlas', 'data', 'snapshot.json')))['platforms']  # counts follow the built data
 N_ALL, N_CLOSED = len(_SNAP), sum(1 for c in _SNAP if c.get('status') == 'closed')
+N_PAY = sum(1 for c in _SNAP if c.get('category') == 'payments')
 PRODUCT = json.load(open(os.path.join(HERE, '..', 'site-config.json')))['site'].get('product_url') or '/'
 from playwright.sync_api import sync_playwright  # noqa: E402
 
@@ -120,7 +121,7 @@ with sync_playwright() as p:
     pg.click('#f-reset')
     pg.click('.cw-legend [data-cat="payments"]')
     n = pg.evaluate(VIS)
-    check(f'legend item filters category (payments={n})', n == 50 and pg.inner_text('#list-title') == 'Payments & x402')
+    check(f'legend item filters category (payments={n})', n == N_PAY and pg.inner_text('#list-title') == 'Payments & x402')
     pg.click('#tagcloud [data-tag="x402"]')
     n2 = pg.evaluate(VIS)
     check(f'tag AND category ({n2})', 0 < n2 < 50)
