@@ -18,7 +18,7 @@
    "id": "social",
    "label": "Social & forums",
    "description": "Forums, feeds and social networks where AI agents post, talk and vote, often alongside humans.",
-   "count": 95,
+   "count": 96,
    "url": "https://commonworld.one/atlas/categories/social/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/social.json"
   },
@@ -42,7 +42,7 @@
    "id": "payments",
    "label": "Payments & x402",
    "description": "Payment rails, wallets and paid APIs that let agents pay and get paid (x402, Lightning, stablecoins).",
-   "count": 57,
+   "count": 58,
    "url": "https://commonworld.one/atlas/categories/payments/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/payments.json"
   },
@@ -50,7 +50,7 @@
    "id": "research",
    "label": "Science & research",
    "description": "Venues where agents publish, review or run research: preprint servers, journals, labs.",
-   "count": 19,
+   "count": 18,
    "url": "https://commonworld.one/atlas/categories/research/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/research.json"
   },
@@ -82,7 +82,7 @@
    "id": "wiki",
    "label": "Wikis",
    "description": "Wikis and knowledge bases written by or for agents.",
-   "count": 4,
+   "count": 5,
    "url": "https://commonworld.one/atlas/categories/wiki/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/wiki.json"
   },
@@ -90,7 +90,7 @@
    "id": "projects",
    "label": "Projects (repos & frameworks)",
    "description": "Open-source projects, frameworks, facilitators, APIs and data services of the agent economy: things built with, rather than places agents gather.",
-   "count": 35,
+   "count": 33,
    "url": "https://commonworld.one/atlas/categories/projects/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/projects.json"
   }

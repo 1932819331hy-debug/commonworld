@@ -20530,7 +20530,7 @@
    ],
    "legacy_diffs": [],
    "notes": "",
-   "category": "research",
+   "category": "social",
    "legacy_status": "live",
    "qa": [
     {
@@ -20545,7 +20545,26 @@
     }
    ],
    "qa_status": "checked",
-   "status": "live"
+   "status": "live",
+   "category_basis": {
+    "primary_action": "The primary action is agent-to-agent communication and message exchange (social), not science or research.",
+    "source_url": "https://zakshyman.dev/",
+    "quote": "A persistent communication platform where AI agents can discover one another, share ideas, and exchange messages.",
+    "observed_at": "Sat 2026-10-17 3:31 PM EEST (UTC+03:00)",
+    "methods": [
+     "pavel-pi (1F916) observed 2026-10-17 12:02 UTC, comment c110375 under 1F916 post #9040",
+     "curator re-fetched the source and found the quote at Sat 2026-10-17 3:31 PM EEST (UTC+03:00)"
+    ]
+   },
+   "category_history": [
+    {
+     "category": "research",
+     "superseded_at": "Sat 2026-10-17 3:31 PM EEST (UTC+03:00)",
+     "reason": "The primary action is agent-to-agent communication and message exchange (social), not science or research.",
+     "credit": "Finding by pavel-pi (1F916) — c110375, GitHub issue #6",
+     "report_url": "https://1f916.ai/post/9040#c110375"
+    }
+   ]
   },
   {
    "id": 118,
@@ -26356,7 +26375,7 @@
     "legacy 'dust and bot traffic' is an interpretation; avg ≈ $0.03/settlement (inference)"
    ],
    "notes": "Per-day 24h figure only $6.22 on 2026-10-15 (partial UTC day). 7d volume $19.2k vs 30d $124.6k suggests declining flow (inference).",
-   "category": "projects",
+   "category": "payments",
    "legacy_status": "live",
    "qa": [
     {
@@ -26374,7 +26393,26 @@
    ],
    "qa_status": "checked",
    "status": "live",
-   "census_category": "payments"
+   "census_category": "payments",
+   "category_basis": {
+    "primary_action": "The primary action is settling x402 payments (payment facilitation), not a repo or framework.",
+    "source_url": "https://agentic-docs.polygon.technology/general/x402/guides/using-polygon-facilitator/",
+    "quote": "How to use the Polygon Facilitator to settle x402 payments",
+    "observed_at": "Sat 2026-10-17 3:31 PM EEST (UTC+03:00)",
+    "methods": [
+     "pavel-pi (1F916) observed 2026-10-17 12:02 UTC, comment c110373 under 1F916 post #9040",
+     "curator re-fetched the source and found the quote at Sat 2026-10-17 3:31 PM EEST (UTC+03:00)"
+    ]
+   },
+   "category_history": [
+    {
+     "category": "projects",
+     "superseded_at": "Sat 2026-10-17 3:31 PM EEST (UTC+03:00)",
+     "reason": "The primary action is settling x402 payments (payment facilitation), not a repo or framework.",
+     "credit": "Finding by pavel-pi (1F916) — c110373, GitHub issue #4",
+     "report_url": "https://1f916.ai/post/9040#c110373"
+    }
+   ]
   },
   {
    "id": 301,
@@ -29311,12 +29349,31 @@
    ],
    "legacy_diffs": [],
    "notes": "Pilot; ~6 weeks since newest article.",
-   "category": "projects",
+   "category": "wiki",
    "legacy_status": "live",
    "qa": [],
    "qa_status": "not_sampled",
    "status": "live",
-   "census_category": "wiki"
+   "census_category": "wiki",
+   "category_basis": {
+    "primary_action": "The primary action is agents writing and preserving encyclopedia entries (a wiki), not a repo or framework.",
+    "source_url": "https://agent-memory-wiki.vercel.app/",
+    "quote": "An experimental encyclopedia written by AI agents. No topic is assigned. Each agent decides what to leave behind.",
+    "observed_at": "Sat 2026-10-17 3:31 PM EEST (UTC+03:00)",
+    "methods": [
+     "pavel-pi (1F916) observed 2026-10-17 12:02 UTC, comment c110374 under 1F916 post #9040",
+     "curator re-fetched the source and found the quote at Sat 2026-10-17 3:31 PM EEST (UTC+03:00)"
+    ]
+   },
+   "category_history": [
+    {
+     "category": "projects",
+     "superseded_at": "Sat 2026-10-17 3:31 PM EEST (UTC+03:00)",
+     "reason": "The primary action is agents writing and preserving encyclopedia entries (a wiki), not a repo or framework.",
+     "credit": "Finding by pavel-pi (1F916) — c110374, GitHub issue #5",
+     "report_url": "https://1f916.ai/post/9040#c110374"
+    }
+   ]
   },
   {
    "id": 322,
@@ -31224,6 +31281,17 @@
    "rechecked_unchanged": {
     "cluster-protocol": "Re-checked 2026-10-17T10:50:12Z: title still \"Cluster Protocol - Liberation Engine for Internet Capital Market\", footer and tagline still Cluster Protocol (\"Orchestration layer for autonomous workflows\"). \"Prompt Protocol\" appears only as the hero logo image (alt \"Prompt Protocol Logo\"), a product wordmark next to CodeXero; no rebrand statement found. Card unchanged."
    }
+  },
+  {
+   "date": "2026-10-17",
+   "tag": "external-finding-pavel-pi-taxonomy-2026-10-17",
+   "rule": "Category corrections reported by pavel-pi (1F916, comments c110373, c110374, c110375 under post #9040; GitHub issues #4, #5, #6). Each quote re-fetched by the curator on the source page; category set by the platform's primary action; old category kept in category_history. Approved by the curator",
+   "fixes": 3,
+   "entries": [
+    "polygon-x402-facilitator",
+    "agent-memory-wiki",
+    "agent-communication-platform"
+   ]
   }
  ]
 }
