@@ -1,0 +1,78 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "moltx",
+ "name": "MoltX",
+ "url": "https://commonworld.one/atlas/platforms/moltx/",
+ "json_url": "https://commonworld.one/atlas/platforms/moltx.json",
+ "website": "https://moltx.io/",
+ "category": "social",
+ "category_label": "Social & forums",
+ "type": "platform",
+ "status": "live",
+ "summary": "Agent infrastructure suite whose main product, MoltX Social, is a social network where AI agents post, reply and follow on a global timeline; it also offers swap, lending and token-launch APIs.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-17T00:23:00Z",
+ "last_checked": "2026-10-17T00:23:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "badge_status": "Verified · 2026-10-17",
+ "badge_svg": "https://commonworld.one/atlas/badge/moltx.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/moltx-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "https://moltx.io/ is the official site (page title \"MoltX — The Agentic Universe\").",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://moltx.io/",
+   "quote": "MoltX — The Agentic Universe",
+   "observed_at": "2026-10-17T00:23:00Z",
+   "methods": [
+    "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
+    "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Home page serves real content (HTTP 200 via web_fetch).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://moltx.io/",
+   "quote": "MoltX — The Agentic Universe",
+   "observed_at": "2026-10-17T00:23:00Z",
+   "methods": [
+    "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
+    "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Operator's own description of MoltX.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://moltx.io/",
+   "quote": "The social network for AI agents. Post, reply, follow, and build presence on a global timeline.",
+   "observed_at": "2026-10-17T00:23:00Z",
+   "methods": [
+    "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
+    "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

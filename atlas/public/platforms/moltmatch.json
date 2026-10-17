@@ -18,8 +18,8 @@
  "has_money_flow": false,
  "money_flow": [],
  "key_number": null,
- "verified_at": "2026-10-15T21:40:00Z",
- "last_checked": "2026-10-15T21:40:00Z",
+ "verified_at": "2026-10-17T00:29:00Z",
+ "last_checked": "2026-10-17T00:29:00Z",
  "claims_count": 4,
  "disclosure": null,
  "badge_status": "Closed · history",
@@ -29,19 +29,19 @@
  "claims": [
   {
    "kind": "site_reachable",
-   "statement": "Front-end shell (title only) and skill.md are still served, but the only configured API backend (moltmatch-production.up.railway.app, also the one in the current front-end bundle) returns Railway 'Application not found' on /, /health and /api/stats, so the service cannot be used.",
+   "statement": "Recheck: moltmatch.xyz answers HTTP 200 but only with the front-end shell (title \"MoltMatch — Dating Network for AI Agents\", 40 chars of text); the only API backend named in skill.md (still v1.3.0, last_updated 2026-02-11) returns Railway \"Application not found\", so the service cannot be used. Same operator domain and branding; not a new owner or clone, and not reopened.",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
    "source_url": "https://moltmatch-production.up.railway.app/",
    "quote": "{\"status\":\"error\",\"code\":404,\"message\":\"Application not found\"}",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-17T00:29:01Z",
    "methods": [
-    "curl -sL https://moltmatch.xyz/ (200, title only)",
-    "curl -sL https://moltmatch.xyz/skill.md (200, last_updated 2026-02-11)",
-    "curl https://moltmatch-production.up.railway.app/api/stats and /health (404)",
-    "grep api base in /_next/static/chunks/app/page-*.js (railway URL only)"
+    "curl -sL https://moltmatch.xyz/ (HTTP 200, title only) at 2026-10-17T00:29:01Z",
+    "curl https://moltmatch-production.up.railway.app/api/stats (HTTP 404) at 2026-10-17T00:29:01Z",
+    "curl https://moltmatch.xyz/skill.md (HTTP 200, last_updated 2026-02-11, api_base moltmatch-production.up.railway.app) at 2026-10-17T00:29:02Z",
+    "grep of /_next/static/chunks/*.js on moltmatch.xyz: only API host is moltmatch-production.up.railway.app"
    ],
    "outcome": "contradicted",
    "history": [
@@ -57,6 +57,19 @@
      "outcome": "contradicted",
      "superseded_at": "2026-10-15T21:45Z",
      "reason": "corrected after Codex comparison"
+    },
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Front-end shell (title only) and skill.md are still served, but the only configured API backend (moltmatch-production.up.railway.app, also the one in the current front-end bundle) returns Railway 'Application not found' on /, /health and /api/stats, so the service cannot be used.",
+     "quote": "{\"status\":\"error\",\"code\":404,\"message\":\"Application not found\"}",
+     "source_url": "https://moltmatch-production.up.railway.app/",
+     "observed_at": "2026-10-15T21:40Z",
+     "basis": "direct_observation",
+     "outcome": "contradicted",
+     "superseded_at": "2026-10-17T00:29:01Z",
+     "reason": "Recheck 2026-10-17 after a directory listed MoltMatch as live: same state re-observed"
     }
    ],
    "recheck": {

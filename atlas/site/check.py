@@ -48,7 +48,7 @@ X_HANDLE, X_URL = '@commonworldone', 'https://x.com/commonworldone'  # official 
 REPO_URL, GITHUB_ORG_URL = 'https://github.com/commonworld-one/commonworld', 'https://github.com/commonworld-one'
 OFFICIAL_URLS = {X_URL, REPO_URL}  # own accounts: linked with rel="me noopener" (no nofollow)
 MAX = 150 * 1024          # raw HTML per page
-MAX_INDEX = 320 * 1024    # the catalog index server-renders all cards (SEO, works without JS)
+MAX_INDEX = 320 * 1024    # the catalog index and the A-Z list server-render every entry (SEO, works without JS)
 MAX_GZ = 60 * 1024        # what actually goes over the wire, every page
 MAX_OG = 100 * 1024       # per OG image (target < 80 KB)
 SHARE_ON = json.load(open(os.path.join(HERE, 'site-config.json'))).get('share', {}).get('enabled', True)
@@ -438,7 +438,7 @@ def main():
                 pages[url_of(rel)] = os.path.join(root, f)
     for u, fp in pages.items():
         size = os.path.getsize(fp)
-        lim = MAX_INDEX if u == '/atlas/' else MAX
+        lim = MAX_INDEX if u in ('/atlas/', '/atlas/platforms/') else MAX
         if size > lim:
             fails.append(f'{u}: {size} bytes > {lim // 1024} KB')
         gz = len(gzip.compress(open(fp, 'rb').read()))

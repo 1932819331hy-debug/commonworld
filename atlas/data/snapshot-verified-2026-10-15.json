@@ -1,6 +1,6 @@
 {
  "generated_at": "2026-10-16T01:55:23Z",
- "count": 286,
+ "count": 312,
  "platforms": [
   {
    "id": 1,
@@ -7385,19 +7385,19 @@
    "claims": [
     {
      "kind": "site_reachable",
-     "statement": "Front-end shell (title only) and skill.md are still served, but the only configured API backend (moltmatch-production.up.railway.app, also the one in the current front-end bundle) returns Railway 'Application not found' on /, /health and /api/stats, so the service cannot be used.",
+     "statement": "Recheck: moltmatch.xyz answers HTTP 200 but only with the front-end shell (title \"MoltMatch — Dating Network for AI Agents\", 40 chars of text); the only API backend named in skill.md (still v1.3.0, last_updated 2026-02-11) returns Railway \"Application not found\", so the service cannot be used. Same operator domain and branding; not a new owner or clone, and not reopened.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
      "source_url": "https://moltmatch-production.up.railway.app/",
      "quote": "{\"status\":\"error\",\"code\":404,\"message\":\"Application not found\"}",
-     "observed_at": "2026-10-15T21:40Z",
+     "observed_at": "2026-10-17T00:29:01Z",
      "methods": [
-      "curl -sL https://moltmatch.xyz/ (200, title only)",
-      "curl -sL https://moltmatch.xyz/skill.md (200, last_updated 2026-02-11)",
-      "curl https://moltmatch-production.up.railway.app/api/stats and /health (404)",
-      "grep api base in /_next/static/chunks/app/page-*.js (railway URL only)"
+      "curl -sL https://moltmatch.xyz/ (HTTP 200, title only) at 2026-10-17T00:29:01Z",
+      "curl https://moltmatch-production.up.railway.app/api/stats (HTTP 404) at 2026-10-17T00:29:01Z",
+      "curl https://moltmatch.xyz/skill.md (HTTP 200, last_updated 2026-02-11, api_base moltmatch-production.up.railway.app) at 2026-10-17T00:29:02Z",
+      "grep of /_next/static/chunks/*.js on moltmatch.xyz: only API host is moltmatch-production.up.railway.app"
      ],
      "outcome": "contradicted",
      "history": [
@@ -7413,6 +7413,19 @@
        "outcome": "contradicted",
        "superseded_at": "2026-10-15T21:45Z",
        "reason": "corrected after Codex comparison"
+      },
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Front-end shell (title only) and skill.md are still served, but the only configured API backend (moltmatch-production.up.railway.app, also the one in the current front-end bundle) returns Railway 'Application not found' on /, /health and /api/stats, so the service cannot be used.",
+       "quote": "{\"status\":\"error\",\"code\":404,\"message\":\"Application not found\"}",
+       "source_url": "https://moltmatch-production.up.railway.app/",
+       "observed_at": "2026-10-15T21:40Z",
+       "basis": "direct_observation",
+       "outcome": "contradicted",
+       "superseded_at": "2026-10-17T00:29:01Z",
+       "reason": "Recheck 2026-10-17 after a directory listed MoltMatch as live: same state re-observed"
       }
      ],
      "recheck": {
@@ -7472,7 +7485,7 @@
    "legacy_diffs": [
     "legacy ✅ live → front-end shell only; backend gone, functionally dead"
    ],
-   "notes": "Closure kept (2026-10-16 re-check): official site + skill.md still served, but the only API backend is deleted and nothing changed since skill v1.3.0 (2026-02-11) — 2 signals per protocol (backend dead by 3 requests + no activity >90 days). Re-open if a new backend appears.",
+   "notes": "Closure kept (2026-10-16 re-check): official site + skill.md still served, but the only API backend is deleted and nothing changed since skill v1.3.0 (2026-02-11) — 2 signals per protocol (backend dead by 3 requests + no activity >90 days). Re-open if a new backend appears. 2026-10-17 recheck (a directory still lists it as live): front-end shell HTTP 200, backend still \"Application not found\", skill.md unchanged since 2026-02-11; closure kept.",
    "category": "social",
    "legacy_status": "live",
    "qa": [
@@ -29087,6 +29100,1774 @@
    "qa_status": "not_sampled",
    "status": "live",
    "census_category": "wiki"
+  },
+  {
+   "id": 322,
+   "name": "moltlaunch",
+   "slug": "moltlaunch",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://moltlaunch.com/",
+   "description_en": "Marketplace and open protocol on Base where AI agents register onchain, offer gigs and take bounties, and are paid in ETH through smart-contract escrow, with onchain ratings.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://moltlaunch.com/ is the official site (page names the product: \"moltlaunch — hire AI agents, pay with ETH\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://moltlaunch.com/",
+     "quote": "moltlaunch — hire AI agents, pay with ETH",
+     "observed_at": "2026-10-17T00:28:27Z",
+     "methods": [
+      "curl -sL https://moltlaunch.com/ (HTTP 200, final URL https://moltlaunch.com/, 1572 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://moltlaunch.com/",
+     "quote": "moltlaunch — hire AI agents, pay with ETH",
+     "observed_at": "2026-10-17T00:28:27Z",
+     "methods": [
+      "curl -sL https://moltlaunch.com/ (HTTP 200, final URL https://moltlaunch.com/, 1572 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of moltlaunch.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://moltlaunch.com/",
+     "quote": "The agent marketplace and open protocol for agent work. Trustless escrow, permanent reputation, tradeable tokens on Base.",
+     "observed_at": "2026-10-17T00:28:27Z",
+     "methods": [
+      "curl -sL https://moltlaunch.com/ (HTTP 200, final URL https://moltlaunch.com/, 1572 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "work",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 323,
+   "name": "AgentLux",
+   "slug": "agentlux",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://agentlux.ai/",
+   "description_en": "Identity and services marketplace for AI agents: an agent registers an identity and avatar, lists services that others hire through escrow, and builds a reputation from receipts.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agentlux.ai/ is the official site (page names the product: \"AgentLux: Give Your AI Agent a Face and a Track Record\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentlux.ai/",
+     "quote": "AgentLux: Give Your AI Agent a Face and a Track Record",
+     "observed_at": "2026-10-17T00:28:28Z",
+     "methods": [
+      "curl -sL https://agentlux.ai/ (HTTP 200, final URL https://agentlux.ai/, 10110 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentlux.ai/",
+     "quote": "AgentLux: Give Your AI Agent a Face and a Track Record",
+     "observed_at": "2026-10-17T00:28:28Z",
+     "methods": [
+      "curl -sL https://agentlux.ai/ (HTTP 200, final URL https://agentlux.ai/, 10110 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentLux.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agentlux.ai/",
+     "quote": "List a service and the First-Hire Guarantee backs it with a platform-funded, escrowed hire",
+     "observed_at": "2026-10-17T00:28:28Z",
+     "methods": [
+      "curl -sL https://agentlux.ai/ (HTTP 200, final URL https://agentlux.ai/, 10110 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Newest blog post dated Oct 15, 2026 on the home page.",
+     "value": "2026-10-15",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentlux.ai/",
+     "quote": "Oct 15, 2026 From Connect to a Face and Identity in One Session",
+     "observed_at": "2026-10-17T00:28:28Z",
+     "methods": [
+      "curl -sL https://agentlux.ai/ (page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "work",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 324,
+   "name": "Agentsy",
+   "slug": "agentsy",
+   "entity_type": "project",
+   "verdict": "include_verified",
+   "canonical_url": "https://agentsy.live/",
+   "description_en": "Edition-based research record of how AI agents find one another and coordinate on the public internet: reviewed case accounts, evidence notes, methodology and corrections, published as Markdown and JSON.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agentsy.live/ is the official site (page names the product: \"Agentsy · agent swarms in the wild\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentsy.live/",
+     "quote": "Agentsy · agent swarms in the wild",
+     "observed_at": "2026-10-17T00:28:29Z",
+     "methods": [
+      "curl -sL https://agentsy.live/ (HTTP 200, final URL https://agentsy.live/, 106107 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentsy.live/",
+     "quote": "Agentsy · agent swarms in the wild",
+     "observed_at": "2026-10-17T00:28:29Z",
+     "methods": [
+      "curl -sL https://agentsy.live/ (HTTP 200, final URL https://agentsy.live/, 106107 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Agentsy.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agentsy.live/",
+     "quote": "Study how AI agents find one another and coordinate on the public internet.",
+     "observed_at": "2026-10-17T00:28:29Z",
+     "methods": [
+      "curl -sL https://agentsy.live/ (HTTP 200, final URL https://agentsy.live/, 106107 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Latest edition is dated 2026-09-07.",
+     "value": "2026-09-07",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentsy.live/",
+     "quote": "As of 2026-09-07. This edition contains reviewed accounts of selected agent-related coordination.",
+     "observed_at": "2026-10-17T00:28:29Z",
+     "methods": [
+      "curl -sL https://agentsy.live/ (page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "The page itself says the record is neither a complete census nor a live monitoring service. Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "research",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 325,
+   "name": "ClawHunt",
+   "slug": "clawhunt",
+   "entity_type": "tool_catalog",
+   "verdict": "include_verified",
+   "canonical_url": "https://clawhunt.app/",
+   "description_en": "Discovery directory for agentic products, grouped by section, with health tracking and security alerts.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://clawhunt.app/ is the official site (page names the product: \"ClawHunt — Discover Agentic Products\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawhunt.app/",
+     "quote": "ClawHunt — Discover Agentic Products",
+     "observed_at": "2026-10-17T00:28:30Z",
+     "methods": [
+      "curl -sL https://clawhunt.app/ (HTTP 200, final URL https://clawhunt.app/, 2480 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawhunt.app/",
+     "quote": "ClawHunt — Discover Agentic Products",
+     "observed_at": "2026-10-17T00:28:30Z",
+     "methods": [
+      "curl -sL https://clawhunt.app/ (HTTP 200, final URL https://clawhunt.app/, 2480 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of ClawHunt.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://clawhunt.app/",
+     "quote": "The discovery platform for autonomous agent products.",
+     "observed_at": "2026-10-17T00:28:30Z",
+     "methods": [
+      "curl -sL https://clawhunt.app/ (HTTP 200, final URL https://clawhunt.app/, 2480 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "registries",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 326,
+   "name": "clawrXiv",
+   "slug": "clawrxiv",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://clawrxiv.org/",
+   "description_en": "arXiv-style repository where AI agents submit research papers through an API and humans read them.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://clawrxiv.org/ is the official site (page names the product: \"clawrXiv - AI Agent Research Papers\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawrxiv.org/",
+     "quote": "clawrXiv - AI Agent Research Papers",
+     "observed_at": "2026-10-17T00:28:32Z",
+     "methods": [
+      "curl -sL https://clawrxiv.org/ (HTTP 200, final URL https://clawrxiv.org/, 14853 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawrxiv.org/",
+     "quote": "clawrXiv - AI Agent Research Papers",
+     "observed_at": "2026-10-17T00:28:32Z",
+     "methods": [
+      "curl -sL https://clawrxiv.org/ (HTTP 200, final URL https://clawrxiv.org/, 14853 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of clawrXiv.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://clawrxiv.org/",
+     "quote": "An arxiv-style research paper repository for AI agents. Agents submit papers, humans read them.",
+     "observed_at": "2026-10-17T00:28:32Z",
+     "methods": [
+      "curl -sL https://clawrxiv.org/ (HTTP 200, final URL https://clawrxiv.org/, 14853 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Newest featured paper dated Sep 16, 2026 (clawrxiv:2026.00029).",
+     "value": "2026-09-16",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawrxiv.org/",
+     "quote": "clawrxiv:2026.00029 • @ iammayasolen • Sep 16, 2026",
+     "observed_at": "2026-10-17T00:28:32Z",
+     "methods": [
+      "curl -sL https://clawrxiv.org/ (page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "research",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 327,
+   "name": "AgentCard",
+   "slug": "agentcard",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://agentcard.ai/",
+   "description_en": "Lets an AI agent pay online with a one-time-use card linked to the user's own card, with spending limits and purchase tracking; the operator says Mastercard holders pay through Mastercard Agent Pay.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agentcard.ai/ is the official site (page names the product: \"AgentCard - Secure Payments for AI Agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentcard.ai/",
+     "quote": "AgentCard - Secure Payments for AI Agents",
+     "observed_at": "2026-10-17T00:28:33Z",
+     "methods": [
+      "curl -sL https://agentcard.ai/ (HTTP 200, final URL https://agentcard.ai/, 6194 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentcard.ai/",
+     "quote": "AgentCard - Secure Payments for AI Agents",
+     "observed_at": "2026-10-17T00:28:33Z",
+     "methods": [
+      "curl -sL https://agentcard.ai/ (HTTP 200, final URL https://agentcard.ai/, 6194 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentCard.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agentcard.ai/",
+     "quote": "Let your AI agent pay for anything online, securely, with the card you already have.",
+     "observed_at": "2026-10-17T00:28:33Z",
+     "methods": [
+      "curl -sL https://agentcard.ai/ (HTTP 200, final URL https://agentcard.ai/, 6194 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "payments",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 328,
+   "name": "Sponge",
+   "slug": "paysponge",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://paysponge.com/",
+   "description_en": "Wallets and accounts that let AI agents pay, invest and earn, plus a gateway for businesses to sell services to agents over x402 and MPP.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://paysponge.com/ is the official site (page names the product: \"Sponge — AI Agent Payments & Financial Infrastructure for the Agent Economy\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://paysponge.com/",
+     "quote": "Sponge — AI Agent Payments & Financial Infrastructure for the Agent Economy",
+     "observed_at": "2026-10-17T00:28:34Z",
+     "methods": [
+      "curl -sL https://paysponge.com/ (HTTP 200, final URL https://paysponge.com/, 2130 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://paysponge.com/",
+     "quote": "Sponge — AI Agent Payments & Financial Infrastructure for the Agent Economy",
+     "observed_at": "2026-10-17T00:28:34Z",
+     "methods": [
+      "curl -sL https://paysponge.com/ (HTTP 200, final URL https://paysponge.com/, 2130 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Sponge.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://paysponge.com/",
+     "quote": "Give AI agents their own wallets to pay, invest, and earn. Sell your services to agents via x402 and MPP with no code changes.",
+     "observed_at": "2026-10-17T00:28:34Z",
+     "methods": [
+      "curl -sL https://paysponge.com/ (HTTP 200, final URL https://paysponge.com/, 2130 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "payments",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 329,
+   "name": "ClawCredit",
+   "slug": "clawcredit",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://www.claw.credit/",
+   "description_en": "Beta credit line for AI agents, underwritten by t54 according to the operator, spendable on x402 services and grown by repaying on time.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://www.claw.credit/ is the official site (page names the product: \"ClawCredit - Autonomous Credit for AI Agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.claw.credit/",
+     "quote": "ClawCredit - Autonomous Credit for AI Agents",
+     "observed_at": "2026-10-17T00:28:35Z",
+     "methods": [
+      "curl -sL https://www.claw.credit/ (HTTP 200, final URL https://claw.credit/, 13397 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.claw.credit/",
+     "quote": "ClawCredit - Autonomous Credit for AI Agents",
+     "observed_at": "2026-10-17T00:28:35Z",
+     "methods": [
+      "curl -sL https://www.claw.credit/ (HTTP 200, final URL https://claw.credit/, 13397 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of ClawCredit.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://www.claw.credit/",
+     "quote": "underwritten by t54's risk engine, spendable on any x402 service, grown by repaying on time.",
+     "observed_at": "2026-10-17T00:28:35Z",
+     "methods": [
+      "curl -sL https://www.claw.credit/ (HTTP 200, final URL https://claw.credit/, 13397 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "payments",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 330,
+   "name": "Clawcard.sh",
+   "slug": "clawcard",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://clawcard.sh/",
+   "description_en": "CLI and API that give an AI agent an email address, a phone number, payment cards, a wallet, an onchain identity and access to paid APIs.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://clawcard.sh/ is the official site (page names the product: \"Clawcard.sh — Give your agent some claws\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawcard.sh/",
+     "quote": "Clawcard.sh — Give your agent some claws",
+     "observed_at": "2026-10-17T00:28:37Z",
+     "methods": [
+      "curl -sL https://clawcard.sh/ (HTTP 200, final URL https://www.clawcard.sh/, 6054 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawcard.sh/",
+     "quote": "Clawcard.sh — Give your agent some claws",
+     "observed_at": "2026-10-17T00:28:37Z",
+     "methods": [
+      "curl -sL https://clawcard.sh/ (HTTP 200, final URL https://www.clawcard.sh/, 6054 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Clawcard.sh.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://clawcard.sh/",
+     "quote": "One command gives your agent an email, phone, cards, a wallet, on-chain identity, and access to ~300 paid APIs.",
+     "observed_at": "2026-10-17T00:28:37Z",
+     "methods": [
+      "curl -sL https://clawcard.sh/ (HTTP 200, final URL https://www.clawcard.sh/, 6054 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "payments",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 331,
+   "name": "MoltTok",
+   "slug": "molttok",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://molttok.art/",
+   "description_en": "Feed where AI agents post creative work such as ASCII art, poetry, SVG and generative visuals, and humans watch.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://molttok.art/ is the official site (page names the product: \"MoltTok - Creative Expression for AI Agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://molttok.art/",
+     "quote": "MoltTok - Creative Expression for AI Agents",
+     "observed_at": "2026-10-17T00:28:38Z",
+     "methods": [
+      "curl -sL https://molttok.art/ (HTTP 200, final URL https://molttok.art/, 1822 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://molttok.art/",
+     "quote": "MoltTok - Creative Expression for AI Agents",
+     "observed_at": "2026-10-17T00:28:38Z",
+     "methods": [
+      "curl -sL https://molttok.art/ (HTTP 200, final URL https://molttok.art/, 1822 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of MoltTok.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://molttok.art/",
+     "quote": "A platform for AI agents to share creative content: ASCII art, poetry, generative visuals, and more.",
+     "observed_at": "2026-10-17T00:28:38Z",
+     "methods": [
+      "curl -sL https://molttok.art/ (HTTP 200, final URL https://molttok.art/, 1822 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Newest post in the public feed API dated 2026-10-14.",
+     "value": "2026-10-14",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://molttok.art/api/feed?sort=new",
+     "quote": "\"created_at\":\"2026-10-14T03:53:47.811658+00:00\"",
+     "observed_at": "2026-10-17T00:28:40Z",
+     "methods": [
+      "curl -sL https://molttok.art/api/feed?sort=new (HTTP 200, newest created_at among 100 items)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "social",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 332,
+   "name": "moltr",
+   "slug": "moltr",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://moltr.ai/",
+   "description_en": "Tumblr-style social platform for AI agents: several post types, reblogs with commentary, tags, asks and following; agents join through an OpenClaw skill.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://moltr.ai/ is the official site (page names the product: \"moltr.ai - versatile social platform for agents.\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://moltr.ai/",
+     "quote": "moltr.ai - versatile social platform for agents.",
+     "observed_at": "2026-10-17T00:28:41Z",
+     "methods": [
+      "curl -sL https://moltr.ai/ (HTTP 200, final URL https://moltr.ai/, 790 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://moltr.ai/",
+     "quote": "moltr.ai - versatile social platform for agents.",
+     "observed_at": "2026-10-17T00:28:41Z",
+     "methods": [
+      "curl -sL https://moltr.ai/ (HTTP 200, final URL https://moltr.ai/, 790 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of moltr.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://moltr.ai/",
+     "quote": "A versatile social platform for AI agents. Post, reblog, tag, and ask.",
+     "observed_at": "2026-10-17T00:28:41Z",
+     "methods": [
+      "curl -sL https://moltr.ai/ (HTTP 200, final URL https://moltr.ai/, 790 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Newest public post in the API dated 2026-10-11.",
+     "value": "2026-10-11",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://moltr.ai/api/posts/public?sort=new",
+     "quote": "\"created_at\":\"2026-10-11 22:22:04\"",
+     "observed_at": "2026-10-17T00:28:42Z",
+     "methods": [
+      "curl -sL https://moltr.ai/api/posts/public?sort=new (HTTP 200, newest created_at among 20 items)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "social",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 333,
+   "name": "GnamiBlast",
+   "slug": "gnamiblast",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://gnamiblastai.vercel.app/",
+   "description_en": "Social network for OpenClaw AI agents with posts, comments, votes and communities; humans can watch.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://gnamiblastai.vercel.app/ is the official site (page names the product: \"GnamiBlast - A Social Network for AI Agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://gnamiblastai.vercel.app/",
+     "quote": "GnamiBlast - A Social Network for AI Agents",
+     "observed_at": "2026-10-17T00:28:43Z",
+     "methods": [
+      "curl -sL https://gnamiblastai.vercel.app/ (HTTP 200, final URL https://gnamiblastai.vercel.app/, 1386 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://gnamiblastai.vercel.app/",
+     "quote": "GnamiBlast - A Social Network for AI Agents",
+     "observed_at": "2026-10-17T00:28:43Z",
+     "methods": [
+      "curl -sL https://gnamiblastai.vercel.app/ (HTTP 200, final URL https://gnamiblastai.vercel.app/, 1386 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of GnamiBlast.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://gnamiblastai.vercel.app/",
+     "quote": "A social network for AI agents built around OpenClaw: posts, comments, votes, and communities.",
+     "observed_at": "2026-10-17T00:28:43Z",
+     "methods": [
+      "curl -sL https://gnamiblastai.vercel.app/ (HTTP 200, final URL https://gnamiblastai.vercel.app/, 1386 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Newest post in the \"general\" community via the public API dated 2026-08-03.",
+     "value": "2026-08-03",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://gnamiblastai.vercel.app/api/stream?submolt=general&sort=new&limit=50",
+     "quote": "\"createdAt\":\"2026-08-03T18:57:06.709Z\"",
+     "observed_at": "2026-10-17T00:28:44Z",
+     "methods": [
+      "curl -sL https://gnamiblastai.vercel.app/api/stream?submolt=general&sort=new&limit=50 (HTTP 200, newest createdAt among 14 items)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Quiet: the newest post seen in the \"general\" community was a short test post. Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "social",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 334,
+   "name": "Agent Names (USERNAME.md)",
+   "slug": "username-md-agent-names",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://username.md/agents.html",
+   "description_en": "Paid naming service that gives an AI agent a resolvable handle on username.md with its own subdomain, a did:web DID, signed responses, a per-handle llms.txt and MCP verification.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://username.md/agents.html is the official site (page names the product: \"Agent Names — give your AI agent an identity it can prove — USERNAME.md\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://username.md/agents.html",
+     "quote": "Agent Names — give your AI agent an identity it can prove — USERNAME.md",
+     "observed_at": "2026-10-17T00:28:44Z",
+     "methods": [
+      "curl -sL https://username.md/agents.html (HTTP 200, final URL https://username.md/agents.html, 7020 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://username.md/agents.html",
+     "quote": "Agent Names — give your AI agent an identity it can prove — USERNAME.md",
+     "observed_at": "2026-10-17T00:28:44Z",
+     "methods": [
+      "curl -sL https://username.md/agents.html (HTTP 200, final URL https://username.md/agents.html, 7020 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Agent Names (USERNAME.md).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://username.md/agents.html",
+     "quote": "a resolvable handle, its own subdomain, a did:web DID, signed responses, per-handle llms.txt, and MCP verification.",
+     "observed_at": "2026-10-17T00:28:44Z",
+     "methods": [
+      "curl -sL https://username.md/agents.html (HTTP 200, final URL https://username.md/agents.html, 7020 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "verification",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 335,
+   "name": "ClawArena",
+   "slug": "clawarena",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://clawarena.ai/",
+   "description_en": "Agent-only prediction arena where AI agents forecast Kalshi market outcomes and are ranked for accuracy; humans observe.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://clawarena.ai/ is the official site (page names the product: \"ClawArena\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawarena.ai/",
+     "quote": "ClawArena",
+     "observed_at": "2026-10-17T00:28:45Z",
+     "methods": [
+      "curl -sL https://clawarena.ai/ (HTTP 200, final URL https://clawarena.ai/, 2742 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawarena.ai/",
+     "quote": "ClawArena",
+     "observed_at": "2026-10-17T00:28:45Z",
+     "methods": [
+      "curl -sL https://clawarena.ai/ (HTTP 200, final URL https://clawarena.ai/, 2742 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of ClawArena.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://clawarena.ai/",
+     "quote": "Where AI agents predict Kalshi markets and compete for accuracy.",
+     "observed_at": "2026-10-17T00:28:45Z",
+     "methods": [
+      "curl -sL https://clawarena.ai/ (HTTP 200, final URL https://clawarena.ai/, 2742 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "arenas",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 336,
+   "name": "A2A Directory",
+   "slug": "a2a-directory",
+   "entity_type": "tool_catalog",
+   "verdict": "include_verified",
+   "canonical_url": "https://a2a.directory/",
+   "description_en": "Open directory of agents that speak the Agent-to-Agent (A2A) protocol, browsable and comparable by category.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://a2a.directory/ is the official site (page names the product: \"A2A Agent Directory | a2a.directory\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://a2a.directory/",
+     "quote": "A2A Agent Directory | a2a.directory",
+     "observed_at": "2026-10-17T00:28:46Z",
+     "methods": [
+      "curl -sL https://a2a.directory/ (HTTP 200, final URL https://a2a.directory/, 7954 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://a2a.directory/",
+     "quote": "A2A Agent Directory | a2a.directory",
+     "observed_at": "2026-10-17T00:28:46Z",
+     "methods": [
+      "curl -sL https://a2a.directory/ (HTTP 200, final URL https://a2a.directory/, 7954 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of A2A Directory.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://a2a.directory/",
+     "quote": "The open directory for Agent-to-Agent protocol agents. Find, compare, and connect.",
+     "observed_at": "2026-10-17T00:28:46Z",
+     "methods": [
+      "curl -sL https://a2a.directory/ (HTTP 200, final URL https://a2a.directory/, 7954 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "registries",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 337,
+   "name": "swarmsay",
+   "slug": "swarmsay",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://swarmsay.com/",
+   "description_en": "Public message board and post office for AI agents: persistent identities, public boards and direct messages across models, frameworks and operators, over REST API and MCP.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://swarmsay.com/ is the official site (page names the product: \"swarmsay — the message board and post office for AI agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://swarmsay.com/",
+     "quote": "swarmsay — the message board and post office for AI agents",
+     "observed_at": "2026-10-17T00:28:48Z",
+     "methods": [
+      "curl -sL https://swarmsay.com/ (HTTP 200, final URL https://swarmsay.com/, 7238 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://swarmsay.com/",
+     "quote": "swarmsay — the message board and post office for AI agents",
+     "observed_at": "2026-10-17T00:28:48Z",
+     "methods": [
+      "curl -sL https://swarmsay.com/ (HTTP 200, final URL https://swarmsay.com/, 7238 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of swarmsay.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://swarmsay.com/",
+     "quote": "swarmsay gives autonomous agents persistent identities, public boards and direct messages so they can communicate across models, frameworks and operators.",
+     "observed_at": "2026-10-17T00:28:48Z",
+     "methods": [
+      "curl -sL https://swarmsay.com/ (HTTP 200, final URL https://swarmsay.com/, 7238 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "social",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 338,
+   "name": "Commonlog",
+   "slug": "commonlog",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://commonlog.ai/",
+   "description_en": "Permissionless, append-only public log where agents post without signing up (the first keyless post mints a key), plus email addresses so agents can reach agents on other products.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://commonlog.ai/ is the official site (page names the product: \"commonlog — a permissionless, permanent log for agents.\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://commonlog.ai/",
+     "quote": "commonlog — a permissionless, permanent log for agents.",
+     "observed_at": "2026-10-17T00:28:49Z",
+     "methods": [
+      "curl -sL https://commonlog.ai/ (HTTP 200, final URL https://commonlog.ai/, 63247 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://commonlog.ai/",
+     "quote": "commonlog — a permissionless, permanent log for agents.",
+     "observed_at": "2026-10-17T00:28:49Z",
+     "methods": [
+      "curl -sL https://commonlog.ai/ (HTTP 200, final URL https://commonlog.ai/, 63247 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Commonlog.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://commonlog.ai/",
+     "quote": "Give your agent a Commonlog email address so agents on other products can reach it.",
+     "observed_at": "2026-10-17T00:28:49Z",
+     "methods": [
+      "curl -sL https://commonlog.ai/ (HTTP 200, final URL https://commonlog.ai/, 63247 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Newest log entry #298 dated 2026-10-15.",
+     "value": "2026-10-15",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://commonlog.ai/",
+     "quote": "#298 2026-10-15T20:45:39Z",
+     "observed_at": "2026-10-17T00:28:49Z",
+     "methods": [
+      "curl -sL https://commonlog.ai/ (entries listed newest first)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "social",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 339,
+   "name": "Nothing.gripe",
+   "slug": "nothing-gripe",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://nothing.gripe/",
+   "description_en": "Funded task marketplace without bidding: a requester funds a task first, then a doer (a person or an AI agent) claims it, completes it, proves it and is paid in crypto.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://nothing.gripe/ is the official site (page names the product: \"Nothing.gripe | Funded Task Marketplace & No-Bid Paid Work\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://nothing.gripe/",
+     "quote": "Nothing.gripe | Funded Task Marketplace & No-Bid Paid Work",
+     "observed_at": "2026-10-17T00:28:50Z",
+     "methods": [
+      "curl -sL https://nothing.gripe/ (HTTP 200, final URL https://nothing.gripe/, 27945 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://nothing.gripe/",
+     "quote": "Nothing.gripe | Funded Task Marketplace & No-Bid Paid Work",
+     "observed_at": "2026-10-17T00:28:50Z",
+     "methods": [
+      "curl -sL https://nothing.gripe/ (HTTP 200, final URL https://nothing.gripe/, 27945 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Nothing.gripe.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://nothing.gripe/",
+     "quote": "Nothing.gripe funds the task first, then a doer claims it, completes it, proves it, and gets paid in crypto.",
+     "observed_at": "2026-10-17T00:28:50Z",
+     "methods": [
+      "curl -sL https://nothing.gripe/ (HTTP 200, final URL https://nothing.gripe/, 27945 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "operator",
+     "statement": "The FAQ covers tasks taken by AI agents (deposit rule for new agents).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://nothing.gripe/",
+     "quote": "to any task an AI agent takes while it has fewer than 3 completed tasks",
+     "observed_at": "2026-10-17T00:28:50Z",
+     "methods": [
+      "curl -sL https://nothing.gripe/ (page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "work",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 340,
+   "name": "Clawsino",
+   "slug": "clawsino",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://clawsino.ai/",
+   "description_en": "Daily Lightning lottery for AI agents: an agent registers with a Lightning address and buys a ticket; the draw pays 75% of the pot to the winner and 25% to open source.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://clawsino.ai/ is the official site (page names the product: \"Clawsino - Daily Lottery for AI Agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawsino.ai/",
+     "quote": "Clawsino - Daily Lottery for AI Agents",
+     "observed_at": "2026-10-17T00:28:51Z",
+     "methods": [
+      "curl -sL https://clawsino.ai/ (HTTP 200, final URL https://clawsino.ai/, 1445 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawsino.ai/",
+     "quote": "Clawsino - Daily Lottery for AI Agents",
+     "observed_at": "2026-10-17T00:28:51Z",
+     "methods": [
+      "curl -sL https://clawsino.ai/ (HTTP 200, final URL https://clawsino.ai/, 1445 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Clawsino.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://clawsino.ai/",
+     "quote": "A daily lottery for AI agents. $2 tickets, 9pm CST draws, 75% to winner, 25% to open source.",
+     "observed_at": "2026-10-17T00:28:51Z",
+     "methods": [
+      "curl -sL https://clawsino.ai/ (HTTP 200, final URL https://clawsino.ai/, 1445 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "At observation the home page showed an empty pot and no winners yet. Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "worlds",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 341,
+   "name": "Voidpay (Voidly)",
+   "slug": "voidpay",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://voidly.ai/pay",
+   "description_en": "Voidly's marketplace of agent service storefronts: agents pay per call in USDC on Base after reading HTTP 402 terms, or prepare checkout links that the owner approves in a browser.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://voidly.ai/pay is the official site (page names the product: \"Voidpay — Find agent services or build a storefront\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://voidly.ai/pay",
+     "quote": "Voidpay — Find agent services or build a storefront",
+     "observed_at": "2026-10-17T00:28:52Z",
+     "methods": [
+      "curl -sL https://voidly.ai/pay (HTTP 200, final URL https://voidly.ai/pay, 9332 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://voidly.ai/pay",
+     "quote": "Voidpay — Find agent services or build a storefront",
+     "observed_at": "2026-10-17T00:28:52Z",
+     "methods": [
+      "curl -sL https://voidly.ai/pay (HTTP 200, final URL https://voidly.ai/pay, 9332 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Voidpay (Voidly).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://voidly.ai/pay",
+     "quote": "Agents can pay per call. On supported resources, a wallet-enabled agent reads the current HTTP 402 terms and pays USDC on Base within its local client limits.",
+     "observed_at": "2026-10-17T00:28:52Z",
+     "methods": [
+      "curl -sL https://voidly.ai/pay (HTTP 200, final URL https://voidly.ai/pay, 9332 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "payments",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 342,
+   "name": "Clawnch",
+   "slug": "clawnch",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://clawn.ch/",
+   "description_en": "Token infrastructure for AI agents on Robinhood Chain: agent-only token launches through signed launch tickets and Bags, plus an SDK and finance toolkit; the operator says launching agents earn trading fees.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://clawn.ch/ is the official site (page names the product: \"clawnch - token infrastructure for agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawn.ch/",
+     "quote": "clawnch - token infrastructure for agents",
+     "observed_at": "2026-10-17T00:28:53Z",
+     "methods": [
+      "curl -sL https://clawn.ch/ (HTTP 200, final URL https://www.clawn.ch/, 879 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://clawn.ch/",
+     "quote": "clawnch - token infrastructure for agents",
+     "observed_at": "2026-10-17T00:28:53Z",
+     "methods": [
+      "curl -sL https://clawn.ch/ (HTTP 200, final URL https://www.clawn.ch/, 879 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Clawnch.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://clawn.ch/",
+     "quote": "Token infrastructure for AI agents on Robinhood Chain. Agent-only token launches via Bags, signed launch tickets, and a finance toolkit for autonomous agents.",
+     "observed_at": "2026-10-17T00:28:53Z",
+     "methods": [
+      "curl -sL https://clawn.ch/ (HTTP 200, final URL https://www.clawn.ch/, 879 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Token project; no market figures are shown on this card. Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "payments",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 343,
+   "name": "AgentBazaar",
+   "slug": "agentbazaar",
+   "entity_type": "project",
+   "verdict": "include_verified",
+   "canonical_url": "https://github.com/ptreezh/agentmarket",
+   "description_en": "Open-source, Git-native gig marketplace where AI agents claim tasks to earn credits and post tasks to hire other agents, with no central server; credits are not money.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://github.com/ptreezh/agentmarket is the official site (page names the product: \"ptreezh/agentmarket\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://github.com/ptreezh/agentmarket",
+     "quote": "ptreezh/agentmarket",
+     "observed_at": "2026-10-17T00:28:54Z",
+     "methods": [
+      "curl -sL https://github.com/ptreezh/agentmarket (HTTP 200, final URL https://github.com/ptreezh/agentmarket, 12057 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://github.com/ptreezh/agentmarket",
+     "quote": "ptreezh/agentmarket",
+     "observed_at": "2026-10-17T00:28:54Z",
+     "methods": [
+      "curl -sL https://github.com/ptreezh/agentmarket (HTTP 200, final URL https://github.com/ptreezh/agentmarket, 12057 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentBazaar.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://github.com/ptreezh/agentmarket",
+     "quote": "An open, zero-cost, Git-native marketplace where AI agents trade tasks for credits.",
+     "observed_at": "2026-10-17T00:28:54Z",
+     "methods": [
+      "curl -sL https://github.com/ptreezh/agentmarket (HTTP 200, final URL https://github.com/ptreezh/agentmarket, 12057 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Last push to the repository on 2026-10-16.",
+     "value": "2026-10-16",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://github.com/ptreezh/agentmarket",
+     "quote": "\"pushed_at\": \"2026-10-16T03:59:53Z\"",
+     "observed_at": "2026-10-17T00:28:56Z",
+     "methods": [
+      "GitHub API https://api.github.com/repos/ptreezh/agentmarket"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "work",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 344,
+   "name": "AgentNDX",
+   "slug": "agentndx",
+   "entity_type": "tool_catalog",
+   "verdict": "include_verified",
+   "canonical_url": "https://agentndx.ai/",
+   "description_en": "Curated, agent-queryable registry of MCP servers, A2A agents and x402-enabled services, with quality scores and its own MCP endpoint.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agentndx.ai/ is the official site (page names the product: \"AgentNDX — MCP Server Directory\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentndx.ai/",
+     "quote": "AgentNDX — MCP Server Directory",
+     "observed_at": "2026-10-17T00:28:56Z",
+     "methods": [
+      "curl -sL https://agentndx.ai/ (HTTP 200, final URL https://agentndx.ai/, 6663 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentndx.ai/",
+     "quote": "AgentNDX — MCP Server Directory",
+     "observed_at": "2026-10-17T00:28:56Z",
+     "methods": [
+      "curl -sL https://agentndx.ai/ (HTTP 200, final URL https://agentndx.ai/, 6663 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentNDX.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agentndx.ai/",
+     "quote": "The curated registry for the agentic web.",
+     "observed_at": "2026-10-17T00:28:56Z",
+     "methods": [
+      "curl -sL https://agentndx.ai/ (HTTP 200, final URL https://agentndx.ai/, 6663 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Newest listings on the home page dated 2026-10-16.",
+     "value": "2026-10-16",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentndx.ai/",
+     "quote": "MCP 2026-10-16",
+     "observed_at": "2026-10-17T00:28:56Z",
+     "methods": [
+      "curl -sL https://agentndx.ai/ (page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "registries",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 345,
+   "name": "ClawSites",
+   "slug": "clawsites",
+   "entity_type": "tool_catalog",
+   "verdict": "include_verified",
+   "canonical_url": "https://www.clawsites.com/",
+   "description_en": "Curated directory of AI agents, agentic tools, MCP servers, infrastructure and projects of the agentic web, filterable by category, product layer and capability.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://www.clawsites.com/ is the official site (page names the product: \"Discover AI Agents & AI Tools | ClawSites\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.clawsites.com/",
+     "quote": "Discover AI Agents & AI Tools | ClawSites",
+     "observed_at": "2026-10-17T00:28:57Z",
+     "methods": [
+      "curl -sL https://www.clawsites.com/ (HTTP 200, final URL https://www.clawsites.com/, 7626 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.clawsites.com/",
+     "quote": "Discover AI Agents & AI Tools | ClawSites",
+     "observed_at": "2026-10-17T00:28:57Z",
+     "methods": [
+      "curl -sL https://www.clawsites.com/ (HTTP 200, final URL https://www.clawsites.com/, 7626 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of ClawSites.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://www.clawsites.com/",
+     "quote": "Explore agentic AI through a curated directory of AI agents, AI tools, MCP servers, frameworks, infrastructure, and projects shaping the agentic web.",
+     "observed_at": "2026-10-17T00:28:57Z",
+     "methods": [
+      "curl -sL https://www.clawsites.com/ (HTTP 200, final URL https://www.clawsites.com/, 7626 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Broad directory: only part of its listings are agent platforms in the Atlas sense. This card is about the directory itself, which was also the discovery source for the 2026-10-17 additions.",
+   "category": "registries",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 346,
+   "name": "MoltX",
+   "slug": "moltx",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://moltx.io/",
+   "description_en": "Agent infrastructure suite whose main product, MoltX Social, is a social network where AI agents post, reply and follow on a global timeline; it also offers swap, lending and token-launch APIs.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://moltx.io/ is the official site (page title \"MoltX — The Agentic Universe\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://moltx.io/",
+     "quote": "MoltX — The Agentic Universe",
+     "observed_at": "2026-10-17T00:23:00Z",
+     "methods": [
+      "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
+      "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200 via web_fetch).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://moltx.io/",
+     "quote": "MoltX — The Agentic Universe",
+     "observed_at": "2026-10-17T00:23:00Z",
+     "methods": [
+      "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
+      "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of MoltX.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://moltx.io/",
+     "quote": "The social network for AI agents. Post, reply, follow, and build presence on a global timeline.",
+     "observed_at": "2026-10-17T00:23:00Z",
+     "methods": [
+      "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
+      "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "social",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
+  },
+  {
+   "id": 347,
+   "name": "PayLobster",
+   "slug": "paylobster",
+   "entity_type": "platform",
+   "verdict": "include_verified",
+   "canonical_url": "https://www.paylobster.com/",
+   "description_en": "Payments layer for AI agents on Base: USDC escrow between agents, onchain reputation and credit scoring, x402 paid calls and spending mandates, through an SDK, CLI and MCP tools.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://www.paylobster.com/ is the official site (page title \"PayLobster — The Financial OS for AI Agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.paylobster.com/",
+     "quote": "PayLobster — The Financial OS for AI Agents",
+     "observed_at": "2026-10-17T00:23:00Z",
+     "methods": [
+      "web_fetch https://www.paylobster.com/ (HTTP 200, page text; title \"PayLobster — The Financial OS for AI Agents\")",
+      "curl -sL https://www.paylobster.com/ from the sandbox: no response at 00:15 and 00:19 UTC (HTTP 503 seen once in the 2026-10-17 discovery pass)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200 via web_fetch).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.paylobster.com/",
+     "quote": "PayLobster — The Financial OS for AI Agents",
+     "observed_at": "2026-10-17T00:23:00Z",
+     "methods": [
+      "web_fetch https://www.paylobster.com/ (HTTP 200, page text; title \"PayLobster — The Financial OS for AI Agents\")",
+      "curl -sL https://www.paylobster.com/ from the sandbox: no response at 00:15 and 00:19 UTC (HTTP 503 seen once in the 2026-10-17 discovery pass)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of PayLobster.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://www.paylobster.com/",
+     "quote": "PayLobster adds escrow, reputation, and credit scoring — on-chain.",
+     "observed_at": "2026-10-17T00:23:00Z",
+     "methods": [
+      "web_fetch https://www.paylobster.com/ (HTTP 200, page text; title \"PayLobster — The Financial OS for AI Agents\")",
+      "curl -sL https://www.paylobster.com/ from the sandbox: no response at 00:15 and 00:19 UTC (HTTP 503 seen once in the 2026-10-17 discovery pass)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "legacy_diffs": [],
+   "notes": "Reachability varies by network path: web_fetch got the page, sandbox curl did not. Discovered via the ClawSites directory (clawsites.com) on 2026-10-17; ClawSites text was not used as evidence, every claim comes from the operator's own pages.",
+   "category": "payments",
+   "qa": [],
+   "qa_status": "not_sampled",
+   "status": "live"
   }
  ],
  "amendments": [
@@ -29156,6 +30937,49 @@
     "moltstack",
     "moltcities"
    ]
+  },
+  {
+   "date": "2026-10-17",
+   "tag": "clawsites-additions-2026-10-17",
+   "rule": "New cards for in-scope platforms found via the ClawSites directory, each verified on the operator's own pages (quote, URL, UTC time); ClawSites text not used as evidence. MoltMatch rechecked: closure kept. Approved by the curator",
+   "added": [
+    "moltlaunch",
+    "agentlux",
+    "agentsy",
+    "clawhunt",
+    "clawrxiv",
+    "agentcard",
+    "paysponge",
+    "clawcredit",
+    "clawcard",
+    "molttok",
+    "moltr",
+    "gnamiblast",
+    "username-md-agent-names",
+    "clawarena",
+    "a2a-directory",
+    "swarmsay",
+    "commonlog",
+    "nothing-gripe",
+    "clawsino",
+    "voidpay",
+    "clawnch",
+    "agentbazaar",
+    "agentndx",
+    "clawsites",
+    "moltx",
+    "paylobster"
+   ],
+   "rechecked": [
+    "moltmatch"
+   ],
+   "skipped": {
+    "moltipedia": "unreachable (curl TLS EOF; web_fetch: no extractable text)",
+    "clawdslist": "unreachable (curl timeout/proxy 502; web_fetch failed)",
+    "agentpixels": "unreachable (curl timeout/proxy 502; web_fetch: no extractable text)",
+    "x402claw": "unreachable (curl connect refused/proxy 502; web_fetch: no extractable text)",
+    "molt-chess": "front-end only: its API (chess.unabotter.xyz/api/*) returns Railway \"Application not found\"; page shows 0 agents / 0 games"
+   }
   }
  ]
 }

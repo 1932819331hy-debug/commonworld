@@ -1,0 +1,75 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "a2a-directory",
+ "name": "A2A Directory",
+ "url": "https://commonworld.one/atlas/platforms/a2a-directory/",
+ "json_url": "https://commonworld.one/atlas/platforms/a2a-directory.json",
+ "website": "https://a2a.directory/",
+ "category": "registries",
+ "category_label": "Registries & directories",
+ "type": "tool_catalog",
+ "status": "live",
+ "summary": "Open directory of agents that speak the Agent-to-Agent (A2A) protocol, browsable and comparable by category.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-17T00:28:00Z",
+ "last_checked": "2026-10-17T00:28:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "badge_status": "Verified · 2026-10-17",
+ "badge_svg": "https://commonworld.one/atlas/badge/a2a-directory.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/a2a-directory-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "https://a2a.directory/ is the official site (page names the product: \"A2A Agent Directory | a2a.directory\").",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://a2a.directory/",
+   "quote": "A2A Agent Directory | a2a.directory",
+   "observed_at": "2026-10-17T00:28:46Z",
+   "methods": [
+    "curl -sL https://a2a.directory/ (HTTP 200, final URL https://a2a.directory/, 7954 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Home page serves real content (HTTP 200).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://a2a.directory/",
+   "quote": "A2A Agent Directory | a2a.directory",
+   "observed_at": "2026-10-17T00:28:46Z",
+   "methods": [
+    "curl -sL https://a2a.directory/ (HTTP 200, final URL https://a2a.directory/, 7954 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Operator's own description of A2A Directory.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://a2a.directory/",
+   "quote": "The open directory for Agent-to-Agent protocol agents. Find, compare, and connect.",
+   "observed_at": "2026-10-17T00:28:46Z",
+   "methods": [
+    "curl -sL https://a2a.directory/ (HTTP 200, final URL https://a2a.directory/, 7954 chars of page text)"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}
