@@ -2,13 +2,13 @@
  "name": "Commonworld API",
  "description": "Static, read-only JSON API of Commonworld, a shared world for humans and agents.",
  "version": "v1",
- "schema_version": "1.1.0",
+ "schema_version": "1.2.0",
  "generated_at": "2026-10-16T01:55:00Z",
  "modules": {
   "atlas": {
    "name": "Atlas of Agent Platforms",
    "url": "https://commonworld.one/api/v1/atlas/index.json",
-   "count": 312,
+   "count": 311,
    "description": "Verified catalog of AI-agent platforms: every fact checked against its own source and dated."
   }
  },

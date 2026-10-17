@@ -2,7 +2,7 @@
  "name": "Commonworld Atlas",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-16T01:55:23Z",
- "count": 312,
+ "count": 311,
  "license": "CC BY 4.0",
  "fields_note": "observed_at values are ISO 8601 UTC timestamps.",
  "platforms": [
@@ -28500,140 +28500,6 @@
    "qa_status": "checked",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/universal-agent-forum/"
-  },
-  {
-   "id": 314,
-   "slug": "venice-ai-x402",
-   "name": "Venice AI (x402)",
-   "entity_type": "project",
-   "category": "projects",
-   "census_category": "payments",
-   "status": "live",
-   "canonical_url": "https://venice.ai",
-   "description_en": "Venice AI is a privacy-focused, OpenAI-compatible LLM and image API that accepts x402 wallet top-ups (10 USDC prepay).",
-   "claims": [
-    {
-     "kind": "site_reachable",
-     "statement": "Official site returns HTTP 200 with real content",
-     "value": null,
-     "unit": null,
-     "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://venice.ai",
-     "quote": "Uncensored, privacy-preserving LLM and image API (OpenAI-compatible). x402 wallet top-up model with 10 USDC prepay.",
-     "observed_at": "2026-10-15T18:10:00Z",
-     "methods": [
-      "curl -sL https://venice.ai"
-     ],
-     "outcome": "supported"
-    },
-    {
-     "kind": "canonical_url",
-     "statement": "Official URL (x402-list base_url/website for this service, operator-owned)",
-     "value": null,
-     "unit": null,
-     "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://venice.ai",
-     "quote": null,
-     "observed_at": "2026-10-15T18:10:00Z",
-     "methods": [
-      "GET https://x402-list.com/api/v1/services?per_page=100",
-      "curl -sL https://venice.ai"
-     ],
-     "outcome": "supported"
-    },
-    {
-     "kind": "description",
-     "statement": "Venice AI is a privacy-focused, OpenAI-compatible LLM and image API that accepts x402 wallet top-ups (10 USDC prepay).",
-     "value": null,
-     "unit": null,
-     "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://venice.ai",
-     "quote": "Uncensored, privacy-preserving LLM and image API (OpenAI-compatible). x402 wallet top-up model with 10 USDC prepay.",
-     "observed_at": "2026-10-15T18:10:00Z",
-     "methods": [
-      "curl -sL https://venice.ai",
-      "GET https://x402-list.com/api/v1/services?per_page=100"
-     ],
-     "outcome": "supported"
-    },
-    {
-     "kind": "economic_flow",
-     "statement": "x402 settlement to this service's payout address: $3,494.42 in 30d from 59 distinct buyers, 611 settlements; top buyer share 57.4%",
-     "value": 3494.42,
-     "unit": "USD (USDC)",
-     "window": "trailing 30d to 2026-10-15",
-     "basis": "independent_source",
-     "source_url": "https://x402-list.com/api/v1/services?per_page=100",
-     "quote": "traction.volume_usd_30d=3494.42, unique_buyers_30d=59, top_buyer_share_30d=0.5738",
-     "observed_at": "2026-10-15T18:08:00Z",
-     "methods": [
-      "GET https://x402-list.com/api/v1/services?per_page=100"
-     ],
-     "outcome": "supported"
-    },
-    {
-     "kind": "economic_flow",
-     "statement": "Sum of daily volume for UTC days 2026-10-09..2026-10-15 (last day partial): $275.14",
-     "value": 275.14,
-     "unit": "USD (USDC)",
-     "window": "2026-10-09..2026-10-15 UTC",
-     "basis": "independent_source",
-     "source_url": "https://x402-list.com/api/v1/services/venice-ai/volume?days=60",
-     "quote": null,
-     "observed_at": "2026-10-15T18:10:00Z",
-     "methods": [
-      "GET https://x402-list.com/api/v1/services/venice-ai/volume?days=60"
-     ],
-     "outcome": "supported"
-    },
-    {
-     "kind": "recent_activity",
-     "statement": "Last UTC day with ≥$1 settled: 2026-10-15; first settlement 2026-03-25",
-     "value": null,
-     "unit": null,
-     "window": null,
-     "basis": "independent_source",
-     "source_url": "https://x402-list.com/api/v1/services/venice-ai/volume?days=60",
-     "quote": null,
-     "observed_at": "2026-10-15T18:10:00Z",
-     "methods": [
-      "GET https://x402-list.com/api/v1/services/venice-ai/volume?days=60"
-     ],
-     "outcome": "supported"
-    }
-   ],
-   "qa": [
-    {
-     "id": 314,
-     "name": "Venice AI (x402)",
-     "section": "1_money_metric",
-     "claim_kind": "economic_flow",
-     "first_agent_value": "3494.42 USD (USDC) (trailing 30d to 2026-10-15)",
-     "qa_value": "3,494.31",
-     "qa_outcome": "agree",
-     "source_url": "https://x402-list.com/api/v1/services/venice-ai/volume?days=60",
-     "observed_at": "2026-10-15T18:19:15Z",
-     "note": ""
-    },
-    {
-     "id": 314,
-     "name": "Venice AI (x402)",
-     "section": "1_money_metric",
-     "claim_kind": "economic_flow",
-     "first_agent_value": "275.14 USD (USDC) (2026-10-09..2026-10-15 UTC)",
-     "qa_value": "275.17",
-     "qa_outcome": "agree",
-     "source_url": "https://x402-list.com/api/v1/services/venice-ai/volume?days=60",
-     "observed_at": "2026-10-15T18:19:15Z",
-     "note": ""
-    }
-   ],
-   "qa_status": "checked",
-   "verdict": "include_verified",
-   "url": "https://commonworld.one/atlas/platforms/venice-ai-x402/"
   },
   {
    "id": 74,

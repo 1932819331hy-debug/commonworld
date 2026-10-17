@@ -601,6 +601,7 @@ def build_index(site):
                                 (f'{b}/earn.json', 'application/json', 'Where agents get paid: sourced money figures (earn.json)'),
                                 (api_v1.API_BASE + '/atlas/platforms.json', 'application/json', 'API v1: all entries'),
                                 (f'{b}/llms.txt', 'text/plain', 'Atlas guide for AI agents (llms.txt)'),
+                                (SAFETY_PATH, 'application/json', 'Link safety report: Google Safe Browsing status of every linked domain (safety.json)'),
                                 ('/llms-full.txt', 'text/plain', 'One line per entry (llms-full.txt)')])]
     return page(site, path=f'{b}/', title='Atlas of Agent Platforms: verified catalog | Commonworld',
                 description=f'{n} places where AI agents talk, work, get paid, compete and publish research, each checked against its own sources, with dated numbers you can trace.',
@@ -1066,6 +1067,9 @@ def build_about(site):
 <ul><li><b>Human review</b>: an official shutdown statement, or at least two independent signals (for example the domain fails by two methods and there is no activity anywhere for 90+ days). Cards closed this way are never reopened automatically, because a re-registered or parked domain can answer too.</li>
 <li><b>Automated weekly check</b>: the site could not be reached in 2 consecutive weekly checks, each with several attempts plus alternate URLs (http/https, www). One failed week only marks the card as suspected internally; nothing is published. Such cards show “Closed by automated check since &lt;date&gt;” and reopen automatically if the site answers again.</li></ul>
 <p>A single failed page load is never treated as proof, and a blocked or JavaScript-only page counts as reachable. Closed cards stay as history records with their dates; pages and IDs are never removed.</p>
+<h2 id="link-safety">Link safety</h2>
+<p>Every domain the Atlas links to is checked daily against Google Safe Browsing. If a domain is flagged, its entry is removed from the Atlas, its links disappear from every page and data file, and its page becomes a short “entry removed” note, so the permanent ID keeps working. An entry can return once the flag clears and a fresh check passes.</p>
+<p>The latest result is published as <a href="{SAFETY_PATH}">safety.json</a> (status of every linked domain, check time, summary counts), and every entry in the JSON files carries a <code>link_safety</code> field with the status of its official URL and when it was checked.</p>
 <h2 id="badges">Badges for listed platforms</h2>
 <p>Every published card has a free status badge (<i>Verified</i>, <i>Listed</i> or <i>Closed</i>) that its platform can show on its own site or README. It is rebuilt with every weekly check. See <a href="{b}/badge/">Atlas badges</a>.</p>
 <h2 id="tags">Tags</h2>
@@ -1416,6 +1420,79 @@ def build_404(site):
                 body=body, active='', noindex=True)
 
 
+REMOVED_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'removed.json'))  # link-safety removals (atlas/CURATION.md#link-safety)
+
+
+def load_removed():
+    """atlas/data/removed.json -> list of {slug, host, removed_on, reason}. Removed entries leave every listing and data file;
+    their slug keeps a minimal noindex stub page (slugs are permanent)."""
+    if not os.path.exists(REMOVED_FILE):
+        return []
+    return list(json.load(open(REMOVED_FILE)).get('removed') or [])
+
+
+LINK_SAFETY_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'link-safety.json'))  # written daily by atlas/tools/safebrowsing_check.py
+SAFETY_PATH = '/atlas/safety.json'
+
+
+def _host(url):
+    from urllib.parse import urlsplit
+    try:
+        h = (urlsplit(url or '').hostname or '').lower().rstrip('.')
+    except ValueError:
+        return ''
+    return h[4:] if h.startswith('www.') else h
+
+
+def load_link_safety():
+    """atlas/data/link-safety.json (latest daily Google Safe Browsing report) -> dict, or {} before the first run."""
+    if not os.path.exists(LINK_SAFETY_FILE):
+        return {}
+    return json.load(open(LINK_SAFETY_FILE, encoding='utf-8'))
+
+
+def link_safety_of(site, c):
+    """`link_safety` of one entry: the latest report's status for the host of its official URL (canonical_url)."""
+    r = (site.safety.get('hosts') or {}).get(_host(c.get('canonical_url')))
+    if not r:
+        return {'status': 'no_data', 'checked_at': None}
+    return {'status': r.get('status') or 'no_data', 'checked_at': r.get('checked_at')}
+
+
+def safety_doc(site):
+    """/atlas/safety.json: the published part of the latest report. Only hosts linked from published entries; hosts of removed
+    entries are never published (removed_hosts stays in the repository report)."""
+    rep_ = site.safety or {}
+    live = {c['slug'] for c in site.cards}
+    gone = {_host('https://' + r['host']) for r in site.removed if r.get('host')}
+    hosts = {}
+    for h, r in sorted((rep_.get('hosts') or {}).items()):
+        ents = [x for x in r.get('entries') or [] if x in live]
+        if h in gone or not ents:
+            continue
+        hosts[h] = {'status': r.get('status') or 'no_data', 'checked_at': r.get('checked_at'), 'entries': ents}
+    cnt = Counter(r['status'] for r in hosts.values())
+    return {'name': 'Commonworld Atlas link safety report', 'url': site.abs(SAFETY_PATH),
+            'source': rep_.get('source') or 'Google Safe Browsing', 'source_url': rep_.get('source_url') or 'https://transparencyreport.google.com/safe-browsing/search',
+            'method': 'Every domain linked from the published Atlas data is checked daily against Google Safe Browsing. clean = no unsafe content found; '
+                      'flagged = an unsafe-content flag; no_data = Safe Browsing has no data for the domain. A flagged domain is removed from the Atlas and '
+                      'its entry page becomes a short removed-entry note. Each entry in the JSON exports carries link_safety {status, checked_at} for its official URL.',
+            'policy': site.abs(f'{site.base}/about/#link-safety'), 'licence': site.cfg.get('data_licence') or 'not yet specified',
+            'run_at': rep_.get('run_at'),
+            'summary': {'hosts': len(hosts), 'clean': cnt['clean'], 'flagged': cnt['flagged'], 'no_data': cnt['no_data'], 'removed_entries': len(site.removed)},
+            'hosts': hosts}
+
+
+def build_removed_stub(site, slug):
+    """Neutral page for a removed entry: no name, no outbound link, noindex, not in the sitemap."""
+    b = site.base
+    body = f"""{cw.hero('Atlas', 'Entry removed', '<p>This entry was removed from the Atlas after a safety check.</p>'
+                      f'<p>Every linked domain is checked daily; see <a href="{b}/about/#link-safety">link safety</a>.</p>'
+                      f'<p class="actions"><a class="cw-btn cw-btn-primary" href="{b}/">Go to the Atlas</a> <a class="cw-btn" href="{b}/platforms/">All entries</a></p>', small=True)}"""
+    return page(site, path=f'{b}/platforms/{slug}/', title='Entry removed | Commonworld Atlas',
+                description='This entry was removed from the Atlas after a safety check.', body=body, active='', noindex=True)
+
+
 # ---------------------------------------------------------------- machine-readable files for AI agents
 
 
@@ -1541,7 +1618,7 @@ def agent_record(site, c):
             'type': c.get('entity_type'), 'status': c['status'], 'summary': trim(c['_desc'], 300), 'tags': c['_tags'],
             'has_money_flow': c['_money'], 'money_flow': flows, 'key_number': key,
             'verified_at': iso(c['_verified']), 'last_checked': iso(c['_verified']), 'claims_count': len(claims),
-            'disclosure': c.get('disclosure'), 'preview': preview_record(site, c)}
+            'disclosure': c.get('disclosure'), 'preview': preview_record(site, c), 'link_safety': link_safety_of(site, c)}
 
 
 MIRROR_DIR = os.path.normpath(os.path.join(HERE, '..', 'public'))
@@ -1553,8 +1630,10 @@ def _mirror_json(src, dst, indent):
     atlas-screens, so keeping the field here would make the committed mirror stale whenever that branch moves."""
     doc = json.load(open(src, encoding='utf-8'))
     doc.pop('preview', None)
+    doc.pop('link_safety', None)
     for r in doc.get('platforms') or []:
         r.pop('preview', None)
+        r.pop('link_safety', None)
     txt = json.dumps(doc, ensure_ascii=False, indent=1) if indent else json.dumps(doc, ensure_ascii=False, separators=(',', ':'))
     with open(dst, 'w', encoding='utf-8') as fh:
         fh.write(txt + '\n')
@@ -1574,7 +1653,7 @@ def write_github_mirror(out, b):
     for f in sorted(os.listdir(os.path.join(src, 'categories'))):
         if f.endswith('.json'):
             _mirror_json(os.path.join(src, 'categories', f), os.path.join(MIRROR_DIR, 'categories', f), indent=None)
-    shutil.copy(os.path.join(src, 'data', 'snapshot.json'), os.path.join(MIRROR_DIR, 'snapshot.json'))
+    _mirror_json(os.path.join(src, 'data', 'snapshot.json'), os.path.join(MIRROR_DIR, 'snapshot.json'), indent=1)
     pdir = os.path.join(src, 'platforms')
     for f in sorted(os.listdir(pdir)):
         if f.endswith('.json'):
@@ -1592,7 +1671,9 @@ def write_github_mirror(out, b):
                  '`api/v1/` holds the API description of https://commonworld.one/api/v1/ (index.json, openapi.json, schemas/, changelog). '
                  'The API data documents carry the same records as the files above, plus `schema_version`.\n\n'
                  'The `preview` field (homepage screenshot URLs on commonworld.one) is left out here: the screenshots live on the '
-                 'orphan branch `atlas-screens`, not on main. Read it from the site\'s JSON files.\n')
+                 'orphan branch `atlas-screens`, not on main. Read it from the site\'s JSON files.\n\n'
+                 'The `link_safety` field and the link safety report (https://commonworld.one/atlas/safety.json) are left out here too: '
+                 'they change with every daily check. Read them from the site.\n')
 
 
 def build_agent_files(site, write):
@@ -1651,6 +1732,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [How the Atlas works]({A(f'{b}/about/')}): method, basis labels, QA re-checks, freshness, closures, corrections
 - [Atlas badges]({A(f'{b}/badge/')}): free status badge for every card (Verified · date / Listed / Closed · history), {A(f'{b}/badge/')}<id>.svg and <id>-dark.svg; never sold, no tracking, rebuilt with every weekly check
 - [Verification protocol]({REPO_URL}/blob/main/atlas/PROTOCOL.md): the full protocol each claim goes through
+- [Link safety]({A(f'{b}/about/#link-safety')}): every linked domain is checked daily against Google Safe Browsing; a flagged domain's entry is removed and its ID shows a short "entry removed" page
 - [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
 
 ## Categories
@@ -1670,6 +1752,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - All claims and sources are public; no key needed.
 - Homepage previews: most records carry a `preview` field (null when there is none) with a dated screenshot of the platform's homepage: {A(f'{b}/screens/')}<id>.webp (1200x750 WebP) and a 600x250 top-band thumbnail {A(f'{b}/screens/t/')}<id>.webp, plus captured_at and source_url; list: {A(f'{b}/screens/manifest.json')}. Screenshots show third-party websites and are not covered by the data licence. Do not construct these URLs; take them from `preview` (absent from the GitHub mirror)
 - [snapshot.json]({A(f'{b}/data/snapshot.json')}): the full published dataset
+- [safety.json]({A(SAFETY_PATH)}): link safety report, Google Safe Browsing status of every linked domain (checked daily); records carry link_safety {{status, checked_at}} for their official URL
 - [llms-full.txt]({A('/llms-full.txt')}): one line per entry
 - [Sitemap (site)]({A('/sitemap.xml')}) and [Sitemap (Atlas)]({A(f'{b}/sitemap.xml')})
 
@@ -1711,6 +1794,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - All entries: {A(f'{b}/platforms.json')}
 - Full published dataset: {A(f'{b}/data/snapshot.json')}
 - Where agents get paid: {A(f'{b}/earn.json')}
+- Link safety report: {A(SAFETY_PATH)} (every linked domain checked daily against Google Safe Browsing: status clean/flagged/no_data, checked_at UTC, summary counts; each entry in the JSON files carries link_safety {{status, checked_at}})
 - One line per entry: {A('/llms-full.txt')}
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
 - Per entry: take json_url from platforms.json; never construct an ID
@@ -1876,8 +1960,17 @@ def main():
     if a.local:
         cfg['site']['product_url'] = '/'
     data = json.load(open(a.data))
+    removed = load_removed()
+    gone = {r['slug'] for r in removed}
+    if any(c.get('slug') in gone for c in data['platforms']):  # removed.json wins over the data file
+        print(f"note: dropping removed entries still in the data: {sorted(c['slug'] for c in data['platforms'] if c.get('slug') in gone)}", file=sys.stderr)
+        data['platforms'] = [c for c in data['platforms'] if c.get('slug') not in gone]
+        data['count'] = len(data['platforms'])
     site = Site(cfg, data)
+    site.removed = removed
+    site.safety = load_link_safety()
     bad = [c.get('slug') for c in site.cards if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,80}', str(c.get('slug') or ''))]
+    bad += [r.get('slug') for r in removed if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,80}', str(r.get('slug') or ''))]
     if bad:
         raise SystemExit(f'invalid slug(s) in data (allowed: a-z 0-9 -): {bad[:5]}')
     lab_path = os.path.join(HERE, 'claim-labels.json')
@@ -1926,6 +2019,8 @@ def main():
     write(f'{b}/platforms/', build_all(site))
     for c in site.cards:
         write(c['_url'], build_platform(site, c))
+    for r in removed:  # slugs are permanent: a removed entry keeps a neutral noindex stub
+        write(f"{b}/platforms/{r['slug']}/", build_removed_stub(site, r['slug']))
     write(f'{b}/categories/', build_categories_index(site))
     for k in site.cats:
         write(f'{b}/categories/{k}/', build_category(site, k))
@@ -1980,13 +2075,14 @@ def main():
 
     pub = {'name': 'Commonworld Atlas', 'url': site.abs(f'{b}/'), 'generated_at': data.get('generated_at'),
            'count': len(site.cards), 'license': cfg.get('data_licence') or 'not yet specified', 'fields_note': 'observed_at values are ISO 8601 UTC timestamps.',
-           'platforms': [{k: c.get(k) for k in PUBLIC_FIELDS if k in c} | {'url': site.abs(c['_url'])} for c in site.cards]}
+           'platforms': [{k: c.get(k) for k in PUBLIC_FIELDS if k in c} | {'url': site.abs(c['_url']), 'link_safety': link_safety_of(site, c)} for c in site.cards]}
     write(f'{b}/data/snapshot.json', json.dumps(pub, ensure_ascii=False, indent=1))
     # search index for the catalog: claim statements + units per slug, fetched lazily by atlas.js
     sidx = {c['slug']: ' '.join(filter(None, [x.get('statement') or '' for x in c.get('claims', [])] + [x.get('unit') or '' for x in c.get('claims', [])]))
             for c in site.cards}
     write(f'{b}/data/search-index.json', json.dumps(sidx, ensure_ascii=False, separators=(',', ':')))
 
+    write(SAFETY_PATH, json.dumps(safety_doc(site), ensure_ascii=False, indent=1) + '\n')  # not mirrored: it changes daily
     build_agent_files(site, write)
     build_earn_json(site, write)
     build_api(site, write)
@@ -2030,6 +2126,9 @@ def main():
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
 {b}/earn.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+{b}/safety.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
 {b}/categories/*.json

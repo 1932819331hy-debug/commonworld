@@ -8,7 +8,7 @@ and ships as /api/v2/ while /api/v1/ keeps working.
 import re
 
 API_VERSION = 'v1'
-SCHEMA_VERSION = '1.1.0'
+SCHEMA_VERSION = '1.2.0'
 API_BASE = '/api/v1'
 STATUSES = ['live', 'closed']
 ENTITY_TYPES = ['platform', 'tool_catalog', 'protocol', 'project']
@@ -19,6 +19,12 @@ UTC_PATTERN = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$'  # ISO 8601 U
 
 # newest first; build.py writes changelog.json and CHANGELOG.md from this list
 CHANGELOG = [
+    {'schema_version': '1.2.0', 'date': '2026-10-17', 'changes': [
+        'New optional field `link_safety` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): '
+        '{status, checked_at}, the Google Safe Browsing status of the entry\'s official URL from the latest daily check '
+        '(clean, flagged or no_data; checked_at in ISO 8601 UTC, or null).',
+        'New file /atlas/safety.json: the link safety report (status of every linked domain, checked_at, summary counts, run time). '
+        'An entry whose domain is flagged is removed from the Atlas; its ID then returns no JSON record and its page shows a short removed-entry note.']},
     {'schema_version': '1.1.0', 'date': '2026-10-17', 'changes': [
         'New optional field `preview` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): '
         'a dated homepage screenshot (path, url, thumb_url, width, height, captured_at, source_url, rights), or null when there is none.',
@@ -76,8 +82,11 @@ def schemas(origin, categories):
         'has_money_flow': {'type': 'boolean'}, 'money_flow': {'type': 'array', 'items': {'$ref': '#/$defs/moneyFlow'}},
         'key_number': {'$ref': '#/$defs/keyNumber'}, 'verified_at': utc_n, 'last_checked': utc_n,
         'claims_count': {'type': 'integer', 'minimum': 0}, 'disclosure': {'type': ['string', 'null']},
-        'preview': {'$ref': '#/$defs/preview'}}
-    optional = {'preview'}  # added in 1.1.0: optional, so 1.0.0 records stay valid
+        'preview': {'$ref': '#/$defs/preview'},
+        'link_safety': {'type': 'object', 'description': 'Google Safe Browsing status of the official URL from the latest daily check '
+                        '(report: /atlas/safety.json). Added in schema_version 1.2.0.', 'required': ['status', 'checked_at'],
+                        'properties': {'status': {'enum': ['clean', 'flagged', 'no_data']}, 'checked_at': utc_n}}}
+    optional = {'preview', 'link_safety'}  # added in 1.1.0 / 1.2.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
                'required': [k for k in summary_props if k not in optional], 'properties': summary_props}
     preview = {'type': ['object', 'null'], 'description': 'Dated homepage screenshot of the entry, or null. Third-party website content: '

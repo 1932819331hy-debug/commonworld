@@ -40,6 +40,10 @@ preview null <=> no image); every image of the fetched branch manifest that belo
 card pages carry exactly one figure.entry-shot right after the header and the sponsored slot, before the facts (alt, width,
 height, lazy, dated caption; closed = "Last captured"; placeholder without an image); grid cards start with the band thumbnail
 (alt="", 600x250, lazy, own slug) or the placeholder; _headers caches /atlas/screens/*. CW_SCREENS_REQUIRED=1 (CI) fails a build without previews.
+Link safety: every slug in atlas/data/removed.json has a noindex stub page ("This entry was removed from the Atlas after a safety check.",
+no outbound link, not in the sitemap; the growth guard accepts it in place of the old page), is absent from snapshot/platforms/earn/search
+index, has no per-entry JSON, badge or screenshot, and no built file names its host. /atlas/safety.json (daily Google Safe Browsing
+report) is valid, in the Dataset distribution and /atlas/llms.txt; every exported record carries link_safety {status, checked_at}.
 Also: native ad cards sit after every 12th card, the tag shelf exists with its expander, every card links to its page.
 """
 import gzip, json, os, re, struct, sys, xml.etree.ElementTree as ET
@@ -137,6 +141,88 @@ BASELINE = os.path.join(DATA_DIR, 'sitemap-urls.txt')
 REDIRECTS = os.path.join(DATA_DIR, 'redirects.json')
 
 
+REMOVED = os.path.join(DATA_DIR, 'removed.json')
+REMOVED_LINE = 'This entry was removed from the Atlas after a safety check.'
+
+
+def load_removed():
+    """atlas/data/removed.json (link-safety removals, atlas/CURATION.md#link-safety) -> list of {slug, host, ...}."""
+    if not os.path.exists(REMOVED):
+        return []
+    return list(json.load(open(REMOVED)).get('removed') or [])
+
+
+def removed_checks(parsed, pages):
+    """Link safety: every removed slug has a neutral noindex stub (no outbound link, not in the sitemap), is absent from
+    every listing and data file, and no built file names its host (no link, no clickable URL)."""
+    fails = []
+    rem = load_removed()
+    if not rem:
+        return fails
+    slugs = {r['slug'] for r in rem}
+    for r in rem:
+        u = f"/atlas/platforms/{r['slug']}/"
+        if u not in parsed:
+            fails.append(f'{u}: removed entry has no stub page (slugs are permanent)'); continue
+        p, h = parsed[u], open(pages[u], encoding='utf-8').read()
+        if 'noindex' not in (p.meta.get('robots') or ''): fails.append(f'{u}: removed-entry stub is not noindex')
+        if REMOVED_LINE not in h: fails.append(f'{u}: stub lacks {REMOVED_LINE!r}')
+        ext = [href for tag, href, rel in p.links if tag == 'a' and href.startswith(('http://', 'https://', '//')) and not href.startswith(ORIGIN)
+               and href not in OFFICIAL_URLS and not href.startswith(REPO_URL)]
+        if ext: fails.append(f'{u}: removed-entry stub has outbound links {ext[:3]}')
+    for fn in ('atlas/data/snapshot.json', 'atlas/platforms.json', 'atlas/earn.json', 'atlas/data/search-index.json'):
+        raw = open(os.path.join(DIST, fn), encoding='utf-8').read()
+        hit = sorted(s_ for s_ in slugs if f'"{s_}"' in raw or f'/platforms/{s_}' in raw)
+        if hit: fails.append(f'{fn}: still lists removed entries {hit}')
+    for s_ in slugs:
+        for f_ in (f'atlas/platforms/{s_}.json', f'api/v1/atlas/platforms/{s_}.json', f'atlas/badge/{s_}.svg', f'atlas/screens/{s_}.webp'):
+            if os.path.exists(os.path.join(DIST, f_)): fails.append(f'{f_}: published for a removed entry')
+    host_re = re.compile(r'(?<![\w.-])(?:[\w-]+\.)*(?:' + '|'.join(re.escape(r['host']) for r in rem if r.get('host')) + r')(?![\w-])', re.I)
+    if any(r.get('host') for r in rem):
+        for root, _, files in os.walk(DIST):
+            for f in files:
+                if f.endswith(('.html', '.json', '.xml', '.txt', '.js', '.md')) or f in ('_headers', '_redirects'):
+                    fp = os.path.join(root, f)
+                    m = host_re.search(open(fp, encoding='utf-8', errors='replace').read())
+                    if m: fails.append(f'{os.path.relpath(fp, DIST)}: names removed host {m.group(0)!r}')
+    print(f'link safety: {len(rem)} removed entr{"y" if len(rem) == 1 else "ies"} (stub pages, no outbound links, host absent from dist)')
+    return fails
+
+
+def safety_report_checks(parsed):
+    """/atlas/safety.json exists (source Google Safe Browsing, run_at, summary counts that match its hosts, ISO UTC checked_at), is in the
+    /atlas/ Dataset distribution and /atlas/llms.txt, and every record of platforms.json / snapshot.json carries link_safety {status, checked_at}."""
+    fails = []
+    fp = os.path.join(DIST, 'atlas', 'safety.json')
+    if not os.path.isfile(fp):
+        return ['missing /atlas/safety.json (link safety report)']
+    d = json.load(open(fp, encoding='utf-8'))
+    st = {'clean', 'flagged', 'no_data'}
+    utc = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
+    if d.get('source') != 'Google Safe Browsing': fails.append('safety.json: source is not Google Safe Browsing')
+    if not utc.match(str(d.get('run_at') or '')): fails.append(f"safety.json: run_at {d.get('run_at')!r} is not ISO 8601 UTC")
+    hosts, sm = d.get('hosts') or {}, d.get('summary') or {}
+    for h, r in hosts.items():
+        if r.get('status') not in st: fails.append(f'safety.json: {h} status {r.get("status")!r}')
+        if r.get('checked_at') is not None and not utc.match(str(r['checked_at'])): fails.append(f'safety.json: {h} checked_at not ISO 8601 UTC')
+    want = {'hosts': len(hosts)} | {k: sum(1 for r in hosts.values() if r.get('status') == k) for k in st}
+    if any(sm.get(k) != v for k, v in want.items()): fails.append(f'safety.json: summary {sm} != {want}')
+    for fn in ('atlas/platforms.json', 'atlas/data/snapshot.json'):
+        for r in json.load(open(os.path.join(DIST, fn), encoding='utf-8'))['platforms']:
+            ls = r.get('link_safety')
+            if not isinstance(ls, dict) or ls.get('status') not in st or 'checked_at' not in ls:
+                fails.append(f"{fn}: {r.get('id') or r.get('slug')} lacks link_safety {{status, checked_at}}"); break
+    idx = next((x for x in (json.loads(b) for b in parsed['/atlas/'].ld) if x.get('@type') == 'Dataset'), {})
+    if ORIGIN + '/atlas/safety.json' not in [x.get('contentUrl') for x in idx.get('distribution') or []]:
+        fails.append('/atlas/: Dataset distribution lacks safety.json')
+    if ORIGIN + '/atlas/safety.json' not in open(os.path.join(DIST, 'atlas', 'llms.txt'), encoding='utf-8').read():
+        fails.append('/atlas/llms.txt does not link safety.json')
+    if '<h2 id="link-safety">Link safety</h2>' not in open(os.path.join(DIST, 'atlas', 'about', 'index.html'), encoding='utf-8').read():
+        fails.append('/atlas/about/ lacks the Link safety section')
+    print(f"link safety report: {len(hosts)} hosts ({want['clean']} clean, {want['flagged']} flagged, {want['no_data']} no data), run_at {d.get('run_at')}")
+    return fails
+
+
 def load_redirects():
     """atlas/data/redirects.json: {"redirects": {"/old/path/": "/new/path/"}} -> dict (paths, emitted by build.py into _redirects as 301s)."""
     if not os.path.exists(REDIRECTS):
@@ -174,11 +260,13 @@ def growth_guard(locs, update=False):
     base = {l.strip() for l in open(BASELINE) if l.strip() and not l.startswith('#')} if os.path.exists(BASELINE) else set()
     if not base:
         fails.append(f'missing URL baseline {os.path.relpath(BASELINE, HERE)} (run check.py --update-baseline once)')
-    removed = sorted(u for u in base - locs if u[len(ORIGIN):] not in red)
+    stubs = {f"/atlas/platforms/{r['slug']}/" for r in load_removed()}  # link-safety removals keep a noindex stub instead
+    stubs = {x for x in stubs if os.path.isfile(os.path.join(DIST, x.lstrip('/'), 'index.html'))}
+    removed = sorted(u for u in base - locs if u[len(ORIGIN):] not in red and u[len(ORIGIN):] not in stubs)
     if removed:
         fails.append(f'{len(removed)} published URL(s) disappeared from the sitemap (pages are never removed; add a 301 in atlas/data/redirects.json if moved): {removed[:10]}')
     cur = {c['slug'] for c in json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']}
-    gone = sorted(s for s in _git_snapshot_slugs() - cur if f'/atlas/platforms/{s}/' not in red)
+    gone = sorted(s for s in _git_snapshot_slugs() - cur if f'/atlas/platforms/{s}/' not in red and f'/atlas/platforms/{s}/' not in stubs)
     if gone:
         fails.append(f'slug(s) of the previous committed snapshot missing now: {gone[:10]}')
     added = len(locs - base)
@@ -620,6 +708,9 @@ def main():
             fails.append(f'_redirects lacks 301 for {u}')
     for u in OLD_LEGAL:
         parsed.pop(u, None); pages.pop(u, None)
+    fails += removed_checks(parsed, pages)
+    for r in load_removed():  # noindex stubs: outside the indexable-page rules and the sitemap
+        parsed.pop(f"/atlas/platforms/{r['slug']}/", None); pages.pop(f"/atlas/platforms/{r['slug']}/", None)
     for root, _, files in os.walk(DIST):
         for f in files:
             if f.endswith(('.html', '.json', '.xml', '.txt', '.js', '.css', '.svg')) or f in ('_headers', '_redirects'):
@@ -890,6 +981,7 @@ def main():
         if any('basis' not in f for f in r.get('money_flow') or []):
             fails.append(f"platforms.json {r['id']}: money_flow item without basis")
     fails += dataset_checks(parsed)
+    fails += safety_report_checks(parsed)
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)
     fails += a11y_checks(pages)

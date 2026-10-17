@@ -2,6 +2,11 @@
 
 Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) ships as /api/v2/, and /api/v1/ keeps working.
 
+## 1.2.0 (2026-10-17)
+
+- New optional field `link_safety` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): {status, checked_at}, the Google Safe Browsing status of the entry's official URL from the latest daily check (clean, flagged or no_data; checked_at in ISO 8601 UTC, or null).
+- New file /atlas/safety.json: the link safety report (status of every linked domain, checked_at, summary counts, run time). An entry whose domain is flagged is removed from the Atlas; its ID then returns no JSON record and its page shows a short removed-entry note.
+
 ## 1.1.0 (2026-10-17)
 
 - New optional field `preview` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): a dated homepage screenshot (path, url, thumb_url, width, height, captured_at, source_url, rights), or null when there is none.

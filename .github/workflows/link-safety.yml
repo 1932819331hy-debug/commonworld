@@ -1,0 +1,80 @@
+name: Atlas link safety
+# Daily Google Safe Browsing check of every domain linked from the Atlas (atlas/tools/safebrowsing_check.py, policy: atlas/CURATION.md#link-safety).
+# Commits ONLY the report file atlas/data/link-safety.json (the push triggers the normal Cloudflare Pages build, which publishes
+# /atlas/safety.json and the link_safety field of every entry). Never edits other Atlas data: removing a flagged entry is a curator step.
+# Flagged domains open or update the issue "Link safety: flagged domains"; the issue is closed when a later run is clear.
+on:
+  schedule:
+    - cron: '17 4 * * *'   # daily 04:17 UTC
+  workflow_dispatch:
+permissions:
+  contents: write          # commit the report file
+  issues: write            # open/update the flagged-domains issue
+concurrency:
+  group: atlas-link-safety
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE_TITLE: 'Link safety: flagged domains'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Check every linked domain (Google Safe Browsing)
+        id: check
+        run: |
+          set +e
+          python atlas/tools/safebrowsing_check.py | tee "$RUNNER_TEMP/out.txt"
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -gt 1 ]; then echo "::error::check crashed (exit $code)"; exit "$code"; fi
+          echo "flagged=$([ "$code" -eq 1 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          { echo '## Link safety'; echo; echo '```'; cat "$RUNNER_TEMP/out.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit the report (only atlas/data/link-safety.json)
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add atlas/data/link-safety.json
+          if git diff --cached --quiet; then echo "report unchanged"; exit 0; fi
+          git commit -m "atlas: daily link safety report $(date -u +%F)" -- atlas/data/link-safety.json
+          for i in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo "::error::could not push the report"; exit 1
+      - name: Open or update the issue
+        run: |
+          num=$(gh issue list --state open --search "\"$ISSUE_TITLE\" in:title" --json number,title \
+                --jq "[.[] | select(.title == env.ISSUE_TITLE)][0].number // empty")
+          if [ "${{ steps.check.outputs.flagged }}" = "true" ]; then
+            python - > "$RUNNER_TEMP/body.md" <<'PY'
+          import json
+          r = json.load(open('atlas/data/link-safety.json'))
+          print(f"Google Safe Browsing flags {len(r['flagged'])} domain(s) linked from the Atlas (run {r['run_at']}).\n")
+          print('| domain | flags | linked from |\n|---|---|---|')
+          for h in r['flagged']:
+              x = r['hosts'][h]
+              print(f"| `{h}` | {', '.join(x['threats']) or 'code ' + str(x['code'])} | {', '.join(x['entries'])} |")
+          print('\nPer [CURATION.md](https://github.com/commonworld-one/commonworld/blob/main/atlas/CURATION.md#link-safety): remove the entry (add it to `atlas/data/removed.json`, '
+                'drop it from the snapshot), rebuild and check. This workflow never edits Atlas data itself.\n')
+          print(f"Status lookup: {r['source_url']}")
+          PY
+            if [ -n "$num" ]; then
+              gh issue edit "$num" --body-file "$RUNNER_TEMP/body.md"
+              gh issue comment "$num" --body "Still flagged in the run of $(date -u +%F): $(python -c "import json;print(', '.join(json.load(open('atlas/data/link-safety.json'))['flagged']))")"
+            else
+              gh issue create --title "$ISSUE_TITLE" --body-file "$RUNNER_TEMP/body.md"
+            fi
+          elif [ -n "$num" ]; then
+            gh issue close "$num" --comment "No flagged domains in the run of $(date -u +%F). Closing."
+          fi
+      - name: Fail when a domain is flagged
+        if: steps.check.outputs.flagged == 'true'
+        run: |
+          echo "::error::flagged domains linked from the Atlas; see the issue \"$ISSUE_TITLE\""
+          exit 1

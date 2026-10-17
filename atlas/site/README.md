@@ -55,6 +55,8 @@ Another port: `python3 atlas/site/serve.py 9000`.
 | `/atlas/privacy/`, `/atlas/terms/` | Old URLs: tiny noindex stubs (meta refresh + canonical to the new URL); on Cloudflare `dist/_redirects` answers them with a 301 first |
 | `/sitemap.xml`, `/_redirects` | Site-level sitemap (the legal pages; `/atlas/sitemap.xml` keeps the Atlas pages, robots.txt names both) and Cloudflare Pages redirects |
 | `/atlas/data/snapshot.json` | Open data copy (published fields only) |
+| `/atlas/safety.json` | Link safety report (see "Link safety" below): Google Safe Browsing status (`clean` / `flagged` / `no_data`) and `checked_at` of every domain linked from published entries, summary counts, `run_at`; listed in the `/atlas/` Dataset JSON-LD and `/atlas/llms.txt`. Every record in the JSON exports carries `link_safety` {status, checked_at} for its official URL |
+| `/atlas/platforms/<slug>/` of a removed entry | Neutral noindex stub "This entry was removed from the Atlas after a safety check." (no name, no outbound link, not in the sitemap); slugs listed in `atlas/data/removed.json` |
 | `/atlas/llms.txt` | Short Atlas guide for agents: what the Atlas is, live counts, data files, one JSON endpoint per category, link to the root `/llms.txt` |
 | `/atlas/screens/<slug>.webp`, `/atlas/screens/t/<slug>.webp`, `/atlas/screens/manifest.json` | Homepage screenshots (1200×750) and their 600×250 top-band thumbnails, copied from the orphan branch `atlas-screens` (see "Homepage screenshots" below) |
 | `/atlas/sitemap.xml`, `/robots.txt`, `/404.html`, `/_headers` | SEO and hosting files |
@@ -273,6 +275,18 @@ components. Operator is just "Commonworld"; the pages name no country or locatio
 ## Deploy to Cloudflare (later)
 
 Build command `python3 atlas/site/build.py`, output directory `atlas/site/dist`. The build fetches the screenshots itself (branch `atlas-screens` via git, else the public tarball); Pages builds of the `atlas-screens` branch itself fail harmlessly (no build.py there) and can be excluded in the Pages branch settings. The repo-root `requirements.txt` (`Pillow>=10`) makes Cloudflare Pages install Pillow for the OG images. Pages serves `dist/atlas/...` at `/atlas/...`, uses `dist/404.html` for missing pages and applies `dist/_headers`. If `/atlas` is mounted inside a bigger Commonworld site, copy `dist/atlas/` into that site's output and merge `robots.txt` (it only has to contain the `Sitemap:` line for `https://commonworld.one/atlas/sitemap.xml`).
+
+## Link safety
+
+Policy: `atlas/CURATION.md#link-safety`. `atlas/tools/safebrowsing_check.py` (stdlib) extracts every outbound host from the snapshot,
+asks Google Safe Browsing (Transparency Report endpoint, at most 4 requests at a time, timeouts, retries on errors, rate limits and
+HTML answers) and writes `atlas/data/link-safety.json`; exit code 1 lists flagged hosts. The workflow `.github/workflows/link-safety.yml`
+("Atlas link safety") runs it daily at 04:17 UTC and on demand, commits only that report file (the push triggers the Pages build) and
+opens/updates the issue "Link safety: flagged domains" (closed again when a run is clear). It never edits other data.
+The build reads the report into `/atlas/safety.json` and each record's `link_safety`; both are left out of the GitHub mirror
+(`atlas/public/`) because they change daily. Removing an entry: add `{slug, host, removed_on, reason}` to `atlas/data/removed.json`,
+drop the card from the snapshot (with an `amendments` line), rebuild. `build.py` then drops it everywhere and writes the stub;
+`check.py` fails if the stub is missing or indexable, if any listing or data file still has the slug, or if any built file names the host.
 
 ## Data notes
 

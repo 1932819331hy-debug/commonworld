@@ -202,6 +202,31 @@
     },
     "preview": {
      "$ref": "#/$defs/preview"
+    },
+    "link_safety": {
+     "type": "object",
+     "description": "Google Safe Browsing status of the official URL from the latest daily check (report: /atlas/safety.json). Added in schema_version 1.2.0.",
+     "required": [
+      "status",
+      "checked_at"
+     ],
+     "properties": {
+      "status": {
+       "enum": [
+        "clean",
+        "flagged",
+        "no_data"
+       ]
+      },
+      "checked_at": {
+       "type": [
+        "string",
+        "null"
+       ],
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
+       "format": "date-time"
+      }
+     }
     }
    }
   },

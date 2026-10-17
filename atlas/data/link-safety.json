@@ -1,0 +1,4025 @@
+{
+ "name": "Commonworld Atlas link safety report",
+ "source": "Google Safe Browsing",
+ "source_url": "https://transparencyreport.google.com/safe-browsing/search",
+ "method": "Every outbound host linked from the published Atlas data is looked up in Google Safe Browsing (Transparency Report site status). clean = no unsafe content found; flagged = an unsafe-content flag (e.g. social engineering); no_data = Safe Browsing has no data for the host. A flagged host leads to removal of its entry (see CURATION.md, Link safety).",
+ "run_started_at": "2026-10-17T18:46:31Z",
+ "run_at": "2026-10-17T18:48:19Z",
+ "summary": {
+  "hosts": 385,
+  "clean": 369,
+  "flagged": 0,
+  "no_data": 16,
+  "query_errors": 0
+ },
+ "flagged": [],
+ "hosts": {
+  "1f916.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T15:07:11Z",
+   "checked_at": "2026-10-17T18:46:33Z",
+   "entries": [
+    "1f916",
+    "agent-communication-platform",
+    "agent-memory-wiki",
+    "meta-muse",
+    "polygon-x402-facilitator"
+   ]
+  },
+  "402atlas.com": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:46:33Z",
+   "entries": [
+    "402atlas",
+    "allium-x402-data"
+   ]
+  },
+  "4claw.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-13T15:45:41Z",
+   "checked_at": "2026-10-17T18:46:33Z",
+   "entries": [
+    "4claw"
+   ]
+  },
+  "8004.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T03:07:15Z",
+   "checked_at": "2026-10-17T18:46:33Z",
+   "entries": [
+    "erc-8004-trustless-agents"
+   ]
+  },
+  "8004agents.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-16T12:42:45Z",
+   "checked_at": "2026-10-17T18:46:34Z",
+   "entries": [
+    "8004agents"
+   ]
+  },
+  "8004scan.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T06:12:44Z",
+   "checked_at": "2026-10-17T18:46:34Z",
+   "entries": [
+    "8004scan"
+   ]
+  },
+  "a2a-protocol.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T09:13:47Z",
+   "checked_at": "2026-10-17T18:46:34Z",
+   "entries": [
+    "a2a-protocol"
+   ]
+  },
+  "a2a-registry.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T22:58:51Z",
+   "checked_at": "2026-10-17T18:46:34Z",
+   "entries": [
+    "a2a-registry-org"
+   ]
+  },
+  "a2a.directory": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:46:35Z",
+   "entries": [
+    "a2a-directory"
+   ]
+  },
+  "a2aregistry.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-04T22:40:02Z",
+   "checked_at": "2026-10-17T18:46:35Z",
+   "entries": [
+    "a2a-registry-a2aregistry-org"
+   ]
+  },
+  "about.ads.microsoft.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2017-11-28T21:05:40Z",
+   "checked_at": "2026-10-17T18:46:35Z",
+   "entries": [
+    "microsoft-copilot-checkout"
+   ]
+  },
+  "aboutamazon.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:15:10Z",
+   "checked_at": "2026-10-17T18:46:35Z",
+   "entries": [
+    "amazon-alexa-for-shopping"
+   ]
+  },
+  "abund.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-27T09:02:06Z",
+   "checked_at": "2026-10-17T18:46:36Z",
+   "entries": [
+    "abund-ai"
+   ]
+  },
+  "aclanthology.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:09:57Z",
+   "checked_at": "2026-10-17T18:46:36Z",
+   "entries": [
+    "airaxiv"
+   ]
+  },
+  "agent-board.juleskreuer.eu": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-16T01:56:23Z",
+   "checked_at": "2026-10-17T18:46:36Z",
+   "entries": [
+    "agent-board-juleskreuer"
+   ]
+  },
+  "agent-memory-wiki.vercel.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-02T17:18:48Z",
+   "checked_at": "2026-10-17T18:46:36Z",
+   "entries": [
+    "agent-memory-wiki"
+   ]
+  },
+  "agent-x.ossoonline.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T01:51:03Z",
+   "checked_at": "2026-10-17T18:46:37Z",
+   "entries": [
+    "agent-x-ossoonline"
+   ]
+  },
+  "agent4science.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-25T05:17:23Z",
+   "checked_at": "2026-10-17T18:46:37Z",
+   "entries": [
+    "agent4science"
+   ]
+  },
+  "agentagon.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-04-30T06:28:24Z",
+   "checked_at": "2026-10-17T18:46:37Z",
+   "entries": [
+    "agentagon"
+   ]
+  },
+  "agentalmanac.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-05T19:41:58Z",
+   "checked_at": "2026-10-17T18:46:37Z",
+   "entries": [
+    "agent-almanac",
+    "official-mcp-registry"
+   ]
+  },
+  "agentarena.de": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-24T11:14:27Z",
+   "checked_at": "2026-10-17T18:46:38Z",
+   "entries": [
+    "agent-arena-agentarena-de"
+   ]
+  },
+  "agentbadge.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T17:16:44Z",
+   "checked_at": "2026-10-17T18:46:38Z",
+   "entries": [
+    "agentbadge-agent-venue"
+   ]
+  },
+  "agentboard.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-18T19:31:55Z",
+   "checked_at": "2026-10-17T18:46:38Z",
+   "entries": [
+    "agentboard-ai"
+   ]
+  },
+  "agentbounties.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T05:07:36Z",
+   "checked_at": "2026-10-17T18:46:38Z",
+   "entries": [
+    "agent-bounties"
+   ]
+  },
+  "agentcard.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-10T14:44:33Z",
+   "checked_at": "2026-10-17T18:46:39Z",
+   "entries": [
+    "agentcard"
+   ]
+  },
+  "agentcolony.one": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T01:55:50Z",
+   "checked_at": "2026-10-17T18:46:39Z",
+   "entries": [
+    "agent-colony-juluo"
+   ]
+  },
+  "agentcommons.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T21:46:22Z",
+   "checked_at": "2026-10-17T18:46:39Z",
+   "entries": [
+    "agent-commons"
+   ]
+  },
+  "agentcommunicationplatform.dev": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:46:39Z",
+   "entries": [
+    "agent-communication-platform"
+   ]
+  },
+  "agentconnex.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-03-27T08:53:14Z",
+   "checked_at": "2026-10-17T18:46:40Z",
+   "entries": [
+    "agentconnex"
+   ]
+  },
+  "agentdm.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-21T16:23:55Z",
+   "checked_at": "2026-10-17T18:46:40Z",
+   "entries": [
+    "agentdm"
+   ]
+  },
+  "agentel.tech": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-10T14:13:20Z",
+   "checked_at": "2026-10-17T18:46:40Z",
+   "entries": [
+    "agentel"
+   ]
+  },
+  "agentgram.co": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-04-29T19:15:45Z",
+   "checked_at": "2026-10-17T18:46:40Z",
+   "entries": [
+    "agentgram"
+   ]
+  },
+  "agenthansa.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T02:23:21Z",
+   "checked_at": "2026-10-17T18:46:41Z",
+   "entries": [
+    "agenthansa"
+   ]
+  },
+  "agentic-docs.polygon.technology": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:21:29Z",
+   "checked_at": "2026-10-17T18:46:41Z",
+   "entries": [
+    "polygon-x402-facilitator"
+   ]
+  },
+  "agentic.market": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T22:20:12Z",
+   "checked_at": "2026-10-17T18:46:42Z",
+   "entries": [
+    "agentic-market"
+   ]
+  },
+  "agenticmarket.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T12:48:30Z",
+   "checked_at": "2026-10-17T18:46:42Z",
+   "entries": [
+    "agenticmarket"
+   ]
+  },
+  "agentleague.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-04-14T22:27:34Z",
+   "checked_at": "2026-10-17T18:46:42Z",
+   "entries": [
+    "agentleague"
+   ]
+  },
+  "agentlux.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-24T11:20:53Z",
+   "checked_at": "2026-10-17T18:46:43Z",
+   "entries": [
+    "agentlux"
+   ]
+  },
+  "agentndx.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-06T21:53:40Z",
+   "checked_at": "2026-10-17T18:46:43Z",
+   "entries": [
+    "agentndx"
+   ]
+  },
+  "agentpedia.io": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:46:43Z",
+   "entries": [
+    "agentpedia-io"
+   ]
+  },
+  "agentpedia.so": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-24T16:33:29Z",
+   "checked_at": "2026-10-17T18:46:43Z",
+   "entries": [
+    "agentpedia-openagents"
+   ]
+  },
+  "agentpub.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-07T21:41:55Z",
+   "checked_at": "2026-10-17T18:46:44Z",
+   "entries": [
+    "agentpub"
+   ]
+  },
+  "agentrust-io.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T05:40:41Z",
+   "checked_at": "2026-10-17T18:46:44Z",
+   "entries": [
+    "agentrust-trace-registry"
+   ]
+  },
+  "agents.ramp.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:23:52Z",
+   "checked_at": "2026-10-17T18:46:44Z",
+   "entries": [
+    "ramp-agent-cards"
+   ]
+  },
+  "agents4science.stanford.edu": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:39:27Z",
+   "checked_at": "2026-10-17T18:46:44Z",
+   "entries": [
+    "agents4science-2025"
+   ]
+  },
+  "agentsboard.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-05T01:51:55Z",
+   "checked_at": "2026-10-17T18:46:45Z",
+   "entries": [
+    "campfire-agents-board"
+   ]
+  },
+  "agentscan.info": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-21T07:19:51Z",
+   "checked_at": "2026-10-17T18:46:45Z",
+   "entries": [
+    "agentscan"
+   ]
+  },
+  "agentsgather.org": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:46:45Z",
+   "entries": [
+    "agents-gather"
+   ]
+  },
+  "agentsy.live": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-09T20:29:22Z",
+   "checked_at": "2026-10-17T18:46:45Z",
+   "entries": [
+    "agentsy"
+   ]
+  },
+  "agenttavern.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-10T12:52:55Z",
+   "checked_at": "2026-10-17T18:46:46Z",
+   "entries": [
+    "agent-tavern"
+   ]
+  },
+  "agentwikis.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T15:55:43Z",
+   "checked_at": "2026-10-17T18:46:46Z",
+   "entries": [
+    "agent-wikis"
+   ]
+  },
+  "agi.net.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-09T09:42:30Z",
+   "checked_at": "2026-10-17T18:46:46Z",
+   "entries": [
+    "agent-governance-institute"
+   ]
+  },
+  "agonaut.io": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:46:46Z",
+   "entries": [
+    "agonaut"
+   ]
+  },
+  "agora.burmaster.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-25T16:45:56Z",
+   "checked_at": "2026-10-17T18:46:47Z",
+   "entries": [
+    "agora-burmaster"
+   ]
+  },
+  "agora.tundrabit.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-16T21:05:04Z",
+   "checked_at": "2026-10-17T18:46:47Z",
+   "entries": [
+    "agora-tundrabit"
+   ]
+  },
+  "agxiv.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-12T23:43:23Z",
+   "checked_at": "2026-10-17T18:46:47Z",
+   "entries": [
+    "agentarxiv-agxiv"
+   ]
+  },
+  "ai-commons-prototype.ai-commons-prototype.workers.dev": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:46:47Z",
+   "entries": [
+    "ai-commons-forum"
+   ]
+  },
+  "ai.algo.pw": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-09T23:08:39Z",
+   "checked_at": "2026-10-17T18:46:48Z",
+   "entries": [
+    "agent-commons-algo"
+   ]
+  },
+  "ai.xgate.run": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-28T17:52:15Z",
+   "checked_at": "2026-10-17T18:46:48Z",
+   "entries": [
+    "daydreams-systems"
+   ]
+  },
+  "aiagentmessageboard.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-11T17:23:10Z",
+   "checked_at": "2026-10-17T18:46:48Z",
+   "entries": [
+    "ai-agent-message-board"
+   ]
+  },
+  "aiagentstore.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T09:24:36Z",
+   "checked_at": "2026-10-17T18:46:49Z",
+   "entries": [
+    "claw-earn"
+   ]
+  },
+  "aibtc.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-11T17:23:40Z",
+   "checked_at": "2026-10-17T18:46:49Z",
+   "entries": [
+    "aibtc-bounty-board"
+   ]
+  },
+  "aicq.chat": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-03-30T23:31:29Z",
+   "checked_at": "2026-10-17T18:46:49Z",
+   "entries": [
+    "aicq"
+   ]
+  },
+  "aiforum.grok.me": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:26:55Z",
+   "checked_at": "2026-10-17T18:46:50Z",
+   "entries": [
+    "relay-russian-agent-board"
+   ]
+  },
+  "ainglish.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-17T18:44:33Z",
+   "checked_at": "2026-10-17T18:46:50Z",
+   "entries": [
+    "ainglish"
+   ]
+  },
+  "airaxiv.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-06-30T14:18:01Z",
+   "checked_at": "2026-10-17T18:46:50Z",
+   "entries": [
+    "airaxiv"
+   ]
+  },
+  "aivillageblog.substack.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T17:46:09Z",
+   "checked_at": "2026-10-17T18:46:51Z",
+   "entries": [
+    "ai-village"
+   ]
+  },
+  "aixiv.online": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T15:04:49Z",
+   "checked_at": "2026-10-17T18:46:51Z",
+   "entries": [
+    "aixiv-online"
+   ]
+  },
+  "aixiv.science": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T14:59:19Z",
+   "checked_at": "2026-10-17T18:46:51Z",
+   "entries": [
+    "aixiv-science"
+   ]
+  },
+  "algora.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T11:33:35Z",
+   "checked_at": "2026-10-17T18:46:52Z",
+   "entries": [
+    "algora"
+   ]
+  },
+  "antgroup.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T15:15:43Z",
+   "checked_at": "2026-10-17T18:46:52Z",
+   "entries": [
+    "alipay-ai-pay"
+   ]
+  },
+  "ap2-protocol.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T16:15:27Z",
+   "checked_at": "2026-10-17T18:46:52Z",
+   "entries": [
+    "google-agent-payments-protocol"
+   ]
+  },
+  "api-xpay.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T20:43:27Z",
+   "checked_at": "2026-10-17T18:46:52Z",
+   "entries": [
+    "x-pay-api-xpay"
+   ]
+  },
+  "api.abund.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-27T09:02:06Z",
+   "checked_at": "2026-10-17T18:46:53Z",
+   "entries": [
+    "abund-ai"
+   ]
+  },
+  "api.agentbounties.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T05:07:36Z",
+   "checked_at": "2026-10-17T18:46:53Z",
+   "entries": [
+    "agent-bounties"
+   ]
+  },
+  "api.agentpub.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-07T21:41:55Z",
+   "checked_at": "2026-10-17T18:46:53Z",
+   "entries": [
+    "agentpub"
+   ]
+  },
+  "api.basedagents.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-28T19:30:19Z",
+   "checked_at": "2026-10-17T18:46:53Z",
+   "entries": [
+    "basedagents"
+   ]
+  },
+  "api.bountybook.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-24T08:26:56Z",
+   "checked_at": "2026-10-17T18:46:54Z",
+   "entries": [
+    "bountybook"
+   ]
+  },
+  "api.cdp.coinbase.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:44:25Z",
+   "checked_at": "2026-10-17T18:46:54Z",
+   "entries": [
+    "coinbase-cdp-x402-bazaar"
+   ]
+  },
+  "api.centaurxiv.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-27T02:21:07Z",
+   "checked_at": "2026-10-17T18:46:54Z",
+   "entries": [
+    "centaurxiv"
+   ]
+  },
+  "api.clusterprotocol.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T21:44:11Z",
+   "checked_at": "2026-10-17T18:46:54Z",
+   "entries": [
+    "cluster-protocol"
+   ]
+  },
+  "api.execution.market": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T22:32:46Z",
+   "checked_at": "2026-10-17T18:46:55Z",
+   "entries": [
+    "execution-market"
+   ]
+  },
+  "api.fruitflies.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-03-31T20:19:31Z",
+   "checked_at": "2026-10-17T18:46:55Z",
+   "entries": [
+    "fruitflies"
+   ]
+  },
+  "api.github.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2023-05-29T18:04:20Z",
+   "checked_at": "2026-10-17T18:46:55Z",
+   "entries": [
+    "1f916",
+    "agentic-commerce-protocol-openai-stripe",
+    "catena-labs",
+    "clawstr",
+    "coinbase-agentic-wallet",
+    "google-agent-payments-protocol",
+    "lightning-agent-tools",
+    "linkclaws",
+    "moltslack",
+    "open-agent-leaderboard-exgentic",
+    "tempo-machine-payments-protocol",
+    "universal-commerce-protocol",
+    "visa-intelligent-commerce"
+   ]
+  },
+  "api.gofrantic.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T23:24:12Z",
+   "checked_at": "2026-10-17T18:46:55Z",
+   "entries": [
+    "frantic"
+   ]
+  },
+  "api.manifold.markets": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:02:22Z",
+   "checked_at": "2026-10-17T18:46:56Z",
+   "entries": [
+    "manifold-markets"
+   ]
+  },
+  "api.moltexchange.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-06-13T01:11:57Z",
+   "checked_at": "2026-10-17T18:46:56Z",
+   "entries": [
+    "moltexchange"
+   ]
+  },
+  "api.moltjobs.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T20:01:44Z",
+   "checked_at": "2026-10-17T18:46:56Z",
+   "entries": [
+    "moltjobs"
+   ]
+  },
+  "api.openbotcity.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-09T04:54:12Z",
+   "checked_at": "2026-10-17T18:46:57Z",
+   "entries": [
+    "openclawcity"
+   ]
+  },
+  "api.wenrwa.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-30T16:48:17Z",
+   "checked_at": "2026-10-17T18:46:57Z",
+   "entries": [
+    "wenrwa-agent-marketplace"
+   ]
+  },
+  "apify.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:33:59Z",
+   "checked_at": "2026-10-17T18:46:57Z",
+   "entries": [
+    "apify-store"
+   ]
+  },
+  "apiv2.laevitas.ch": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T04:06:11Z",
+   "checked_at": "2026-10-17T18:46:57Z",
+   "entries": [
+    "laevitas-api-v2"
+   ]
+  },
+  "app.virtuals.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T03:08:39Z",
+   "checked_at": "2026-10-17T18:46:58Z",
+   "entries": [
+    "virtuals-agent-commerce-protocol"
+   ]
+  },
+  "arc.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:14:13Z",
+   "checked_at": "2026-10-17T18:46:58Z",
+   "entries": [
+    "circle-agent-stack"
+   ]
+  },
+  "archive.org": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2026-09-15T08:09:57Z",
+   "checked_at": "2026-10-17T18:46:59Z",
+   "entries": [
+    "1human",
+    "clawcaster",
+    "clawirc",
+    "lobchan",
+    "shellmates-app",
+    "tikclawk"
+   ]
+  },
+  "arena42.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-07T13:16:05Z",
+   "checked_at": "2026-10-17T18:46:59Z",
+   "entries": [
+    "arena42-agent-arena"
+   ]
+  },
+  "artifactcouncil.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T03:08:38Z",
+   "checked_at": "2026-10-17T18:46:59Z",
+   "entries": [
+    "artifact-council"
+   ]
+  },
+  "artificiety.world": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T16:21:47Z",
+   "checked_at": "2026-10-17T18:47:00Z",
+   "entries": [
+    "artificiety"
+   ]
+  },
+  "arxiv.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:44:05Z",
+   "checked_at": "2026-10-17T18:47:00Z",
+   "entries": [
+    "agents4science-2025",
+    "airaxiv"
+   ]
+  },
+  "ax1.vc": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T12:34:51Z",
+   "checked_at": "2026-10-17T18:47:00Z",
+   "entries": [
+    "ax1-console"
+   ]
+  },
+  "basedagents.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-28T19:30:19Z",
+   "checked_at": "2026-10-17T18:47:00Z",
+   "entries": [
+    "basedagents"
+   ]
+  },
+  "basistheory.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T09:37:54Z",
+   "checked_at": "2026-10-17T18:47:01Z",
+   "entries": [
+    "basis-theory"
+   ]
+  },
+  "basistheory.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:28:42Z",
+   "checked_at": "2026-10-17T18:47:01Z",
+   "entries": [
+    "basis-theory"
+   ]
+  },
+  "beach.science": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-09T16:32:15Z",
+   "checked_at": "2026-10-17T18:47:01Z",
+   "entries": [
+    "bio-openlabs"
+   ]
+  },
+  "bitrefill.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:11:22Z",
+   "checked_at": "2026-10-17T18:47:01Z",
+   "entries": [
+    "bitrefill-api-x402"
+   ]
+  },
+  "blockrun.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T04:51:07Z",
+   "checked_at": "2026-10-17T18:47:02Z",
+   "entries": [
+    "blockrun"
+   ]
+  },
+  "blog.basistheory.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:28:42Z",
+   "checked_at": "2026-10-17T18:47:02Z",
+   "entries": [
+    "basis-theory"
+   ]
+  },
+  "blog.cloudflare.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:43:22Z",
+   "checked_at": "2026-10-17T18:47:02Z",
+   "entries": [
+    "cloudflare-monetization-gateway"
+   ]
+  },
+  "blog.google": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T17:21:45Z",
+   "checked_at": "2026-10-17T18:47:02Z",
+   "entries": [
+    "google-agent-payments-protocol"
+   ]
+  },
+  "board.aamio.at": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-29T14:47:58Z",
+   "checked_at": "2026-10-17T18:47:03Z",
+   "entries": [
+    "aamio-board"
+   ]
+  },
+  "board.sarahos.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-09T04:25:28Z",
+   "checked_at": "2026-10-17T18:47:03Z",
+   "entries": [
+    "the-wide-sarahos"
+   ]
+  },
+  "botbeat.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-03-29T05:54:30Z",
+   "checked_at": "2026-10-17T18:47:03Z",
+   "entries": [
+    "botbeat"
+   ]
+  },
+  "botmural.live": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:47:03Z",
+   "entries": [
+    "botmural"
+   ]
+  },
+  "botnet.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-09T12:42:04Z",
+   "checked_at": "2026-10-17T18:47:04Z",
+   "entries": [
+    "botnet"
+   ]
+  },
+  "botxiv.org": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:47:04Z",
+   "entries": [
+    "botxiv"
+   ]
+  },
+  "bountybook.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-24T08:26:56Z",
+   "checked_at": "2026-10-17T18:47:04Z",
+   "entries": [
+    "bountybook"
+   ]
+  },
+  "bountyhub.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T14:41:51Z",
+   "checked_at": "2026-10-17T18:47:05Z",
+   "entries": [
+    "bountyhub"
+   ]
+  },
+  "bountysource.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-03T23:26:56Z",
+   "checked_at": "2026-10-17T18:47:05Z",
+   "entries": [
+    "bountysource"
+   ]
+  },
+  "bridge.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:28:06Z",
+   "checked_at": "2026-10-17T18:47:05Z",
+   "entries": [
+    "open-standard-ousd"
+   ]
+  },
+  "businesswire.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:20:01Z",
+   "checked_at": "2026-10-17T18:47:05Z",
+   "entries": [
+    "alipay-ai-pay"
+   ]
+  },
+  "catena.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T10:51:28Z",
+   "checked_at": "2026-10-17T18:47:06Z",
+   "entries": [
+    "catena-labs"
+   ]
+  },
+  "centaurxiv.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-27T02:21:07Z",
+   "checked_at": "2026-10-17T18:47:07Z",
+   "entries": [
+    "centaurxiv"
+   ]
+  },
+  "chainward.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-11T21:58:11Z",
+   "checked_at": "2026-10-17T18:47:06Z",
+   "entries": [
+    "circle-agent-stack",
+    "termix-aacp",
+    "virtuals-agent-commerce-protocol"
+   ]
+  },
+  "chan.alphakek.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-22T14:39:34Z",
+   "checked_at": "2026-10-17T18:47:06Z",
+   "entries": [
+    "agentchan"
+   ]
+  },
+  "chat.thecolony.cc": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T21:30:17Z",
+   "checked_at": "2026-10-17T18:47:07Z",
+   "entries": [
+    "colony-chat"
+   ]
+  },
+  "cheaptokens.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-07T19:25:28Z",
+   "checked_at": "2026-10-17T18:47:07Z",
+   "entries": [
+    "cheaptokens"
+   ]
+  },
+  "circle.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T17:35:37Z",
+   "checked_at": "2026-10-17T18:47:08Z",
+   "entries": [
+    "circle-agent-stack"
+   ]
+  },
+  "claude.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:33:25Z",
+   "checked_at": "2026-10-17T18:47:08Z",
+   "entries": [
+    "anthropic-claude-commerce-agents-blueprint"
+   ]
+  },
+  "claw.credit": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-21T22:15:59Z",
+   "checked_at": "2026-10-17T18:47:08Z",
+   "entries": [
+    "clawcredit"
+   ]
+  },
+  "claw402.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-07T11:34:51Z",
+   "checked_at": "2026-10-17T18:47:09Z",
+   "entries": [
+    "claw402"
+   ]
+  },
+  "clawarena.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-11T10:47:04Z",
+   "checked_at": "2026-10-17T18:47:09Z",
+   "entries": [
+    "clawarena"
+   ]
+  },
+  "clawbench.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T16:47:40Z",
+   "checked_at": "2026-10-17T18:47:09Z",
+   "entries": [
+    "clawbench"
+   ]
+  },
+  "clawcard.sh": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T05:31:14Z",
+   "checked_at": "2026-10-17T18:47:10Z",
+   "entries": [
+    "clawcard"
+   ]
+  },
+  "clawcaster.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-06T17:23:18Z",
+   "checked_at": "2026-10-17T18:47:10Z",
+   "entries": [
+    "clawcaster"
+   ]
+  },
+  "clawcity.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-08T03:34:36Z",
+   "checked_at": "2026-10-17T18:47:10Z",
+   "entries": [
+    "clawcity"
+   ]
+  },
+  "clawdchat.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-04T05:14:25Z",
+   "checked_at": "2026-10-17T18:47:10Z",
+   "entries": [
+    "clawdchat"
+   ]
+  },
+  "clawhub.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T05:06:27Z",
+   "checked_at": "2026-10-17T18:47:11Z",
+   "entries": [
+    "clawhub"
+   ]
+  },
+  "clawhunt.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-08T18:38:53Z",
+   "checked_at": "2026-10-17T18:47:11Z",
+   "entries": [
+    "clawhunt"
+   ]
+  },
+  "clawirc.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-01T08:01:13Z",
+   "checked_at": "2026-10-17T18:47:11Z",
+   "entries": [
+    "clawirc"
+   ]
+  },
+  "clawk.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-17T21:50:02Z",
+   "checked_at": "2026-10-17T18:47:11Z",
+   "entries": [
+    "clawirc",
+    "clawk"
+   ]
+  },
+  "clawlancer.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-26T11:14:33Z",
+   "checked_at": "2026-10-17T18:47:12Z",
+   "entries": [
+    "clawlancer"
+   ]
+  },
+  "clawn.ch": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-12T23:01:30Z",
+   "checked_at": "2026-10-17T18:47:12Z",
+   "entries": [
+    "clawnch"
+   ]
+  },
+  "clawnews.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-25T16:20:15Z",
+   "checked_at": "2026-10-17T18:47:12Z",
+   "entries": [
+    "clawnews"
+   ]
+  },
+  "clawprint.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-06T23:13:03Z",
+   "checked_at": "2026-10-17T18:47:12Z",
+   "entries": [
+    "clawprint"
+   ]
+  },
+  "clawrxiv.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-11T15:11:06Z",
+   "checked_at": "2026-10-17T18:47:13Z",
+   "entries": [
+    "clawrxiv"
+   ]
+  },
+  "clawsino.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-03T07:13:23Z",
+   "checked_at": "2026-10-17T18:47:13Z",
+   "entries": [
+    "clawsino"
+   ]
+  },
+  "clawsites.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-03-23T22:19:52Z",
+   "checked_at": "2026-10-17T18:47:13Z",
+   "entries": [
+    "clawsites"
+   ]
+  },
+  "clawstr.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-09T22:12:45Z",
+   "checked_at": "2026-10-17T18:47:14Z",
+   "entries": [
+    "clawstr"
+   ]
+  },
+  "clawtasks.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T10:34:40Z",
+   "checked_at": "2026-10-17T18:47:14Z",
+   "entries": [
+    "clawtasks"
+   ]
+  },
+  "clawtavista.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-02T17:56:41Z",
+   "checked_at": "2026-10-17T18:47:14Z",
+   "entries": [
+    "clawtavista"
+   ]
+  },
+  "clawxiv.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-17T22:51:52Z",
+   "checked_at": "2026-10-17T18:47:14Z",
+   "entries": [
+    "clawxiv"
+   ]
+  },
+  "cloudflare-dns.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:42:33Z",
+   "checked_at": "2026-10-17T18:47:15Z",
+   "entries": [
+    "clawirc",
+    "hive-rllm"
+   ]
+  },
+  "clusterprotocol.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T21:44:11Z",
+   "checked_at": "2026-10-17T18:47:15Z",
+   "entries": [
+    "cluster-protocol"
+   ]
+  },
+  "cnbc.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:15:20Z",
+   "checked_at": "2026-10-17T18:47:15Z",
+   "entries": [
+    "meta-muse"
+   ]
+  },
+  "common-room-cckw.onrender.com": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:47:16Z",
+   "entries": [
+    "common-room"
+   ]
+  },
+  "commonlog.ai": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:47:16Z",
+   "entries": [
+    "commonlog"
+   ]
+  },
+  "corbits.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T16:42:51Z",
+   "checked_at": "2026-10-17T18:47:16Z",
+   "entries": [
+    "corbits"
+   ]
+  },
+  "crossmint.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T17:51:50Z",
+   "checked_at": "2026-10-17T18:47:17Z",
+   "entries": [
+    "crossmint"
+   ]
+  },
+  "csaw.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T13:01:38Z",
+   "checked_at": "2026-10-17T18:47:17Z",
+   "entries": [
+    "agent-ctf-events"
+   ]
+  },
+  "cyber-arena.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-01T01:54:43Z",
+   "checked_at": "2026-10-17T18:47:17Z",
+   "entries": [
+    "cyberarena"
+   ]
+  },
+  "dail-3dci.onrender.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T08:44:39Z",
+   "checked_at": "2026-10-17T18:47:18Z",
+   "entries": [
+    "dail-agent-world"
+   ]
+  },
+  "daydreams.systems": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-11T10:48:58Z",
+   "checked_at": "2026-10-17T18:47:18Z",
+   "entries": [
+    "daydreams-systems"
+   ]
+  },
+  "dead-internet-society.mitman93.chatgpt.site": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:47:18Z",
+   "entries": [
+    "dead-internet-society"
+   ]
+  },
+  "dealwork.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T19:04:59Z",
+   "checked_at": "2026-10-17T18:47:18Z",
+   "entries": [
+    "dealwork-ai"
+   ]
+  },
+  "devaintart.net": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-15T16:52:30Z",
+   "checked_at": "2026-10-17T18:47:19Z",
+   "entries": [
+    "devaintart"
+   ]
+  },
+  "developer.paypal.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:33:57Z",
+   "checked_at": "2026-10-17T18:47:19Z",
+   "entries": [
+    "paypal-agentic-commerce-services"
+   ]
+  },
+  "developers.basistheory.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:28:42Z",
+   "checked_at": "2026-10-17T18:47:19Z",
+   "entries": [
+    "basis-theory"
+   ]
+  },
+  "dexter.cash": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-11T11:50:47Z",
+   "checked_at": "2026-10-17T18:47:19Z",
+   "entries": [
+    "dexter-indexter"
+   ]
+  },
+  "dns.google": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:35:14Z",
+   "checked_at": "2026-10-17T18:47:20Z",
+   "entries": [
+    "agent-governance-institute",
+    "clawirc"
+   ]
+  },
+  "docs.allium.so": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T15:20:01Z",
+   "checked_at": "2026-10-17T18:47:20Z",
+   "entries": [
+    "allium-x402-data"
+   ]
+  },
+  "docs.altlayer.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T15:14:51Z",
+   "checked_at": "2026-10-17T18:47:20Z",
+   "entries": [
+    "8004scan"
+   ]
+  },
+  "docs.cdp.coinbase.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:44:25Z",
+   "checked_at": "2026-10-17T18:47:20Z",
+   "entries": [
+    "coinbase-agentic-wallet",
+    "coinbase-cdp-x402-bazaar"
+   ]
+  },
+  "docs.figment.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T17:34:33Z",
+   "checked_at": "2026-10-17T18:47:21Z",
+   "entries": [
+    "figment-x402-facilitator"
+   ]
+  },
+  "docs.gittensor.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-03T19:54:44Z",
+   "checked_at": "2026-10-17T18:47:21Z",
+   "entries": [
+    "gittensor"
+   ]
+  },
+  "docs.paypal.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T08:52:25Z",
+   "checked_at": "2026-10-17T18:47:21Z",
+   "entries": [
+    "paypal-agentic-commerce-services"
+   ]
+  },
+  "docs.ramp.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:23:52Z",
+   "checked_at": "2026-10-17T18:47:21Z",
+   "entries": [
+    "ramp-agent-cards"
+   ]
+  },
+  "docs.skyfire.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T18:01:38Z",
+   "checked_at": "2026-10-17T18:47:22Z",
+   "entries": [
+    "skyfire-kyapay"
+   ]
+  },
+  "docs.stripe.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:23:43Z",
+   "checked_at": "2026-10-17T18:47:22Z",
+   "entries": [
+    "stripe-agentic-commerce-suite"
+   ]
+  },
+  "eips.ethereum.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:27:56Z",
+   "checked_at": "2026-10-17T18:47:22Z",
+   "entries": [
+    "erc-8004-trustless-agents"
+   ]
+  },
+  "en.wikipedia.org": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2021-01-20T22:48:34Z",
+   "checked_at": "2026-10-17T18:47:22Z",
+   "entries": [
+    "bountysource"
+   ]
+  },
+  "execution.market": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T22:32:46Z",
+   "checked_at": "2026-10-17T18:47:23Z",
+   "entries": [
+    "execution-market"
+   ]
+  },
+  "exgentic.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T20:47:09Z",
+   "checked_at": "2026-10-17T18:47:23Z",
+   "entries": [
+    "open-agent-leaderboard-exgentic"
+   ]
+  },
+  "facilitator.heurist.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T23:04:06Z",
+   "checked_at": "2026-10-17T18:47:23Z",
+   "entries": [
+    "heurist-x402-facilitator"
+   ]
+  },
+  "facilitator.ultravioletadao.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-02T15:11:53Z",
+   "checked_at": "2026-10-17T18:47:23Z",
+   "entries": [
+    "ultravioleta-dao-x402-facilitator"
+   ]
+  },
+  "fluxapay.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T09:20:07Z",
+   "checked_at": "2026-10-17T18:47:24Z",
+   "entries": [
+    "fluxa"
+   ]
+  },
+  "foragents.site": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-17T06:07:12Z",
+   "checked_at": "2026-10-17T18:47:24Z",
+   "entries": [
+    "foragents-site"
+   ]
+  },
+  "forkast.news": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T16:21:47Z",
+   "checked_at": "2026-10-17T18:47:25Z",
+   "entries": [
+    "virtuals-agent-commerce-protocol"
+   ]
+  },
+  "frames.ag": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-05T11:47:50Z",
+   "checked_at": "2026-10-17T18:47:25Z",
+   "entries": [
+    "mcpay-frames"
+   ]
+  },
+  "freeq.at": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T14:59:07Z",
+   "checked_at": "2026-10-17T18:47:25Z",
+   "entries": [
+    "freeq"
+   ]
+  },
+  "fruitflies.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-03-31T20:19:31Z",
+   "checked_at": "2026-10-17T18:47:25Z",
+   "entries": [
+    "fruitflies"
+   ]
+  },
+  "getpostingboard.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T08:07:51Z",
+   "checked_at": "2026-10-17T18:47:26Z",
+   "entries": [
+    "get-posting-board"
+   ]
+  },
+  "gitcoin.co": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T11:06:06Z",
+   "checked_at": "2026-10-17T18:47:26Z",
+   "entries": [
+    "gitcoin-bounties"
+   ]
+  },
+  "github.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2023-05-29T18:04:20Z",
+   "checked_at": "2026-10-17T18:47:26Z",
+   "entries": [
+    "1f916",
+    "a2a-protocol",
+    "agent-errata",
+    "agentarxiv-agxiv",
+    "agentbazaar",
+    "agentic-commerce-protocol-openai-stripe",
+    "agentpedia-io",
+    "agentpedia-openagents",
+    "agents-json",
+    "agonaut",
+    "algora",
+    "awesome-agent-native-social",
+    "bountyhub",
+    "clawhub",
+    "coinbase-cdp-x402-bazaar",
+    "cyberarena",
+    "daydreams-systems",
+    "gittensor",
+    "hal-holistic-agent-leaderboard",
+    "hive-rllm",
+    "issuehunt",
+    "keyring-agent",
+    "leviathan-news",
+    "lightning-agent-tools",
+    "mcpay-frames",
+    "nekuda",
+    "official-mcp-registry",
+    "open-agent-leaderboard-exgentic",
+    "opire",
+    "p2pclaw",
+    "polar-issue-funding",
+    "thirdweb-x402",
+    "x402-foundation",
+    "x402scan"
+   ]
+  },
+  "gittensor.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-03T19:54:44Z",
+   "checked_at": "2026-10-17T18:47:26Z",
+   "entries": [
+    "gittensor"
+   ]
+  },
+  "global-chat.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-23T14:00:37Z",
+   "checked_at": "2026-10-17T18:47:27Z",
+   "entries": [
+    "global-chat"
+   ]
+  },
+  "globenewswire.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:30:19Z",
+   "checked_at": "2026-10-17T18:47:27Z",
+   "entries": [
+    "ilands"
+   ]
+  },
+  "gnamiblastai.vercel.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-13T04:12:47Z",
+   "checked_at": "2026-10-17T18:47:27Z",
+   "entries": [
+    "gnamiblast"
+   ]
+  },
+  "gofrantic.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T23:24:12Z",
+   "checked_at": "2026-10-17T18:47:28Z",
+   "entries": [
+    "frantic"
+   ]
+  },
+  "gokite.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T19:53:46Z",
+   "checked_at": "2026-10-17T18:47:28Z",
+   "entries": [
+    "kite-ai"
+   ]
+  },
+  "golden-cat-network.bronkobologna.chatgpt.site": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-07T08:54:15Z",
+   "checked_at": "2026-10-17T18:47:28Z",
+   "entries": [
+    "golden-cat"
+   ]
+  },
+  "grift.world": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T21:53:15Z",
+   "checked_at": "2026-10-17T18:47:29Z",
+   "entries": [
+    "grift-san-verano"
+   ]
+  },
+  "hal.cs.princeton.edu": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:24:29Z",
+   "checked_at": "2026-10-17T18:47:29Z",
+   "entries": [
+    "hal-holistic-agent-leaderboard"
+   ]
+  },
+  "hall.liruiyang1.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-21T06:37:56Z",
+   "checked_at": "2026-10-17T18:47:29Z",
+   "entries": [
+    "the-guild-hall"
+   ]
+  },
+  "help.shopify.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2020-08-31T21:38:33Z",
+   "checked_at": "2026-10-17T18:47:29Z",
+   "entries": [
+    "agentic-commerce-protocol-openai-stripe",
+    "shopify-agentic-storefronts"
+   ]
+  },
+  "hive.rllm-project.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T00:49:03Z",
+   "checked_at": "2026-10-17T18:47:29Z",
+   "entries": [
+    "hive-rllm"
+   ]
+  },
+  "hivebook.wiki": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-30T02:40:19Z",
+   "checked_at": "2026-10-17T18:47:29Z",
+   "entries": [
+    "hivebook"
+   ]
+  },
+  "hotline.papilov.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-20T11:17:49Z",
+   "checked_at": "2026-10-17T18:47:30Z",
+   "entries": [
+    "ai-agents-hotline"
+   ]
+  },
+  "huggingface.co": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2025-08-21T18:06:53Z",
+   "checked_at": "2026-10-17T18:47:30Z",
+   "entries": [
+    "open-agent-leaderboard-exgentic"
+   ]
+  },
+  "ilands.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T17:37:24Z",
+   "checked_at": "2026-10-17T18:47:30Z",
+   "entries": [
+    "ilands"
+   ]
+  },
+  "investor.mastercard.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:28:33Z",
+   "checked_at": "2026-10-17T18:47:30Z",
+   "entries": [
+    "mastercard-agent-pay"
+   ]
+  },
+  "inwithai.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-17T13:50:17Z",
+   "checked_at": "2026-10-17T18:47:31Z",
+   "entries": [
+    "inwith-ai"
+   ]
+  },
+  "ir.aboutamazon.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:15:10Z",
+   "checked_at": "2026-10-17T18:47:31Z",
+   "entries": [
+    "amazon-alexa-for-shopping"
+   ]
+  },
+  "jobbi.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T21:13:45Z",
+   "checked_at": "2026-10-17T18:47:32Z",
+   "entries": [
+    "jobbi-agent-gig-index",
+    "openwork-bot"
+   ]
+  },
+  "joinopenstandard.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T13:00:15Z",
+   "checked_at": "2026-10-17T18:47:32Z",
+   "entries": [
+    "open-standard-ousd"
+   ]
+  },
+  "joinsnail.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T15:31:03Z",
+   "checked_at": "2026-10-17T18:47:32Z",
+   "entries": [
+    "snail"
+   ]
+  },
+  "kaggle.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2022-05-17T22:39:01Z",
+   "checked_at": "2026-10-17T18:47:32Z",
+   "entries": [
+    "kaggle-agent-competitions"
+   ]
+  },
+  "keyring-agent.blockchhub.link": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-05T11:21:36Z",
+   "checked_at": "2026-10-17T18:47:33Z",
+   "entries": [
+    "keyring-agent"
+   ]
+  },
+  "keyring.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T10:35:50Z",
+   "checked_at": "2026-10-17T18:47:33Z",
+   "entries": [
+    "keyring-agent"
+   ]
+  },
+  "kitescan.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T15:26:35Z",
+   "checked_at": "2026-10-17T18:47:34Z",
+   "entries": [
+    "kite-ai"
+   ]
+  },
+  "kradleverse.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-13T00:03:34Z",
+   "checked_at": "2026-10-17T18:47:34Z",
+   "entries": [
+    "kradleverse"
+   ]
+  },
+  "laso.finance": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T08:21:03Z",
+   "checked_at": "2026-10-17T18:47:34Z",
+   "entries": [
+    "laso-finance"
+   ]
+  },
+  "leviathannews.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T19:27:11Z",
+   "checked_at": "2026-10-17T18:47:34Z",
+   "entries": [
+    "leviathan-news"
+   ]
+  },
+  "lightning.engineering": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T15:00:36Z",
+   "checked_at": "2026-10-17T18:47:35Z",
+   "entries": [
+    "lightning-agent-tools"
+   ]
+  },
+  "lightningfaucet.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T11:29:29Z",
+   "checked_at": "2026-10-17T18:47:35Z",
+   "entries": [
+    "lightning-faucet-agent-board"
+   ]
+  },
+  "lightspark.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T17:28:20Z",
+   "checked_at": "2026-10-17T18:47:35Z",
+   "entries": [
+    "lightspark"
+   ]
+  },
+  "linkclaws.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-18T19:24:31Z",
+   "checked_at": "2026-10-17T18:47:35Z",
+   "entries": [
+    "linkclaws"
+   ]
+  },
+  "linkedin.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2026-06-01T22:58:48Z",
+   "checked_at": "2026-10-17T18:47:36Z",
+   "entries": [
+    "shopify-agentic-storefronts"
+   ]
+  },
+  "lobchan.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-05T13:30:59Z",
+   "checked_at": "2026-10-17T18:47:36Z",
+   "entries": [
+    "lobchan"
+   ]
+  },
+  "machins.co": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-28T22:42:13Z",
+   "checked_at": "2026-10-17T18:47:36Z",
+   "entries": [
+    "machins"
+   ]
+  },
+  "manifold.markets": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:02:22Z",
+   "checked_at": "2026-10-17T18:47:36Z",
+   "entries": [
+    "manifold-markets"
+   ]
+  },
+  "market.near.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T15:02:48Z",
+   "checked_at": "2026-10-17T18:47:37Z",
+   "entries": [
+    "near-ai-agent-market"
+   ]
+  },
+  "marketplace.wenrwa.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-30T16:48:17Z",
+   "checked_at": "2026-10-17T18:47:37Z",
+   "entries": [
+    "wenrwa-agent-marketplace"
+   ]
+  },
+  "mastercard.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:28:33Z",
+   "checked_at": "2026-10-17T18:47:37Z",
+   "entries": [
+    "mastercard-agent-pay"
+   ]
+  },
+  "materialmodel.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-23T00:32:55Z",
+   "checked_at": "2026-10-17T18:47:37Z",
+   "entries": [
+    "material-model"
+   ]
+  },
+  "matrixagentnet.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-10T09:03:27Z",
+   "checked_at": "2026-10-17T18:47:38Z",
+   "entries": [
+    "matrix-agent-net"
+   ]
+  },
+  "mcp-marketplace.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T15:22:02Z",
+   "checked_at": "2026-10-17T18:47:38Z",
+   "entries": [
+    "mcp-marketplace"
+   ]
+  },
+  "mcpize.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T11:00:40Z",
+   "checked_at": "2026-10-17T18:47:38Z",
+   "entries": [
+    "mcpize"
+   ]
+  },
+  "medresearch-ai.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-16T18:34:53Z",
+   "checked_at": "2026-10-17T18:47:38Z",
+   "entries": [
+    "hypothesishub-medresearch-ai"
+   ]
+  },
+  "message.adam10.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-11T10:05:10Z",
+   "checked_at": "2026-10-17T18:47:39Z",
+   "entries": [
+    "adam-message"
+   ]
+  },
+  "meta.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:40:24Z",
+   "checked_at": "2026-10-17T18:47:39Z",
+   "entries": [
+    "meta-muse"
+   ]
+  },
+  "metaculus.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T14:48:40Z",
+   "checked_at": "2026-10-17T18:47:39Z",
+   "entries": [
+    "metaculus-futureeval-bot-tournament"
+   ]
+  },
+  "microlancer.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T15:35:59Z",
+   "checked_at": "2026-10-17T18:47:40Z",
+   "entries": [
+    "microlancer"
+   ]
+  },
+  "modelcontextprotocol.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T16:19:24Z",
+   "checked_at": "2026-10-17T18:47:40Z",
+   "entries": [
+    "official-mcp-registry"
+   ]
+  },
+  "molt.church": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-10T00:43:04Z",
+   "checked_at": "2026-10-17T18:47:40Z",
+   "entries": [
+    "church-of-molt"
+   ]
+  },
+  "moltbook.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:01:43Z",
+   "checked_at": "2026-10-17T18:47:40Z",
+   "entries": [
+    "moltbook"
+   ]
+  },
+  "moltbotden.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-24T21:41:33Z",
+   "checked_at": "2026-10-17T18:47:41Z",
+   "entries": [
+    "moltbot-den"
+   ]
+  },
+  "moltchan.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-03-23T17:37:19Z",
+   "checked_at": "2026-10-17T18:47:41Z",
+   "entries": [
+    "moltchan"
+   ]
+  },
+  "moltcities.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-22T20:10:58Z",
+   "checked_at": "2026-10-17T18:47:41Z",
+   "entries": [
+    "moltcities"
+   ]
+  },
+  "moltexchange.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-06-13T01:11:57Z",
+   "checked_at": "2026-10-17T18:47:42Z",
+   "entries": [
+    "moltexchange"
+   ]
+  },
+  "molthunt.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-24T10:08:51Z",
+   "checked_at": "2026-10-17T18:47:42Z",
+   "entries": [
+    "molthunt"
+   ]
+  },
+  "moltjobs.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T20:01:44Z",
+   "checked_at": "2026-10-17T18:47:42Z",
+   "entries": [
+    "moltjobs"
+   ]
+  },
+  "moltlaunch.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-02T02:00:31Z",
+   "checked_at": "2026-10-17T18:47:43Z",
+   "entries": [
+    "moltlaunch"
+   ]
+  },
+  "moltmatch-production.up.railway.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-26T06:58:45Z",
+   "checked_at": "2026-10-17T18:47:43Z",
+   "entries": [
+    "moltmatch"
+   ]
+  },
+  "moltmatch.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-29T12:44:26Z",
+   "checked_at": "2026-10-17T18:47:43Z",
+   "entries": [
+    "moltmatch"
+   ]
+  },
+  "moltr.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-01T05:45:03Z",
+   "checked_at": "2026-10-17T18:47:44Z",
+   "entries": [
+    "moltr"
+   ]
+  },
+  "moltroad.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-04-14T23:58:24Z",
+   "checked_at": "2026-10-17T18:47:44Z",
+   "entries": [
+    "molt-road"
+   ]
+  },
+  "moltslack.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-01T01:54:42Z",
+   "checked_at": "2026-10-17T18:47:44Z",
+   "entries": [
+    "moltslack"
+   ]
+  },
+  "moltstack.net": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-26T05:43:25Z",
+   "checked_at": "2026-10-17T18:47:44Z",
+   "entries": [
+    "moltstack"
+   ]
+  },
+  "molttok.art": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-04-23T13:48:15Z",
+   "checked_at": "2026-10-17T18:47:45Z",
+   "entries": [
+    "molttok"
+   ]
+  },
+  "moltx.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-23T21:08:11Z",
+   "checked_at": "2026-10-17T18:47:45Z",
+   "entries": [
+    "moltx"
+   ]
+  },
+  "mpp.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T06:38:05Z",
+   "checked_at": "2026-10-17T18:47:45Z",
+   "entries": [
+    "tempo-machine-payments-protocol"
+   ]
+  },
+  "mrdn.finance": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-27T06:39:22Z",
+   "checked_at": "2026-10-17T18:47:45Z",
+   "entries": [
+    "meridian-mrdn"
+   ]
+  },
+  "msgboard.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-10T15:59:04Z",
+   "checked_at": "2026-10-17T18:47:46Z",
+   "entries": [
+    "msgboard-dev"
+   ]
+  },
+  "muse.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:32:59Z",
+   "checked_at": "2026-10-17T18:47:46Z",
+   "entries": [
+    "meta-muse"
+   ]
+  },
+  "musedin.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T20:10:28Z",
+   "checked_at": "2026-10-17T18:47:46Z",
+   "entries": [
+    "musedin"
+   ]
+  },
+  "mydeadinternet.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-25T07:53:31Z",
+   "checked_at": "2026-10-17T18:47:46Z",
+   "entries": [
+    "my-dead-internet"
+   ]
+  },
+  "natural.co": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T16:04:38Z",
+   "checked_at": "2026-10-17T18:47:47Z",
+   "entries": [
+    "natural-agentic-payments"
+   ]
+  },
+  "natural.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T14:49:34Z",
+   "checked_at": "2026-10-17T18:47:47Z",
+   "entries": [
+    "natural-agentic-payments"
+   ]
+  },
+  "nekuda.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T09:21:24Z",
+   "checked_at": "2026-10-17T18:47:47Z",
+   "entries": [
+    "nekuda"
+   ]
+  },
+  "nevermined.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T12:44:31Z",
+   "checked_at": "2026-10-17T18:47:48Z",
+   "entries": [
+    "nevermined"
+   ]
+  },
+  "news.microsoft.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2017-11-28T21:05:40Z",
+   "checked_at": "2026-10-17T18:47:48Z",
+   "entries": [
+    "microsoft-copilot-checkout"
+   ]
+  },
+  "news.ycombinator.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2026-03-25T01:22:50Z",
+   "checked_at": "2026-10-17T18:47:48Z",
+   "entries": [
+    "clawirc",
+    "replit-bounties"
+   ]
+  },
+  "northreachinteractive.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-29T08:19:23Z",
+   "checked_at": "2026-10-17T18:47:48Z",
+   "entries": [
+    "northreach"
+   ]
+  },
+  "nothing.gripe": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-05T22:41:06Z",
+   "checked_at": "2026-10-17T18:47:49Z",
+   "entries": [
+    "nothing-gripe"
+   ]
+  },
+  "nowfound.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-23T11:06:44Z",
+   "checked_at": "2026-10-17T18:47:49Z",
+   "entries": [
+    "molthunt"
+   ]
+  },
+  "okx.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-28T13:30:57Z",
+   "checked_at": "2026-10-17T18:47:49Z",
+   "entries": [
+    "okx-ai"
+   ]
+  },
+  "okx.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:40:46Z",
+   "checked_at": "2026-10-17T18:47:49Z",
+   "entries": [
+    "okx-ai"
+   ]
+  },
+  "olas.network": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-02T22:00:30Z",
+   "checked_at": "2026-10-17T18:47:50Z",
+   "entries": [
+    "olas-mech-marketplace",
+    "olas-predict"
+   ]
+  },
+  "openagentforum.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T00:01:29Z",
+   "checked_at": "2026-10-17T18:47:50Z",
+   "entries": [
+    "openagentforum"
+   ]
+  },
+  "openclawcity.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-09T04:54:12Z",
+   "checked_at": "2026-10-17T18:47:51Z",
+   "entries": [
+    "openclawcity"
+   ]
+  },
+  "openlabs.bio.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T09:28:15Z",
+   "checked_at": "2026-10-17T18:47:50Z",
+   "entries": [
+    "bio-openlabs"
+   ]
+  },
+  "opentask.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T15:37:41Z",
+   "checked_at": "2026-10-17T18:47:51Z",
+   "entries": [
+    "opentask"
+   ]
+  },
+  "openwitness.net": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-25T13:57:54Z",
+   "checked_at": "2026-10-17T18:47:51Z",
+   "entries": [
+    "ai-societies-network-openwitness"
+   ]
+  },
+  "openwork.bot": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-15T18:19:27Z",
+   "checked_at": "2026-10-17T18:47:51Z",
+   "entries": [
+    "openwork-bot"
+   ]
+  },
+  "opire.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T16:29:59Z",
+   "checked_at": "2026-10-17T18:47:52Z",
+   "entries": [
+    "opire"
+   ]
+  },
+  "orbiobook.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-06T01:12:20Z",
+   "checked_at": "2026-10-17T18:47:52Z",
+   "entries": [
+    "orbiobook"
+   ]
+  },
+  "oss.issuehunt.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T14:49:51Z",
+   "checked_at": "2026-10-17T18:47:52Z",
+   "entries": [
+    "issuehunt"
+   ]
+  },
+  "p2pclaw.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-28T23:18:29Z",
+   "checked_at": "2026-10-17T18:47:53Z",
+   "entries": [
+    "p2pclaw"
+   ]
+  },
+  "panews.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T21:51:30Z",
+   "checked_at": "2026-10-17T18:47:53Z",
+   "entries": [
+    "kite-ai"
+   ]
+  },
+  "payai.network": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T06:39:10Z",
+   "checked_at": "2026-10-17T18:47:53Z",
+   "entries": [
+    "payai"
+   ]
+  },
+  "payapi.market": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T08:55:10Z",
+   "checked_at": "2026-10-17T18:47:54Z",
+   "entries": [
+    "payapi-market"
+   ]
+  },
+  "paylobster.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-05-19T08:26:00Z",
+   "checked_at": "2026-10-17T18:47:54Z",
+   "entries": [
+    "paylobster"
+   ]
+  },
+  "paymanai.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-07T19:49:10Z",
+   "checked_at": "2026-10-17T18:47:54Z",
+   "entries": [
+    "payman-ai"
+   ]
+  },
+  "payos.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T21:30:46Z",
+   "checked_at": "2026-10-17T18:47:54Z",
+   "entries": [
+    "payos"
+   ]
+  },
+  "paypal.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T08:52:25Z",
+   "checked_at": "2026-10-17T18:47:55Z",
+   "entries": [
+    "paypal-agentic-commerce-services"
+   ]
+  },
+  "paysponge.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T07:59:15Z",
+   "checked_at": "2026-10-17T18:47:55Z",
+   "entries": [
+    "paysponge"
+   ]
+  },
+  "perplexity.ai": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2024-02-13T00:06:23Z",
+   "checked_at": "2026-10-17T18:47:55Z",
+   "entries": [
+    "perplexity-instant-buy-paypal"
+   ]
+  },
+  "plazmi.gg": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T03:10:43Z",
+   "checked_at": "2026-10-17T18:47:55Z",
+   "entries": [
+    "plazmi"
+   ]
+  },
+  "polar.sh": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:19:21Z",
+   "checked_at": "2026-10-17T18:47:56Z",
+   "entries": [
+    "polar-issue-funding"
+   ]
+  },
+  "portal.thirdweb.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:42:35Z",
+   "checked_at": "2026-10-17T18:47:56Z",
+   "entries": [
+    "thirdweb-x402"
+   ]
+  },
+  "ppc.land": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T17:58:27Z",
+   "checked_at": "2026-10-17T18:47:56Z",
+   "entries": [
+    "universal-commerce-protocol"
+   ]
+  },
+  "prnewswire.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:20:12Z",
+   "checked_at": "2026-10-17T18:47:56Z",
+   "entries": [
+    "ramp-agent-cards"
+   ]
+  },
+  "producthunt.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2021-12-07T15:56:20Z",
+   "checked_at": "2026-10-17T18:47:57Z",
+   "entries": [
+    "clawnews"
+   ]
+  },
+  "progenly.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-06-29T13:06:52Z",
+   "checked_at": "2026-10-17T18:47:57Z",
+   "entries": [
+    "progenly"
+   ]
+  },
+  "protos.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T07:36:09Z",
+   "checked_at": "2026-10-17T18:47:57Z",
+   "entries": [
+    "tempo-machine-payments-protocol"
+   ]
+  },
+  "pypi.org": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2023-05-22T21:40:42Z",
+   "checked_at": "2026-10-17T18:47:57Z",
+   "entries": [
+    "colony-chat"
+   ]
+  },
+  "qevrulan.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T12:22:44Z",
+   "checked_at": "2026-10-17T18:47:58Z",
+   "entries": [
+    "lockzone-qevrulan"
+   ]
+  },
+  "qualium.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2021-06-08T11:51:27Z",
+   "checked_at": "2026-10-17T18:47:58Z",
+   "entries": [
+    "the-wire-qualium"
+   ]
+  },
+  "raw.githubusercontent.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2018-04-02T22:39:13Z",
+   "checked_at": "2026-10-17T18:47:58Z",
+   "entries": [
+    "awesome-agent-native-social"
+   ]
+  },
+  "recensorium.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-09T01:03:52Z",
+   "checked_at": "2026-10-17T18:47:59Z",
+   "entries": [
+    "recensorium"
+   ]
+  },
+  "reels.1human.tech": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-11T05:03:24Z",
+   "checked_at": "2026-10-17T18:47:59Z",
+   "entries": [
+    "1human"
+   ]
+  },
+  "registry.modelcontextprotocol.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T16:19:24Z",
+   "checked_at": "2026-10-17T18:47:59Z",
+   "entries": [
+    "official-mcp-registry"
+   ]
+  },
+  "relay-commons.ericx.workers.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-07T23:36:00Z",
+   "checked_at": "2026-10-17T18:48:00Z",
+   "entries": [
+    "relay-commons"
+   ]
+  },
+  "rentahuman.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T16:57:08Z",
+   "checked_at": "2026-10-17T18:48:00Z",
+   "entries": [
+    "rentahuman"
+   ]
+  },
+  "replit.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2023-11-29T12:32:29Z",
+   "checked_at": "2026-10-17T18:48:00Z",
+   "entries": [
+    "replit-bounties"
+   ]
+  },
+  "reuters.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2023-08-14T23:36:17Z",
+   "checked_at": "2026-10-17T18:48:01Z",
+   "entries": [
+    "meta-muse"
+   ]
+  },
+  "rip.so": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T00:29:41Z",
+   "checked_at": "2026-10-17T18:48:01Z",
+   "entries": [
+    "bountysource"
+   ]
+  },
+  "rllm-project.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T00:49:03Z",
+   "checked_at": "2026-10-17T18:48:01Z",
+   "entries": [
+    "hive-rllm"
+   ]
+  },
+  "robinhood.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:40:07Z",
+   "checked_at": "2026-10-17T18:48:02Z",
+   "entries": [
+    "robinhood-chain"
+   ]
+  },
+  "rstation.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T11:11:09Z",
+   "checked_at": "2026-10-17T18:48:02Z",
+   "entries": [
+    "rstation"
+   ]
+  },
+  "saashub.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:07:36Z",
+   "checked_at": "2026-10-17T18:48:02Z",
+   "entries": [
+    "clawnews"
+   ]
+  },
+  "sanctum-beacon.onrender.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-22T21:06:32Z",
+   "checked_at": "2026-10-17T18:48:02Z",
+   "entries": [
+    "sanctum-beacon"
+   ]
+  },
+  "shellbook.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-17T13:19:26Z",
+   "checked_at": "2026-10-17T18:48:03Z",
+   "entries": [
+    "shellbook"
+   ]
+  },
+  "shellmates.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-02-06T12:50:12Z",
+   "checked_at": "2026-10-17T18:48:02Z",
+   "entries": [
+    "shellmates-app"
+   ]
+  },
+  "skyfire.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T18:01:38Z",
+   "checked_at": "2026-10-17T18:48:03Z",
+   "entries": [
+    "skyfire-kyapay"
+   ]
+  },
+  "slop.cash": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T20:00:37Z",
+   "checked_at": "2026-10-17T18:48:03Z",
+   "entries": [
+    "slop-cash"
+   ]
+  },
+  "smithtalks.pages.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-09T19:11:33Z",
+   "checked_at": "2026-10-17T18:48:03Z",
+   "entries": [
+    "smithtalks"
+   ]
+  },
+  "soapbox.pub": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T01:04:57Z",
+   "checked_at": "2026-10-17T18:48:04Z",
+   "entries": [
+    "clawstr"
+   ]
+  },
+  "solana.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:19:09Z",
+   "checked_at": "2026-10-17T18:48:04Z",
+   "entries": [
+    "corbits",
+    "solana-x402"
+   ]
+  },
+  "sssnack.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-12T03:56:23Z",
+   "checked_at": "2026-10-17T18:48:04Z",
+   "entries": [
+    "sssnack"
+   ]
+  },
+  "stableenrich.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-19T04:30:30Z",
+   "checked_at": "2026-10-17T18:48:05Z",
+   "entries": [
+    "stableenrich"
+   ]
+  },
+  "stacker.news": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T13:20:34Z",
+   "checked_at": "2026-10-17T18:48:05Z",
+   "entries": [
+    "stacker-news-bounties"
+   ]
+  },
+  "stoa.mostlycopyandpaste.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-07-28T19:33:31Z",
+   "checked_at": "2026-10-17T18:48:05Z",
+   "entries": [
+    "stoa"
+   ]
+  },
+  "stripe.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:23:43Z",
+   "checked_at": "2026-10-17T18:48:05Z",
+   "entries": [
+    "stripe-agentic-commerce-suite",
+    "stripe-link-agent-wallet"
+   ]
+  },
+  "substrate.brezgis.com": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:48:06Z",
+   "entries": [
+    "substrate-journal"
+   ]
+  },
+  "superteam.fun": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T13:05:14Z",
+   "checked_at": "2026-10-17T18:48:06Z",
+   "entries": [
+    "superteam-earn"
+   ]
+  },
+  "support.gitcoin.co": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T11:06:06Z",
+   "checked_at": "2026-10-17T18:48:06Z",
+   "entries": [
+    "gitcoin-bounties"
+   ]
+  },
+  "swarmbar.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T22:48:49Z",
+   "checked_at": "2026-10-17T18:48:06Z",
+   "entries": [
+    "swarm-bar"
+   ]
+  },
+  "swarmmemo.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T09:42:38Z",
+   "checked_at": "2026-10-17T18:48:07Z",
+   "entries": [
+    "aamio-board",
+    "adam-message",
+    "agent-board-juleskreuer",
+    "agent-commons-algo",
+    "agent-tavern",
+    "agents-gather",
+    "ai-agent-message-board",
+    "ai-agents-hotline",
+    "ai-commons-forum",
+    "botnet",
+    "campfire-agents-board",
+    "common-room",
+    "flatboard-nyrds",
+    "foragents-site",
+    "get-posting-board",
+    "golden-cat",
+    "lockzone-qevrulan",
+    "material-model",
+    "msgboard-dev",
+    "northreach",
+    "relay-commons",
+    "relay-russian-agent-board",
+    "sanctum-beacon",
+    "smithtalks",
+    "sssnack",
+    "swarm-bar",
+    "swarmmemo",
+    "switchboard-ai",
+    "the-bureau-of-lost-context",
+    "the-continental",
+    "the-guild-hall",
+    "the-wayside",
+    "the-wide-sarahos",
+    "the-wire-qualium",
+    "universal-agent-forum",
+    "verano-square",
+    "waystation-agent-commons"
+   ]
+  },
+  "swarmsay.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-06T14:41:36Z",
+   "checked_at": "2026-10-17T18:48:07Z",
+   "entries": [
+    "swarmsay"
+   ]
+  },
+  "switchboard-ai.fly.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-07T12:57:24Z",
+   "checked_at": "2026-10-17T18:48:07Z",
+   "entries": [
+    "switchboard-ai"
+   ]
+  },
+  "tantive.space": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-19T02:56:52Z",
+   "checked_at": "2026-10-17T18:48:08Z",
+   "entries": [
+    "tantive-space"
+   ]
+  },
+  "taosis.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T14:06:43Z",
+   "checked_at": "2026-10-17T18:48:08Z",
+   "entries": [
+    "gittensor"
+   ]
+  },
+  "taskmarket.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-08T11:59:09Z",
+   "checked_at": "2026-10-17T18:48:08Z",
+   "entries": [
+    "taskmarket-daydreams"
+   ]
+  },
+  "techcrunch.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:37:55Z",
+   "checked_at": "2026-10-17T18:48:09Z",
+   "entries": [
+    "meta-muse",
+    "moltbook"
+   ]
+  },
+  "tempo.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T10:03:41Z",
+   "checked_at": "2026-10-17T18:48:09Z",
+   "entries": [
+    "tempo-machine-payments-protocol"
+   ]
+  },
+  "termix.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-10T15:44:03Z",
+   "checked_at": "2026-10-17T18:48:09Z",
+   "entries": [
+    "termix-aacp"
+   ]
+  },
+  "the-continental-api-production.up.railway.app": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-15T23:19:35Z",
+   "checked_at": "2026-10-17T18:48:09Z",
+   "entries": [
+    "the-continental"
+   ]
+  },
+  "theagentmustgrow.com": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:48:10Z",
+   "entries": [
+    "the-agent-must-grow"
+   ]
+  },
+  "theaidigest.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T22:13:19Z",
+   "checked_at": "2026-10-17T18:48:09Z",
+   "entries": [
+    "ai-village"
+   ]
+  },
+  "thebureauoflostcontext.agency": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T23:21:59Z",
+   "checked_at": "2026-10-17T18:48:09Z",
+   "entries": [
+    "the-bureau-of-lost-context"
+   ]
+  },
+  "thecolony.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-13T00:04:12Z",
+   "checked_at": "2026-10-17T18:48:10Z",
+   "entries": [
+    "agenthansa",
+    "clawk",
+    "moltexchange",
+    "moltstack",
+    "the-colony"
+   ]
+  },
+  "thecrabgames.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-04-08T16:18:41Z",
+   "checked_at": "2026-10-17T18:48:11Z",
+   "entries": [
+    "the-crab-games"
+   ]
+  },
+  "thedoorhelp.eu.pythonanywhere.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T17:49:12Z",
+   "checked_at": "2026-10-17T18:48:11Z",
+   "entries": [
+    "the-door"
+   ]
+  },
+  "thespawn.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-06-03T14:16:33Z",
+   "checked_at": "2026-10-17T18:48:10Z",
+   "entries": [
+    "the-spawn"
+   ]
+  },
+  "three.ws": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T10:50:19Z",
+   "checked_at": "2026-10-17T18:48:11Z",
+   "entries": [
+    "three-ws"
+   ]
+  },
+  "tikclawk.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-04-11T00:17:36Z",
+   "checked_at": "2026-10-17T18:48:12Z",
+   "entries": [
+    "tikclawk"
+   ]
+  },
+  "toku.agency": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T09:30:35Z",
+   "checked_at": "2026-10-17T18:48:12Z",
+   "entries": [
+    "toku-agency"
+   ]
+  },
+  "tools.nyrds.net": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-03T14:07:21Z",
+   "checked_at": "2026-10-17T18:48:12Z",
+   "entries": [
+    "flatboard-nyrds"
+   ]
+  },
+  "trust8004.xyz": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-02T19:34:15Z",
+   "checked_at": "2026-10-17T18:48:13Z",
+   "entries": [
+    "trust8004"
+   ]
+  },
+  "trustauthority.ai": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:48:13Z",
+   "entries": [
+    "trust-authority-ai"
+   ]
+  },
+  "ucp.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T22:45:34Z",
+   "checked_at": "2026-10-17T18:48:12Z",
+   "entries": [
+    "universal-commerce-protocol"
+   ]
+  },
+  "ugig.net": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T13:47:41Z",
+   "checked_at": "2026-10-17T18:48:13Z",
+   "entries": [
+    "ugig-net"
+   ]
+  },
+  "universalagentforum.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-06T23:28:47Z",
+   "checked_at": "2026-10-17T18:48:13Z",
+   "entries": [
+    "universal-agent-forum"
+   ]
+  },
+  "username.md": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-23T13:57:47Z",
+   "checked_at": "2026-10-17T18:48:14Z",
+   "entries": [
+    "username-md-agent-names"
+   ]
+  },
+  "verano-square.fly.dev": {
+   "status": "no_data",
+   "code": 6,
+   "threats": [],
+   "google_updated_at": null,
+   "checked_at": "2026-10-17T18:48:14Z",
+   "entries": [
+    "verano-square"
+   ]
+  },
+  "visa.co.uk": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:39:00Z",
+   "checked_at": "2026-10-17T18:48:14Z",
+   "entries": [
+    "visa-intelligent-commerce"
+   ]
+  },
+  "visa.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:29:41Z",
+   "checked_at": "2026-10-17T18:48:15Z",
+   "entries": [
+    "visa-intelligent-commerce"
+   ]
+  },
+  "voidly.ai": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T10:56:18Z",
+   "checked_at": "2026-10-17T18:48:14Z",
+   "entries": [
+    "voidpay"
+   ]
+  },
+  "vynly.co": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-13T21:33:28Z",
+   "checked_at": "2026-10-17T18:48:15Z",
+   "entries": [
+    "vynly"
+   ]
+  },
+  "wayside.rest": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-23T02:37:19Z",
+   "checked_at": "2026-10-17T18:48:15Z",
+   "entries": [
+    "the-wayside"
+   ]
+  },
+  "waystationagents.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-03T05:13:09Z",
+   "checked_at": "2026-10-17T18:48:16Z",
+   "entries": [
+    "waystation-agent-commons"
+   ]
+  },
+  "web.archive.org": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2026-09-15T08:09:57Z",
+   "checked_at": "2026-10-17T18:48:16Z",
+   "entries": [
+    "lobchan",
+    "molthunt",
+    "moltslack",
+    "shellmates-app",
+    "tikclawk"
+   ]
+  },
+  "whitepaper.virtuals.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T03:08:39Z",
+   "checked_at": "2026-10-17T18:48:16Z",
+   "entries": [
+    "virtuals-agent-commerce-protocol"
+   ]
+  },
+  "x.com": {
+   "status": "clean",
+   "code": 4,
+   "threats": [],
+   "google_updated_at": "2023-07-24T23:23:00Z",
+   "checked_at": "2026-10-17T18:48:16Z",
+   "entries": [
+    "mcpay-frames"
+   ]
+  },
+  "x402-list.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-14T10:49:34Z",
+   "checked_at": "2026-10-17T18:48:17Z",
+   "entries": [
+    "ax1-console",
+    "bitrefill-api-x402",
+    "blockrun",
+    "celo-x402-facilitator",
+    "cheaptokens",
+    "clash-of-coins-checkout",
+    "claw402",
+    "cluster-protocol",
+    "coinbase-cdp-x402-bazaar",
+    "daydreams-systems",
+    "dexter-indexter",
+    "dtelecom-x402-gateway",
+    "figment-x402-facilitator",
+    "fluxa",
+    "heurist-x402-facilitator",
+    "keyring-agent",
+    "laevitas-api-v2",
+    "laso-finance",
+    "meridian-mrdn",
+    "payai",
+    "polygon-x402-facilitator",
+    "robinhood-chain",
+    "stableenrich",
+    "thirdweb-x402",
+    "three-ws",
+    "ultravioleta-dao-x402-facilitator",
+    "x-pay-api-xpay",
+    "x402-list"
+   ]
+  },
+  "x402.celo.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:37:15Z",
+   "checked_at": "2026-10-17T18:48:17Z",
+   "entries": [
+    "celo-x402-facilitator"
+   ]
+  },
+  "x402.clashofcoins.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T22:34:35Z",
+   "checked_at": "2026-10-17T18:48:17Z",
+   "entries": [
+    "clash-of-coins-checkout"
+   ]
+  },
+  "x402.dtelecom.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-15T02:50:31Z",
+   "checked_at": "2026-10-17T18:48:17Z",
+   "entries": [
+    "dtelecom-x402-gateway"
+   ]
+  },
+  "x402.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T18:43:09Z",
+   "checked_at": "2026-10-17T18:48:18Z",
+   "entries": [
+    "x402-foundation"
+   ]
+  },
+  "x402.printmoneylab.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-09-09T22:33:29Z",
+   "checked_at": "2026-10-17T18:48:18Z",
+   "entries": [
+    "x402watch-printmoneylab"
+   ]
+  },
+  "x402scan.com": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-16T23:12:52Z",
+   "checked_at": "2026-10-17T18:48:18Z",
+   "entries": [
+    "x402scan"
+   ]
+  },
+  "x402stats.io": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-08-22T18:23:16Z",
+   "checked_at": "2026-10-17T18:48:19Z",
+   "entries": [
+    "coinbase-cdp-x402-bazaar",
+    "dexter-indexter",
+    "fluxa",
+    "meridian-mrdn",
+    "payai",
+    "x402stats"
+   ]
+  },
+  "zakshyman.dev": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2025-07-16T16:17:39Z",
+   "checked_at": "2026-10-17T18:48:19Z",
+   "entries": [
+    "agent-communication-platform"
+   ]
+  },
+  "zenodo.org": {
+   "status": "clean",
+   "code": 1,
+   "threats": [],
+   "google_updated_at": "2026-10-17T18:16:32Z",
+   "checked_at": "2026-10-17T18:48:19Z",
+   "entries": [
+    "ai-village"
+   ]
+  }
+ },
+ "removed_hosts": {
+  "venice.ai": {
+   "status": "flagged",
+   "code": 3,
+   "threats": [
+    "social_engineering"
+   ],
+   "google_updated_at": "2026-10-17T17:50:21Z",
+   "checked_at": "2026-10-17T18:48:19Z"
+  }
+ }
+}

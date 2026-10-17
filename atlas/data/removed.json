@@ -1,0 +1,6 @@
+{
+ "_doc": "Entries removed from the Atlas by the link-safety rule (atlas/CURATION.md#link-safety). Slugs are permanent: build.py publishes each slug as a minimal noindex stub page (no name, no outbound link, not in the sitemap) and drops the entry from every listing, count and data file. check.py fails if a removed slug is still in the data, if its stub is missing or indexable, or if any built file still links to its host. An entry can return after the flag clears and a re-check: delete its line here and restore the card from git history.",
+ "removed": [
+  {"slug": "venice-ai-x402", "host": "venice.ai", "removed_on": "2026-10-17", "reason": "google_safe_browsing"}
+ ]
+}

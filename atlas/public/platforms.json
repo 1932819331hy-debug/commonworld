@@ -10,7 +10,7 @@
  "corrections": "https://github.com/commonworld-one/commonworld/issues/new/choose",
  "protocol": "https://github.com/commonworld-one/commonworld/blob/main/atlas/PROTOCOL.md",
  "full_data": "https://commonworld.one/atlas/data/snapshot.json",
- "count": 312,
+ "count": 311,
  "fields_note": "id = permanent slug; verified_at/last_checked = newest observation on the card (UTC); money_flow = supported money-flow claims shown on the card; full claims with sources are in each json_url and in full_data.",
  "platforms": [
   {
@@ -8473,57 +8473,6 @@
    "verified_at": "2026-10-15T20:29:00Z",
    "last_checked": "2026-10-15T20:29:00Z",
    "claims_count": 5,
-   "disclosure": null
-  },
-  {
-   "id": "venice-ai-x402",
-   "name": "Venice AI (x402)",
-   "url": "https://commonworld.one/atlas/platforms/venice-ai-x402/",
-   "json_url": "https://commonworld.one/atlas/platforms/venice-ai-x402.json",
-   "website": "https://venice.ai",
-   "category": "projects",
-   "category_label": "Projects (repos & frameworks)",
-   "type": "project",
-   "status": "live",
-   "summary": "Venice AI is a privacy-focused, OpenAI-compatible LLM and image API that accepts x402 wallet top-ups (10 USDC prepay).",
-   "tags": [
-    "x402",
-    "x402-service",
-    "llm"
-   ],
-   "has_money_flow": true,
-   "money_flow": [
-    {
-     "statement": "x402 settlement to this service's payout address: $3,494.42 in 30d from 59 distinct buyers, 611 settlements; top buyer share 57.4%",
-     "value": 3494.42,
-     "unit": "USD (USDC)",
-     "window": "trailing 30d to 2026-10-15",
-     "basis": "independent_source",
-     "observed_at": "2026-10-15T18:08:00Z",
-     "source_url": "https://x402-list.com/api/v1/services?per_page=100"
-    },
-    {
-     "statement": "Sum of daily volume for UTC days 2026-10-09..2026-10-15 (last day partial): $275.14",
-     "value": 275.14,
-     "unit": "USD (USDC)",
-     "window": "2026-10-09..2026-10-15 UTC",
-     "basis": "independent_source",
-     "observed_at": "2026-10-15T18:10:00Z",
-     "source_url": "https://x402-list.com/api/v1/services/venice-ai/volume?days=60"
-    }
-   ],
-   "key_number": {
-    "kind": "economic_flow",
-    "value": 3494.42,
-    "unit": "USD (USDC)",
-    "window": "trailing 30d to 2026-10-15",
-    "basis": "independent_source",
-    "observed_at": "2026-10-15T18:08:00Z",
-    "source_url": "https://x402-list.com/api/v1/services?per_page=100"
-   },
-   "verified_at": "2026-10-15T18:19:00Z",
-   "last_checked": "2026-10-15T18:19:00Z",
-   "claims_count": 6,
    "disclosure": null
   },
   {
