@@ -7056,19 +7056,33 @@
    "claims": [
     {
      "kind": "site_reachable",
-     "statement": "Home serves full content (~154 KB) with live feed.",
+     "statement": "Home serves real content (HTTP 200, title \"Clawk — Twitter for AI Agents 🦞\").",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
      "source_url": "https://clawk.ai/",
-     "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk. API-first",
-     "observed_at": "2026-10-15T18:10Z",
+     "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk.",
+     "observed_at": "2026-10-17T00:12:24Z",
      "methods": [
-      "curl https://clawk.ai/",
-      "curl https://www.clawk.ai/"
+      "curl -sL https://clawk.ai/ (HTTP 200, final URL https://clawk.ai/)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Home serves full content (~154 KB) with live feed.",
+       "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk. API-first",
+       "source_url": "https://clawk.ai/",
+       "observed_at": "2026-10-15T18:10Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T00:12:24Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): re-observed to refute the stale third-party claim"
+      }
+     ]
     },
     {
      "kind": "description",
@@ -7134,7 +7148,7 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "Independent claim (The Colony, 2026-10-10) that 'Clawk — gone'.",
+     "statement": "Stale third-party claim: a Colony post (2026-10-10) said \"Clawk — gone\", but https://clawk.ai/ answered HTTP 200 with title \"Clawk — Twitter for AI Agents 🦞\" on 2026-10-17. Kept as history; the claim is refuted.",
      "value": null,
      "unit": null,
      "window": null,
@@ -7143,16 +7157,40 @@
      "quote": "Clawk — gone.",
      "observed_at": "2026-10-15T18:10Z",
      "methods": [
-      "web_fetch"
+      "web_fetch",
+      "curl -sL https://clawk.ai/ -> HTTP 200, title \"Clawk — Twitter for AI Agents 🦞\" at 2026-10-17T00:12:24Z"
      ],
-     "outcome": "contradicted"
+     "outcome": "contradicted",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Independent claim (The Colony, 2026-10-10) that 'Clawk — gone'.",
+       "quote": "Clawk — gone.",
+       "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
+       "observed_at": "2026-10-15T18:10Z",
+       "basis": "independent_source",
+       "outcome": "contradicted",
+       "superseded_at": "2026-10-17T00:12:24Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): third-party \"gone\" claim is stale: the site answers HTTP 200 with its own content today"
+      }
+     ],
+     "recheck": {
+      "basis": "independent_re_observation",
+      "by": "Atlas audit 2026-10-17",
+      "at": "2026-10-17T00:12:24Z",
+      "source_url": "https://clawk.ai/",
+      "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk.",
+      "note": "HTTP 200, title \"Clawk — Twitter for AI Agents 🦞\""
+     }
     }
    ],
    "legacy_diffs": [
     "legacy '~5k agents (ClawtaVista, unverified)' → operator API now says 5,185 agents, 106,037 clawks",
     "Colony graveyard post calling it dead is wrong"
    ],
-   "notes": "Operator still not determined. Footer says © 2025.",
+   "notes": "Operator still not determined. Footer says © 2025. 2026-10-17: the Colony \"Clawk — gone\" claim is stale (site HTTP 200 with its own content); kept as refuted history.",
    "category": "social",
    "legacy_status": "live",
    "qa": [
@@ -7689,19 +7727,33 @@
    "claims": [
     {
      "kind": "site_reachable",
-     "statement": "Home serves full content (HTTP 200, ~38 KB).",
+     "statement": "Home serves real content (HTTP 200, title \"MoltStack — Substack for AI Agents\").",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
      "source_url": "https://moltstack.net/",
      "quote": "A publishing platform where AI agents create newsletters, build audiences, and share their unique perspectives with the world.",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-17T00:12:26Z",
      "methods": [
-      "curl https://moltstack.net/",
-      "curl http://moltstack.net/"
+      "curl -sL https://moltstack.net/ (HTTP 200, final URL https://moltstack.net/)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Home serves full content (HTTP 200, ~38 KB).",
+       "quote": "A publishing platform where AI agents create newsletters, build audiences, and share their unique perspectives with the world.",
+       "source_url": "https://moltstack.net/",
+       "observed_at": "2026-10-15T18:10Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T00:12:26Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): re-observed to refute the stale third-party claim"
+      }
+     ]
     },
     {
      "kind": "description",
@@ -7735,7 +7787,7 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "Independent Colony claim 'MoltStack — gone' (2026-10-10).",
+     "statement": "Stale third-party claim: a Colony post (2026-10-10) said \"MoltStack — gone\", but https://moltstack.net/ answered HTTP 200 with title \"MoltStack — Substack for AI Agents\" on 2026-10-17. Kept as history; the claim is refuted.",
      "value": null,
      "unit": null,
      "window": null,
@@ -7744,15 +7796,39 @@
      "quote": "MoltStack — gone.",
      "observed_at": "2026-10-15T18:10Z",
      "methods": [
-      "web_fetch"
+      "web_fetch",
+      "curl -sL https://moltstack.net/ -> HTTP 200, title \"MoltStack — Substack for AI Agents\" at 2026-10-17T00:12:26Z"
      ],
-     "outcome": "contradicted"
+     "outcome": "contradicted",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Independent Colony claim 'MoltStack — gone' (2026-10-10).",
+       "quote": "MoltStack — gone.",
+       "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
+       "observed_at": "2026-10-15T18:10Z",
+       "basis": "independent_source",
+       "outcome": "contradicted",
+       "superseded_at": "2026-10-17T00:12:26Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): third-party \"gone\" claim is stale: the site answers HTTP 200 with its own content today"
+      }
+     ],
+     "recheck": {
+      "basis": "independent_re_observation",
+      "by": "Atlas audit 2026-10-17",
+      "at": "2026-10-17T00:12:26Z",
+      "source_url": "https://moltstack.net/",
+      "quote": "A publishing platform where AI agents create newsletters, build audiences, and share their unique perspectives with the world.",
+      "note": "HTTP 200, title \"MoltStack — Substack for AI Agents\""
+     }
     }
    ],
    "legacy_diffs": [
     "Colony graveyard post calling it dead is wrong"
    ],
-   "notes": "skill.md 404 (as legacy noted); www subdomain has TLS name mismatch.",
+   "notes": "skill.md 404 (as legacy noted); www subdomain has TLS name mismatch. 2026-10-17: the Colony \"MoltStack — gone\" claim is stale (site HTTP 200 with its own content); kept as refuted history.",
    "category": "social",
    "legacy_status": "live",
    "qa": [],
@@ -7834,20 +7910,33 @@
    "claims": [
     {
      "kind": "site_reachable",
-     "statement": "Home (redirects to www) and api.moltexchange.ai/skill.md serve content; API answers 401 for unauthenticated calls (alive).",
+     "statement": "Home serves real content (HTTP 200, title \"MoltExchange\").",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
-     "source_url": "https://api.moltexchange.ai/skill.md",
-     "quote": "Q&A built by agents, for agents.",
-     "observed_at": "2026-10-15T18:10Z",
+     "source_url": "https://www.moltexchange.ai/",
+     "quote": "Q&A knowledge exchange for AI agents",
+     "observed_at": "2026-10-17T00:12:26Z",
      "methods": [
-      "curl https://moltexchange.ai",
-      "curl api skill.md",
-      "curl api /v1/questions (401)"
+      "curl -sL https://www.moltexchange.ai/ (HTTP 200, final URL https://www.moltexchange.ai/)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Home (redirects to www) and api.moltexchange.ai/skill.md serve content; API answers 401 for unauthenticated calls (alive).",
+       "quote": "Q&A built by agents, for agents.",
+       "source_url": "https://api.moltexchange.ai/skill.md",
+       "observed_at": "2026-10-15T18:10Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T00:12:26Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): re-observed to refute the stale third-party claim"
+      }
+     ]
     },
     {
      "kind": "description",
@@ -7883,7 +7972,7 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "Independent Colony claim 'MoltExchange — gone' (2026-10-10).",
+     "statement": "Stale third-party claim: a Colony post (2026-10-10) said \"MoltExchange — gone\", but https://www.moltexchange.ai/ answered HTTP 200 with title \"MoltExchange\" on 2026-10-17. Kept as history; the claim is refuted.",
      "value": null,
      "unit": null,
      "window": null,
@@ -7892,15 +7981,39 @@
      "quote": "MoltExchange — gone.",
      "observed_at": "2026-10-15T18:10Z",
      "methods": [
-      "web_fetch"
+      "web_fetch",
+      "curl -sL https://www.moltexchange.ai/ -> HTTP 200, title \"MoltExchange\" at 2026-10-17T00:12:26Z"
      ],
-     "outcome": "contradicted"
+     "outcome": "contradicted",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Independent Colony claim 'MoltExchange — gone' (2026-10-10).",
+       "quote": "MoltExchange — gone.",
+       "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
+       "observed_at": "2026-10-15T18:10Z",
+       "basis": "independent_source",
+       "outcome": "contradicted",
+       "superseded_at": "2026-10-17T00:12:26Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): third-party \"gone\" claim is stale: the site answers HTTP 200 with its own content today"
+      }
+     ],
+     "recheck": {
+      "basis": "independent_re_observation",
+      "by": "Atlas audit 2026-10-17",
+      "at": "2026-10-17T00:12:26Z",
+      "source_url": "https://www.moltexchange.ai/",
+      "quote": "Q&A knowledge exchange for AI agents",
+      "note": "HTTP 200, title \"MoltExchange\""
+     }
     }
    ],
    "legacy_diffs": [
     "Colony graveyard post calling it dead is contradicted by live site + API"
    ],
-   "notes": "Activity level unknown without an API key.",
+   "notes": "Activity level unknown without an API key. 2026-10-17: the Colony \"MoltExchange — gone\" claim is stale (site HTTP 200 with its own content); kept as refuted history.",
    "category": "social",
    "legacy_status": "live",
    "qa": [],
@@ -9638,21 +9751,33 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "Legacy developer.paypal.com/store-sync/overview returns 404 to curl (Cloudflare), but search index shows it 'Last updated: August 11, 2026'; paypal.ai serves content",
+     "statement": "www.paypal.ai serves the Agentic Commerce Services page (HTTP 200) with Agent Ready and Store Sync sections.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
-     "source_url": "https://developer.paypal.com/store-sync/overview",
-     "quote": "404 to curl; search snippet: Store Sync overview Last updated: August 11, 2026",
-     "observed_at": "2026-10-15T18:15:00Z",
+     "source_url": "https://www.paypal.ai/",
+     "quote": "PayPal Agentic Commerce Services Built for payments. Built for growth. Built for agentic.",
+     "observed_at": "2026-10-17T00:12:17Z",
      "methods": [
-      "curl developer.paypal.com/store-sync/overview (404)",
-      "curl developer.paypal.com/docs/agentic-commerce/ (404)",
-      "curl paypal.ai (200)",
-      "web_search"
+      "curl -sL https://www.paypal.ai/ (HTTP 200, title \"Agentic Commerce Solutions for Businesses | PayPal IE\")"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Legacy developer.paypal.com/store-sync/overview returns 404 to curl (Cloudflare), but search index shows it 'Last updated: August 11, 2026'; paypal.ai serves content",
+       "quote": "404 to curl; search snippet: Store Sync overview Last updated: August 11, 2026",
+       "source_url": "https://developer.paypal.com/store-sync/overview",
+       "observed_at": "2026-10-15T18:15:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T00:12:17Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): a 404 plus a search snippet is not reachability evidence; replaced by a direct observation of the website"
+      }
+     ]
     },
     {
      "kind": "description",
@@ -9685,7 +9810,7 @@
     "legacy URL developer.paypal.com/store-sync/overview 404s to plain HTTP clients; canonical moved to paypal.ai",
     "legacy says live on Meta Muse — PayPal itself says 'coming soon' (CNBC 2026-10-03: not available yet)"
    ],
-   "notes": "docs.paypal.ai pages are from search excerpts; the 404 at developer.paypal.com may be bot-blocking (server: cloudflare).",
+   "notes": "docs.paypal.ai pages are from search excerpts; the 404 at developer.paypal.com may be bot-blocking (server: cloudflare). 2026-10-17: reachability now observed on www.paypal.ai itself; the earlier developer.paypal.com 404 + search-snippet evidence is kept only in the claim history.",
    "category": "payments",
    "legacy_status": "live",
    "qa": [],
@@ -11405,19 +11530,35 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "Blog reachable via web_fetch; help-center article is behind Cloudflare challenge (403 'Just a moment').",
+     "statement": "The official shopping launch post serves its full text (HTTP 200 via web_fetch). Plain curl and the help-center article get a Cloudflare challenge (HTTP 403 \"Just a moment...\"), which is a bot wall, not evidence either way.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
-     "source_url": "https://www.perplexity.ai/help-center/en/articles/10352906-what-is-instant-buy",
-     "quote": "Just a moment...",
-     "observed_at": "2026-10-15T18:11:00Z",
+     "source_url": "https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first",
+     "quote": "We partnered with PayPal to power checkout all in the same user experience.",
+     "observed_at": "2026-10-17T00:09:00Z",
      "methods": [
-      "web_fetch blog (200)",
-      "curl help center (403 CF)"
+      "web_fetch https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first (HTTP 200, article text incl. \"Nov 25, 2025\")",
+      "curl -sL https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first -> HTTP 403 title \"Just a moment...\" at 2026-10-17T00:12:19Z",
+      "curl -sL https://www.perplexity.ai/help-center/en/articles/10352906-what-is-instant-buy -> HTTP 403 title \"Just a moment...\" at 2026-10-17T00:12:20Z"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Blog reachable via web_fetch; help-center article is behind Cloudflare challenge (403 'Just a moment').",
+       "quote": "Just a moment...",
+       "source_url": "https://www.perplexity.ai/help-center/en/articles/10352906-what-is-instant-buy",
+       "observed_at": "2026-10-15T18:11:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T00:09:00Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): \"Just a moment...\" is the Cloudflare challenge page, not page content; replaced by real page text"
+      }
+     ]
     },
     {
      "kind": "recent_activity",
@@ -11453,7 +11594,7 @@
    "legacy_diffs": [
     "legacy had no URL; canonical found"
    ],
-   "notes": "US-only. PayPal press release 2025-11-25 confirms (search excerpt).",
+   "notes": "US-only. PayPal press release 2025-11-25 confirms (search excerpt). 2026-10-17: reachability evidence replaced with real article text (web_fetch); curl still meets a Cloudflare challenge.",
    "category": "payments",
    "legacy_status": "live",
    "qa": [],
@@ -23908,18 +24049,33 @@
    "claims": [
     {
      "kind": "site_reachable",
-     "statement": "Homepage HTTP 200 with real content (layer-1 got 503)",
+     "statement": "Homepage HTTP 200 with real content (agents, open jobs, recent activity). The audit run about 15 minutes earlier got HTTP 503 \"Page Temporarily Unavailable\" twice; intermittent, re-check in the next weekly run.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
      "source_url": "https://moltcities.org",
-     "quote": "MoltCities is infrastructure for AI agents. A permanent address. Cryptographic identity. Paid work.",
-     "observed_at": "2026-10-15T18:17:00Z",
+     "quote": "moltcities — permanent addresses for agents",
+     "observed_at": "2026-10-17T00:12:27Z",
      "methods": [
-      "curl -sL https://moltcities.org"
+      "curl -sL https://moltcities.org (HTTP 200, <title>)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Homepage HTTP 200 with real content (layer-1 got 503)",
+       "quote": "MoltCities is infrastructure for AI agents. A permanent address. Cryptographic identity. Paid work.",
+       "source_url": "https://moltcities.org",
+       "observed_at": "2026-10-15T18:17:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T00:12:27Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): reachability re-observed (the audit saw HTTP 503 twice about 15 minutes earlier)"
+      }
+     ]
     },
     {
      "kind": "metric",
@@ -23968,25 +24124,40 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "/api/jobs returned HTTP 500 INTERNAL_ERROR",
+     "statement": "/api/jobs returns HTTP 200 with the job list (it returned HTTP 500 on 2026-10-15).",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
      "source_url": "https://moltcities.org/api/jobs",
-     "quote": "\"error\": \"Internal server error\"",
-     "observed_at": "2026-10-15T18:21:00Z",
+     "quote": "\"title\": \"Referral Bounty Test\"",
+     "observed_at": "2026-10-17T00:12:28Z",
      "methods": [
-      "curl -sL https://moltcities.org/api/jobs"
+      "curl -sL https://moltcities.org/api/jobs (HTTP 200)"
      ],
-     "outcome": "contradicted"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "/api/jobs returned HTTP 500 INTERNAL_ERROR",
+       "quote": "\"error\": \"Internal server error\"",
+       "source_url": "https://moltcities.org/api/jobs",
+       "observed_at": "2026-10-15T18:21:00Z",
+       "basis": "direct_observation",
+       "outcome": "contradicted",
+       "superseded_at": "2026-10-17T00:12:28Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): endpoint answers again"
+      }
+     ]
     }
    ],
    "legacy_diffs": [
     "legacy 'flaky 503' — homepage 200 now but jobs API errors",
     "activity feed stale since 2026-08-20"
    ],
-   "notes": "Live but low activity; jobs endpoint broken at check time.",
+   "notes": "Live but low activity; jobs endpoint broken at check time. 2026-10-17: homepage returned HTTP 503 twice in the audit (~2026-10-16T23:55Z), then HTTP 200 at 2026-10-17T00:12:27Z; status unchanged.",
    "category": "worlds",
    "legacy_status": "unverified",
    "qa": [
@@ -25754,27 +25925,42 @@
   },
   {
    "id": 295,
-   "name": "MCPay",
+   "name": "Frames (formerly MCPay)",
    "slug": "mcpay-frames",
    "entity_type": "project",
    "verdict": "include_verified",
    "canonical_url": "https://frames.ag/",
-   "description_en": "MCPay's domain now redirects to Frames, a credit-based router to premium data sources for AI over MCP or API.",
+   "description_en": "Frames (formerly MCPay, renamed by its team in February 2026; mcpay.tech now redirects to frames.ag) is a credit-based router to premium data sources for AI over MCP or API.",
    "claims": [
     {
      "kind": "site_reachable",
-     "statement": "mcpay.tech 301 -> frames.ag (200).",
+     "statement": "mcpay.tech redirects to frames.ag, which serves the Frames home page (HTTP 200).",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
      "source_url": "https://frames.ag/",
-     "quote": "Frames is a router for premium AI data. Ask anything, and get routed to the correct endpoint.",
-     "observed_at": "2026-10-15T18:08:00Z",
+     "quote": "Frames: Premium data for your AI, over MCP or API",
+     "observed_at": "2026-10-17T00:12:14Z",
      "methods": [
-      "curl -L https://mcpay.tech"
+      "curl -sL https://mcpay.tech (final URL https://frames.ag/, HTTP 200, <title>)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "mcpay.tech 301 -> frames.ag (200).",
+       "quote": "Frames is a router for premium AI data. Ask anything, and get routed to the correct endpoint.",
+       "source_url": "https://frames.ag/",
+       "observed_at": "2026-10-15T18:08:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T00:12:14Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): re-observed for the rename"
+      }
+     ]
     },
     {
      "kind": "recent_activity",
@@ -25793,26 +25979,57 @@
     },
     {
      "kind": "announced_closed",
-     "statement": "MCPay brand discontinued via rebrand/redirect; no official shutdown statement found. Treated as rebrand, not closure.",
+     "statement": "Not a shutdown: MCPay was renamed Frames by its own team (official @framesag post, 2026-02-13).",
      "value": null,
      "unit": null,
      "window": null,
-     "basis": "inference",
-     "source_url": "https://frames.ag/",
-     "quote": null,
-     "observed_at": "2026-10-15T18:08:00Z",
+     "basis": "operator_claim",
+     "source_url": "https://x.com/framesag/status/2022409193010139574",
+     "quote": "MCPAY IS NOW FRAMES.AG",
+     "observed_at": "2026-10-17T00:12:15Z",
      "methods": [
-      "curl redirect",
-      "GitHub API"
+      "FxTwitter API https://api.fxtwitter.com/framesag/status/2022409193010139574 (created_at 2026-02-13T20:35:00Z)",
+      "curl -sL https://mcpay.tech -> https://frames.ag/"
      ],
-     "outcome": "unchecked"
+     "outcome": "contradicted",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "MCPay brand discontinued via rebrand/redirect; no official shutdown statement found. Treated as rebrand, not closure.",
+       "quote": null,
+       "source_url": "https://frames.ag/",
+       "observed_at": "2026-10-15T18:08:00Z",
+       "basis": "inference",
+       "outcome": "unchecked",
+       "superseded_at": "2026-10-17T00:12:15Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): rename confirmed by the operator; MCPay was not shut down"
+      }
+     ]
+    },
+    {
+     "kind": "operator",
+     "statement": "Rebrand: MCPay is now Frames (frames.ag), announced by the official Frames account on 2026-02-13; an independent hackathon report also records the rename.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://x.com/framesag/status/2022409193010139574",
+     "quote": "MCPAY IS NOW FRAMES.AG",
+     "observed_at": "2026-10-17T00:12:15Z",
+     "methods": [
+      "FxTwitter API https://api.fxtwitter.com/framesag/status/2022409193010139574 (author framesag, created_at 2026-02-13T20:35:00Z)",
+      "web_fetch https://wiki.superteam.com.br/transparencia/q4-2025: \"O MCPay, que desde então foi rebatizado como Frames\""
+     ],
+     "outcome": "supported"
     }
    ],
    "legacy_diffs": [
     "legacy 'dead/rebranded' -> rebrand confirmed (redirect to Frames)",
     "legacy repo '15 stars, BSL' -> microchipgnu/MCPay shows 90 stars (may be a different repo)"
    ],
-   "notes": "Frames uses credits ('3000 free monthly credits'); x402 use not visible on homepage. Could alternatively be kept as include_closed_history for the MCPay name.",
+   "notes": "Frames uses credits ('3000 free monthly credits'); x402 use not visible on homepage. Could alternatively be kept as include_closed_history for the MCPay name. 2026-10-17: card renamed \"Frames (formerly MCPay)\" after the operator's rebrand post (x.com/framesag/status/2022409193010139574); slug kept as mcpay-frames.",
    "category": "projects",
    "legacy_status": "dead",
    "qa": [
@@ -27652,19 +27869,37 @@
     },
     {
      "kind": "canonical_url",
-     "statement": "Official URL (x402-list base_url/website for this service, operator-owned)",
+     "statement": "keyring-agent.blockchhub.link is the KEYRING PRO team's x402 server: the official KEYRINGPRO repository (github.com/bacoor-hb/KEYRINGPRO, homepage keyring.app, linked from keyring.app) sets X402_SERVER_API to this host; the same repo also loads assets from ipfs.blockchhub.link.",
      "value": null,
      "unit": null,
      "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://keyring-agent.blockchhub.link",
-     "quote": null,
-     "observed_at": "2026-10-15T18:10:00Z",
+     "basis": "operator_claim",
+     "source_url": "https://github.com/bacoor-hb/KEYRINGPRO/blob/main/.env.example",
+     "quote": "X402_SERVER_API=https://keyring-agent.blockchhub.link",
+     "observed_at": "2026-10-17T00:12:20Z",
      "methods": [
-      "GET https://x402-list.com/api/v1/services?per_page=100",
-      "curl -sL https://keyring-agent.blockchhub.link"
+      "curl https://raw.githubusercontent.com/bacoor-hb/KEYRINGPRO/main/.env.example (line 34)",
+      "GitHub API repos/bacoor-hb/KEYRINGPRO: homepage https://keyring.app/",
+      "curl -sL https://keyring.app: footer links https://github.com/bacoor-hb/KEYRINGPRO",
+      "curl -sL https://keyring-agent.blockchhub.link -> HTTP 200, title \"KEYRING AGENT\", \"Redirecting to keyring.app\"",
+      "x402-list.com/api/v1/services/keyring-agent: base_url https://keyring-agent.blockchhub.link (website_url null, verified false)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Official URL (x402-list base_url/website for this service, operator-owned)",
+       "quote": null,
+       "source_url": "https://keyring-agent.blockchhub.link",
+       "observed_at": "2026-10-15T18:10:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T00:12:20Z",
+       "reason": "Atlas audit 2026-10-17 (high-severity row): ownership of the third-party-looking host checked against the operator's own repository"
+      }
+     ]
     },
     {
      "kind": "description",
@@ -27731,7 +27966,7 @@
    "legacy_diffs": [
     "legacy $1,413/30d, 60 buyers → $1,405.05, 60 buyers"
    ],
-   "notes": "Agent host redirects to keyring.app (KEYRING PRO non-custodial EVM wallet, 200 OK). Steady ~$45/day.",
+   "notes": "Agent host redirects to keyring.app (KEYRING PRO non-custodial EVM wallet, 200 OK). Steady ~$45/day. 2026-10-17: the blockchhub.link host is confirmed as the operator's own endpoint (official KEYRINGPRO repo .env.example: X402_SERVER_API=https://keyring-agent.blockchhub.link); website kept.",
    "category": "projects",
    "legacy_status": "live",
    "qa": [
@@ -28904,6 +29139,22 @@
     "aibtc-bounty-board:aibtc-paid-sats",
     "aibtc-bounty-board:aibtc-paid-count",
     "aibtc-bounty-board:aibtc-open-count"
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "tag": "audit-high-fixes-2026-10-17",
+   "rule": "High-severity rows of the 2026-10-17 card audit: rebrand name, real reachability evidence, operator ownership of an endpoint host, stale third-party \"gone\" claims marked refuted, MoltCities reachability re-observed (no status change); approved by the curator",
+   "fixes": 8,
+   "entries": [
+    "mcpay-frames",
+    "paypal-agentic-commerce-services",
+    "perplexity-instant-buy-paypal",
+    "keyring-agent",
+    "clawk",
+    "moltexchange",
+    "moltstack",
+    "moltcities"
    ]
   }
  ]

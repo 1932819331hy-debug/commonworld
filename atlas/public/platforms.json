@@ -3,7 +3,7 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-16T01:55:00Z",
- "newest_observation": "2026-10-16T01:55:00Z",
+ "newest_observation": "2026-10-17T00:12:00Z",
  "licence": "CC BY 4.0",
  "licence_url": "https://github.com/commonworld-one/commonworld/blob/main/LICENSE-DATA.md",
  "source": "https://github.com/commonworld-one/commonworld",
@@ -2995,8 +2995,8 @@
     "observed_at": "2026-10-16T01:55:00Z",
     "source_url": "https://clawk.ai/api/v1/stats"
    },
-   "verified_at": "2026-10-16T01:55:00Z",
-   "last_checked": "2026-10-16T01:55:00Z",
+   "verified_at": "2026-10-17T00:12:00Z",
+   "last_checked": "2026-10-17T00:12:00Z",
    "claims_count": 5,
    "disclosure": null
   },
@@ -3924,6 +3924,29 @@
    "disclosure": null
   },
   {
+   "id": "mcpay-frames",
+   "name": "Frames (formerly MCPay)",
+   "url": "https://commonworld.one/atlas/platforms/mcpay-frames/",
+   "json_url": "https://commonworld.one/atlas/platforms/mcpay-frames.json",
+   "website": "https://frames.ag/",
+   "category": "projects",
+   "category_label": "Projects (repos & frameworks)",
+   "type": "project",
+   "status": "live",
+   "summary": "Frames (formerly MCPay, renamed by its team in February 2026; mcpay.tech now redirects to frames.ag) is a credit-based router to premium data sources for AI over MCP or API.",
+   "tags": [
+    "x402",
+    "mcp"
+   ],
+   "has_money_flow": false,
+   "money_flow": [],
+   "key_number": null,
+   "verified_at": "2026-10-17T00:12:00Z",
+   "last_checked": "2026-10-17T00:12:00Z",
+   "claims_count": 4,
+   "disclosure": null
+  },
+  {
    "id": "frantic",
    "name": "Frantic",
    "url": "https://commonworld.one/atlas/platforms/frantic/",
@@ -4636,8 +4659,8 @@
     "observed_at": "2026-10-15T18:08:00Z",
     "source_url": "https://x402-list.com/api/v1/services?per_page=100"
    },
-   "verified_at": "2026-10-15T18:19:00Z",
-   "last_checked": "2026-10-15T18:19:00Z",
+   "verified_at": "2026-10-17T00:12:00Z",
+   "last_checked": "2026-10-17T00:12:00Z",
    "claims_count": 6,
    "disclosure": null
   },
@@ -5119,29 +5142,6 @@
    "disclosure": null
   },
   {
-   "id": "mcpay-frames",
-   "name": "MCPay",
-   "url": "https://commonworld.one/atlas/platforms/mcpay-frames/",
-   "json_url": "https://commonworld.one/atlas/platforms/mcpay-frames.json",
-   "website": "https://frames.ag/",
-   "category": "projects",
-   "category_label": "Projects (repos & frameworks)",
-   "type": "project",
-   "status": "live",
-   "summary": "MCPay's domain now redirects to Frames, a credit-based router to premium data sources for AI over MCP or API.",
-   "tags": [
-    "x402",
-    "mcp"
-   ],
-   "has_money_flow": false,
-   "money_flow": [],
-   "key_number": null,
-   "verified_at": "2026-10-15T18:24:00Z",
-   "last_checked": "2026-10-15T18:24:00Z",
-   "claims_count": 3,
-   "disclosure": null
-  },
-  {
    "id": "mcpize",
    "name": "MCPize",
    "url": "https://commonworld.one/atlas/platforms/mcpize/",
@@ -5486,8 +5486,8 @@
     "observed_at": "2026-10-15T18:21:00Z",
     "source_url": "https://moltcities.org/api/stats"
    },
-   "verified_at": "2026-10-15T18:33:00Z",
-   "last_checked": "2026-10-15T18:33:00Z",
+   "verified_at": "2026-10-17T00:12:00Z",
+   "last_checked": "2026-10-17T00:12:00Z",
    "claims_count": 5,
    "disclosure": null
   },
@@ -5506,8 +5506,8 @@
    "has_money_flow": false,
    "money_flow": [],
    "key_number": null,
-   "verified_at": "2026-10-15T18:10:00Z",
-   "last_checked": "2026-10-15T18:10:00Z",
+   "verified_at": "2026-10-17T00:12:00Z",
+   "last_checked": "2026-10-17T00:12:00Z",
    "claims_count": 4,
    "disclosure": null
   },
@@ -5635,8 +5635,8 @@
    "has_money_flow": false,
    "money_flow": [],
    "key_number": null,
-   "verified_at": "2026-10-15T18:10:00Z",
-   "last_checked": "2026-10-15T18:10:00Z",
+   "verified_at": "2026-10-17T00:12:00Z",
+   "last_checked": "2026-10-17T00:12:00Z",
    "claims_count": 4,
    "disclosure": null
   },
@@ -6374,8 +6374,8 @@
    "has_money_flow": false,
    "money_flow": [],
    "key_number": null,
-   "verified_at": "2026-10-15T18:15:00Z",
-   "last_checked": "2026-10-15T18:15:00Z",
+   "verified_at": "2026-10-17T00:12:00Z",
+   "last_checked": "2026-10-17T00:12:00Z",
    "claims_count": 4,
    "disclosure": null
   },
@@ -6397,8 +6397,8 @@
    "has_money_flow": false,
    "money_flow": [],
    "key_number": null,
-   "verified_at": "2026-10-15T18:11:00Z",
-   "last_checked": "2026-10-15T18:11:00Z",
+   "verified_at": "2026-10-17T00:09:00Z",
+   "last_checked": "2026-10-17T00:09:00Z",
    "claims_count": 4,
    "disclosure": null
   },

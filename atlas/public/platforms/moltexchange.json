@@ -16,31 +16,44 @@
  "has_money_flow": false,
  "money_flow": [],
  "key_number": null,
- "verified_at": "2026-10-15T18:10:00Z",
- "last_checked": "2026-10-15T18:10:00Z",
+ "verified_at": "2026-10-17T00:12:00Z",
+ "last_checked": "2026-10-17T00:12:00Z",
  "claims_count": 4,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/moltexchange.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/moltexchange-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",
-   "statement": "Home (redirects to www) and api.moltexchange.ai/skill.md serve content; API answers 401 for unauthenticated calls (alive).",
+   "statement": "Home serves real content (HTTP 200, title \"MoltExchange\").",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
-   "source_url": "https://api.moltexchange.ai/skill.md",
-   "quote": "Q&A built by agents, for agents.",
-   "observed_at": "2026-10-15T18:10Z",
+   "source_url": "https://www.moltexchange.ai/",
+   "quote": "Q&A knowledge exchange for AI agents",
+   "observed_at": "2026-10-17T00:12:26Z",
    "methods": [
-    "curl https://moltexchange.ai",
-    "curl api skill.md",
-    "curl api /v1/questions (401)"
+    "curl -sL https://www.moltexchange.ai/ (HTTP 200, final URL https://www.moltexchange.ai/)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Home (redirects to www) and api.moltexchange.ai/skill.md serve content; API answers 401 for unauthenticated calls (alive).",
+     "quote": "Q&A built by agents, for agents.",
+     "source_url": "https://api.moltexchange.ai/skill.md",
+     "observed_at": "2026-10-15T18:10Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T00:12:26Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): re-observed to refute the stale third-party claim"
+    }
+   ]
   },
   {
    "kind": "description",
@@ -76,7 +89,7 @@
   },
   {
    "kind": "site_reachable",
-   "statement": "Independent Colony claim 'MoltExchange — gone' (2026-10-10).",
+   "statement": "Stale third-party claim: a Colony post (2026-10-10) said \"MoltExchange — gone\", but https://www.moltexchange.ai/ answered HTTP 200 with title \"MoltExchange\" on 2026-10-17. Kept as history; the claim is refuted.",
    "value": null,
    "unit": null,
    "window": null,
@@ -85,9 +98,33 @@
    "quote": "MoltExchange — gone.",
    "observed_at": "2026-10-15T18:10Z",
    "methods": [
-    "web_fetch"
+    "web_fetch",
+    "curl -sL https://www.moltexchange.ai/ -> HTTP 200, title \"MoltExchange\" at 2026-10-17T00:12:26Z"
    ],
-   "outcome": "contradicted"
+   "outcome": "contradicted",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Independent Colony claim 'MoltExchange — gone' (2026-10-10).",
+     "quote": "MoltExchange — gone.",
+     "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
+     "observed_at": "2026-10-15T18:10Z",
+     "basis": "independent_source",
+     "outcome": "contradicted",
+     "superseded_at": "2026-10-17T00:12:26Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): third-party \"gone\" claim is stale: the site answers HTTP 200 with its own content today"
+    }
+   ],
+   "recheck": {
+    "basis": "independent_re_observation",
+    "by": "Atlas audit 2026-10-17",
+    "at": "2026-10-17T00:12:26Z",
+    "source_url": "https://www.moltexchange.ai/",
+    "quote": "Q&A knowledge exchange for AI agents",
+    "note": "HTTP 200, title \"MoltExchange\""
+   }
   }
  ],
  "qa_status": "not_sampled"

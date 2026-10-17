@@ -19,11 +19,11 @@
  "has_money_flow": false,
  "money_flow": [],
  "key_number": null,
- "verified_at": "2026-10-15T18:11:00Z",
- "last_checked": "2026-10-15T18:11:00Z",
+ "verified_at": "2026-10-17T00:09:00Z",
+ "last_checked": "2026-10-17T00:09:00Z",
  "claims_count": 4,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/perplexity-instant-buy-paypal.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/perplexity-instant-buy-paypal-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
@@ -45,19 +45,35 @@
   },
   {
    "kind": "site_reachable",
-   "statement": "Blog reachable via web_fetch; help-center article is behind Cloudflare challenge (403 'Just a moment').",
+   "statement": "The official shopping launch post serves its full text (HTTP 200 via web_fetch). Plain curl and the help-center article get a Cloudflare challenge (HTTP 403 \"Just a moment...\"), which is a bot wall, not evidence either way.",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
-   "source_url": "https://www.perplexity.ai/help-center/en/articles/10352906-what-is-instant-buy",
-   "quote": "Just a moment...",
-   "observed_at": "2026-10-15T18:11:00Z",
+   "source_url": "https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first",
+   "quote": "We partnered with PayPal to power checkout all in the same user experience.",
+   "observed_at": "2026-10-17T00:09:00Z",
    "methods": [
-    "web_fetch blog (200)",
-    "curl help center (403 CF)"
+    "web_fetch https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first (HTTP 200, article text incl. \"Nov 25, 2025\")",
+    "curl -sL https://www.perplexity.ai/hub/blog/shopping-that-puts-you-first -> HTTP 403 title \"Just a moment...\" at 2026-10-17T00:12:19Z",
+    "curl -sL https://www.perplexity.ai/help-center/en/articles/10352906-what-is-instant-buy -> HTTP 403 title \"Just a moment...\" at 2026-10-17T00:12:20Z"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Blog reachable via web_fetch; help-center article is behind Cloudflare challenge (403 'Just a moment').",
+     "quote": "Just a moment...",
+     "source_url": "https://www.perplexity.ai/help-center/en/articles/10352906-what-is-instant-buy",
+     "observed_at": "2026-10-15T18:11:00Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T00:09:00Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): \"Just a moment...\" is the Cloudflare challenge page, not page content; replaced by real page text"
+    }
+   ]
   },
   {
    "kind": "recent_activity",

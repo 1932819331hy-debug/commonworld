@@ -46,11 +46,11 @@
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://x402-list.com/api/v1/services?per_page=100"
  },
- "verified_at": "2026-10-15T18:19:00Z",
- "last_checked": "2026-10-15T18:19:00Z",
+ "verified_at": "2026-10-17T00:12:00Z",
+ "last_checked": "2026-10-17T00:12:00Z",
  "claims_count": 6,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/keyring-agent.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/keyring-agent-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
@@ -73,19 +73,37 @@
   },
   {
    "kind": "canonical_url",
-   "statement": "Official URL (x402-list base_url/website for this service, operator-owned)",
+   "statement": "keyring-agent.blockchhub.link is the KEYRING PRO team's x402 server: the official KEYRINGPRO repository (github.com/bacoor-hb/KEYRINGPRO, homepage keyring.app, linked from keyring.app) sets X402_SERVER_API to this host; the same repo also loads assets from ipfs.blockchhub.link.",
    "value": null,
    "unit": null,
    "window": null,
-   "basis": "direct_observation",
-   "source_url": "https://keyring-agent.blockchhub.link",
-   "quote": null,
-   "observed_at": "2026-10-15T18:10:00Z",
+   "basis": "operator_claim",
+   "source_url": "https://github.com/bacoor-hb/KEYRINGPRO/blob/main/.env.example",
+   "quote": "X402_SERVER_API=https://keyring-agent.blockchhub.link",
+   "observed_at": "2026-10-17T00:12:20Z",
    "methods": [
-    "GET https://x402-list.com/api/v1/services?per_page=100",
-    "curl -sL https://keyring-agent.blockchhub.link"
+    "curl https://raw.githubusercontent.com/bacoor-hb/KEYRINGPRO/main/.env.example (line 34)",
+    "GitHub API repos/bacoor-hb/KEYRINGPRO: homepage https://keyring.app/",
+    "curl -sL https://keyring.app: footer links https://github.com/bacoor-hb/KEYRINGPRO",
+    "curl -sL https://keyring-agent.blockchhub.link -> HTTP 200, title \"KEYRING AGENT\", \"Redirecting to keyring.app\"",
+    "x402-list.com/api/v1/services/keyring-agent: base_url https://keyring-agent.blockchhub.link (website_url null, verified false)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Official URL (x402-list base_url/website for this service, operator-owned)",
+     "quote": null,
+     "source_url": "https://keyring-agent.blockchhub.link",
+     "observed_at": "2026-10-15T18:10:00Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T00:12:20Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): ownership of the third-party-looking host checked against the operator's own repository"
+    }
+   ]
   },
   {
    "kind": "description",

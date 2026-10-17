@@ -38,29 +38,44 @@
   "observed_at": "2026-10-15T18:21:00Z",
   "source_url": "https://moltcities.org/api/stats"
  },
- "verified_at": "2026-10-15T18:33:00Z",
- "last_checked": "2026-10-15T18:33:00Z",
+ "verified_at": "2026-10-17T00:12:00Z",
+ "last_checked": "2026-10-17T00:12:00Z",
  "claims_count": 5,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/moltcities.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/moltcities-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",
-   "statement": "Homepage HTTP 200 with real content (layer-1 got 503)",
+   "statement": "Homepage HTTP 200 with real content (agents, open jobs, recent activity). The audit run about 15 minutes earlier got HTTP 503 \"Page Temporarily Unavailable\" twice; intermittent, re-check in the next weekly run.",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
    "source_url": "https://moltcities.org",
-   "quote": "MoltCities is infrastructure for AI agents. A permanent address. Cryptographic identity. Paid work.",
-   "observed_at": "2026-10-15T18:17:00Z",
+   "quote": "moltcities — permanent addresses for agents",
+   "observed_at": "2026-10-17T00:12:27Z",
    "methods": [
-    "curl -sL https://moltcities.org"
+    "curl -sL https://moltcities.org (HTTP 200, <title>)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Homepage HTTP 200 with real content (layer-1 got 503)",
+     "quote": "MoltCities is infrastructure for AI agents. A permanent address. Cryptographic identity. Paid work.",
+     "source_url": "https://moltcities.org",
+     "observed_at": "2026-10-15T18:17:00Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T00:12:27Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): reachability re-observed (the audit saw HTTP 503 twice about 15 minutes earlier)"
+    }
+   ]
   },
   {
    "kind": "metric",
@@ -109,18 +124,33 @@
   },
   {
    "kind": "site_reachable",
-   "statement": "/api/jobs returned HTTP 500 INTERNAL_ERROR",
+   "statement": "/api/jobs returns HTTP 200 with the job list (it returned HTTP 500 on 2026-10-15).",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
    "source_url": "https://moltcities.org/api/jobs",
-   "quote": "\"error\": \"Internal server error\"",
-   "observed_at": "2026-10-15T18:21:00Z",
+   "quote": "\"title\": \"Referral Bounty Test\"",
+   "observed_at": "2026-10-17T00:12:28Z",
    "methods": [
-    "curl -sL https://moltcities.org/api/jobs"
+    "curl -sL https://moltcities.org/api/jobs (HTTP 200)"
    ],
-   "outcome": "contradicted"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "/api/jobs returned HTTP 500 INTERNAL_ERROR",
+     "quote": "\"error\": \"Internal server error\"",
+     "source_url": "https://moltcities.org/api/jobs",
+     "observed_at": "2026-10-15T18:21:00Z",
+     "basis": "direct_observation",
+     "outcome": "contradicted",
+     "superseded_at": "2026-10-17T00:12:28Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): endpoint answers again"
+    }
+   ]
   }
  ],
  "qa_status": "checked"

@@ -3,7 +3,7 @@
  "source": "https://github.com/commonworld-one/commonworld",
  "generated_at": "2026-10-16T01:55:00Z",
  "id": "mcpay-frames",
- "name": "MCPay",
+ "name": "Frames (formerly MCPay)",
  "url": "https://commonworld.one/atlas/platforms/mcpay-frames/",
  "json_url": "https://commonworld.one/atlas/platforms/mcpay-frames.json",
  "website": "https://frames.ag/",
@@ -11,7 +11,7 @@
  "category_label": "Projects (repos & frameworks)",
  "type": "project",
  "status": "live",
- "summary": "MCPay's domain now redirects to Frames, a credit-based router to premium data sources for AI over MCP or API.",
+ "summary": "Frames (formerly MCPay, renamed by its team in February 2026; mcpay.tech now redirects to frames.ag) is a credit-based router to premium data sources for AI over MCP or API.",
  "tags": [
   "x402",
   "mcp"
@@ -19,29 +19,44 @@
  "has_money_flow": false,
  "money_flow": [],
  "key_number": null,
- "verified_at": "2026-10-15T18:24:00Z",
- "last_checked": "2026-10-15T18:24:00Z",
- "claims_count": 3,
+ "verified_at": "2026-10-17T00:12:00Z",
+ "last_checked": "2026-10-17T00:12:00Z",
+ "claims_count": 4,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/mcpay-frames.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/mcpay-frames-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",
-   "statement": "mcpay.tech 301 -> frames.ag (200).",
+   "statement": "mcpay.tech redirects to frames.ag, which serves the Frames home page (HTTP 200).",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
    "source_url": "https://frames.ag/",
-   "quote": "Frames is a router for premium AI data. Ask anything, and get routed to the correct endpoint.",
-   "observed_at": "2026-10-15T18:08:00Z",
+   "quote": "Frames: Premium data for your AI, over MCP or API",
+   "observed_at": "2026-10-17T00:12:14Z",
    "methods": [
-    "curl -L https://mcpay.tech"
+    "curl -sL https://mcpay.tech (final URL https://frames.ag/, HTTP 200, <title>)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "mcpay.tech 301 -> frames.ag (200).",
+     "quote": "Frames is a router for premium AI data. Ask anything, and get routed to the correct endpoint.",
+     "source_url": "https://frames.ag/",
+     "observed_at": "2026-10-15T18:08:00Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T00:12:14Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): re-observed for the rename"
+    }
+   ]
   },
   {
    "kind": "recent_activity",
@@ -60,19 +75,50 @@
   },
   {
    "kind": "announced_closed",
-   "statement": "MCPay brand discontinued via rebrand/redirect; no official shutdown statement found. Treated as rebrand, not closure.",
+   "statement": "Not a shutdown: MCPay was renamed Frames by its own team (official @framesag post, 2026-02-13).",
    "value": null,
    "unit": null,
    "window": null,
-   "basis": "inference",
-   "source_url": "https://frames.ag/",
-   "quote": null,
-   "observed_at": "2026-10-15T18:08:00Z",
+   "basis": "operator_claim",
+   "source_url": "https://x.com/framesag/status/2022409193010139574",
+   "quote": "MCPAY IS NOW FRAMES.AG",
+   "observed_at": "2026-10-17T00:12:15Z",
    "methods": [
-    "curl redirect",
-    "GitHub API"
+    "FxTwitter API https://api.fxtwitter.com/framesag/status/2022409193010139574 (created_at 2026-02-13T20:35:00Z)",
+    "curl -sL https://mcpay.tech -> https://frames.ag/"
    ],
-   "outcome": "unchecked"
+   "outcome": "contradicted",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "MCPay brand discontinued via rebrand/redirect; no official shutdown statement found. Treated as rebrand, not closure.",
+     "quote": null,
+     "source_url": "https://frames.ag/",
+     "observed_at": "2026-10-15T18:08:00Z",
+     "basis": "inference",
+     "outcome": "unchecked",
+     "superseded_at": "2026-10-17T00:12:15Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): rename confirmed by the operator; MCPay was not shut down"
+    }
+   ]
+  },
+  {
+   "kind": "operator",
+   "statement": "Rebrand: MCPay is now Frames (frames.ag), announced by the official Frames account on 2026-02-13; an independent hackathon report also records the rename.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://x.com/framesag/status/2022409193010139574",
+   "quote": "MCPAY IS NOW FRAMES.AG",
+   "observed_at": "2026-10-17T00:12:15Z",
+   "methods": [
+    "FxTwitter API https://api.fxtwitter.com/framesag/status/2022409193010139574 (author framesag, created_at 2026-02-13T20:35:00Z)",
+    "web_fetch https://wiki.superteam.com.br/transparencia/q4-2025: \"O MCPay, que desde então foi rebatizado como Frames\""
+   ],
+   "outcome": "supported"
   }
  ],
  "qa_status": "checked"

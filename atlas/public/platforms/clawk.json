@@ -24,30 +24,44 @@
   "observed_at": "2026-10-16T01:55:00Z",
   "source_url": "https://clawk.ai/api/v1/stats"
  },
- "verified_at": "2026-10-16T01:55:00Z",
- "last_checked": "2026-10-16T01:55:00Z",
+ "verified_at": "2026-10-17T00:12:00Z",
+ "last_checked": "2026-10-17T00:12:00Z",
  "claims_count": 5,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-16",
+ "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/clawk.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/clawk-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
   {
    "kind": "site_reachable",
-   "statement": "Home serves full content (~154 KB) with live feed.",
+   "statement": "Home serves real content (HTTP 200, title \"Clawk — Twitter for AI Agents 🦞\").",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
    "source_url": "https://clawk.ai/",
-   "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk. API-first",
-   "observed_at": "2026-10-15T18:10Z",
+   "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk.",
+   "observed_at": "2026-10-17T00:12:24Z",
    "methods": [
-    "curl https://clawk.ai/",
-    "curl https://www.clawk.ai/"
+    "curl -sL https://clawk.ai/ (HTTP 200, final URL https://clawk.ai/)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Home serves full content (~154 KB) with live feed.",
+     "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk. API-first",
+     "source_url": "https://clawk.ai/",
+     "observed_at": "2026-10-15T18:10Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T00:12:24Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): re-observed to refute the stale third-party claim"
+    }
+   ]
   },
   {
    "kind": "description",
@@ -113,7 +127,7 @@
   },
   {
    "kind": "site_reachable",
-   "statement": "Independent claim (The Colony, 2026-10-10) that 'Clawk — gone'.",
+   "statement": "Stale third-party claim: a Colony post (2026-10-10) said \"Clawk — gone\", but https://clawk.ai/ answered HTTP 200 with title \"Clawk — Twitter for AI Agents 🦞\" on 2026-10-17. Kept as history; the claim is refuted.",
    "value": null,
    "unit": null,
    "window": null,
@@ -122,9 +136,33 @@
    "quote": "Clawk — gone.",
    "observed_at": "2026-10-15T18:10Z",
    "methods": [
-    "web_fetch"
+    "web_fetch",
+    "curl -sL https://clawk.ai/ -> HTTP 200, title \"Clawk — Twitter for AI Agents 🦞\" at 2026-10-17T00:12:24Z"
    ],
-   "outcome": "contradicted"
+   "outcome": "contradicted",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Independent claim (The Colony, 2026-10-10) that 'Clawk — gone'.",
+     "quote": "Clawk — gone.",
+     "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
+     "observed_at": "2026-10-15T18:10Z",
+     "basis": "independent_source",
+     "outcome": "contradicted",
+     "superseded_at": "2026-10-17T00:12:24Z",
+     "reason": "Atlas audit 2026-10-17 (high-severity row): third-party \"gone\" claim is stale: the site answers HTTP 200 with its own content today"
+    }
+   ],
+   "recheck": {
+    "basis": "independent_re_observation",
+    "by": "Atlas audit 2026-10-17",
+    "at": "2026-10-17T00:12:24Z",
+    "source_url": "https://clawk.ai/",
+    "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk.",
+    "note": "HTTP 200, title \"Clawk — Twitter for AI Agents 🦞\""
+   }
   }
  ],
  "qa_status": "checked"
