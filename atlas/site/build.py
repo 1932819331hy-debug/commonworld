@@ -6,7 +6,7 @@
 
 Output (default atlas/site/dist/) is a plain static tree with clean URLs as directories:
   /atlas/index.html, /atlas/platforms/, /atlas/platforms/<slug>/, /atlas/categories/, /atlas/categories/<cat>/,
-  /atlas/closed/, /atlas/earn/ (+ /atlas/earn.json), /atlas/about/, /atlas/badge/ (+ /atlas/badge/<slug>.svg, <slug>-dark.svg), /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/llms.txt, /atlas/sitemap.xml, /atlas/assets/*,
+  /atlas/closed/, /atlas/earn/ (+ /atlas/earn.json), /atlas/about/, /atlas/decisions/ (+ index.md, /atlas/decisions.json), /atlas/badge/ (+ /atlas/badge/<slug>.svg, <slug>-dark.svg), /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/llms.txt, /atlas/sitemap.xml, /atlas/assets/*,
   /privacy/, /terms/ (site-wide Commonworld legal pages; /atlas/privacy|terms/ are noindex redirect stubs + _redirects 301s),
   / (Commonworld landing), /404.html, /robots.txt, /llms.txt, /llms-full.txt, /sitemap.xml, /_headers, /_redirects
   /api/v1/ (static API: index.json, openapi.json, changelog, schemas/, atlas/{index,platforms,earn}.json, atlas/platforms|categories/<id>.json; docs /atlas/api/)
@@ -277,7 +277,7 @@ CW_ABOUT = '/about/'  # About Commonworld (site-wide); /atlas/about/ stays "How 
 SEARCH_PLACEHOLDER = 'Search: name, category, description, numbers…'
 
 
-def page(site, *, path, title, description, body, active, ld=(), og_type='website', noindex=False, lastmod=None, index_search=False, og=None, alt_json=None):
+def page(site, *, path, title, description, body, active, ld=(), og_type='website', noindex=False, lastmod=None, index_search=False, og=None, alt_json=None, alt_md=None):
     """og: (image name, spec dict, alt text) -> /atlas/og/<name>.png rendered by og_images.py (static og-atlas.png without Pillow)."""
     cfg = site.cfg
     canon = site.abs(path)
@@ -332,6 +332,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
 <link rel="alternate" type="application/json" href="{b}/data/snapshot.json" title="Atlas data (JSON)">
 <link rel="alternate" type="application/json" href="{b}/platforms.json" title="Atlas platforms (JSON, for agents)">
 {f'<link rel="alternate" type="application/json" href="{e(alt_json)}" title="This entry (JSON: claims and sources)">' if alt_json else ''}
+{f'<link rel="alternate" type="text/markdown" href="{e(alt_md)}" title="This page (Markdown)">' if alt_md else ''}
 {cw.boot_script(cfg)}
 <link rel="stylesheet" href="{b}/assets/atlas.css?v={site.asset_v}">
 {head_ld}
@@ -602,6 +603,7 @@ def build_index(site):
                                 (api_v1.API_BASE + '/atlas/platforms.json', 'application/json', 'API v1: all entries'),
                                 (f'{b}/llms.txt', 'text/plain', 'Atlas guide for AI agents (llms.txt)'),
                                 (SAFETY_PATH, 'application/json', 'Link safety report: Google Safe Browsing status of every linked domain (safety.json)'),
+                                (DECISIONS_JSON, 'application/json', 'Link safety decision log: every removal and return with who, why and evidence (decisions.json)'),
                                 ('/llms-full.txt', 'text/plain', 'One line per entry (llms-full.txt)')])]
     return page(site, path=f'{b}/', title='Atlas of Agent Platforms: verified catalog | Commonworld',
                 description=f'{n} places where AI agents talk, work, get paid, compete and publish research, each checked against its own sources, with dated numbers you can trace.',
@@ -1070,6 +1072,7 @@ def build_about(site):
 <h2 id="link-safety">Link safety</h2>
 <p>Every domain the Atlas links to is checked daily against Google Safe Browsing. If a domain is flagged, its entry is removed from the Atlas, its links disappear from every page and data file, and its page becomes a short “entry removed” note, so the permanent ID keeps working. An entry can return once the flag clears and a fresh check passes.</p>
 <p>The latest result is published as <a href="{SAFETY_PATH}">safety.json</a> (status of every linked domain, check time, summary counts), and every entry in the JSON files carries a <code>link_safety</code> field with the status of its official URL and when it was checked.</p>
+<p>Every removal and every return is a public, dated decision with who acted, why and an evidence link: see the <a href="{DECISIONS_PATH}">link safety decision log</a> (also as <a href="{DECISIONS_JSON}">decisions.json</a>).</p>
 <h2 id="badges">Badges for listed platforms</h2>
 <p>Every published card has a free status badge (<i>Verified</i>, <i>Listed</i> or <i>Closed</i>) that its platform can show on its own site or README. It is rebuilt with every weekly check. See <a href="{b}/badge/">Atlas badges</a>.</p>
 <h2 id="tags">Tags</h2>
@@ -1493,6 +1496,125 @@ def build_removed_stub(site, slug):
                 description='This entry was removed from the Atlas after a safety check.', body=body, active='', noindex=True)
 
 
+DECISIONS_PATH = '/atlas/decisions/'  # public log of link-safety decisions (removed.json `decisions`)
+DECISIONS_MD = DECISIONS_PATH + 'index.md'  # Markdown twin of the page
+DECISIONS_JSON = '/atlas/decisions.json'
+TRUST_ROLES_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'trust-roles.json'))
+EVIDENCE_HOSTS = ('transparencyreport.google.com',)  # third-party checkers whose evidence links may carry a removed host in the query
+
+
+def load_decisions():
+    """removed.json `decisions` (oldest first in the file) and trust-roles.json."""
+    doc = json.load(open(REMOVED_FILE)) if os.path.exists(REMOVED_FILE) else {}
+    roles = json.load(open(TRUST_ROLES_FILE)) if os.path.exists(TRUST_ROLES_FILE) else {}
+    return list(doc.get('decisions') or []), roles
+
+
+def defang(host):
+    """A removed host is shown as plain text that no tool turns into a link: venice.ai -> venice[.]ai."""
+    return (host or '').replace('.', '[.]')
+
+
+def decisions_newest_first(decs):
+    return [d for _, d in sorted(enumerate(decs), key=lambda x: (x[1].get('on') or '', x[0]), reverse=True)]
+
+
+def decision_record(d):
+    r = {'on': d.get('on'), 'action': d.get('action'), 'slug': d.get('slug'), 'host': defang(d.get('host')),
+         'by': d.get('by'), 'reason': d.get('reason'), 'evidence': d.get('evidence')}
+    if d.get('recheck'):
+        r['recheck'] = d['recheck']
+    return r
+
+
+ACTION_WORD = {'remove': 'Removed', 'restore': 'Returned'}
+DECISIONS_LEAD = ('Every removal and every return in the Atlas is a public, dated decision: what changed, who acted, why, '
+                  'and a link to the evidence, so anyone can follow it and check it.')
+
+
+def build_decisions(site):
+    b = site.base
+    decs, roles = load_decisions()
+    rows = decisions_newest_first(decs)
+    crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), ('How the Atlas works', f'{b}/about/'), ('Decision log', DECISIONS_PATH)])
+    actors = roles.get('actors') or []
+    trs = []
+    for d in rows:
+        ev = d.get('evidence') or ''
+        evh = (f'<a href="{e(ev)}" rel="nofollow noopener" target="_blank">{e(_host(ev) or "evidence")}</a>' if ev.startswith('https://') else '—')
+        re_ = ' (re-check: clean)' if d.get('recheck') == 'clean' else ''
+        trs.append(f'<tr><td><time datetime="{e(d.get("on") or "")}">{e(d.get("on") or "")}</time></td>'
+                   f'<td>{e(ACTION_WORD.get(d.get("action"), d.get("action") or ""))}{re_}</td>'
+                   f'<td><a href="{b}/platforms/{e(d.get("slug") or "")}/"><code>{e(d.get("slug") or "")}</code></a></td>'
+                   f'<td><code>{e(defang(d.get("host")))}</code></td><td><code>{e(d.get("by") or "")}</code></td>'
+                   f'<td>{e(d.get("reason") or "")}</td><td>{evh}</td></tr>')
+    table = ('<div class="table-wrap"><table class="list decisions"><thead><tr><th scope="col">Date</th><th scope="col">Action</th>'
+             '<th scope="col">Entry ID</th><th scope="col">Domain</th><th scope="col">By</th><th scope="col">Reason</th><th scope="col">Evidence</th></tr></thead>'
+             f'<tbody>{"".join(trs)}</tbody></table></div>') if trs else '<p>No decisions recorded yet.</p>'
+    who = ', '.join(f'<code>{e(a["id"])}</code>' for a in actors)
+    lead = f'<p>{e(DECISIONS_LEAD)}</p>'
+    body = f"""{crumbs}
+{cw.hero('About the Atlas', 'Link safety decision log', lead, small=True, kicker_href=f'{b}/about/')}
+<div class="prose">
+<p>The Atlas checks every linked domain daily against Google Safe Browsing (<a href="{b}/about/#link-safety">how link safety works</a>). When a domain is flagged, its entry is removed; when the flag clears and a fresh check comes back clean, the entry can return. Each of these steps is written down here, newest first.</p>
+<h2 id="who">Who can act</h2>
+<p>{len(actors)} trusted actors can remove and restore entries, each on their own: {who}. The list is published in <a href="{REPO_URL}/blob/main/atlas/data/trust-roles.json" rel="nofollow noopener">trust-roles.json</a>. A return needs a clean re-check.</p>
+<h2 id="log">Decisions</h2>
+{table}
+<p>Domains are shown as plain text with <code>[.]</code> in place of the dot, so they never become links. Entry IDs stay permanent: a removed entry's ID shows a short note. Evidence links go to the third-party checker.</p>
+<h2 id="data">Data</h2>
+<p>The same log as JSON: <a href="{DECISIONS_JSON}">decisions.json</a> (decisions, trust roles, the link safety rule, generated time), and as Markdown: <a href="{DECISIONS_MD}">index.md</a>. Source: <a href="{REPO_URL}/blob/main/atlas/data/removed.json" rel="nofollow noopener">removed.json</a>.</p>
+</div>"""
+    newest = parse_time((rows[0].get('on') + 'T00:00:00Z')) if rows and rows[0].get('on') else site.latest
+    return page(site, path=DECISIONS_PATH, title='Link safety decision log | Commonworld Atlas',
+                description='Every removal and return in the Commonworld Atlas as a public, dated decision: who acted, why, and a link to the evidence.',
+                body=body, active='decisions', lastmod=newest, alt_md=DECISIONS_MD,
+                og=og_generic(site, 'page-decisions', 'Link safety decision log',
+                              'Every removal and return in the Atlas is a public, dated decision with who acted, why and an evidence link.',
+                              [('decisions', 'olive'), (f'{len(rows)} recorded', None), ('open record', None)], kicker='ABOUT THE ATLAS'),
+                ld=[crumb_ld, {'@context': 'https://schema.org', '@type': 'WebPage', 'name': 'Commonworld Atlas link safety decision log',
+                               'url': site.abs(DECISIONS_PATH), 'isPartOf': {'@type': 'WebSite', 'name': 'Commonworld', 'url': site.abs('/')}}])
+
+
+def build_decisions_md(site):
+    A = site.abs
+    decs, roles = load_decisions()
+    rows = decisions_newest_first(decs)
+    cell = lambda v: str(v or '').replace('|', '\\|').replace('\n', ' ')
+    lines = ['# Link safety decision log', '', f'> {DECISIONS_LEAD}', '',
+             f'Canonical page: {A(DECISIONS_PATH)} · JSON: {A(DECISIONS_JSON)} · How link safety works: {A(site.base + "/about/#link-safety")}', '',
+             'The Atlas checks every linked domain daily against Google Safe Browsing. A flagged domain\'s entry is removed; it can return once the flag clears and a fresh check comes back clean.', '',
+             '## Who can act', '',
+             'Each actor below can remove and restore entries on their own (source: trust-roles.json). A return needs a clean re-check.', '']
+    lines += [f"- `{a['id']}` ({a.get('kind') or 'actor'})" for a in roles.get('actors') or []]
+    lines += ['', '## Decisions (newest first)', '']
+    if rows:
+        lines += ['| Date | Action | Entry ID | Domain | By | Reason | Evidence |', '|---|---|---|---|---|---|---|']
+        for d in rows:
+            act = ACTION_WORD.get(d.get('action'), d.get('action') or '') + (' (re-check: clean)' if d.get('recheck') == 'clean' else '')
+            ev = d.get('evidence') or ''
+            lines.append(f"| {cell(d.get('on'))} | {cell(act)} | `{cell(d.get('slug'))}` | `{cell(defang(d.get('host')))}` | `{cell(d.get('by'))}` | {cell(d.get('reason'))} | <{ev}> |")
+    else:
+        lines.append('No decisions recorded yet.')
+    lines += ['', 'Domains are written with `[.]` in place of the dot, so they never become links. Evidence links go to the third-party checker.', '']
+    return '\n'.join(lines)
+
+
+def decisions_doc(site):
+    decs, roles = load_decisions()
+    gen = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+    return {'name': 'Commonworld Atlas link safety decision log', 'url': site.abs(DECISIONS_JSON), 'page': site.abs(DECISIONS_PATH),
+            'generated_at': gen, 'licence': site.cfg.get('data_licence') or 'not yet specified',
+            'link_safety': {'policy': site.abs(f'{site.base}/about/#link-safety'), 'report': site.abs(SAFETY_PATH), 'source': 'Google Safe Browsing',
+                            'rule': 'Every linked domain is checked daily against Google Safe Browsing. A flagged domain\'s entry is removed from every listing '
+                                    'and data file and its ID shows a short removed-entry note. It can return after the flag clears with a restore decision '
+                                    'and a clean re-check. Every removal and return is recorded here.',
+                            'host_format': 'Domains are defanged ("." written as "[.]") so they are never turned into links.'},
+            'trust_roles': {'version': roles.get('version'), 'actions': roles.get('actions') or [],
+                            'actors': [{k: a.get(k) for k in ('id', 'kind', 'commits_as', 'trailer') if a.get(k)} for a in roles.get('actors') or []]},
+            'count': len(decs), 'decisions': [decision_record(d) for d in decisions_newest_first(decs)]}
+
+
 # ---------------------------------------------------------------- machine-readable files for AI agents
 
 
@@ -1733,6 +1855,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [Atlas badges]({A(f'{b}/badge/')}): free status badge for every card (Verified · date / Listed / Closed · history), {A(f'{b}/badge/')}<id>.svg and <id>-dark.svg; never sold, no tracking, rebuilt with every weekly check
 - [Verification protocol]({REPO_URL}/blob/main/atlas/PROTOCOL.md): the full protocol each claim goes through
 - [Link safety]({A(f'{b}/about/#link-safety')}): every linked domain is checked daily against Google Safe Browsing; a flagged domain's entry is removed and its ID shows a short "entry removed" page
+- [Link safety decision log]({A(DECISIONS_PATH)}): every removal and return as a public, dated decision (who acted, why, evidence link); Markdown {A(DECISIONS_MD)}, JSON {A(DECISIONS_JSON)} with the trust roles
 - [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
 
 ## Categories
@@ -1795,6 +1918,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - Full published dataset: {A(f'{b}/data/snapshot.json')}
 - Where agents get paid: {A(f'{b}/earn.json')}
 - Link safety report: {A(SAFETY_PATH)} (every linked domain checked daily against Google Safe Browsing: status clean/flagged/no_data, checked_at UTC, summary counts; each entry in the JSON files carries link_safety {{status, checked_at}})
+- Link safety decision log: {A(DECISIONS_JSON)} (every removal and return: date, action, entry ID, domain written with [.], actor id from the trust roles, reason, evidence link); page {A(DECISIONS_PATH)}, Markdown {A(DECISIONS_MD)}
 - One line per entry: {A('/llms-full.txt')}
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
 - Per entry: take json_url from platforms.json; never construct an ID
@@ -2027,6 +2151,8 @@ def main():
     write(f'{b}/closed/', build_closed(site))
     write(f'{b}/earn/', build_earn(site))
     write(f'{b}/about/', build_about(site))
+    write(DECISIONS_PATH, build_decisions(site))
+    write(DECISIONS_MD, build_decisions_md(site))
     write(f'{b}/badge/', build_badge_page(site))
     write(API_DOCS, build_api_docs(site))
     n_badges = write_badges(site, write)
@@ -2083,6 +2209,7 @@ def main():
     write(f'{b}/data/search-index.json', json.dumps(sidx, ensure_ascii=False, separators=(',', ':')))
 
     write(SAFETY_PATH, json.dumps(safety_doc(site), ensure_ascii=False, indent=1) + '\n')  # not mirrored: it changes daily
+    write(DECISIONS_JSON, json.dumps(decisions_doc(site), ensure_ascii=False, indent=1) + '\n')
     build_agent_files(site, write)
     build_earn_json(site, write)
     build_api(site, write)
@@ -2131,6 +2258,12 @@ def main():
 {b}/safety.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+{b}/decisions.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+{b}/decisions/index.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
 {b}/categories/*.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8

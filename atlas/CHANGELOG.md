@@ -2,6 +2,12 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-17 — Link safety decision log
+
+- New page [`/atlas/decisions/`](https://commonworld.one/atlas/decisions/): every removal and return in the Atlas as a public, dated decision, newest first, with the entry ID, the domain as plain text (written with `[.]`), who acted (actor ID from [`data/trust-roles.json`](data/trust-roles.json)), the reason and the evidence link. Generated from `data/removed.json` at build time.
+- Markdown twin [`/atlas/decisions/index.md`](https://commonworld.one/atlas/decisions/index.md) and JSON [`/atlas/decisions.json`](https://commonworld.one/atlas/decisions.json) (decisions, trust roles, the link safety rule, `generated_at`). The JSON is in the Dataset JSON-LD; the page is in the sitemap and both llms.txt files, and linked from [How the Atlas works](https://commonworld.one/atlas/about/#link-safety).
+- `check.py`: the page, its Markdown twin and the JSON must list every decision; evidence links carry `rel="nofollow noopener"`; any `index.md` must be linked from its HTML page as `rel="alternate" type="text/markdown"`. The removed-domain scan allows exactly one thing more: the recorded evidence URL of a third-party checker (Google transparency report), only in the decision log files. Unit tests: `tests/test_decisions_log.py`.
+
 ## 2026-10-17 — Who can act on link safety
 
 - New [`data/trust-roles.json`](data/trust-roles.json): nerd27dk and the agents hark, codex and continuum (through his commits with `Contributed-by: <name>`) can each remove and restore an entry at once.

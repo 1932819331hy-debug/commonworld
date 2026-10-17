@@ -44,11 +44,13 @@ Link safety: every slug in atlas/data/removed.json has a noindex stub page ("Thi
 no outbound link, not in the sitemap; the growth guard accepts it in place of the old page), is absent from snapshot/platforms/earn/search
 index, has no per-entry JSON, badge or screenshot, and no built file names its host. /atlas/safety.json (daily Google Safe Browsing
 report) is valid, in the Dataset distribution and /atlas/llms.txt; every exported record carries link_safety {status, checked_at}.
+Decision log: /atlas/decisions/ (+ index.md twin, /atlas/decisions.json) lists every decision of removed.json, newest first,
+hosts as defanged plain text, evidence links rel nofollow noopener. Markdown twins: every index.md is linked from its HTML page.
 Trust decisions (atlas/tools/trust_check.py): every removed entry has a remove decision and every decision names an actor from
 atlas/data/trust-roles.json, a date, a reason and an https evidence link; a restored host must be clean in the latest safety report.
 Also: native ad cards sit after every 12th card, the tag shelf exists with its expander, every card links to its page.
 """
-import gzip, json, os, re, struct, sys, xml.etree.ElementTree as ET
+import gzip, html, json, os, re, struct, sys, xml.etree.ElementTree as ET
 from urllib.parse import quote, unquote
 from html.parser import HTMLParser
 from collections import Counter
@@ -145,6 +147,8 @@ REDIRECTS = os.path.join(DATA_DIR, 'redirects.json')
 
 REMOVED = os.path.join(DATA_DIR, 'removed.json')
 REMOVED_LINE = 'This entry was removed from the Atlas after a safety check.'
+EVIDENCE_HOSTS = ('transparencyreport.google.com',)  # third-party checkers allowed as decision evidence links
+DECISION_FILES = ('atlas/decisions/index.html', 'atlas/decisions/index.md', 'atlas/decisions.json')  # the public decision log
 
 
 def load_removed():
@@ -152,6 +156,23 @@ def load_removed():
     if not os.path.exists(REMOVED):
         return []
     return list(json.load(open(REMOVED)).get('removed') or [])
+
+
+def removed_host_hit(txt, rel, rem, decisions):
+    """The first mention of a removed host in one built file, or None. One precise exception: the decision log files
+    (DECISION_FILES) may carry the exact evidence URL of a recorded decision when it points to a third-party checker
+    (EVIDENCE_HOSTS, e.g. the Google transparency report), whose query names the domain it checked. Only those exact URLs,
+    only in those files; every other mention of a removed host, in any file, still counts."""
+    hs = [r['host'] for r in rem if r.get('host')]
+    if not hs:
+        return None
+    host_re = re.compile(r'(?<![\w.-])(?:[\w-]+\.)*(?:' + '|'.join(re.escape(h) for h in hs) + r')(?![\w-])', re.I)
+    if rel in DECISION_FILES:
+        ev = {d['evidence'] for d in decisions if str(d.get('evidence') or '').startswith(tuple(f'https://{h}/' for h in EVIDENCE_HOSTS))}
+        for u in sorted({v for u in ev for v in (u, html.escape(u, quote=True), json.dumps(u)[1:-1])}, key=len, reverse=True):
+            txt = txt.replace(u, '')
+    m = host_re.search(txt)
+    return m.group(0) if m else None
 
 
 def removed_checks(parsed, pages):
@@ -179,14 +200,15 @@ def removed_checks(parsed, pages):
     for s_ in slugs:
         for f_ in (f'atlas/platforms/{s_}.json', f'api/v1/atlas/platforms/{s_}.json', f'atlas/badge/{s_}.svg', f'atlas/screens/{s_}.webp'):
             if os.path.exists(os.path.join(DIST, f_)): fails.append(f'{f_}: published for a removed entry')
-    host_re = re.compile(r'(?<![\w.-])(?:[\w-]+\.)*(?:' + '|'.join(re.escape(r['host']) for r in rem if r.get('host')) + r')(?![\w-])', re.I)
     if any(r.get('host') for r in rem):
+        decs = (json.load(open(REMOVED)).get('decisions') or []) if os.path.exists(REMOVED) else []
         for root, _, files in os.walk(DIST):
             for f in files:
                 if f.endswith(('.html', '.json', '.xml', '.txt', '.js', '.md')) or f in ('_headers', '_redirects'):
                     fp = os.path.join(root, f)
-                    m = host_re.search(open(fp, encoding='utf-8', errors='replace').read())
-                    if m: fails.append(f'{os.path.relpath(fp, DIST)}: names removed host {m.group(0)!r}')
+                    rel = os.path.relpath(fp, DIST).replace(os.sep, '/')
+                    m = removed_host_hit(open(fp, encoding='utf-8', errors='replace').read(), rel, rem, decs)
+                    if m: fails.append(f'{rel}: names removed host {m!r}')
     print(f'link safety: {len(rem)} removed entr{"y" if len(rem) == 1 else "ies"} (stub pages, no outbound links, host absent from dist)')
     return fails
 
@@ -674,6 +696,93 @@ def dataset_checks(parsed):
     return fails
 
 
+def markdown_twin_checks(pages):
+    """Markdown twins (site-wide standard: HTML stays canonical, a page may also publish <path>/index.md): every index.md in dist
+    sits next to an index.html that announces it with <link rel="alternate" type="text/markdown">, every such link resolves, the
+    twin starts with a '# ' heading and names its canonical URL, and _headers serves it as text/markdown."""
+    fails, n = [], 0
+    hdr = open(os.path.join(DIST, '_headers'), encoding='utf-8').read() if os.path.exists(os.path.join(DIST, '_headers')) else ''
+    alt_re = re.compile(r'<link rel="alternate" type="text/markdown" href="([^"]+)"')
+    for u, fp in pages.items():
+        for href in alt_re.findall(open(fp, encoding='utf-8').read()):
+            if not href.startswith('/') or not os.path.isfile(os.path.join(DIST, href.lstrip('/'))):
+                fails.append(f'{u}: Markdown alternate {href} does not exist')
+    for root, _, files in os.walk(DIST):
+        if 'index.md' not in files:
+            continue
+        rel = os.path.relpath(os.path.join(root, 'index.md'), DIST).replace(os.sep, '/')
+        n += 1
+        u = '/' + rel[:-len('index.md')]
+        if u not in pages: fails.append(f'/{rel}: Markdown twin without an HTML page at {u}'); continue
+        if f'<link rel="alternate" type="text/markdown" href="/{rel}"' not in open(pages[u], encoding='utf-8').read():
+            fails.append(f'{u}: does not link its Markdown twin /{rel}')
+        md = open(os.path.join(root, 'index.md'), encoding='utf-8').read()
+        if not md.startswith('# '): fails.append(f'/{rel}: does not start with a # heading')
+        if ORIGIN + u not in md: fails.append(f'/{rel}: does not name its canonical page {ORIGIN + u}')
+        if f'/{rel}\n  Access-Control-Allow-Origin: *\n  Content-Type: text/markdown; charset=utf-8' not in hdr:
+            fails.append(f'_headers: /{rel} is not served as text/markdown')
+    print(f'markdown twins: {n} index.md file(s), each linked from its HTML page')
+    return fails, n
+
+
+def decisions_checks(parsed, pages, locs):
+    """Link safety decision log: /atlas/decisions/ (indexable, in the sitemap, linked from /atlas/about/), its Markdown twin and
+    /atlas/decisions.json list every decision in atlas/data/removed.json (date, action, slug, actor, evidence) newest first and match
+    trust-roles.json; hosts are plain defanged text, never a link; evidence links are https with rel nofollow noopener; decisions.json
+    is in the /atlas/ Dataset distribution and both llms.txt files."""
+    fails = []
+    decs = (json.load(open(REMOVED)) if os.path.exists(REMOVED) else {}).get('decisions') or []
+    roles = json.load(open(os.path.join(DATA_DIR, 'trust-roles.json')))
+    u = '/atlas/decisions/'
+    if u not in parsed:
+        return [f'missing {u} (link safety decision log)']
+    p, h = parsed[u], open(pages[u], encoding='utf-8').read()
+    if 'noindex' in (p.meta.get('robots') or ''): fails.append(f'{u}: must be indexable')
+    if ORIGIN + u not in locs: fails.append(f'{u}: not in the sitemap')
+    mdp = os.path.join(DIST, 'atlas', 'decisions', 'index.md')
+    md = open(mdp, encoding='utf-8').read() if os.path.isfile(mdp) else ''
+    if not md: fails.append('missing /atlas/decisions/index.md (Markdown twin)')
+    jp = os.path.join(DIST, 'atlas', 'decisions.json')
+    try:
+        dj = json.load(open(jp, encoding='utf-8'))
+    except Exception as ex:
+        dj = {}; fails.append(f'/atlas/decisions.json: missing or invalid ({ex})')
+    rows = [d for _, d in sorted(enumerate(decs), key=lambda x: (x[1].get('on') or '', x[0]), reverse=True)]
+    hosts = {d.get('host') for d in decs if d.get('host')}
+    for d in rows:
+        dh = (d.get('host') or '').replace('.', '[.]')
+        for where, txt in (('page', h), ('index.md', md)):
+            for need in (d.get('slug'), d.get('on'), d.get('by'), dh, d.get('evidence')):
+                if need and html.escape(need, quote=True) not in txt and need not in txt:
+                    fails.append(f"decision log {where}: lacks {need!r} of {d.get('action')} {d.get('slug')}")
+    trs = re.findall(r'<tr><td><time datetime="(\d{4}-\d{2}-\d{2})"', h)
+    if len(trs) != len(rows): fails.append(f'{u}: {len(trs)} table rows != {len(rows)} decisions in removed.json')
+    if trs != sorted(trs, reverse=True): fails.append(f'{u}: decisions are not newest first')
+    want = [{'on': d.get('on'), 'action': d.get('action'), 'slug': d.get('slug'), 'by': d.get('by'), 'evidence': d.get('evidence')} for d in rows]
+    got = [{k: r.get(k) for k in ('on', 'action', 'slug', 'by', 'evidence')} for r in dj.get('decisions') or []]
+    if got != want: fails.append('/atlas/decisions.json: decisions differ from atlas/data/removed.json')
+    if dj.get('count') != len(decs): fails.append(f"/atlas/decisions.json: count {dj.get('count')} != {len(decs)}")
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', str(dj.get('generated_at') or '')): fails.append('/atlas/decisions.json: generated_at not ISO 8601 UTC')
+    if [a.get('id') for a in (dj.get('trust_roles') or {}).get('actors') or []] != [a.get('id') for a in roles.get('actors') or []]:
+        fails.append('/atlas/decisions.json: trust_roles actors differ from atlas/data/trust-roles.json')
+    if not ((dj.get('link_safety') or {}).get('rule')): fails.append('/atlas/decisions.json: lacks link_safety.rule')
+    for tag, href, rel in p.links:
+        if tag != 'a' or not href.startswith(('http://', 'https://', '//')):
+            continue
+        if any(re.search(r'(?:^|//|\.)' + re.escape(x) + r'(?:[:/]|$)', href.split('?')[0], re.I) for x in hosts):
+            fails.append(f'{u}: links to a decision host {href}')
+        if href in [d.get('evidence') for d in decs] and not ({'nofollow', 'noopener'} <= set(rel.split())):
+            fails.append(f'{u}: evidence link {href} lacks rel="nofollow noopener"')
+    if 'href="/atlas/decisions/"' not in open(pages['/atlas/about/'], encoding='utf-8').read(): fails.append('/atlas/about/ does not link /atlas/decisions/')
+    idx = next((x for x in (json.loads(b) for b in parsed['/atlas/'].ld) if x.get('@type') == 'Dataset'), {})
+    if ORIGIN + '/atlas/decisions.json' not in [x.get('contentUrl') for x in idx.get('distribution') or []]:
+        fails.append('/atlas/: Dataset distribution lacks decisions.json')
+    for t in ('llms.txt', os.path.join('atlas', 'llms.txt')):
+        if ORIGIN + '/atlas/decisions/' not in open(os.path.join(DIST, t), encoding='utf-8').read(): fails.append(f'/{t} does not link the decision log')
+    print(f'decision log: {len(decs)} decision(s) on {u}, index.md and decisions.json, {len(roles.get("actors") or [])} actors')
+    return fails
+
+
 def main():
     global SHARE_LIVE, SHARE_ENTRY
     SHARE_LIVE, SHARE_ENTRY = _share_expectations()
@@ -719,18 +828,18 @@ def main():
         parsed.pop(f"/atlas/platforms/{r['slug']}/", None); pages.pop(f"/atlas/platforms/{r['slug']}/", None)
     for root, _, files in os.walk(DIST):
         for f in files:
-            if f.endswith(('.html', '.json', '.xml', '.txt', '.js', '.css', '.svg')) or f in ('_headers', '_redirects'):
+            if f.endswith(('.html', '.json', '.xml', '.txt', '.js', '.css', '.svg', '.md')) or f in ('_headers', '_redirects'):
                 fp = os.path.join(root, f)
                 txt = open(fp, encoding='utf-8', errors='replace').read()
                 m = FORBIDDEN_ANY.search(txt.replace(CFG0['contact']['general'], ''))
                 if m: fails.append(f'forbidden text {m.group(0)!r} in {os.path.relpath(fp, DIST)}: …{txt[max(0, m.start() - 40):m.end() + 40]}…')
-    for u in [PRIV_URL, TERMS_URL, '/atlas/about/', '/atlas/', '/404.html', '/', '/about/']:
+    for u in [PRIV_URL, TERMS_URL, '/atlas/about/', '/atlas/decisions/', '/atlas/', '/404.html', '/', '/about/']:
         if u in pages:
             txt = open(pages[u], encoding='utf-8').read()
             copy = re.sub(r'<script.*?</script>|<style.*?</style>', '', txt, flags=re.S)
             m = FORBIDDEN_SITE_TEXT.search(copy)
             if m: fails.append(f'{u}: operator location wording {m.group(0)!r}')
-            if u in (PRIV_URL, TERMS_URL, '/', '/about/', '/atlas/about/'):
+            if u in (PRIV_URL, TERMS_URL, '/', '/about/', '/atlas/about/', '/atlas/decisions/'):
                 m = FORBIDDEN_COMMONWORLD_COPY.search(copy)
                 if m: fails.append(f'{u}: Commonworld-authored copy mentions {m.group(0)!r}')
     for u, p in parsed.items():
@@ -988,6 +1097,8 @@ def main():
             fails.append(f"platforms.json {r['id']}: money_flow item without basis")
     fails += dataset_checks(parsed)
     fails += safety_report_checks(parsed)
+    fails += decisions_checks(parsed, pages, locs)
+    fails += markdown_twin_checks(pages)[0]
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)
     fails += a11y_checks(pages)

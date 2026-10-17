@@ -17,6 +17,7 @@ https://commonworld.one/atlas/categories/wiki/
 https://commonworld.one/atlas/categories/work/
 https://commonworld.one/atlas/categories/worlds/
 https://commonworld.one/atlas/closed/
+https://commonworld.one/atlas/decisions/
 https://commonworld.one/atlas/earn/
 https://commonworld.one/atlas/platforms/
 https://commonworld.one/atlas/platforms/1f916/

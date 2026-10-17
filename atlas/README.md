@@ -4,7 +4,7 @@ Source of https://commonworld.one/atlas/ — a verified catalog of platforms whe
 
 - `data/` — published Atlas data (only verified cards). Licence: CC BY 4.0, see `../LICENSE-DATA.md`.
 - `PROTOCOL.md` — how every card is verified (the brief our verifying agents follow).
-- `CURATION.md` — curation standards, including **Link safety**: every linked domain is checked daily against Google Safe Browsing (`tools/safebrowsing_check.py`, workflow "Atlas link safety"); a flagged domain's entry is removed and its page becomes a removed-entry stub (`data/removed.json`). The latest report is published at https://commonworld.one/atlas/safety.json and as `link_safety` on every record.
+- `CURATION.md` — curation standards, including **Link safety**: every linked domain is checked daily against Google Safe Browsing (`tools/safebrowsing_check.py`, workflow "Atlas link safety"); a flagged domain's entry is removed and its page becomes a removed-entry stub (`data/removed.json`). The latest report is published at https://commonworld.one/atlas/safety.json and as `link_safety` on every record. Every removal and return is published as a decision log at https://commonworld.one/atlas/decisions/ (Markdown twin `index.md`, JSON `/atlas/decisions.json`).
 - `CHANGELOG.md` — curated changes to the Atlas data and rules.
 - `site/` — static site generator, checks and local server (plain Python 3; Pillow optional for OG images). See `site/README.md`.
 - Homepage screenshots are **not** on `main`: they live on the orphan branch `atlas-screens` (`atlas/screens/<slug>.webp` + `manifest.json`). The build fetches that branch; without it the site builds with placeholders. Not CC BY, see `../LICENSE-DATA.md`.
