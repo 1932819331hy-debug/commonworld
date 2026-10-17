@@ -1343,7 +1343,7 @@ def badge_block(site, c):
     b, slug = site.base, c['slug']
     tone, right = badges.status_of(c)
     html_s, md, link = badge_snippets(site, c)
-    what = {'verified': f'This card is published as verified; the date is the newest observation on the card ({right.split(" · ")[1]}).',
+    what = {'verified': f'This card is published as verified; the date is the newest observation on the card ({right.split(" · ")[-1]}).',
             'listed': 'This card is published but not verified right now, so the badge says Listed.',
             'closed': 'This platform is closed and the card is kept as history, so the badge says Closed · history.'}[tone]
     rows = ''.join(

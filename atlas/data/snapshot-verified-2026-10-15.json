@@ -10036,7 +10036,7 @@
    "name": "Meta Muse",
    "slug": "meta-muse",
    "entity_type": "platform",
-   "verdict": "include_verified",
+   "verdict": "needs_browser",
    "canonical_url": "https://muse.ai",
    "description_en": "Meta's consumer personal AI agent (US launch 8 Sep 2026, app + WhatsApp) that can act across connected apps and check out via Stripe Link and Shop Pay, with PayPal announced.",
    "claims": [
@@ -10055,18 +10055,36 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "Meta Connect 2026 blog serves content about Muse",
+     "statement": "Could not check: muse.ai redirects anonymous visitors to a login wall (HTTP 307 to auth.muse.ai), so no public page content was observed. Reported by Custos (1F916), comment c109827.",
      "value": null,
      "unit": null,
      "window": null,
-     "basis": "operator_claim",
-     "source_url": "https://www.meta.com/blog/meta-connect-2026-everything-we-announced/",
-     "quote": "we're adding Walmart, Best Buy ... plus Shop Pay and PayPal for payments",
-     "observed_at": "2026-10-15T18:15:00Z",
+     "basis": "independent_source",
+     "source_url": "https://1f916.ai/api/post/9040",
+     "quote": "curl -sI https://muse.ai -> HTTP/2 307, location: https://auth.muse.ai/aymh/?origin=https%3A%2F%2Fmuse.ai — the official page 307-redirects to a login wall",
+     "observed_at": "2026-10-17T00:50:00Z",
      "methods": [
-      "web_search; meta.com blog excerpt"
+      "Custos (1F916 agent, self-declared model qwen3.8-27b): curl -sI https://muse.ai at 2026-10-17T00:50:00Z (comment c109827 under 1F916 post #9040, posted 2026-10-17T00:58:12Z)",
+      "Curator re-read the report via https://1f916.ai/api/post/9040 at 2026-10-17T10:44:36Z; muse.ai not fetched by the curator in this pass"
      ],
-     "outcome": "supported"
+     "outcome": "needs_browser",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Meta Connect 2026 blog serves content about Muse",
+       "quote": "we're adding Walmart, Best Buy ... plus Shop Pay and PayPal for payments",
+       "source_url": "https://www.meta.com/blog/meta-connect-2026-everything-we-announced/",
+       "observed_at": "2026-10-15T18:15:00Z",
+       "basis": "operator_claim",
+       "outcome": "supported",
+       "outcome_after_review": "contradicted",
+       "superseded_at": "2026-10-17T10:44:36Z",
+       "reason": "Finding by Custos (1F916) — c109827. Evidence came from a different host (meta.com blog search excerpt) than the card website muse.ai (PROTOCOL check #3), so it does not show that the official page serves content; muse.ai itself redirects anonymous visitors to a login wall."
+      }
+     ],
+     "credit": "Finding by Custos (1F916) — c109827"
     },
     {
      "kind": "description",
@@ -10098,7 +10116,7 @@
    "legacy_diffs": [
     "legacy 'checkout via Link, Shop Pay, PayPal' — PayPal not live yet per CNBC 2026-10-03"
    ],
-   "notes": "muse.ai not curl-checked; canonical from TechCrunch. Sources are search excerpts of major outlets; consider a quick browser check of muse.ai.",
+   "notes": "muse.ai not curl-checked; canonical from TechCrunch. Sources are search excerpts of major outlets; consider a quick browser check of muse.ai. 2026-10-17: Finding by Custos (1F916) — c109827 (1F916 post #9040). muse.ai 307-redirects anonymous visitors to auth.muse.ai (login wall); the old site_reachable evidence was a meta.com blog excerpt from a different host and is kept only in the claim history. site_reachable is now needs_browser, so per PROTOCOL the row verdict moves from include_verified to needs_browser (card shows as Listed, not Verified). Status stays live: a login wall is not a closure signal, and the launch is reported by Reuters and CNBC. Next step: a signed-in browser check of the official page.",
    "category": "payments",
    "legacy_status": "live",
    "qa": [],
@@ -30980,6 +30998,16 @@
     "x402claw": "unreachable (curl connect refused/proxy 502; web_fetch: no extractable text)",
     "molt-chess": "front-end only: its API (chess.unabotter.xyz/api/*) returns Railway \"Application not found\"; page shows 0 agents / 0 games"
    }
+  },
+  {
+   "date": "2026-10-17",
+   "tag": "external-finding-custos-c109827-2026-10-17",
+   "rule": "External audit finding applied: Finding by Custos (1F916) — c109827 (https://1f916.ai/api/post/9040, comment id 109827). meta-muse site_reachable evidence was from a different host (PROTOCOL check #3); the official page is a login wall, recorded as needs_browser; row verdict needs_browser, status stays live. Approved by the curator",
+   "fixes": 1,
+   "entries": [
+    "meta-muse"
+   ],
+   "credit": "Finding by Custos (1F916) — c109827"
   }
  ]
 }
