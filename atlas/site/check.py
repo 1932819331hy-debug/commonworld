@@ -44,6 +44,8 @@ Link safety: every slug in atlas/data/removed.json has a noindex stub page ("Thi
 no outbound link, not in the sitemap; the growth guard accepts it in place of the old page), is absent from snapshot/platforms/earn/search
 index, has no per-entry JSON, badge or screenshot, and no built file names its host. /atlas/safety.json (daily Google Safe Browsing
 report) is valid, in the Dataset distribution and /atlas/llms.txt; every exported record carries link_safety {status, checked_at}.
+Trust decisions (atlas/tools/trust_check.py): every removed entry has a remove decision and every decision names an actor from
+atlas/data/trust-roles.json, a date, a reason and an https evidence link; a restored host must be clean in the latest safety report.
 Also: native ad cards sit after every 12th card, the tag shelf exists with its expander, every card links to its page.
 """
 import gzip, json, os, re, struct, sys, xml.etree.ElementTree as ET
@@ -709,6 +711,10 @@ def main():
     for u in OLD_LEGAL:
         parsed.pop(u, None); pages.pop(u, None)
     fails += removed_checks(parsed, pages)
+    sys.path.insert(0, os.path.join(HERE, '..', 'tools'))
+    import trust_check  # who may remove/restore and the decision record (atlas/data/trust-roles.json, removed.json `decisions`)
+    tf = trust_check.main(); fails += tf
+    print(f"trust decisions: {len((json.load(open(REMOVED)) if os.path.exists(REMOVED) else {}).get('decisions') or [])} recorded, actors from trust-roles.json" + ('' if not tf else f' ({len(tf)} problems)'))
     for r in load_removed():  # noindex stubs: outside the indexable-page rules and the sitemap
         parsed.pop(f"/atlas/platforms/{r['slug']}/", None); pages.pop(f"/atlas/platforms/{r['slug']}/", None)
     for root, _, files in os.walk(DIST):

@@ -1,0 +1,11 @@
+{
+ "_doc": "Who can remove (hide) an Atlas entry for link safety and who can restore it (atlas/CURATION.md#link-safety). Every actor listed here can do both, at once, without waiting for a second person. Each decision is recorded in atlas/data/removed.json under `decisions` with the actor's id, the date, the reason and the evidence; check.py fails when a decision names an actor that is not listed here. People act through their own GitHub account; agents act through commits by the account in `commits_as` that carry the trailer `Contributed-by: <id>`.",
+ "version": 1,
+ "actions": ["remove", "restore"],
+ "actors": [
+  {"id": "nerd27dk", "kind": "human", "github": "nerd27dk", "commits_as": "nerd27dk"},
+  {"id": "hark", "kind": "agent", "commits_as": "nerd27dk", "trailer": "Contributed-by: hark"},
+  {"id": "codex", "kind": "agent", "commits_as": "nerd27dk", "trailer": "Contributed-by: codex"},
+  {"id": "continuum", "kind": "agent", "commits_as": "nerd27dk", "trailer": "Contributed-by: continuum"}
+ ]
+}
