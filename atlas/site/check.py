@@ -774,6 +774,38 @@ def decisions_checks(parsed, pages, locs):
         if href in [d.get('evidence') for d in decs] and not ({'nofollow', 'noopener'} <= set(rel.split())):
             fails.append(f'{u}: evidence link {href} lacks rel="nofollow noopener"')
     if 'href="/atlas/decisions/"' not in open(pages['/atlas/about/'], encoding='utf-8').read(): fails.append('/atlas/about/ does not link /atlas/decisions/')
+    # SEO and a11y, same bar as the other Atlas pages
+    if p.canon != ORIGIN + u: fails.append(f'{u}: canonical {p.canon}')
+    if not p.title.strip() or 'decision log' not in p.title.lower(): fails.append(f'{u}: title {p.title!r}')
+    if not (p.meta.get('description') or '').strip(): fails.append(f'{u}: no meta description')
+    if '/atlas/og/page-decisions.png' not in (p.meta.get('og:image') or '') and '/atlas/assets/og-atlas.png' not in (p.meta.get('og:image') or ''):
+        fails.append(f"{u}: og:image {p.meta.get('og:image')}")
+    if p.meta.get('twitter:card') != 'summary_large_image': fails.append(f'{u}: twitter:card')
+    lds = [json.loads(b) for b in p.ld]
+    if not any(x.get('@type') == 'BreadcrumbList' for x in lds): fails.append(f'{u}: no BreadcrumbList JSON-LD')
+    cp = next((x for x in lds if x.get('@type') == 'CollectionPage'), {})
+    ds = cp.get('mainEntity') or {}
+    if ds.get('@type') != 'Dataset': fails.append(f'{u}: CollectionPage.mainEntity is not a Dataset')
+    for k in ('name', 'description', 'url', 'license', 'creator', 'distribution'):
+        if not ds.get(k): fails.append(f'{u}: Dataset lacks {k}')
+    fmts = sorted(x.get('encodingFormat') for x in ds.get('distribution') or [])
+    if fmts != ['application/json', 'text/markdown']: fails.append(f'{u}: Dataset distribution formats {fmts}')
+    for x in ds.get('distribution') or []:
+        cu = x.get('contentUrl') or ''
+        if not cu.startswith(ORIGIN + '/') or not os.path.isfile(os.path.join(DIST, cu[len(ORIGIN) + 1:])): fails.append(f'{u}: Dataset download missing {cu}')
+    il = ds.get('hasPart') or {}
+    if il.get('@type') != 'ItemList' or il.get('numberOfItems') != len(decs) or len(il.get('itemListElement') or []) != len(decs):
+        fails.append(f'{u}: ItemList does not hold every decision')
+    if any(hh and hh in json.dumps(lds) for hh in hosts): fails.append(f'{u}: JSON-LD names a decision host')
+    sm = open(os.path.join(DIST, 'atlas', 'sitemap.xml'), encoding='utf-8').read()
+    m = re.search(r'<loc>' + re.escape(ORIGIN + u) + r'</loc><lastmod>([\d-]+)</lastmod>', sm)
+    if not m: fails.append(f'{u}: no sitemap entry with lastmod')
+    elif rows and m.group(1) != rows[0].get('on'): fails.append(f"{u}: sitemap lastmod {m.group(1)} != newest decision {rows[0].get('on')}")
+    if '<main id="main">' not in h: fails.append(f'{u}: no <main> landmark')
+    if '<table class="list decisions" aria-labelledby="log">' not in h or '<h2 id="log">' not in h: fails.append(f'{u}: table lacks its accessible name')
+    if h.count('<th scope="col">') < 7: fails.append(f'{u}: table headers lack scope="col"')
+    linked_from = [x for x, q in parsed.items() if x != u and any(t == 'a' and hr == u for t, hr, _ in q.links)]
+    if len(linked_from) < 10: fails.append(f'{u}: linked from only {len(linked_from)} pages (footer link expected)')
     idx = next((x for x in (json.loads(b) for b in parsed['/atlas/'].ld) if x.get('@type') == 'Dataset'), {})
     if ORIGIN + '/atlas/decisions.json' not in [x.get('contentUrl') for x in idx.get('distribution') or []]:
         fails.append('/atlas/: Dataset distribution lacks decisions.json')

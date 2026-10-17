@@ -295,7 +295,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
         og_img = site.abs(f'{b}/og/{name}.png?v={key[:10]}')
     head_ld = ''.join(jsonld(x) for x in ld)
     corr = cfg['site']['corrections_url']
-    foot_links = (f'<a href="{b}/platforms/">All entries A–Z</a><a href="{b}/categories/">Categories</a><a href="{CW_ABOUT}">About Commonworld</a><a href="{b}/about/">How the Atlas works</a><a href="{b}/badge/">Badges</a>'
+    foot_links = (f'<a href="{b}/platforms/">All entries A–Z</a><a href="{b}/categories/">Categories</a><a href="{CW_ABOUT}">About Commonworld</a><a href="{b}/about/">How the Atlas works</a><a href="{DECISIONS_PATH}">Decision log</a><a href="{b}/badge/">Badges</a>'
                   f'<a href="{API_DOCS}">API</a><a href="{b}/data/snapshot.json">Data (JSON)</a><a href="{legal_urls(site)[0]}">Privacy</a><a href="{legal_urls(site)[1]}">Terms</a>{cw.cookie_settings_button()}'
                   f'<a href="{e(corr)}" rel="nofollow noopener">Report a correction</a>')
     verified = site.latest.strftime('%Y-%m-%d') if site.latest else ''
@@ -1480,7 +1480,7 @@ def safety_doc(site):
             'method': 'Every domain linked from the published Atlas data is checked daily against Google Safe Browsing. clean = no unsafe content found; '
                       'flagged = an unsafe-content flag; no_data = Safe Browsing has no data for the domain. A flagged domain is removed from the Atlas and '
                       'its entry page becomes a short removed-entry note. Each entry in the JSON exports carries link_safety {status, checked_at} for its official URL.',
-            'policy': site.abs(f'{site.base}/about/#link-safety'), 'licence': site.cfg.get('data_licence') or 'not yet specified',
+            'policy': site.abs(f'{site.base}/about/#link-safety'), 'decisions': site.abs(DECISIONS_JSON), 'licence': site.cfg.get('data_licence') or 'not yet specified',
             'run_at': rep_.get('run_at'),
             'summary': {'hosts': len(hosts), 'clean': cnt['clean'], 'flagged': cnt['flagged'], 'no_data': cnt['no_data'], 'removed_entries': len(site.removed)},
             'hosts': hosts}
@@ -1490,7 +1490,7 @@ def build_removed_stub(site, slug):
     """Neutral page for a removed entry: no name, no outbound link, noindex, not in the sitemap."""
     b = site.base
     body = f"""{cw.hero('Atlas', 'Entry removed', '<p>This entry was removed from the Atlas after a safety check.</p>'
-                      f'<p>Every linked domain is checked daily; see <a href="{b}/about/#link-safety">link safety</a>.</p>'
+                      f'<p>Every linked domain is checked daily; see <a href="{b}/about/#link-safety">link safety</a> and the <a href="{DECISIONS_PATH}">decision log</a>.</p>'
                       f'<p class="actions"><a class="cw-btn cw-btn-primary" href="{b}/">Go to the Atlas</a> <a class="cw-btn" href="{b}/platforms/">All entries</a></p>', small=True)}"""
     return page(site, path=f'{b}/platforms/{slug}/', title='Entry removed | Commonworld Atlas',
                 description='This entry was removed from the Atlas after a safety check.', body=body, active='', noindex=True)
@@ -1548,7 +1548,7 @@ def build_decisions(site):
                    f'<td><a href="{b}/platforms/{e(d.get("slug") or "")}/"><code>{e(d.get("slug") or "")}</code></a></td>'
                    f'<td><code>{e(defang(d.get("host")))}</code></td><td><code>{e(d.get("by") or "")}</code></td>'
                    f'<td>{e(d.get("reason") or "")}</td><td>{evh}</td></tr>')
-    table = ('<div class="table-wrap"><table class="list decisions"><thead><tr><th scope="col">Date</th><th scope="col">Action</th>'
+    table = ('<div class="table-wrap"><table class="list decisions" aria-labelledby="log"><thead><tr><th scope="col">Date</th><th scope="col">Action</th>'
              '<th scope="col">Entry ID</th><th scope="col">Domain</th><th scope="col">By</th><th scope="col">Reason</th><th scope="col">Evidence</th></tr></thead>'
              f'<tbody>{"".join(trs)}</tbody></table></div>') if trs else '<p>No decisions recorded yet.</p>'
     who = ', '.join(f'<code>{e(a["id"])}</code>' for a in actors)
@@ -1572,8 +1572,32 @@ def build_decisions(site):
                 og=og_generic(site, 'page-decisions', 'Link safety decision log',
                               'Every removal and return in the Atlas is a public, dated decision with who acted, why and an evidence link.',
                               [('decisions', 'olive'), (f'{len(rows)} recorded', None), ('open record', None)], kicker='ABOUT THE ATLAS'),
-                ld=[crumb_ld, {'@context': 'https://schema.org', '@type': 'WebPage', 'name': 'Commonworld Atlas link safety decision log',
-                               'url': site.abs(DECISIONS_PATH), 'isPartOf': {'@type': 'WebSite', 'name': 'Commonworld', 'url': site.abs('/')}}])
+                ld=[crumb_ld, decisions_ld(site, rows)])
+
+
+def decisions_ld(site, rows):
+    """CollectionPage whose mainEntity is a Dataset (the decision log, with JSON and Markdown downloads) holding an ItemList of
+    the decisions, newest first. No item links to a removed entry's page or host."""
+    lic = site.cfg.get('data_licence')
+    org = {'@type': 'Organization', 'name': 'Commonworld', 'url': site.abs('/')}
+    items = [{'@type': 'ListItem', 'position': i + 1,
+              'name': f"{d.get('on')} · {ACTION_WORD.get(d.get('action'), d.get('action'))} · {d.get('slug')}",
+              'description': f"By {d.get('by')}: {d.get('reason')}"} for i, d in enumerate(rows)]
+    ds = {'@type': 'Dataset', 'name': 'Commonworld Atlas link safety decision log', 'description': DECISIONS_LEAD,
+          'url': site.abs(DECISIONS_PATH), 'sameAs': f'{REPO_URL}/blob/main/atlas/data/removed.json', 'creator': org, 'publisher': org,
+          'isAccessibleForFree': True, 'inLanguage': 'en', 'keywords': ['link safety', 'Google Safe Browsing', 'trust decisions', 'AI agents', 'open data'],
+          'dateModified': rows[0].get('on') if rows else None, 'size': f'{len(rows)} decision' + ('' if len(rows) == 1 else 's'),
+          'variableMeasured': ['date', 'action (remove or restore)', 'entry ID', 'domain (defanged)', 'actor ID', 'reason', 'evidence link'],
+          'distribution': [{'@type': 'DataDownload', 'name': 'Decision log with trust roles (decisions.json)', 'encodingFormat': 'application/json', 'contentUrl': site.abs(DECISIONS_JSON)},
+                           {'@type': 'DataDownload', 'name': 'Decision log (Markdown)', 'encodingFormat': 'text/markdown', 'contentUrl': site.abs(DECISIONS_MD)}],
+          'hasPart': {'@type': 'ItemList', 'name': 'Decisions, newest first', 'itemListOrder': 'https://schema.org/ItemListOrderDescending',
+                      'numberOfItems': len(items), 'itemListElement': items}}
+    if lic:
+        ds['license'] = LICENCE_URLS.get(lic, f'{REPO_URL}/blob/main/LICENSE-DATA.md')
+    ds = {k: v for k, v in ds.items() if v is not None}
+    return {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': 'Link safety decision log', 'url': site.abs(DECISIONS_PATH),
+            'isPartOf': {'@type': 'WebSite', 'name': 'Commonworld', 'url': site.abs('/')}, 'about': {'@type': 'Thing', 'name': 'Link safety'},
+            'mainEntity': ds}
 
 
 def build_decisions_md(site):
