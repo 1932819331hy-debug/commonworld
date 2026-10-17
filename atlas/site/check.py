@@ -551,6 +551,39 @@ def _share_expectations():
     return sum(1 for c in snap if c.get('status') == 'live'), exp
 
 
+def dataset_checks(parsed):
+    """schema.org Dataset JSON-LD on /atlas/ and each category page (Google Dataset Search): name, description, url, license,
+    creator; every DataDownload contentUrl exists in dist. /atlas/llms.txt exists and links the root llms.txt."""
+    fails = []
+    snap = json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))
+    targets = ['/atlas/'] + [u for u in parsed if re.fullmatch(r'/atlas/categories/[a-z0-9-]+/', u)]
+    for u in targets:
+        ds = [x for x in (json.loads(b) for b in parsed[u].ld) if x.get('@type') == 'Dataset']
+        if len(ds) != 1: fails.append(f'{u}: expected 1 Dataset JSON-LD, found {len(ds)}'); continue
+        d = ds[0]
+        for k in ('name', 'description', 'url', 'license', 'creator', 'distribution', 'dateModified'):
+            if not d.get(k): fails.append(f'{u}: Dataset lacks {k}')
+        if d.get('url') != ORIGIN + u: fails.append(f"{u}: Dataset url {d.get('url')}")
+        if d.get('isAccessibleForFree') is not True: fails.append(f'{u}: Dataset isAccessibleForFree != true')
+        for dl in d.get('distribution') or []:
+            cu = dl.get('contentUrl') or ''
+            if not cu.startswith(ORIGIN + '/') or not os.path.isfile(os.path.join(DIST, cu[len(ORIGIN) + 1:])):
+                fails.append(f'{u}: Dataset download missing in dist: {cu}')
+            if dl.get('encodingFormat') not in ('application/json', 'text/plain'): fails.append(f'{u}: odd encodingFormat {dl.get("encodingFormat")}')
+    idx = next((x for x in (json.loads(b) for b in parsed['/atlas/'].ld) if x.get('@type') == 'Dataset'), {})
+    if f"{len(snap['platforms'])} entries" not in idx.get('description', ''): fails.append('/atlas/: Dataset description lacks the live entry count')
+    fp = os.path.join(DIST, 'atlas', 'llms.txt')
+    if not os.path.isfile(fp): fails.append('missing /atlas/llms.txt')
+    else:
+        t = open(fp, encoding='utf-8').read()
+        for need in (ORIGIN + '/llms.txt', ORIGIN + '/atlas/platforms.json', f"{len(snap['platforms'])} entries"):
+            if need not in t: fails.append(f'/atlas/llms.txt lacks {need!r}')
+        for path in re.findall(re.escape(ORIGIN) + r'(/atlas/categories/[a-z0-9-]+\.json)', t):
+            if not os.path.isfile(os.path.join(DIST, path.lstrip('/'))): fails.append(f'/atlas/llms.txt: broken {path}')
+    if ORIGIN + '/atlas/llms.txt' not in open(os.path.join(DIST, 'llms.txt'), encoding='utf-8').read(): fails.append('/llms.txt does not link /atlas/llms.txt')
+    return fails
+
+
 def main():
     global SHARE_LIVE, SHARE_ENTRY
     SHARE_LIVE, SHARE_ENTRY = _share_expectations()
@@ -856,6 +889,7 @@ def main():
     for r in json.load(open(os.path.join(DIST, 'atlas', 'platforms.json')))['platforms']:
         if any('basis' not in f for f in r.get('money_flow') or []):
             fails.append(f"platforms.json {r['id']}: money_flow item without basis")
+    fails += dataset_checks(parsed)
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)
     fails += a11y_checks(pages)

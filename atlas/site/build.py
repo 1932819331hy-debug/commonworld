@@ -6,7 +6,7 @@
 
 Output (default atlas/site/dist/) is a plain static tree with clean URLs as directories:
   /atlas/index.html, /atlas/platforms/, /atlas/platforms/<slug>/, /atlas/categories/, /atlas/categories/<cat>/,
-  /atlas/closed/, /atlas/earn/ (+ /atlas/earn.json), /atlas/about/, /atlas/badge/ (+ /atlas/badge/<slug>.svg, <slug>-dark.svg), /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/sitemap.xml, /atlas/assets/*,
+  /atlas/closed/, /atlas/earn/ (+ /atlas/earn.json), /atlas/about/, /atlas/badge/ (+ /atlas/badge/<slug>.svg, <slug>-dark.svg), /atlas/data/snapshot.json, /atlas/platforms.json (+ /atlas/platforms/<slug>.json), /atlas/llms.txt, /atlas/sitemap.xml, /atlas/assets/*,
   /privacy/, /terms/ (site-wide Commonworld legal pages; /atlas/privacy|terms/ are noindex redirect stubs + _redirects 301s),
   / (Commonworld landing), /404.html, /robots.txt, /llms.txt, /llms-full.txt, /sitemap.xml, /_headers, /_redirects
   /api/v1/ (static API: index.json, openapi.json, changelog, schemas/, atlas/{index,platforms,earn}.json, atlas/platforms|categories/<id>.json; docs /atlas/api/)
@@ -482,6 +482,36 @@ def cards_with_ads(site, cs, data=False):
     return ''.join(out)
 
 
+LICENCE_URLS = {'CC BY 4.0': 'https://creativecommons.org/licenses/by/4.0/'}  # data licence (LICENSE-DATA.md) -> canonical URL
+
+
+def dataset_ld(site, cards, *, name, description, url, downloads, keywords):
+    """schema.org Dataset (Google Dataset Search). downloads: [(path, encodingFormat, name)]; every path is written by this build
+    (check.py verifies each contentUrl exists in dist)."""
+    lic = site.cfg.get('data_licence')
+    obs = [t for c in cards for t in (parse_time(x.get('observed_at')) for x in c.get('claims', [])) if t]
+    lm = max((c['_verified'] for c in cards if c['_verified']), default=None)
+    live = sum(1 for c in cards if c['status'] == 'live')
+    d = {'@context': 'https://schema.org', '@type': 'Dataset', 'name': name, 'description': description, 'url': site.abs(url),
+         'sameAs': REPO_URL, 'creator': {'@type': 'Organization', 'name': 'Commonworld', 'url': site.abs('/')},
+         'publisher': {'@type': 'Organization', 'name': 'Commonworld', 'url': site.abs('/')},
+         'isAccessibleForFree': True, 'inLanguage': 'en', 'keywords': keywords,
+         'dateModified': lm.strftime('%Y-%m-%d') if lm else None,
+         'variableMeasured': ['category', 'status (live or closed)', 'entity type', 'verified claims (statement, value, unit, basis, outcome)',
+                              'source URL of each claim', 'observation date of each claim', 'money flow figures'],
+         'size': f'{len(cards)} entries ({live} live, {len(cards) - live} closed)',
+         'distribution': [{'@type': 'DataDownload', 'name': n, 'encodingFormat': f, 'contentUrl': site.abs(path)} for path, f, n in downloads]}
+    if obs:
+        d['temporalCoverage'] = f"{min(obs).strftime('%Y-%m-%d')}/{max(obs).strftime('%Y-%m-%d')}"
+    if lic:
+        d['license'] = LICENCE_URLS.get(lic, f'{REPO_URL}/blob/main/LICENSE-DATA.md')
+    return {k: v for k, v in d.items() if v is not None}
+
+
+DATASET_KEYWORDS = ['AI agents', 'agent platforms', 'agent economy', 'agent social networks', 'agent marketplaces', 'agent payments', 'x402',
+                    'MCP', 'agent registries', 'verified catalog', 'open data']
+
+
 def item_list_ld(site, cards, name):
     return {'@type': 'ItemList', 'name': name, 'numberOfItems': len(cards),
             'itemListElement': [{'@type': 'ListItem', 'position': i + 1, 'url': site.abs(c['_url'])} for i, c in enumerate(cards)]}
@@ -561,7 +591,17 @@ def build_index(site):
           {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': 'Atlas of Agent Platforms', 'url': site.abs(f'{b}/'),
            'description': 'Verified catalog of AI-agent platforms.', 'dateModified': site.latest.strftime('%Y-%m-%d') if site.latest else None,
            'mainEntity': {'@type': 'ItemList', 'name': 'Atlas categories', 'numberOfItems': len(site.cats), 'itemListElement': [
-               {'@type': 'ListItem', 'position': i + 1, 'name': CAT_LABEL[k], 'url': site.abs(f'{b}/categories/{k}/')} for i, k in enumerate(site.cats)]}}]
+               {'@type': 'ListItem', 'position': i + 1, 'name': CAT_LABEL[k], 'url': site.abs(f'{b}/categories/{k}/')} for i, k in enumerate(site.cats)]}},
+          dataset_ld(site, cards, name='Commonworld Atlas', url=f'{b}/', keywords=DATASET_KEYWORDS,
+                     description=f'Verified map of AI-agent platforms: social networks, work and bounty boards, payments, research venues, worlds, '
+                                 f'registries and more ({n} entries, {live} live, {len(site.cats)} categories). Every entry has a source link and a check date '
+                                 f'for each fact; closed platforms are kept as history.',
+                     downloads=[(f'{b}/data/snapshot.json', 'application/json', 'Full published dataset (snapshot.json)'),
+                                (f'{b}/platforms.json', 'application/json', 'All entries with stable fields (platforms.json)'),
+                                (f'{b}/earn.json', 'application/json', 'Where agents get paid: sourced money figures (earn.json)'),
+                                (api_v1.API_BASE + '/atlas/platforms.json', 'application/json', 'API v1: all entries'),
+                                (f'{b}/llms.txt', 'text/plain', 'Atlas guide for AI agents (llms.txt)'),
+                                ('/llms-full.txt', 'text/plain', 'One line per entry (llms-full.txt)')])]
     return page(site, path=f'{b}/', title='Atlas of Agent Platforms: verified catalog | Commonworld',
                 description=f'{n} places where AI agents talk, work, get paid, compete and publish research, each checked against its own sources, with dated numbers you can trace.',
                 body=body, active='index', ld=ld, index_search=True,
@@ -741,7 +781,12 @@ def build_category(site, k):
 <div class="cw-grid">{cards_with_ads(site, cs)}</div>"""
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': f'{CAT_LABEL[k]} in the Commonworld Atlas',
                      'url': site.abs(f'{b}/categories/{k}/'), 'description': CAT_DESC[k], 'inLanguage': 'en',
-                     'mainEntity': item_list_ld(site, cs, CAT_LABEL[k])}]
+                     'mainEntity': item_list_ld(site, cs, CAT_LABEL[k])},
+          dataset_ld(site, cs, name=f'Commonworld Atlas: {CAT_LABEL[k]}', url=f'{b}/categories/{k}/', keywords=DATASET_KEYWORDS + [CAT_LABEL[k]],
+                     description=f'{CAT_DESC[k]} {len(cs)} entries ({live} live) in the Commonworld Atlas, a verified map of AI-agent platforms. '
+                                 f'Every entry has a source link and a check date for each fact; closed platforms are kept as history.',
+                     downloads=[(f'{b}/categories/{k}.json', 'application/json', f'{CAT_LABEL[k]} entries (JSON)'),
+                                (f'{api_v1.API_BASE}/atlas/categories/{k}.json', 'application/json', f'API v1: {CAT_LABEL[k]} entries')])]
     return page(site, path=f'{b}/categories/{k}/', title=fit_title(f'{CAT_LABEL[k]}: {len(cs)} verified AI-agent entries | Commonworld Atlas',
                                                           f'{CAT_LABEL[k]}: {len(cs)} verified entries | Commonworld Atlas',
                                                           f'{CAT_SHORT[k]}: {len(cs)} verified entries | Commonworld Atlas'),
@@ -1033,7 +1078,7 @@ def build_about(site):
 <p>Most cards show a dated screenshot of the platform's homepage, so you can recognise the site at a glance. Each one is a single screen of the public homepage, taken without logging in, and its caption gives the capture date and the address it came from. The images are copies stored on this site, so your browser never contacts the platform when you look at one. A closed platform keeps its last screenshot as part of its history. When a capture fails or shows nothing useful (an error, a challenge page, a blank screen), the card shows no preview rather than a bad one.</p>
 <p>The screenshots show third-party websites. Their content remains the property of the respective site owners and is <b>not</b> licensed under CC BY 4.0 (nor MIT). They are shown to identify each catalogued site at a stated date. A homepage can incidentally show public posts, usernames or avatars of that site's users. Site owners, and people who appear in a screenshot, can ask for it to be replaced or removed via the <a href="{e(site.cfg['site']['corrections_url'])}" rel="nofollow noopener">corrections link</a>; we act on such requests. In the JSON files the <code>preview</code> field carries the image URLs, the capture time and this rights note.</p>
 <h2 id="agents">For agents</h2>
-<p>AI agents and other programs can read the Atlas directly: <a href="/llms.txt">/llms.txt</a> is a short map of the site in the llms.txt format (with <a href="/llms-full.txt">/llms-full.txt</a>, one line per entry), and <a href="{b}/platforms.json">{b}/platforms.json</a> lists every published entry with stable fields (ID, category, status, summary, money flow, last verified date, claim count). Each entry is also available as <code>{b}/platforms/&lt;id&gt;.json</code>. All of it is generated from the same data as the cards{(" and published under " + e(lic)) if lic else ""}. The same data is also served as a versioned static API at <a href="{api_v1.API_BASE}/index.json">{api_v1.API_BASE}/</a>, with an OpenAPI description and JSON Schemas; see <a href="{API_DOCS}">the API documentation</a>.</p>
+<p>AI agents and other programs can read the Atlas directly: <a href="/llms.txt">/llms.txt</a> is a short map of the site in the llms.txt format (with <a href="/llms-full.txt">/llms-full.txt</a>, one line per entry, and <a href="{b}/llms.txt">{b}/llms.txt</a>, a short guide to the Atlas data with one JSON file per category), and <a href="{b}/platforms.json">{b}/platforms.json</a> lists every published entry with stable fields (ID, category, status, summary, money flow, last verified date, claim count). Each entry is also available as <code>{b}/platforms/&lt;id&gt;.json</code>. All of it is generated from the same data as the cards{(" and published under " + e(lic)) if lic else ""}. The same data is also served as a versioned static API at <a href="{api_v1.API_BASE}/index.json">{api_v1.API_BASE}/</a>, with an OpenAPI description and JSON Schemas; see <a href="{API_DOCS}">the API documentation</a>.</p>
 <h2 id="navigation">Reading the site</h2>
 <p>On a wide screen the <i>Hide sidebar</i> button at the top left folds the left menu away so the catalog and tables use the full width; <i>Show sidebar</i> brings it back. The choice is remembered on this device only (browser local storage, listed in the <a href="{legal_urls(site)[0]}">Privacy Policy</a>). On phones and tablets the menu opens as a drawer from the menu button, as before. Light and dark themes switch with the sun/moon button.</p>
 <h2 id="corrections">Report a correction</h2>
@@ -1551,7 +1596,7 @@ def write_github_mirror(out, b):
 
 
 def build_agent_files(site, write):
-    """/llms.txt, /llms-full.txt, /atlas/platforms.json, /atlas/platforms/<slug>.json (not in sitemaps)."""
+    """/llms.txt, /atlas/llms.txt, /llms-full.txt, /atlas/platforms.json, /atlas/platforms/<slug>.json (not in sitemaps)."""
     b, cfg = site.base, site.cfg
     sc = cfg['site']
     lic = cfg.get('data_licence') or 'not yet specified'
@@ -1599,6 +1644,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 ## Atlas
 
 - [Atlas home]({A(f'{b}/')}): the catalog of agent platforms, searchable and filterable
+- [Atlas llms.txt]({A(f'{b}/llms.txt')}): short guide to the Atlas data for agents (counts, category JSON endpoints)
 - [All entries A-Z]({A(f'{b}/platforms/')}): every published entry
 - [Closed history]({A(f'{b}/closed/')}): platforms that shut down
 - [Where agents get paid]({A(f'{b}/earn/')}): live platforms with a sourced money figure, grouped by unit (never converted); JSON: {A(f'{b}/earn.json')}
@@ -1651,6 +1697,31 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - Contact: {gm}
 """
     write('/llms.txt', txt)
+    cat_json = '\n'.join(f'- {CAT_LABEL[k]}: {len(site.by_cat[k])} entries ({sum(1 for c in site.by_cat[k] if c["status"] == "live")} live): {A(f"{b}/categories/{k}.json")}' for k in site.cats)
+    atxt = f"""# Commonworld Atlas
+
+> Verified map of AI-agent platforms: {len(recs)} entries ({live} live, {len(recs) - live} closed and kept as history) in {len(site.cats)} categories. Every fact on a card has a source link and a check date. Newest check: {site.latest.strftime('%Y-%m-%d') if site.latest else 'n/a'}.
+
+- Atlas home: {A(f'{b}/')}
+- How the Atlas works: {A(f'{b}/about/')}
+- Site-wide guide for agents (full list of files, mirrors, licence): {A('/llms.txt')}
+
+## Data (JSON, no key needed)
+
+- All entries: {A(f'{b}/platforms.json')}
+- Full published dataset: {A(f'{b}/data/snapshot.json')}
+- Where agents get paid: {A(f'{b}/earn.json')}
+- One line per entry: {A('/llms-full.txt')}
+- Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
+- Per entry: take json_url from platforms.json; never construct an ID
+
+## Categories (JSON)
+
+{cat_json}
+
+Data licence: {lic}. Please credit "Commonworld Atlas" with a link to {A(f'{b}/')}.
+"""
+    write(f'{b}/llms.txt', atxt)
     lines = [f'# Commonworld Atlas: all {len(recs)} published entries',
              f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '',
              f"Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}",
@@ -1968,6 +2039,9 @@ def main():
   Access-Control-Allow-Origin: *
 /api/v1/CHANGELOG.md
   Content-Type: text/markdown; charset=utf-8
+{b}/llms.txt
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
 /llms.txt
   Access-Control-Allow-Origin: *
   Content-Type: text/plain; charset=utf-8

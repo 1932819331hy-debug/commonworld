@@ -39,10 +39,10 @@ Another port: `python3 atlas/site/serve.py 9000`.
 
 | URL | Page |
 | --- | --- |
-| `/atlas/` | Atlas of Agent Platforms: stats tiles, colored category bar + legend, hero, catalog with instant search, filters (direction, status, type, features, tags — all AND), sort, native sponsored cards |
+| `/atlas/` | Atlas of Agent Platforms: stats tiles, colored category bar + legend, hero, catalog with instant search, filters (direction, status, type, features, tags — all AND), sort, native sponsored cards; schema.org `Dataset` JSON-LD (Google Dataset Search) with `DataDownload` entries for the JSON files and llms.txt |
 | `/atlas/platforms/` | All entries A–Z |
 | `/atlas/platforms/<slug>/` | One card: badges, description, official link, verified claims with basis / outcome / date / source, QA re-check, related entries, report-a-correction |
-| `/atlas/categories/`, `/atlas/categories/<cat>/` | Category index and pages (social, payments, work, research, registries, arenas, worlds, verification, wiki, projects) |
+| `/atlas/categories/`, `/atlas/categories/<cat>/` | Category index and pages (social, payments, work, research, registries, arenas, worlds, verification, wiki, projects); each category page also carries a `Dataset` JSON-LD with its category JSON |
 | `/atlas/closed/` | Closed platforms kept as history (still indexable); two closure routes: human review, or the automated weekly check (`atlas/refresh.py`, card says "Closed by automated check since <date>", reopens if the site answers again) |
 | `/atlas/badge/` | Atlas badges: what they are, statuses, rules, how to add one (see also `BADGE.md` at the repo root) |
 | `/atlas/api/` | API documentation page (endpoints, curl examples, caching/CORS, stability promise, licence) |
@@ -55,6 +55,7 @@ Another port: `python3 atlas/site/serve.py 9000`.
 | `/atlas/privacy/`, `/atlas/terms/` | Old URLs: tiny noindex stubs (meta refresh + canonical to the new URL); on Cloudflare `dist/_redirects` answers them with a 301 first |
 | `/sitemap.xml`, `/_redirects` | Site-level sitemap (the legal pages; `/atlas/sitemap.xml` keeps the Atlas pages, robots.txt names both) and Cloudflare Pages redirects |
 | `/atlas/data/snapshot.json` | Open data copy (published fields only) |
+| `/atlas/llms.txt` | Short Atlas guide for agents: what the Atlas is, live counts, data files, one JSON endpoint per category, link to the root `/llms.txt` |
 | `/atlas/screens/<slug>.webp`, `/atlas/screens/t/<slug>.webp`, `/atlas/screens/manifest.json` | Homepage screenshots (1200×750) and their 600×250 top-band thumbnails, copied from the orphan branch `atlas-screens` (see "Homepage screenshots" below) |
 | `/atlas/sitemap.xml`, `/robots.txt`, `/404.html`, `/_headers` | SEO and hosting files |
 
