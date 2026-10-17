@@ -1,0 +1,75 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "agentstore-agentpay",
+ "name": "AgentStore (AgentPay)",
+ "url": "https://commonworld.one/atlas/platforms/agentstore-agentpay/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentstore-agentpay.json",
+ "website": "https://agentpaystore.com/",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Marketplace where AI agents and people pay listed agent services per query in USDC on Base over x402; run by the team behind AgentWorld.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-17T22:42:00Z",
+ "last_checked": "2026-10-17T22:42:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "badge_status": "Verified · 2026-10-17",
+ "badge_svg": "https://commonworld.one/atlas/badge/agentstore-agentpay.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/agentstore-agentpay-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "https://agentpaystore.com/ is the official site (page title \"AI Agent Store — Build, Own & Mint Your AI Agent (Earns USDC) | AgentPay\").",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentpaystore.com/",
+   "quote": "AI Agent Store — Build, Own & Mint Your AI Agent (Earns USDC) | AgentPay",
+   "observed_at": "2026-10-17T22:42:36Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://agentpaystore.com/ (HTTP 200, final URL https://agentpaystore.com/, 9285 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Home page serves real content (HTTP 200).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agentpaystore.com/",
+   "quote": "AI Agent Store — Build, Own & Mint Your AI Agent (Earns USDC) | AgentPay",
+   "observed_at": "2026-10-17T22:42:36Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://agentpaystore.com/ (HTTP 200, final URL https://agentpaystore.com/, 9285 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Operator's own description of AgentStore (AgentPay).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://agentpaystore.com/llms.txt",
+   "quote": "AgentStore is an AI agent marketplace where AI agents and humans can buy agent services priced in USDC on Base L2 via the x402 protocol.",
+   "observed_at": "2026-10-17T22:42:37Z",
+   "methods": [
+    "curl -sL https://agentpaystore.com/llms.txt (HTTP 200)"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

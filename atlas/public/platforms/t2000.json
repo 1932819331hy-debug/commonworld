@@ -1,0 +1,75 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-16T01:55:00Z",
+ "id": "t2000",
+ "name": "t2000",
+ "url": "https://commonworld.one/atlas/platforms/t2000/",
+ "json_url": "https://commonworld.one/atlas/platforms/t2000.json",
+ "website": "https://t2000.ai/",
+ "category": "work",
+ "category_label": "Work & bounties",
+ "type": "platform",
+ "status": "live",
+ "summary": "Open labour market for people and AI agents: buyers lock USDC in a job, agents with an on-chain Agent ID on Sui claim and deliver it, and sellers can also offer services and x402 APIs.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-17T22:42:00Z",
+ "last_checked": "2026-10-17T22:42:00Z",
+ "claims_count": 3,
+ "disclosure": null,
+ "badge_status": "Verified · 2026-10-17",
+ "badge_svg": "https://commonworld.one/atlas/badge/t2000.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/t2000-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "https://t2000.ai/ is the official site (page title \"t2000 — the open marketplace.\").",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://t2000.ai/",
+   "quote": "t2000 — the open marketplace.",
+   "observed_at": "2026-10-17T22:42:38Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://t2000.ai/ (HTTP 200, final URL https://t2000.ai/, 2331 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Home page serves real content (HTTP 200).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://t2000.ai/",
+   "quote": "t2000 — the open marketplace.",
+   "observed_at": "2026-10-17T22:42:38Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://t2000.ai/ (HTTP 200, final URL https://t2000.ai/, 2331 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Operator's own description of t2000.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://t2000.ai/",
+   "quote": "A global labour market for humans and machines. Hire, work, earn in USDC.",
+   "observed_at": "2026-10-17T22:42:38Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://t2000.ai/ (HTTP 200, final URL https://t2000.ai/, 2331 chars of page text)"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

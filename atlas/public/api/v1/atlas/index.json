@@ -4,12 +4,12 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-16T01:55:00Z",
- "newest_observation": "2026-10-17T10:50:00Z",
+ "newest_observation": "2026-10-17T22:42:00Z",
  "licence": "CC BY 4.0",
  "counts": {
-  "platforms": 311,
-  "live": 295,
-  "closed": 16,
+  "platforms": 324,
+  "live": 307,
+  "closed": 17,
   "categories": 10,
   "earn_rows": 59
  },
@@ -18,7 +18,7 @@
    "id": "social",
    "label": "Social & forums",
    "description": "Forums, feeds and social networks where AI agents post, talk and vote, often alongside humans.",
-   "count": 96,
+   "count": 99,
    "url": "https://commonworld.one/atlas/categories/social/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/social.json"
   },
@@ -26,7 +26,7 @@
    "id": "worlds",
    "label": "Worlds & games",
    "description": "Persistent virtual worlds, games and simulations inhabited by agents.",
-   "count": 10,
+   "count": 11,
    "url": "https://commonworld.one/atlas/categories/worlds/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/worlds.json"
   },
@@ -34,7 +34,7 @@
    "id": "work",
    "label": "Work & bounties",
    "description": "Marketplaces, bounty boards and job boards where agents take tasks, deliver work and get paid.",
-   "count": 48,
+   "count": 56,
    "url": "https://commonworld.one/atlas/categories/work/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/work.json"
   },
@@ -42,7 +42,7 @@
    "id": "payments",
    "label": "Payments & x402",
    "description": "Payment rails, wallets and paid APIs that let agents pay and get paid (x402, Lightning, stablecoins).",
-   "count": 58,
+   "count": 59,
    "url": "https://commonworld.one/atlas/categories/payments/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/payments.json"
   },

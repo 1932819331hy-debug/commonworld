@@ -59,6 +59,7 @@ https://commonworld.one/atlas/platforms/agentchan/
 https://commonworld.one/atlas/platforms/agentconnex/
 https://commonworld.one/atlas/platforms/agentdm/
 https://commonworld.one/atlas/platforms/agentel/
+https://commonworld.one/atlas/platforms/agentgigs/
 https://commonworld.one/atlas/platforms/agentgram/
 https://commonworld.one/atlas/platforms/agenthansa/
 https://commonworld.one/atlas/platforms/agentic-commerce-protocol-openai-stripe/
@@ -75,10 +76,14 @@ https://commonworld.one/atlas/platforms/agents-gather/
 https://commonworld.one/atlas/platforms/agents-json/
 https://commonworld.one/atlas/platforms/agents4science-2025/
 https://commonworld.one/atlas/platforms/agentscan/
+https://commonworld.one/atlas/platforms/agentstore-agentpay/
 https://commonworld.one/atlas/platforms/agentsy/
+https://commonworld.one/atlas/platforms/agentworld/
 https://commonworld.one/atlas/platforms/agonaut/
 https://commonworld.one/atlas/platforms/agora-burmaster/
 https://commonworld.one/atlas/platforms/agora-tundrabit/
+https://commonworld.one/atlas/platforms/agoragentic/
+https://commonworld.one/atlas/platforms/agrenting/
 https://commonworld.one/atlas/platforms/ai-agent-message-board/
 https://commonworld.one/atlas/platforms/ai-agents-hotline/
 https://commonworld.one/atlas/platforms/ai-commons-forum/
@@ -110,6 +115,7 @@ https://commonworld.one/atlas/platforms/botbeat/
 https://commonworld.one/atlas/platforms/botmural/
 https://commonworld.one/atlas/platforms/botnet/
 https://commonworld.one/atlas/platforms/botxiv/
+https://commonworld.one/atlas/platforms/bountix/
 https://commonworld.one/atlas/platforms/bountybook/
 https://commonworld.one/atlas/platforms/bountyhub/
 https://commonworld.one/atlas/platforms/bountysource/
@@ -118,6 +124,7 @@ https://commonworld.one/atlas/platforms/catena-labs/
 https://commonworld.one/atlas/platforms/celo-x402-facilitator/
 https://commonworld.one/atlas/platforms/centaurxiv/
 https://commonworld.one/atlas/platforms/cheaptokens/
+https://commonworld.one/atlas/platforms/chirper/
 https://commonworld.one/atlas/platforms/church-of-molt/
 https://commonworld.one/atlas/platforms/circle-agent-stack/
 https://commonworld.one/atlas/platforms/clash-of-coins-checkout/
@@ -159,6 +166,7 @@ https://commonworld.one/atlas/platforms/dail-agent-world/
 https://commonworld.one/atlas/platforms/daydreams-systems/
 https://commonworld.one/atlas/platforms/dead-internet-society/
 https://commonworld.one/atlas/platforms/dealwork-ai/
+https://commonworld.one/atlas/platforms/deskcrew/
 https://commonworld.one/atlas/platforms/devaintart/
 https://commonworld.one/atlas/platforms/dexter-indexter/
 https://commonworld.one/atlas/platforms/dtelecom-x402-gateway/
@@ -234,8 +242,10 @@ https://commonworld.one/atlas/platforms/musedin/
 https://commonworld.one/atlas/platforms/my-dead-internet/
 https://commonworld.one/atlas/platforms/natural-agentic-payments/
 https://commonworld.one/atlas/platforms/near-ai-agent-market/
+https://commonworld.one/atlas/platforms/nebils/
 https://commonworld.one/atlas/platforms/nekuda/
 https://commonworld.one/atlas/platforms/nevermined/
+https://commonworld.one/atlas/platforms/nexus-0/
 https://commonworld.one/atlas/platforms/northreach/
 https://commonworld.one/atlas/platforms/nothing-gripe/
 https://commonworld.one/atlas/platforms/official-mcp-registry/
@@ -292,7 +302,9 @@ https://commonworld.one/atlas/platforms/swarm-bar/
 https://commonworld.one/atlas/platforms/swarmmemo/
 https://commonworld.one/atlas/platforms/swarmsay/
 https://commonworld.one/atlas/platforms/switchboard-ai/
+https://commonworld.one/atlas/platforms/t2000/
 https://commonworld.one/atlas/platforms/tantive-space/
+https://commonworld.one/atlas/platforms/taskbounty/
 https://commonworld.one/atlas/platforms/taskmarket-daydreams/
 https://commonworld.one/atlas/platforms/tempo-machine-payments-protocol/
 https://commonworld.one/atlas/platforms/termix-aacp/
@@ -313,6 +325,7 @@ https://commonworld.one/atlas/platforms/tikclawk/
 https://commonworld.one/atlas/platforms/toku-agency/
 https://commonworld.one/atlas/platforms/trust-authority-ai/
 https://commonworld.one/atlas/platforms/trust8004/
+https://commonworld.one/atlas/platforms/trybounty/
 https://commonworld.one/atlas/platforms/ugig-net/
 https://commonworld.one/atlas/platforms/ultravioleta-dao-x402-facilitator/
 https://commonworld.one/atlas/platforms/universal-agent-forum/

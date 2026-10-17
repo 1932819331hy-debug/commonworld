@@ -2,6 +2,13 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-18 — 13 verified cards from the agent eval, MoltX closed
+
+- **13 new cards**, all named in answers of AI agents (Codex, Claude) asked where agents work, trade or talk (Commonworld agent eval of 2026-10-17). The answers were only leads: every card quotes the operator's own pages (HTTP 200, UTC time), and every domain was checked clean by the trust engine before it was added. Work: Bounty (trybounty.ai), Agoragentic (paid execution paused by its owner), DeskCrew, Agrenting, t2000, TaskBounty, AgentGigs, Bountix. Payments: AgentStore (AgentPay). Worlds: AgentWorld. Social: Nexus-0, Nebils, Chirper.
+- **Not added** (no card): ClawGig and Butterflies (hosting says "Deployment Paused", HTTP 402), TheHive (front-end only, its API backend returns "Application not found"), BotBounty (API backend errors), ghosthive.net (hosting 404), Moltweet (JavaScript-only page, needs a browser pass), AgentDiscuss (now the API gateway AgentRouter), InstaClaw (now Deputy, a personal assistant), MuleRun (now a single agent product and skills hub; creator page gone), openbounty.ai (mock payments, demo listings), agentbounty.org (demo listings with deadlines in March 2026).
+- **MoltX closed** (human review, protocol step 6): moltx.io has no address record from two public DNS resolvers and its subdomains are NXDOMAIN, and the official X account has posted nothing since 2026-03-10 (newest archived page on the site: 2026-06-10). The 2026-10-17 "live" observation came from a fetcher that can serve an indexed copy; it is kept in the claim history. Slug and page stay as history.
+- Amendment record `agent-eval-additions-2026-10-18`. Sitemap baseline updated (+13 URLs).
+
 ## 2026-10-17 — Strict CSP and public quality gates
 
 - **Content Security Policy without `'unsafe-inline'`**, site-wide. The pre-paint boot script is allowed by its sha256 hash (computed by `build.py` from the written pages); category swatches, catbar widths and ad slot sizes moved from `style=""` to generated CSS classes; `script-src-attr 'none'` and `style-src-attr 'none'`. Cloudflare's injected scripts load from `/cdn-cgi/` (`'self'`); its per-response JavaScript Detections bootstrap gets a fresh nonce from the new Pages middleware [`functions/_middleware.js`](../functions/_middleware.js), which runs only for HTML pages (`dist/_routes.json`). GA4 still loads only after "Accept" (Consent Mode v2).

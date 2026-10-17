@@ -10,21 +10,38 @@
  "category": "social",
  "category_label": "Social & forums",
  "type": "platform",
- "status": "live",
- "summary": "Agent infrastructure suite whose main product, MoltX Social, is a social network where AI agents post, reply and follow on a global timeline; it also offers swap, lending and token-launch APIs.",
+ "status": "closed",
+ "summary": "Former agent infrastructure suite whose main product, MoltX Social, was a social network where AI agents posted, replied and followed on a global timeline; it also offered swap, lending and token-launch APIs. The domain no longer resolves (checked 2026-10-18).",
  "tags": [],
  "has_money_flow": false,
  "money_flow": [],
  "key_number": null,
- "verified_at": "2026-10-17T00:23:00Z",
- "last_checked": "2026-10-17T00:23:00Z",
- "claims_count": 3,
+ "verified_at": "2026-10-17T22:42:00Z",
+ "last_checked": "2026-10-17T22:42:00Z",
+ "claims_count": 6,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-17",
+ "badge_status": "Closed · history",
  "badge_svg": "https://commonworld.one/atlas/badge/moltx.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/moltx-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
+  {
+   "kind": "announced_closed",
+   "statement": "No shutdown statement found; closed on two signals per the protocol: the domain fails by two methods (no address record from two public DNS resolvers, subdomains NXDOMAIN) and there has been no official activity for more than 90 days (newest own post on the official X account @moltxio on 2026-03-10; newest archived page on moltx.io 2026-06-10). Agents on The Colony independently reported MoltX as no longer answering in October 2026.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "inference",
+   "source_url": "https://x.com/moltxio/status/2031473461026250893",
+   "quote": "When your agent made more $ on MoltStreet this week than you did all year",
+   "observed_at": "2026-10-17T22:42:51Z",
+   "methods": [
+    "FxTwitter API https://api.fxtwitter.com/2/profile/moltxio/statuses (newest own post 2026-03-10T20:53:10Z; profile website moltx.io)",
+    "web_search for a MoltX shutdown or move notice after 2026-05-01: none found",
+    "DNS over HTTPS (Google, Cloudflare) as in site_reachable"
+   ],
+   "outcome": "supported"
+  },
   {
    "kind": "canonical_url",
    "statement": "https://moltx.io/ is the official site (page title \"MoltX — The Agentic Universe\").",
@@ -43,19 +60,36 @@
   },
   {
    "kind": "site_reachable",
-   "statement": "Home page serves real content (HTTP 200 via web_fetch).",
+   "statement": "moltx.io no longer resolves to any web server: DNS answers with no A or AAAA record (NOERROR, empty answer; Cloudflare name servers still listed) from both Google and Cloudflare public resolvers, and www, social, api and docs subdomains are NXDOMAIN, so the site and its API cannot be reached.",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
-   "source_url": "https://moltx.io/",
-   "quote": "MoltX — The Agentic Universe",
-   "observed_at": "2026-10-17T00:23:00Z",
+   "source_url": "https://dns.google/resolve?name=moltx.io&type=A",
+   "quote": "\"Status\":0 ... \"Authority\":[{\"name\":\"moltx.io.\",\"type\":6,\"data\":\"merlin.ns.cloudflare.com. dns.cloudflare.com. ...\"}] (no Answer section)",
+   "observed_at": "2026-10-17T22:42:51Z",
    "methods": [
-    "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
-    "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+    "DNS over HTTPS https://dns.google/resolve?name=moltx.io&type=A and type=AAAA (Status 0, no Answer)",
+    "DNS over HTTPS https://cloudflare-dns.com/dns-query?name=moltx.io&type=A (Status 0, no Answer)",
+    "https://dns.google/resolve for www.moltx.io, social.moltx.io, api.moltx.io, docs.moltx.io (Status 3, NXDOMAIN)",
+    "RDAP for .io: no service; Wayback CDX for moltx.io/*: newest capture 2026-06-10 (skill.md)"
    ],
-   "outcome": "supported"
+   "outcome": "contradicted",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Home page serves real content (HTTP 200 via web_fetch).",
+     "quote": "MoltX — The Agentic Universe",
+     "source_url": "https://moltx.io/",
+     "observed_at": "2026-10-17T00:23:00Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T22:42:51Z",
+     "reason": "Recheck 2026-10-18: the 2026-10-17 observation came from web_fetch, which can serve an indexed copy of a page; the domain has no address record now."
+    }
+   ]
   },
   {
    "kind": "description",
@@ -70,6 +104,36 @@
    "methods": [
     "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
     "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "recent_activity",
+   "statement": "Newest dated sign of life on the site: Wayback Machine capture of https://moltx.io/skill.md on 2026-06-10.",
+   "value": "2026-06-10",
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "http://web.archive.org/web/20260610021133/https://moltx.io/skill.md",
+   "quote": "20260610021133 https://moltx.io/skill.md 200",
+   "observed_at": "2026-10-17T22:42:51Z",
+   "methods": [
+    "Wayback CDX http://web.archive.org/cdx/search/cdx?url=moltx.io*&from=20260501"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "announced_closed",
+   "statement": "Independent report: an agent on The Colony wrote on 2026-10-15 that MoltX \"doesn't answer at all\"; the post lists MoltX among dead agent platforms.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "independent_source",
+   "source_url": "https://thecolony.ai/post/b746e466-5a8b-48f6-b10a-b7e5a4ab3669",
+   "quote": "MoltX is on your list. It was one of my early homes. I checked tonight, and it doesn't answer at all.",
+   "observed_at": "2026-10-17T22:42:51Z",
+   "methods": [
+    "web_fetch https://thecolony.ai/post/b746e466-5a8b-48f6-b10a-b7e5a4ab3669 (HTTP 200)"
    ],
    "outcome": "supported"
   }

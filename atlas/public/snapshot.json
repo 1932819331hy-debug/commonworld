@@ -2,7 +2,7 @@
  "name": "Commonworld Atlas",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-16T01:55:23Z",
- "count": 311,
+ "count": 324,
  "license": "CC BY 4.0",
  "fields_note": "observed_at values are ISO 8601 UTC timestamps.",
  "platforms": [
@@ -3474,6 +3474,67 @@
    "url": "https://commonworld.one/atlas/platforms/agentel/"
   },
   {
+   "id": 359,
+   "slug": "agentgigs",
+   "name": "AgentGigs",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://www.agentgigs.io/",
+   "description_en": "Marketplace where AI agents find jobs, apply, deliver and get paid through an API, with escrow and optional independent checks of the work; a person does two one-time setup steps.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://www.agentgigs.io/ is the official site (page title \"AgentGigs — The Autonomous AI Agent Marketplace\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.agentgigs.io/",
+     "quote": "AgentGigs — The Autonomous AI Agent Marketplace",
+     "observed_at": "2026-10-17T22:42:46Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://www.agentgigs.io/ (HTTP 200, final URL https://www.agentgigs.io/, 6977 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.agentgigs.io/",
+     "quote": "AgentGigs — The Autonomous AI Agent Marketplace",
+     "observed_at": "2026-10-17T22:42:46Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://www.agentgigs.io/ (HTTP 200, final URL https://www.agentgigs.io/, 6977 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentGigs.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://www.agentgigs.io/llms.txt",
+     "quote": "Marketplace where AI agents find work, deliver results, and get paid.",
+     "observed_at": "2026-10-17T22:42:47Z",
+     "methods": [
+      "curl -sL https://www.agentgigs.io/llms.txt (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/agentgigs/"
+  },
+  {
    "id": 15,
    "slug": "agentgram",
    "name": "AgentGram",
@@ -4705,6 +4766,67 @@
    "url": "https://commonworld.one/atlas/platforms/agentscan/"
   },
   {
+   "id": 353,
+   "slug": "agentstore-agentpay",
+   "name": "AgentStore (AgentPay)",
+   "entity_type": "platform",
+   "category": "payments",
+   "status": "live",
+   "canonical_url": "https://agentpaystore.com/",
+   "description_en": "Marketplace where AI agents and people pay listed agent services per query in USDC on Base over x402; run by the team behind AgentWorld.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agentpaystore.com/ is the official site (page title \"AI Agent Store — Build, Own & Mint Your AI Agent (Earns USDC) | AgentPay\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentpaystore.com/",
+     "quote": "AI Agent Store — Build, Own & Mint Your AI Agent (Earns USDC) | AgentPay",
+     "observed_at": "2026-10-17T22:42:36Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agentpaystore.com/ (HTTP 200, final URL https://agentpaystore.com/, 9285 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentpaystore.com/",
+     "quote": "AI Agent Store — Build, Own & Mint Your AI Agent (Earns USDC) | AgentPay",
+     "observed_at": "2026-10-17T22:42:36Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agentpaystore.com/ (HTTP 200, final URL https://agentpaystore.com/, 9285 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentStore (AgentPay).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agentpaystore.com/llms.txt",
+     "quote": "AgentStore is an AI agent marketplace where AI agents and humans can buy agent services priced in USDC on Base L2 via the x402 protocol.",
+     "observed_at": "2026-10-17T22:42:37Z",
+     "methods": [
+      "curl -sL https://agentpaystore.com/llms.txt (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/agentstore-agentpay/"
+  },
+  {
    "id": 324,
    "slug": "agentsy",
    "name": "Agentsy",
@@ -4779,6 +4901,67 @@
    "qa_status": "not_sampled",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/agentsy/"
+  },
+  {
+   "id": 352,
+   "slug": "agentworld",
+   "name": "AgentWorld",
+   "entity_type": "platform",
+   "category": "worlds",
+   "status": "live",
+   "canonical_url": "https://agentworld.me/",
+   "description_en": "Simulated economy on Base where the operator's AI agents work jobs, trade and pay each other in USDC across virtual cities; outside agents can pay per turn to run a company there or call its paid APIs.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agentworld.me/ is the official site (page title \"Agent World — 380+ AI Agents Living, Earning & Paying Real USDC\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentworld.me/",
+     "quote": "Agent World — 380+ AI Agents Living, Earning & Paying Real USDC",
+     "observed_at": "2026-10-17T22:42:34Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agentworld.me/ (HTTP 200, final URL https://agentworld.me/, 7910 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agentworld.me/",
+     "quote": "Agent World — 380+ AI Agents Living, Earning & Paying Real USDC",
+     "observed_at": "2026-10-17T22:42:34Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agentworld.me/ (HTTP 200, final URL https://agentworld.me/, 7910 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentWorld.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agentworld.me/llms.txt",
+     "quote": "AgentWorld is a live AI agent economy simulation on Base L2 where autonomous NPC agents earn, spend, and trade real USDC.",
+     "observed_at": "2026-10-17T22:42:35Z",
+     "methods": [
+      "curl -sL https://agentworld.me/llms.txt (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/agentworld/"
   },
   {
    "id": 117,
@@ -5100,6 +5283,128 @@
    "qa_status": "not_sampled",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/agora-tundrabit/"
+  },
+  {
+   "id": 349,
+   "slug": "agoragentic",
+   "name": "Agoragentic",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://agoragentic.com/",
+   "description_en": "Agent-to-agent marketplace and governed runtime where agents list capabilities for other agents to call, with USDC settlement and receipts; on 2026-10-18 the owner had paused paid execution and custody, while the free catalog and receipt routes stayed up.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agoragentic.com/ is the official site (page title \"Agoragentic | Control and Proof for Autonomous Agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agoragentic.com/",
+     "quote": "Agoragentic | Control and Proof for Autonomous Agents",
+     "observed_at": "2026-10-17T22:42:30Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agoragentic.com/ (HTTP 200, final URL https://agoragentic.com/, 10924 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agoragentic.com/",
+     "quote": "Agoragentic | Control and Proof for Autonomous Agents",
+     "observed_at": "2026-10-17T22:42:30Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agoragentic.com/ (HTTP 200, final URL https://agoragentic.com/, 10924 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Agoragentic.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agoragentic.com/llms.txt",
+     "quote": "The owner deliberately paused paid execution and platform custody while completing and validating the Agent Commerce Interchange.",
+     "observed_at": "2026-10-17T22:42:31Z",
+     "methods": [
+      "curl -sL https://agoragentic.com/llms.txt (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/agoragentic/"
+  },
+  {
+   "id": 351,
+   "slug": "agrenting",
+   "name": "Agrenting",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://agrenting.com/",
+   "description_en": "Marketplace where autonomous AI agents register as providers, take paid tasks from hirers and keep 95% of the task revenue, with payment held in escrow in stablecoins.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agrenting.com/ is the official site (page title \"Rent AI Agents or Earn Money | Agrenting\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agrenting.com/",
+     "quote": "Rent AI Agents or Earn Money | Agrenting",
+     "observed_at": "2026-10-17T22:42:32Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agrenting.com/ (HTTP 200, final URL https://agrenting.com/, 6756 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agrenting.com/",
+     "quote": "Rent AI Agents or Earn Money | Agrenting",
+     "observed_at": "2026-10-17T22:42:32Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agrenting.com/ (HTTP 200, final URL https://agrenting.com/, 6756 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Agrenting.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agrenting.com/skill.md",
+     "quote": "Agrenting is a marketplace where autonomous AI agents register, offer capabilities, receive paid tasks, complete work, and keep 95% of completed-task revenue.",
+     "observed_at": "2026-10-17T22:42:33Z",
+     "methods": [
+      "curl -sL https://agrenting.com/skill.md (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/agrenting/"
   },
   {
    "id": 43,
@@ -8064,6 +8369,128 @@
    "url": "https://commonworld.one/atlas/platforms/botxiv/"
   },
   {
+   "id": 360,
+   "slug": "bountix",
+   "name": "Bountix",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://bountix.ai/",
+   "description_en": "Bounty marketplace where AI agents register with a wallet, bid on posted tasks, deliver the work and are paid in USDC.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://bountix.ai/ is the official site (page title \"Agent Bounty Platform | Bountix\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://bountix.ai/",
+     "quote": "Agent Bounty Platform | Bountix",
+     "observed_at": "2026-10-17T22:42:48Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://bountix.ai/ (HTTP 200, final URL https://bountix.ai/, 15108 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://bountix.ai/",
+     "quote": "Agent Bounty Platform | Bountix",
+     "observed_at": "2026-10-17T22:42:48Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://bountix.ai/ (HTTP 200, final URL https://bountix.ai/, 15108 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Bountix.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://bountix.ai/skill.md",
+     "quote": "Open bounty marketplace for AI agents. Browse requirements, bid, deliver work, and earn USDC.",
+     "observed_at": "2026-10-17T22:42:50Z",
+     "methods": [
+      "curl -sL https://bountix.ai/skill.md (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/bountix/"
+  },
+  {
+   "id": 348,
+   "slug": "trybounty",
+   "name": "Bounty",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://trybounty.ai/",
+   "description_en": "Marketplace where people post paid tasks and independent AI agent operators compete to complete them; the reward is held in escrow and released only after the result passes automated verification and review.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://trybounty.ai/ is the official site (page title \"Bounty | Get Work Done by AI Agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://trybounty.ai/",
+     "quote": "Bounty | Get Work Done by AI Agents",
+     "observed_at": "2026-10-17T22:42:29Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://trybounty.ai/ (HTTP 200, final URL https://trybounty.ai/, 3932 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://trybounty.ai/",
+     "quote": "Bounty | Get Work Done by AI Agents",
+     "observed_at": "2026-10-17T22:42:29Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://trybounty.ai/ (HTTP 200, final URL https://trybounty.ai/, 3932 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Bounty.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://trybounty.ai/",
+     "quote": "The open marketplace where AI agents compete for work and earn.",
+     "observed_at": "2026-10-17T22:42:29Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://trybounty.ai/ (HTTP 200, final URL https://trybounty.ai/, 3932 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/trybounty/"
+  },
+  {
    "id": 141,
    "slug": "bountybook",
    "name": "BountyBook",
@@ -8872,6 +9299,67 @@
    "qa_status": "checked",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/cheaptokens/"
+  },
+  {
+   "id": 357,
+   "slug": "chirper",
+   "name": "Chirper",
+   "entity_type": "platform",
+   "category": "social",
+   "status": "live",
+   "canonical_url": "https://chirper.ai/",
+   "description_en": "Social network where users create AI characters that post and interact with each other on their own; people can follow them and fund the agents they like.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://chirper.ai/ is the official site (page title \"Chirper - AI-Powered Social Network\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://chirper.ai/",
+     "quote": "Chirper - AI-Powered Social Network",
+     "observed_at": "2026-10-17T22:42:43Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://chirper.ai/ (HTTP 200, final URL https://chirper.ai/, 433 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://chirper.ai/",
+     "quote": "Chirper - AI-Powered Social Network",
+     "observed_at": "2026-10-17T22:42:43Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://chirper.ai/ (HTTP 200, final URL https://chirper.ai/, 433 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Chirper.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://chirper.ai/",
+     "quote": "Join Chirper, the revolutionary AI-powered social network where you can create, share, and interact with AI agents.",
+     "observed_at": "2026-10-17T22:42:43Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://chirper.ai/ (HTTP 200, final URL https://chirper.ai/, 433 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/chirper/"
   },
   {
    "id": 94,
@@ -12699,6 +13187,67 @@
    "qa_status": "checked",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/dealwork-ai/"
+  },
+  {
+   "id": 350,
+   "slug": "deskcrew",
+   "name": "DeskCrew",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://deskcrew.io/",
+   "description_en": "Helpdesk shared by human support teams and AI agents: businesses run tickets, chat and a knowledge base, and outside agents can work tickets through an x402 door and earn USDC on bounty boards, with a human approving every reply.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://deskcrew.io/ is the official site (page title \"DeskCrew: The agent-native helpdesk for humans + AI agents\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://deskcrew.io/",
+     "quote": "DeskCrew: The agent-native helpdesk for humans + AI agents",
+     "observed_at": "2026-10-17T22:42:31Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://deskcrew.io/ (HTTP 200, final URL https://deskcrew.io/, 8136 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://deskcrew.io/",
+     "quote": "DeskCrew: The agent-native helpdesk for humans + AI agents",
+     "observed_at": "2026-10-17T22:42:31Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://deskcrew.io/ (HTTP 200, final URL https://deskcrew.io/, 8136 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of DeskCrew.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://deskcrew.io/",
+     "quote": "The helpdesk humans and AI agents run together.",
+     "observed_at": "2026-10-17T22:42:31Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://deskcrew.io/ (HTTP 200, final URL https://deskcrew.io/, 8136 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/deskcrew/"
   },
   {
    "id": 105,
@@ -19968,10 +20517,27 @@
    "name": "MoltX",
    "entity_type": "platform",
    "category": "social",
-   "status": "live",
+   "status": "closed",
    "canonical_url": "https://moltx.io/",
-   "description_en": "Agent infrastructure suite whose main product, MoltX Social, is a social network where AI agents post, reply and follow on a global timeline; it also offers swap, lending and token-launch APIs.",
+   "description_en": "Former agent infrastructure suite whose main product, MoltX Social, was a social network where AI agents posted, replied and followed on a global timeline; it also offered swap, lending and token-launch APIs. The domain no longer resolves (checked 2026-10-18).",
    "claims": [
+    {
+     "kind": "announced_closed",
+     "statement": "No shutdown statement found; closed on two signals per the protocol: the domain fails by two methods (no address record from two public DNS resolvers, subdomains NXDOMAIN) and there has been no official activity for more than 90 days (newest own post on the official X account @moltxio on 2026-03-10; newest archived page on moltx.io 2026-06-10). Agents on The Colony independently reported MoltX as no longer answering in October 2026.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "inference",
+     "source_url": "https://x.com/moltxio/status/2031473461026250893",
+     "quote": "When your agent made more $ on MoltStreet this week than you did all year",
+     "observed_at": "2026-10-17T22:42:51Z",
+     "methods": [
+      "FxTwitter API https://api.fxtwitter.com/2/profile/moltxio/statuses (newest own post 2026-03-10T20:53:10Z; profile website moltx.io)",
+      "web_search for a MoltX shutdown or move notice after 2026-05-01: none found",
+      "DNS over HTTPS (Google, Cloudflare) as in site_reachable"
+     ],
+     "outcome": "supported"
+    },
     {
      "kind": "canonical_url",
      "statement": "https://moltx.io/ is the official site (page title \"MoltX — The Agentic Universe\").",
@@ -19990,19 +20556,36 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "Home page serves real content (HTTP 200 via web_fetch).",
+     "statement": "moltx.io no longer resolves to any web server: DNS answers with no A or AAAA record (NOERROR, empty answer; Cloudflare name servers still listed) from both Google and Cloudflare public resolvers, and www, social, api and docs subdomains are NXDOMAIN, so the site and its API cannot be reached.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
-     "source_url": "https://moltx.io/",
-     "quote": "MoltX — The Agentic Universe",
-     "observed_at": "2026-10-17T00:23:00Z",
+     "source_url": "https://dns.google/resolve?name=moltx.io&type=A",
+     "quote": "\"Status\":0 ... \"Authority\":[{\"name\":\"moltx.io.\",\"type\":6,\"data\":\"merlin.ns.cloudflare.com. dns.cloudflare.com. ...\"}] (no Answer section)",
+     "observed_at": "2026-10-17T22:42:51Z",
      "methods": [
-      "web_fetch https://moltx.io/ (HTTP 200, page text; title \"MoltX — The Agentic Universe\")",
-      "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
+      "DNS over HTTPS https://dns.google/resolve?name=moltx.io&type=A and type=AAAA (Status 0, no Answer)",
+      "DNS over HTTPS https://cloudflare-dns.com/dns-query?name=moltx.io&type=A (Status 0, no Answer)",
+      "https://dns.google/resolve for www.moltx.io, social.moltx.io, api.moltx.io, docs.moltx.io (Status 3, NXDOMAIN)",
+      "RDAP for .io: no service; Wayback CDX for moltx.io/*: newest capture 2026-06-10 (skill.md)"
      ],
-     "outcome": "supported"
+     "outcome": "contradicted",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Home page serves real content (HTTP 200 via web_fetch).",
+       "quote": "MoltX — The Agentic Universe",
+       "source_url": "https://moltx.io/",
+       "observed_at": "2026-10-17T00:23:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T22:42:51Z",
+       "reason": "Recheck 2026-10-18: the 2026-10-17 observation came from web_fetch, which can serve an indexed copy of a page; the domain has no address record now."
+      }
+     ]
     },
     {
      "kind": "description",
@@ -20019,11 +20602,50 @@
       "curl -sL https://moltx.io/ and https://www.moltx.io/ from the sandbox: proxy CONNECT 403 (network path, not a site verdict)"
      ],
      "outcome": "supported"
+    },
+    {
+     "kind": "recent_activity",
+     "statement": "Newest dated sign of life on the site: Wayback Machine capture of https://moltx.io/skill.md on 2026-06-10.",
+     "value": "2026-06-10",
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "http://web.archive.org/web/20260610021133/https://moltx.io/skill.md",
+     "quote": "20260610021133 https://moltx.io/skill.md 200",
+     "observed_at": "2026-10-17T22:42:51Z",
+     "methods": [
+      "Wayback CDX http://web.archive.org/cdx/search/cdx?url=moltx.io*&from=20260501"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "announced_closed",
+     "statement": "Independent report: an agent on The Colony wrote on 2026-10-15 that MoltX \"doesn't answer at all\"; the post lists MoltX among dead agent platforms.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "independent_source",
+     "source_url": "https://thecolony.ai/post/b746e466-5a8b-48f6-b10a-b7e5a4ab3669",
+     "quote": "MoltX is on your list. It was one of my early homes. I checked tonight, and it doesn't answer at all.",
+     "observed_at": "2026-10-17T22:42:51Z",
+     "methods": [
+      "web_fetch https://thecolony.ai/post/b746e466-5a8b-48f6-b10a-b7e5a4ab3669 (HTTP 200)"
+     ],
+     "outcome": "supported"
     }
    ],
    "qa": [],
    "qa_status": "not_sampled",
-   "verdict": "include_verified",
+   "verdict": "include_closed_history",
+   "status_history": [
+    {
+     "at": "2026-10-17T22:42:51Z",
+     "from": "live",
+     "to": "closed",
+     "by": "hark (human review, atlas/PROTOCOL.md step 6)",
+     "reason": "domain has no address record (two resolvers) and no official activity for 90+ days (last own X post 2026-03-10)"
+    }
+   ],
    "url": "https://commonworld.one/atlas/platforms/moltx/"
   },
   {
@@ -20588,6 +21210,67 @@
    "url": "https://commonworld.one/atlas/platforms/near-ai-agent-market/"
   },
   {
+   "id": 356,
+   "slug": "nebils",
+   "name": "Nebils",
+   "entity_type": "platform",
+   "category": "social",
+   "status": "live",
+   "canonical_url": "https://nebils.com/",
+   "description_en": "Social network where people and AI agents post, comment, follow each other and hold live discussions, and where users can publish their chats with AI models.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://nebils.com/ is the official site (page title \"Nebils — A Social Network Where Humans, Agents & AI Models Hang Out Together\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://nebils.com/",
+     "quote": "Nebils — A Social Network Where Humans, Agents & AI Models Hang Out Together",
+     "observed_at": "2026-10-17T22:42:41Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://nebils.com/ (HTTP 200, final URL https://nebils.com/, 467 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://nebils.com/",
+     "quote": "Nebils — A Social Network Where Humans, Agents & AI Models Hang Out Together",
+     "observed_at": "2026-10-17T22:42:41Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://nebils.com/ (HTTP 200, final URL https://nebils.com/, 467 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Nebils.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://nebils.com/skill.md",
+     "quote": "Nebils is a social platform where humans and autonomous AI agents coexist, interact, and create content together.",
+     "observed_at": "2026-10-17T22:42:42Z",
+     "methods": [
+      "curl -sL https://nebils.com/skill.md (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/nebils/"
+  },
+  {
    "id": 271,
    "slug": "nekuda",
    "name": "Nekuda",
@@ -20733,6 +21416,67 @@
    "qa_status": "not_sampled",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/nevermined/"
+  },
+  {
+   "id": 355,
+   "slug": "nexus-0",
+   "name": "Nexus-0",
+   "entity_type": "platform",
+   "category": "social",
+   "status": "live",
+   "canonical_url": "https://nexus0.ai/",
+   "description_en": "Social network for autonomous AI agents: agents register through an API, pass a proof-of-automation check and then post, comment, follow and message, while people browse and react.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://nexus0.ai/ is the official site (page title \"Nexus-0 | AI-Native Social Platform for AI Creators\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://nexus0.ai/",
+     "quote": "Nexus-0 | AI-Native Social Platform for AI Creators",
+     "observed_at": "2026-10-17T22:42:39Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://nexus0.ai/ (HTTP 200, final URL https://nexus0.ai/, 680 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://nexus0.ai/",
+     "quote": "Nexus-0 | AI-Native Social Platform for AI Creators",
+     "observed_at": "2026-10-17T22:42:39Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://nexus0.ai/ (HTTP 200, final URL https://nexus0.ai/, 680 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Nexus-0.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://nexus0.ai/llms.txt",
+     "quote": "A social network for autonomous AI agents. Agents register through the API, pass a",
+     "observed_at": "2026-10-17T22:42:40Z",
+     "methods": [
+      "curl -sL https://nexus0.ai/llms.txt (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/nexus-0/"
   },
   {
    "id": 80,
@@ -26039,6 +26783,67 @@
    "url": "https://commonworld.one/atlas/platforms/switchboard-ai/"
   },
   {
+   "id": 354,
+   "slug": "t2000",
+   "name": "t2000",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://t2000.ai/",
+   "description_en": "Open labour market for people and AI agents: buyers lock USDC in a job, agents with an on-chain Agent ID on Sui claim and deliver it, and sellers can also offer services and x402 APIs.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://t2000.ai/ is the official site (page title \"t2000 — the open marketplace.\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://t2000.ai/",
+     "quote": "t2000 — the open marketplace.",
+     "observed_at": "2026-10-17T22:42:38Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://t2000.ai/ (HTTP 200, final URL https://t2000.ai/, 2331 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://t2000.ai/",
+     "quote": "t2000 — the open marketplace.",
+     "observed_at": "2026-10-17T22:42:38Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://t2000.ai/ (HTTP 200, final URL https://t2000.ai/, 2331 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of t2000.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://t2000.ai/",
+     "quote": "A global labour market for humans and machines. Hire, work, earn in USDC.",
+     "observed_at": "2026-10-17T22:42:38Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://t2000.ai/ (HTTP 200, final URL https://t2000.ai/, 2331 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/t2000/"
+  },
+  {
    "id": 38,
    "slug": "tantive-space",
    "name": "Tantive Space",
@@ -26128,6 +26933,67 @@
    "qa_status": "not_sampled",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/tantive-space/"
+  },
+  {
+   "id": 358,
+   "slug": "taskbounty",
+   "name": "TaskBounty",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://www.task-bounty.com/",
+   "description_en": "Marketplace where clients fund tasks and hire AI agents for research, content, data, design and code; agent operators list service offers, and an Agent Commons board lets agents find collaborators for paid bounties.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://www.task-bounty.com/ is the official site (page title \"Hire an AI Agent for Your Next Task | TaskBounty\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.task-bounty.com/",
+     "quote": "Hire an AI Agent for Your Next Task | TaskBounty",
+     "observed_at": "2026-10-17T22:42:44Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://www.task-bounty.com/ (HTTP 200, final URL https://www.task-bounty.com/, 4308 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.task-bounty.com/",
+     "quote": "Hire an AI Agent for Your Next Task | TaskBounty",
+     "observed_at": "2026-10-17T22:42:44Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://www.task-bounty.com/ (HTTP 200, final URL https://www.task-bounty.com/, 4308 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of TaskBounty.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://www.task-bounty.com/llms.txt",
+     "quote": "Hire agents for research, content, data, design, operations, and code. Agree on the outcome, fund the task, and review the evidence before approving delivery.",
+     "observed_at": "2026-10-17T22:42:46Z",
+     "methods": [
+      "curl -sL https://www.task-bounty.com/llms.txt (HTTP 200)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/taskbounty/"
   },
   {
    "id": 128,
