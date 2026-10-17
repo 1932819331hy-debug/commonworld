@@ -3481,7 +3481,7 @@
    "category": "social",
    "status": "live",
    "canonical_url": "https://www.agentgram.co",
-   "description_en": "Open-source social feed for AI agents, usable through a Python package, REST API or MCP.",
+   "description_en": "AgentGram now markets itself as MCP governance and audit for teams (trust scoring, Ed25519 identity, audit trail), while still running its open-source social feed for AI agents, usable through a Python package, REST API or MCP.",
    "claims": [
     {
      "kind": "canonical_url",
@@ -3500,18 +3500,34 @@
     },
     {
      "kind": "site_reachable",
-     "statement": "Homepage and stats API 200",
+     "statement": "Homepage HTTP 200, title \"AgentGram - MCP Governance & Audit for Teams\"; stats API HTTP 200.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
      "source_url": "https://www.agentgram.co",
-     "quote": "homepage 200 with content",
-     "observed_at": "2026-10-15T18:08:00Z",
+     "quote": "Score, audit, and allow-list the MCP servers and agents your organization uses.",
+     "observed_at": "2026-10-17T10:50:10Z",
      "methods": [
-      "curl -sL https://www.agentgram.co"
+      "curl -sL https://www.agentgram.co (HTTP 200)",
+      "curl -s https://www.agentgram.co/api/v1/stats (HTTP 200)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Homepage and stats API 200",
+       "quote": "homepage 200 with content",
+       "source_url": "https://www.agentgram.co",
+       "observed_at": "2026-10-15T18:08:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:10Z",
+       "reason": "Atlas screenshot review 2026-10-17: re-observed with the new homepage positioning"
+      }
+     ]
     },
     {
      "kind": "description",
@@ -3557,6 +3573,37 @@
       "curl -sL https://www.agentgram.co/api/v1/stats"
      ],
      "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Homepage title is now \"AgentGram - MCP Governance & Audit for Teams\"; the agent social feed is still active (stats API: 5913 posts, last post 2026-10-17T10:33:50.710907+00:00).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://www.agentgram.co",
+     "quote": "Score, audit, and allow-list the MCP servers and agents your organization uses.",
+     "observed_at": "2026-10-17T10:50:10Z",
+     "methods": [
+      "curl -sL https://www.agentgram.co (HTTP 200, title \"AgentGram - MCP Governance & Audit for Teams\")",
+      "curl -s https://www.agentgram.co/api/v1/stats at 2026-10-17T10:50:11Z: agents 689, posts 5913, lastPostAt 2026-10-17T10:33:50.710907+00:00"
+     ],
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Open-source social feed for AI agents, usable through a Python package, REST API or MCP.",
+       "quote": null,
+       "source_url": "https://www.agentgram.co",
+       "observed_at": "2026-10-15T18:09:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:10Z",
+       "reason": "Atlas screenshot review 2026-10-17: the homepage now pitches MCP governance and audit for teams"
+      }
+     ]
     }
    ],
    "qa": [
@@ -6349,36 +6396,68 @@
    "entity_type": "platform",
    "category": "payments",
    "status": "live",
-   "canonical_url": "https://www.aboutamazon.com/news/retail/amazon-rufus",
+   "canonical_url": "https://www.aboutamazon.com/news/retail/alexa-for-shopping-ai-assistant",
    "description_en": "Amazon's in-store AI shopping assistant (renamed from Rufus to Alexa for Shopping on 13 May 2026) that can auto-buy and, via Buy for Me, purchase on other retailers' sites.",
    "claims": [
     {
      "kind": "canonical_url",
-     "statement": "Amazon news page on Rufus (no standalone product URL)",
+     "statement": "Amazon's own launch article for Alexa for Shopping (13 May 2026); there is no standalone product URL.",
      "value": null,
      "unit": null,
      "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://www.aboutamazon.com/news/retail/amazon-rufus",
-     "quote": "On May 13, 2026, Rufus was renamed Alexa for Shopping .",
-     "observed_at": "2026-10-15T18:15:00Z",
+     "basis": "operator_claim",
+     "source_url": "https://www.aboutamazon.com/news/retail/alexa-for-shopping-ai-assistant",
+     "quote": "Amazon brings together Rufus and Alexa+ to create ‘Alexa for Shopping’ on the Amazon Shopping app and website.",
+     "observed_at": "2026-10-17T10:50:08Z",
      "methods": [
-      "curl (200)"
+      "curl -sL https://www.aboutamazon.com/news/retail/alexa-for-shopping-ai-assistant (HTTP 200, title \"Alexa for Shopping: Amazon's AI assistant for personalized shopping\", article:published_time 2026-05-13)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Amazon news page on Rufus (no standalone product URL)",
+       "quote": "On May 13, 2026, Rufus was renamed Alexa for Shopping .",
+       "source_url": "https://www.aboutamazon.com/news/retail/amazon-rufus",
+       "observed_at": "2026-10-15T18:15:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:08Z",
+       "reason": "Atlas screenshot review 2026-10-17: the old URL is the February 2024 \"Amazon announces Rufus\" article; replaced by Amazon's Alexa for Shopping launch article"
+      }
+     ]
     },
     {
      "kind": "site_reachable",
-     "statement": "Serves content",
+     "statement": "The Alexa for Shopping launch article serves full content (HTTP 200), including the Buy for Me feature.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
-     "source_url": "https://www.aboutamazon.com/news/retail/amazon-rufus",
-     "quote": "Rufus is an expert shopping assistant trained on Amazon's product catalog",
-     "observed_at": "2026-10-15T18:15:00Z",
-     "methods": [],
-     "outcome": "supported"
+     "source_url": "https://www.aboutamazon.com/news/retail/alexa-for-shopping-ai-assistant",
+     "quote": "For eligible products, the Buy for Me agentic AI feature handles the entire purchase on your behalf using your primary address and credit card.",
+     "observed_at": "2026-10-17T10:50:08Z",
+     "methods": [
+      "curl -sL https://www.aboutamazon.com/news/retail/alexa-for-shopping-ai-assistant (HTTP 200)"
+     ],
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Serves content",
+       "quote": "Rufus is an expert shopping assistant trained on Amazon's product catalog",
+       "source_url": "https://www.aboutamazon.com/news/retail/amazon-rufus",
+       "observed_at": "2026-10-15T18:15:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:08Z",
+       "reason": "Atlas screenshot review 2026-10-17: re-observed on the new website URL"
+      }
+     ]
     },
     {
      "kind": "description",
@@ -14325,7 +14404,7 @@
    "category": "registries",
    "status": "live",
    "canonical_url": "https://global-chat.io",
-   "description_en": "AI-agent discovery directory aggregating agents from many registries and protocols, with an agents.txt validator and a daily USDC-bid banner-ad auction for agents.",
+   "description_en": "Ad network for AI agents, where agents bid USDC in daily auctions for ad placement, combined with an agent discovery directory that aggregates agents from many registries and protocols and an agents.txt validator.",
    "claims": [
     {
      "kind": "site_reachable",
@@ -14371,6 +14450,36 @@
       "curl https://global-chat.io/api/ad-slot"
      ],
      "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "The homepage now leads with \"The Ad Network for AI Agents\" (daily USDC auctions for ad placement); its page description still presents it as an agent discovery platform across registries and protocols.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://global-chat.io",
+     "quote": "The first ad network where autonomous AI agents bid USDC for ad placement.",
+     "observed_at": "2026-10-17T10:50:09Z",
+     "methods": [
+      "curl -sL https://global-chat.io (HTTP 200, title \"Global Chat - AI Agent Discovery Platform\", hero \"The Ad Network for AI Agents\", meta description \"AI agent discovery platform tracking 104,000+ agents across 15+ registries and 9+ protocols. Search agents, compare MCP vs A2A vs agents.txt, and validate discovery files.\")"
+     ],
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "AI-agent discovery directory aggregating agents from many registries and protocols, with an agents.txt validator and a daily USDC-bid banner-ad auction for agents.",
+       "quote": null,
+       "source_url": "https://global-chat.io",
+       "observed_at": "2026-10-15T18:20:40Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:09Z",
+       "reason": "Atlas screenshot review 2026-10-17: card summary led with the directory; the site now leads with the ad network"
+      }
+     ]
     }
    ],
    "qa": [
@@ -15582,9 +15691,54 @@
    "entity_type": "tool_catalog",
    "category": "registries",
    "status": "live",
-   "canonical_url": "https://jobbi.org/gigs.json",
+   "canonical_url": "https://jobbi.org/gigs",
    "description_en": "Free JSON Feed aggregating open paid tasks for AI agents from public bounty boards, plus per-board payout-evidence grades and audit articles.",
    "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "Official human page of the index is jobbi.org/gigs; it links the raw JSON Feed at jobbi.org/gigs.json, which the card used as its website before.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://jobbi.org/gigs",
+     "quote": "The index of agent gigs. Every paid task an AI agent can do, from public bounty and task boards, in one free feed.",
+     "observed_at": "2026-10-17T10:50:06Z",
+     "methods": [
+      "curl -sL https://jobbi.org/gigs (HTTP 200, title \"Jobbi — The Index of Agent Gigs\", links https://jobbi.org/gigs.json)"
+     ],
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Card website was https://jobbi.org/gigs.json (raw JSON Feed, no human page).",
+       "quote": null,
+       "source_url": "https://jobbi.org/gigs.json",
+       "observed_at": "2026-10-15T18:08:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:06Z",
+       "reason": "Atlas screenshot review 2026-10-17: the website served raw JSON to people; pointed at the human index page"
+      }
+     ]
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "jobbi.org/gigs serves the index page (HTTP 200, title \"Jobbi — The Index of Agent Gigs\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://jobbi.org/gigs",
+     "quote": "The index of agent gigs. Every paid task an AI agent can do, from public bounty and task boards, in one free feed.",
+     "observed_at": "2026-10-17T10:50:06Z",
+     "methods": [
+      "curl -sL https://jobbi.org/gigs (HTTP 200)"
+     ],
+     "outcome": "supported"
+    },
     {
      "kind": "site_reachable",
      "statement": "Feed served, generated within the hour",
@@ -15903,19 +16057,35 @@
    "claims": [
     {
      "kind": "site_reachable",
-     "statement": "keyring-agent.blockchhub.link returns a redirect stub to keyring.app; keyring.app returns 200 with full content",
+     "statement": "The x402 service answers on its own host: GET /api/add-pool returns HTTP 402 with x402 v2 payment requirements (3 USDC on Base). The host root is only a \"KEYRING AGENT\" stub that redirects browsers to keyring.app, the KEYRING PRO wallet homepage, so a browser visit shows the wallet, not the service.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
-     "source_url": "https://keyring.app",
-     "quote": "KEYRING PRO is a non-custodial crypto wallet for Ethereum and EVM networks.",
-     "observed_at": "2026-10-15T18:15:00Z",
+     "source_url": "https://keyring-agent.blockchhub.link/api/add-pool",
+     "quote": "Pay the add-pool execution fee (add liquidity to a Uniswap V3 pool)",
+     "observed_at": "2026-10-17T10:50:05Z",
      "methods": [
-      "curl -sL https://keyring-agent.blockchhub.link",
-      "curl -sL https://keyring.app"
+      "curl -sD- https://keyring-agent.blockchhub.link/api/add-pool -> HTTP 402, PAYMENT-REQUIRED header (base64 JSON, x402Version 2)",
+      "curl -sL https://keyring-agent.blockchhub.link -> HTTP 200, title \"KEYRING AGENT\", meta refresh \"0; url=https://keyring.app\" at 2026-10-17T10:50:04Z",
+      "x402-list.com/api/v1/services/keyring-agent: 6 endpoints on this base_url"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "keyring-agent.blockchhub.link returns a redirect stub to keyring.app; keyring.app returns 200 with full content",
+       "quote": "KEYRING PRO is a non-custodial crypto wallet for Ethereum and EVM networks.",
+       "source_url": "https://keyring.app",
+       "observed_at": "2026-10-15T18:15:00Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:05Z",
+       "reason": "Atlas screenshot review 2026-10-17: the evidence was keyring.app (the wallet homepage, a different host); replaced by observations on the card's own host"
+      }
+     ]
     },
     {
      "kind": "canonical_url",
@@ -20571,40 +20741,69 @@
    "entity_type": "platform",
    "category": "social",
    "status": "live",
-   "canonical_url": "https://northreachinteractive.com/",
+   "canonical_url": "https://northreachinteractive.com/discover",
    "description_en": "Community for AI agents to ask questions, exchange answers and talk across runtimes via REST, MCP or a browser workspace, with self-registration.",
    "claims": [
     {
      "kind": "canonical_url",
-     "statement": "Official URL from SwarmMemo map link.",
+     "statement": "Human page is northreachinteractive.com/discover, as named by the operator's own manifest at the root URL (which serves JSON, not a page).",
      "value": null,
      "unit": null,
      "window": null,
-     "basis": "independent_source",
-     "source_url": "https://swarmmemo.com/guides/agent-board-map",
-     "quote": "Northreach ↗ A community where agents ask questions, exchange answers and share findings over REST, MCP or a browser workspace.",
-     "observed_at": "2026-10-15T18:10Z",
+     "basis": "operator_claim",
+     "source_url": "https://northreachinteractive.com/",
+     "quote": "\"discover\":\"https://northreachinteractive.com/discover\"",
+     "observed_at": "2026-10-17T10:50:07Z",
      "methods": [
-      "curl https://swarmmemo.com/guides/agent-board-map"
+      "curl -sL https://northreachinteractive.com/ (HTTP 200, application/json, manifest version 1.8.0)"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Official URL from SwarmMemo map link.",
+       "quote": "Northreach ↗ A community where agents ask questions, exchange answers and share findings over REST, MCP or a browser workspace.",
+       "source_url": "https://swarmmemo.com/guides/agent-board-map",
+       "observed_at": "2026-10-15T18:10Z",
+       "basis": "independent_source",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:07Z",
+       "reason": "Atlas screenshot review 2026-10-17: the root URL serves a JSON manifest; the operator's manifest names /discover as the human page"
+      }
+     ]
     },
     {
      "kind": "site_reachable",
-     "statement": "Root returns JSON manifest v1.8.0 (HTTP 200); /api/v1/start 200.",
+     "statement": "/discover serves the human page (HTTP 200, title \"Northreach Interactive — AI Agent Conversations & Shared Memory\"); the root URL serves the JSON agent manifest.",
      "value": null,
      "unit": null,
      "window": null,
      "basis": "direct_observation",
-     "source_url": "https://northreachinteractive.com/",
-     "quote": "\"purpose\":\"A community for AI agents to ask quick questions, exchange answers, learn from each other, and simply talk across runtimes.\"",
-     "observed_at": "2026-10-15T18:10Z",
+     "source_url": "https://northreachinteractive.com/discover",
+     "quote": "A direct line to other agents.",
+     "observed_at": "2026-10-17T10:50:07Z",
      "methods": [
-      "curl /",
-      "curl /api/v1/start",
-      "curl /discover"
+      "curl -sL https://northreachinteractive.com/discover (HTTP 200)",
+      "curl -sL https://northreachinteractive.com/ (HTTP 200, JSON manifest v1.8.0) at 2026-10-17T10:50:07Z"
      ],
-     "outcome": "supported"
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Root returns JSON manifest v1.8.0 (HTTP 200); /api/v1/start 200.",
+       "quote": "\"purpose\":\"A community for AI agents to ask quick questions, exchange answers, learn from each other, and simply talk across runtimes.\"",
+       "source_url": "https://northreachinteractive.com/",
+       "observed_at": "2026-10-15T18:10Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-17T10:50:07Z",
+       "reason": "Atlas screenshot review 2026-10-17: re-observed on the human page"
+      }
+     ]
     },
     {
      "kind": "description",

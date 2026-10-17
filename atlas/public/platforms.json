@@ -3,7 +3,7 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-16T01:55:00Z",
- "newest_observation": "2026-10-17T00:50:00Z",
+ "newest_observation": "2026-10-17T10:50:00Z",
  "licence": "CC BY 4.0",
  "licence_url": "https://github.com/commonworld-one/commonworld/blob/main/LICENSE-DATA.md",
  "source": "https://github.com/commonworld-one/commonworld",
@@ -1107,7 +1107,7 @@
    "category_label": "Social & forums",
    "type": "platform",
    "status": "live",
-   "summary": "Open-source social feed for AI agents, usable through a Python package, REST API or MCP.",
+   "summary": "AgentGram now markets itself as MCP governance and audit for teams (trust scoring, Ed25519 identity, audit trail), while still running its open-source social feed for AI agents, usable through a Python package, REST API or MCP.",
    "tags": [
     "feed",
     "open-source",
@@ -1125,9 +1125,9 @@
     "observed_at": "2026-10-15T18:08:00Z",
     "source_url": "https://www.agentgram.co/api/v1/stats"
    },
-   "verified_at": "2026-10-15T18:25:00Z",
-   "last_checked": "2026-10-15T18:25:00Z",
-   "claims_count": 5,
+   "verified_at": "2026-10-17T10:50:00Z",
+   "last_checked": "2026-10-17T10:50:00Z",
+   "claims_count": 6,
    "disclosure": null
   },
   {
@@ -1973,7 +1973,7 @@
    "name": "Amazon Rufus / Buy for Me → Alexa for Shopping",
    "url": "https://commonworld.one/atlas/platforms/amazon-alexa-for-shopping/",
    "json_url": "https://commonworld.one/atlas/platforms/amazon-alexa-for-shopping.json",
-   "website": "https://www.aboutamazon.com/news/retail/amazon-rufus",
+   "website": "https://www.aboutamazon.com/news/retail/alexa-for-shopping-ai-assistant",
    "category": "payments",
    "category_label": "Payments & x402",
    "type": "platform",
@@ -1993,8 +1993,8 @@
     "observed_at": "2026-10-15T18:15:00Z",
     "source_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Fourth-Quarter-Results/"
    },
-   "verified_at": "2026-10-15T18:20:00Z",
-   "last_checked": "2026-10-15T18:20:00Z",
+   "verified_at": "2026-10-17T10:50:00Z",
+   "last_checked": "2026-10-17T10:50:00Z",
    "claims_count": 5,
    "disclosure": null
   },
@@ -4462,7 +4462,7 @@
    "category_label": "Registries & directories",
    "type": "tool_catalog",
    "status": "live",
-   "summary": "AI-agent discovery directory aggregating agents from many registries and protocols, with an agents.txt validator and a daily USDC-bid banner-ad auction for agents.",
+   "summary": "Ad network for AI agents, where agents bid USDC in daily auctions for ad placement, combined with an agent discovery directory that aggregates agents from many registries and protocols and an agents.txt validator.",
    "tags": [
     "registry",
     "usdc"
@@ -4488,9 +4488,9 @@
     "observed_at": "2026-10-15T18:22:00Z",
     "source_url": "https://global-chat.io/api/ad-slot"
    },
-   "verified_at": "2026-10-15T18:28:00Z",
-   "last_checked": "2026-10-15T18:28:00Z",
-   "claims_count": 3,
+   "verified_at": "2026-10-17T10:50:00Z",
+   "last_checked": "2026-10-17T10:50:00Z",
+   "claims_count": 4,
    "disclosure": null
   },
   {
@@ -4871,7 +4871,7 @@
    "name": "Jobbi agent-gig index",
    "url": "https://commonworld.one/atlas/platforms/jobbi-agent-gig-index/",
    "json_url": "https://commonworld.one/atlas/platforms/jobbi-agent-gig-index.json",
-   "website": "https://jobbi.org/gigs.json",
+   "website": "https://jobbi.org/gigs",
    "category": "registries",
    "category_label": "Registries & directories",
    "type": "tool_catalog",
@@ -4911,9 +4911,9 @@
     "observed_at": "2026-10-15T20:38:00Z",
     "source_url": "https://jobbi.org/gigs.json"
    },
-   "verified_at": "2026-10-15T20:38:00Z",
-   "last_checked": "2026-10-15T20:38:00Z",
-   "claims_count": 6,
+   "verified_at": "2026-10-17T10:50:00Z",
+   "last_checked": "2026-10-17T10:50:00Z",
+   "claims_count": 8,
    "disclosure": null
   },
   {
@@ -4999,8 +4999,8 @@
     "observed_at": "2026-10-15T18:08:00Z",
     "source_url": "https://x402-list.com/api/v1/services?per_page=100"
    },
-   "verified_at": "2026-10-17T00:12:00Z",
-   "last_checked": "2026-10-17T00:12:00Z",
+   "verified_at": "2026-10-17T10:50:00Z",
+   "last_checked": "2026-10-17T10:50:00Z",
    "claims_count": 6,
    "disclosure": null
   },
@@ -6253,7 +6253,7 @@
    "name": "Northreach",
    "url": "https://commonworld.one/atlas/platforms/northreach/",
    "json_url": "https://commonworld.one/atlas/platforms/northreach.json",
-   "website": "https://northreachinteractive.com/",
+   "website": "https://northreachinteractive.com/discover",
    "category": "social",
    "category_label": "Social & forums",
    "type": "platform",
@@ -6263,8 +6263,8 @@
    "has_money_flow": false,
    "money_flow": [],
    "key_number": null,
-   "verified_at": "2026-10-15T18:10:00Z",
-   "last_checked": "2026-10-15T18:10:00Z",
+   "verified_at": "2026-10-17T10:50:00Z",
+   "last_checked": "2026-10-17T10:50:00Z",
    "claims_count": 4,
    "disclosure": null
   },

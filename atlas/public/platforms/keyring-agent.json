@@ -46,8 +46,8 @@
   "observed_at": "2026-10-15T18:08:00Z",
   "source_url": "https://x402-list.com/api/v1/services?per_page=100"
  },
- "verified_at": "2026-10-17T00:12:00Z",
- "last_checked": "2026-10-17T00:12:00Z",
+ "verified_at": "2026-10-17T10:50:00Z",
+ "last_checked": "2026-10-17T10:50:00Z",
  "claims_count": 6,
  "disclosure": null,
  "badge_status": "Verified · 2026-10-17",
@@ -57,19 +57,35 @@
  "claims": [
   {
    "kind": "site_reachable",
-   "statement": "keyring-agent.blockchhub.link returns a redirect stub to keyring.app; keyring.app returns 200 with full content",
+   "statement": "The x402 service answers on its own host: GET /api/add-pool returns HTTP 402 with x402 v2 payment requirements (3 USDC on Base). The host root is only a \"KEYRING AGENT\" stub that redirects browsers to keyring.app, the KEYRING PRO wallet homepage, so a browser visit shows the wallet, not the service.",
    "value": null,
    "unit": null,
    "window": null,
    "basis": "direct_observation",
-   "source_url": "https://keyring.app",
-   "quote": "KEYRING PRO is a non-custodial crypto wallet for Ethereum and EVM networks.",
-   "observed_at": "2026-10-15T18:15:00Z",
+   "source_url": "https://keyring-agent.blockchhub.link/api/add-pool",
+   "quote": "Pay the add-pool execution fee (add liquidity to a Uniswap V3 pool)",
+   "observed_at": "2026-10-17T10:50:05Z",
    "methods": [
-    "curl -sL https://keyring-agent.blockchhub.link",
-    "curl -sL https://keyring.app"
+    "curl -sD- https://keyring-agent.blockchhub.link/api/add-pool -> HTTP 402, PAYMENT-REQUIRED header (base64 JSON, x402Version 2)",
+    "curl -sL https://keyring-agent.blockchhub.link -> HTTP 200, title \"KEYRING AGENT\", meta refresh \"0; url=https://keyring.app\" at 2026-10-17T10:50:04Z",
+    "x402-list.com/api/v1/services/keyring-agent: 6 endpoints on this base_url"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "keyring-agent.blockchhub.link returns a redirect stub to keyring.app; keyring.app returns 200 with full content",
+     "quote": "KEYRING PRO is a non-custodial crypto wallet for Ethereum and EVM networks.",
+     "source_url": "https://keyring.app",
+     "observed_at": "2026-10-15T18:15:00Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T10:50:05Z",
+     "reason": "Atlas screenshot review 2026-10-17: the evidence was keyring.app (the wallet homepage, a different host); replaced by observations on the card's own host"
+    }
+   ]
   },
   {
    "kind": "canonical_url",

@@ -11,7 +11,7 @@
  "category_label": "Registries & directories",
  "type": "tool_catalog",
  "status": "live",
- "summary": "AI-agent discovery directory aggregating agents from many registries and protocols, with an agents.txt validator and a daily USDC-bid banner-ad auction for agents.",
+ "summary": "Ad network for AI agents, where agents bid USDC in daily auctions for ad placement, combined with an agent discovery directory that aggregates agents from many registries and protocols and an agents.txt validator.",
  "tags": [
   "registry",
   "usdc"
@@ -37,11 +37,11 @@
   "observed_at": "2026-10-15T18:22:00Z",
   "source_url": "https://global-chat.io/api/ad-slot"
  },
- "verified_at": "2026-10-15T18:28:00Z",
- "last_checked": "2026-10-15T18:28:00Z",
- "claims_count": 3,
+ "verified_at": "2026-10-17T10:50:00Z",
+ "last_checked": "2026-10-17T10:50:00Z",
+ "claims_count": 4,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/global-chat.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/global-chat-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
@@ -90,6 +90,36 @@
     "curl https://global-chat.io/api/ad-slot"
    ],
    "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "The homepage now leads with \"The Ad Network for AI Agents\" (daily USDC auctions for ad placement); its page description still presents it as an agent discovery platform across registries and protocols.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://global-chat.io",
+   "quote": "The first ad network where autonomous AI agents bid USDC for ad placement.",
+   "observed_at": "2026-10-17T10:50:09Z",
+   "methods": [
+    "curl -sL https://global-chat.io (HTTP 200, title \"Global Chat - AI Agent Discovery Platform\", hero \"The Ad Network for AI Agents\", meta description \"AI agent discovery platform tracking 104,000+ agents across 15+ registries and 9+ protocols. Search agents, compare MCP vs A2A vs agents.txt, and validate discovery files.\")"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "AI-agent discovery directory aggregating agents from many registries and protocols, with an agents.txt validator and a daily USDC-bid banner-ad auction for agents.",
+     "quote": null,
+     "source_url": "https://global-chat.io",
+     "observed_at": "2026-10-15T18:20:40Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T10:50:09Z",
+     "reason": "Atlas screenshot review 2026-10-17: card summary led with the directory; the site now leads with the ad network"
+    }
+   ]
   }
  ],
  "qa_status": "checked"

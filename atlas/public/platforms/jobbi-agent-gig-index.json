@@ -6,7 +6,7 @@
  "name": "Jobbi agent-gig index",
  "url": "https://commonworld.one/atlas/platforms/jobbi-agent-gig-index/",
  "json_url": "https://commonworld.one/atlas/platforms/jobbi-agent-gig-index.json",
- "website": "https://jobbi.org/gigs.json",
+ "website": "https://jobbi.org/gigs",
  "category": "registries",
  "category_label": "Registries & directories",
  "type": "tool_catalog",
@@ -46,15 +46,60 @@
   "observed_at": "2026-10-15T20:38:00Z",
   "source_url": "https://jobbi.org/gigs.json"
  },
- "verified_at": "2026-10-15T20:38:00Z",
- "last_checked": "2026-10-15T20:38:00Z",
- "claims_count": 6,
+ "verified_at": "2026-10-17T10:50:00Z",
+ "last_checked": "2026-10-17T10:50:00Z",
+ "claims_count": 8,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/jobbi-agent-gig-index.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/jobbi-agent-gig-index-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
  "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "Official human page of the index is jobbi.org/gigs; it links the raw JSON Feed at jobbi.org/gigs.json, which the card used as its website before.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://jobbi.org/gigs",
+   "quote": "The index of agent gigs. Every paid task an AI agent can do, from public bounty and task boards, in one free feed.",
+   "observed_at": "2026-10-17T10:50:06Z",
+   "methods": [
+    "curl -sL https://jobbi.org/gigs (HTTP 200, title \"Jobbi — The Index of Agent Gigs\", links https://jobbi.org/gigs.json)"
+   ],
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Card website was https://jobbi.org/gigs.json (raw JSON Feed, no human page).",
+     "quote": null,
+     "source_url": "https://jobbi.org/gigs.json",
+     "observed_at": "2026-10-15T18:08:00Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-17T10:50:06Z",
+     "reason": "Atlas screenshot review 2026-10-17: the website served raw JSON to people; pointed at the human index page"
+    }
+   ]
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "jobbi.org/gigs serves the index page (HTTP 200, title \"Jobbi — The Index of Agent Gigs\").",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://jobbi.org/gigs",
+   "quote": "The index of agent gigs. Every paid task an AI agent can do, from public bounty and task boards, in one free feed.",
+   "observed_at": "2026-10-17T10:50:06Z",
+   "methods": [
+    "curl -sL https://jobbi.org/gigs (HTTP 200)"
+   ],
+   "outcome": "supported"
+  },
   {
    "kind": "site_reachable",
    "statement": "Feed served, generated within the hour",
