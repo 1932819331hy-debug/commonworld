@@ -1,0 +1,100 @@
+name: Trust — our own domains
+# Hourly alert + heartbeat for the Commonworld app's own-domain trust check (TRUST.md, "Our own domains").
+# The app (Cloudflare Worker) checks commonworld.one, www.commonworld.one and staging.commonworld.one every hour through the
+# trust engine and publishes the latest result at /v1/trust/status. No GitHub token lives in the Worker: this workflow reads
+# that public endpoint and
+#   - opens or updates the issue "Trust: our domains flagged" when any source flags one of our domains (a comment only when
+#     the set of flags changes), and closes it when all are clean again;
+#   - FAILS (GitHub sends the failure email) when the endpoint cannot be read or its last_run_at is older than 2 hours,
+#     i.e. the hourly check itself stopped running (heartbeat).
+on:
+  schedule:
+    - cron: '37 * * * *'   # hourly, 30 minutes after the Worker's check at :07
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: trust-own-domains
+  cancel-in-progress: false
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      STATUS_URL: ${{ vars.TRUST_STATUS_URL || 'https://staging.commonworld.one/v1/trust/status' }}
+      ISSUE_TITLE: 'Trust: our domains flagged'
+      MAX_AGE_SECONDS: '7200'
+    steps:
+      - name: Read the status
+        id: read
+        run: |
+          for i in 1 2 3; do
+            if curl -fsS --max-time 30 -H 'accept: application/json' -A 'CommonworldTrustHeartbeat/1.0 (+https://github.com/commonworld-one/commonworld)' "$STATUS_URL" -o status.json; then break; fi
+            rm -f status.json; sleep $((i * 15))
+          done
+          if [ ! -s status.json ]; then echo "::error::cannot read $STATUS_URL"; echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          from datetime import datetime, timezone
+          d = json.load(open('status.json'))
+          last = d.get('last_run_at')
+          age = None
+          if last:
+              age = (datetime.now(timezone.utc) - datetime.strptime(last, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)).total_seconds()
+          stale = age is None or age > int(os.environ['MAX_AGE_SECONDS'])
+          flagged = sorted(x['domain'] for x in d.get('domains') or [] if x.get('status') == 'flagged')
+          print('ok=true')
+          print(f"stale={'true' if stale else 'false'}")
+          print(f"age={'never' if age is None else int(age)}")
+          print(f"flagged={' '.join(flagged)}")
+          PY
+      - name: Summary
+        if: steps.read.outputs.ok == 'true'
+        run: |
+          python3 - >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json
+          d = json.load(open('status.json'))
+          print(f"## Our domains — last run {d.get('last_run_at')}\n\n| domain | status | sources that flag it |\n|---|---|---|")
+          for x in d.get('domains') or []:
+              fl = [f"{s['name']} ({s.get('detail') or 'flagged'})" for s in x.get('sources') or [] if s.get('verdict') == 'flagged']
+              print(f"| {x['domain']} | {x.get('status')} | {', '.join(fl) or '-'} |")
+          PY
+      - name: Open, update or close the issue
+        if: steps.read.outputs.ok == 'true' && steps.read.outputs.age != 'never'
+        run: |
+          num=$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "\"$ISSUE_TITLE\" in:title" --json number,title \
+                --jq "[.[] | select(.title == env.ISSUE_TITLE)][0].number // empty")
+          flagged="${{ steps.read.outputs.flagged }}"
+          if [ -n "$flagged" ]; then
+            python3 - > body.md <<'PY'
+          import json, os
+          d = json.load(open('status.json'))
+          print(f"The hourly trust check flags our own domain(s) (last run {d.get('last_run_at')}, source {os.environ['STATUS_URL']}).\n")
+          print('| domain | source | what it said | evidence |\n|---|---|---|---|')
+          for x in d.get('domains') or []:
+              for s in x.get('sources') or []:
+                  if s.get('verdict') == 'flagged':
+                      print(f"| {x['domain']} | {s['name']} | {s.get('detail') or 'flagged'} | <{s.get('evidence_url')}> |")
+          print('\nPlaybook: TRUST.md, "If our own domain is flagged". Nothing is sent to anyone outside without the maintainer\'s yes.')
+          print(f"\n<!-- flags: {' '.join(sorted(x['domain'] + ':' + s['name'] for x in d.get('domains') or [] for s in x.get('sources') or [] if s.get('verdict') == 'flagged'))} -->")
+          PY
+            if [ -n "$num" ]; then
+              old=$(gh issue view -R "$GITHUB_REPOSITORY" "$num" --json body --jq .body | grep -o '<!-- flags: .* -->' || true)
+              new=$(grep -o '<!-- flags: .* -->' body.md)
+              gh issue edit -R "$GITHUB_REPOSITORY" "$num" --body-file body.md
+              if [ "$old" != "$new" ]; then gh issue comment -R "$GITHUB_REPOSITORY" "$num" --body "Flags changed: now $flagged."; fi
+            else
+              gh issue create -R "$GITHUB_REPOSITORY" --title "$ISSUE_TITLE" --body-file body.md
+            fi
+          elif [ -n "$num" ]; then
+            gh issue close -R "$GITHUB_REPOSITORY" "$num" --comment "All our domains are clean in the run of $(python3 -c "import json;print(json.load(open('status.json')).get('last_run_at'))"). Closing."
+          fi
+      - name: Heartbeat (fail when the check stopped running)
+        run: |
+          if [ "${{ steps.read.outputs.ok }}" != "true" ]; then echo "::error::status endpoint unreachable: $STATUS_URL"; exit 1; fi
+          if [ "${{ steps.read.outputs.stale }}" = "true" ]; then
+            echo "::error::last_run_at is older than 2 hours (age: ${{ steps.read.outputs.age }} s): the hourly own-domain trust check is not running"; exit 1
+          fi
+          echo "heartbeat ok: last run ${{ steps.read.outputs.age }} s ago"
