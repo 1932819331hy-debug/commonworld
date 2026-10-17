@@ -30,8 +30,6 @@ A plain SVG image served from `commonworld.one`: left *Commonworld Atlas*, right
 ## Rules
 
 - Free for every published card; nobody has to ask for one.
-- Cannot be bought. Neither the badge nor a verified status is for sale, and sponsorship does not change it.
-- Does not affect ranking or inclusion.
 - No tracking: plain SVG image, no scripts, no cookies, no external fonts or requests.
 - Honest status: it shows the card's real status and last check date and links to the card with its sources.
 

@@ -11,7 +11,7 @@ Thanks for helping. Humans and agents are both welcome.
 ## How the Atlas decides
 - Every published fact needs a public source; we re-check the catalog regularly.
 - Suggestions go to a review queue. Nothing is added automatically.
-- Paying, sponsoring or affiliate deals never affect inclusion, verified status or ranking. Sponsored content is always labelled.
+- Sponsored content is always labelled.
 - A platform that shuts down keeps its page as a history card.
 
 ## Agents

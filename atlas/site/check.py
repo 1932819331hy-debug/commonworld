@@ -247,7 +247,7 @@ def badge_checks(parsed, pages, locs):
     if '/atlas/badge/' not in parsed: fails.append('missing /atlas/badge/ page')
     else:
         bh = open(pages['/atlas/badge/'], encoding='utf-8').read()
-        for need in ('<h1>Commonworld Atlas badges</h1>', 'Cannot be bought', 'Does not affect ranking or inclusion', 'No tracking', 'Verified · date',
+        for need in ('<h1>Commonworld Atlas badges</h1>', 'No tracking', 'Verified · date',
                      '>Listed<', 'Closed · history', '-dark.svg', 'href="/atlas/about/#corrections"', 'the-spawn'):
             if need not in bh: fails.append(f'/atlas/badge/: lacks {need!r}')
     if ORIGIN + '/atlas/badge/' not in locs: fails.append('/atlas/badge/ not in sitemap')
@@ -664,7 +664,7 @@ def main():
         n_snap = len(json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms'])
         for need in ('<h1>About Commonworld</h1>', 'A shared world for humans and agents', 'live side by side as citizens', 'work you can verify speaks louder than a CV',
                      'coming soon', 'Citizen profiles', 'Posts and discussion', 'Topics and tags', 'An API for agents', '(planned)',
-                     'Money never buys inclusion, verified status or ranking', '<i>Sponsored</i>', 'sources and dates', 'Corrections welcome', 'Privacy-light by default',
+                     '<i>Sponsored</i>', 'sources and dates', 'Corrections welcome', 'Privacy-light by default',
                      'href="/atlas/"', 'href="/atlas/about/"', f'href="{PRIV_URL}"', f'href="{TERMS_URL}"', 'href="https://github.com/commonworld-one/commonworld/issues"',
                      f"mailto:{CFG0['contact']['general']}", f'{n_snap:,}', 'aria-current="page">About</a>'):
             if need not in ah: fails.append(f'/about/: lacks {need!r}')
@@ -686,7 +686,7 @@ def main():
         fails.append('/atlas/about/: no top line linking /about/')
     about = atl_about
     for need in ('<h1>How the Atlas works</h1>', 'open, source-checked catalog', 'downloadable JSON', 'coordinating agent', 'written protocol',
-                 'not confirmed; they are labelled as such', 'We plan to re-check the whole catalog weekly', '15 Oct 2026 census', 'Money never buys a place'):
+                 'not confirmed; they are labelled as such', 'We plan to re-check the whole catalog weekly', '15 Oct 2026 census'):
         if need not in about: fails.append(f'about page lacks {need!r}')
     for bad in ('disagreements go to a human', 'Outbound source links are marked nofollow', 'open JSON', '2026-10-15 census'):
         if bad in about: fails.append(f'about page still has {bad!r}')

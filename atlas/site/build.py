@@ -882,7 +882,7 @@ def build_earn(site):
     lead = ('<p>Live platforms in the Atlas where money demonstrably moves: payouts to agents, bounty rewards, paid API settlements, prize pools. '
             'Each row shows the money figure exactly as on the platform’s card, with its unit, window, basis and source.</p>'
             '<p>Figures are as observed on the date shown and are never converted between currencies or units. '
-            f'Money never buys a place or a position here; see <a href="{b}/about/#advertise">how the Atlas works</a>.</p>')
+            f'See <a href="{b}/about/#advertise">how the Atlas works</a>.</p>')
     body = f"""{crumbs}
 {cw.hero('Atlas · money', 'Where agents get paid', lead, box, small=True, kicker_href=f'{b}/')}
 {cw.share_bar(site.cfg, site.abs(f'{b}/earn/'), SHARE_TEXT_EARN, cls='cw-share-earn')}
@@ -902,7 +902,7 @@ def build_earn(site):
                 body=body, active='earn', ld=ld, lastmod=lm,
                 og=og_generic(site, 'page-earn', 'Where agents get paid',
                               'Live platforms where money moves, each figure with its unit, window, basis and source. Grouped by unit, never converted.',
-                              [(f'{len(rows)} platforms', 'olive'), (f'{usd} in dollars', 'live'), ('no paid placement', None)], kicker='MONEY'))
+                              [(f'{len(rows)} platforms', 'olive'), (f'{usd} in dollars', 'live'), ('never converted', None)], kicker='MONEY'))
 
 
 def build_earn_json(site, write):
@@ -969,7 +969,7 @@ def build_about(site):
 <li><b>Automated weekly check</b>: the site could not be reached in 2 consecutive weekly checks, each with several attempts plus alternate URLs (http/https, www). One failed week only marks the card as suspected internally; nothing is published. Such cards show “Closed by automated check since &lt;date&gt;” and reopen automatically if the site answers again.</li></ul>
 <p>A single failed page load is never treated as proof, and a blocked or JavaScript-only page counts as reachable. Closed cards stay as history records with their dates; pages and IDs are never removed.</p>
 <h2 id="badges">Badges for listed platforms</h2>
-<p>Every published card has a free status badge (<i>Verified</i>, <i>Listed</i> or <i>Closed</i>) that its platform can show on its own site or README. It is rebuilt with every weekly check, cannot be bought and does not affect ranking or inclusion. See <a href="{b}/badge/">Atlas badges</a>.</p>
+<p>Every published card has a free status badge (<i>Verified</i>, <i>Listed</i> or <i>Closed</i>) that its platform can show on its own site or README. It is rebuilt with every weekly check. See <a href="{b}/badge/">Atlas badges</a>.</p>
 <h2 id="tags">Tags</h2>
 <p>The <i>#tags</i> on cards and in the tag shelf are descriptive labels carried over from the 15 Oct 2026 census (for example <i>#x402</i>, <i>#mcp</i>, <i>#bounties</i>). They help you browse; they are <b>not verified claims</b>. Status and judgement tags from the census were removed, duplicates merged, and only tags used by at least two entries are shown.</p>
 <h2 id="ids">Permanent IDs and closed platforms</h2>
@@ -983,7 +983,7 @@ def build_about(site):
 <h2 id="corrections">Report a correction</h2>
 <p>If a card is wrong or out of date, <a href="{e(s['corrections_url'])}" rel="nofollow noopener">open a correction request on GitHub</a> (you need a free GitHub account; requests there are public){(', or email ' + mailto(gen_mail)) if gen_mail else ''}. Include the card's permanent ID and a link to a source that shows the right fact. Corrections are checked the same way as new cards. Operators can ask for corrections too, but a correction needs a source, not only a statement.</p>
 <h2 id="advertise">Sponsored placements</h2>
-<p>Money never buys a place in the Atlas, a verified status, or a higher position. Sponsored slots are always labelled <i>Sponsored</i>, and their links are marked <code>rel="sponsored nofollow"</code>.{(' To advertise, write to ' + mailto(gen_mail) + '.') if gen_mail else ''}</p>
+<p>Sponsored slots are always labelled <i>Sponsored</i>, and their links are marked <code>rel="sponsored nofollow"</code>.{(' To advertise, write to ' + mailto(gen_mail) + '.') if gen_mail else ''}</p>
 <h2 id="privacy">Privacy</h2>
 <p>Analytics cookies (Google Analytics) are set only if you click <i>Accept</i> in the cookie banner; there are no accounts and no advertising cookies. Details are in the Commonworld <a href="{legal_urls(site)[0]}">Privacy Policy</a>; the rules for using the site are in the Commonworld <a href="{legal_urls(site)[1]}">Terms of Use</a>. Both apply to all of Commonworld, including the Atlas.</p>
 </div>"""
@@ -1129,7 +1129,7 @@ def build_terms(site):
 <h2 id="corrections">Corrections</h2>
 <p>If something is wrong, <a href="{e(corr)}" rel="nofollow noopener">open a correction request on GitHub</a> (needs a GitHub account) or email {gm}, with a link to a source that shows the right fact. Corrections are checked like new cards. We may decline a request that has no source.</p>
 <h2 id="sponsored">Sponsored content</h2>
-<p>Money never buys a place in the Atlas, a verified status, or a higher position. Sponsored slots are always labelled <i>Sponsored</i>, and their links are marked <code>rel="sponsored nofollow"</code>. Sponsors are responsible for their own ads and the sites they link to. We may refuse or remove any ad.</p>
+<p>Sponsored slots are always labelled <i>Sponsored</i>, and their links are marked <code>rel="sponsored nofollow"</code>. Sponsors are responsible for their own ads and the sites they link to. We may refuse or remove any ad.</p>
 <h2 id="links">External links</h2>
 <p>Cards link to third-party sites and sources. We are not responsible for their content, availability, terms or privacy practices.</p>
 <h2 id="reuse">Reusing content and data</h2>
@@ -1149,7 +1149,7 @@ def build_terms(site):
                       lead='The rules for using Commonworld, in plain words.', body_html=body,
                       title='Commonworld Terms of Use: catalog, sponsorship and liability',
                       description='Terms of use for Commonworld and the Atlas: an informational catalog, no endorsement or financial advice, corrections, sponsorship and data reuse.',
-                      og_name='page-terms', og_desc='An informational catalog: no endorsement, no financial advice. Money never buys a place, a verified status or a position.',
+                      og_name='page-terms', og_desc='An informational catalog: no endorsement, no financial advice.',
                       og_chips=[('terms', 'olive'), ('sponsorship', None), ('corrections', None)])
 
 
@@ -1283,8 +1283,7 @@ def build_cw_about(site):
 <li><b>An API for agents</b>, so agents can take part directly (planned).</li></ul>
 <p>Until then, Commonworld is the Atlas. This page will change as parts of the platform launch.</p>
 <h2 id="principles">Principles</h2>
-<ul><li><b>Money never buys inclusion, verified status or ranking.</b> Nobody can pay to be listed, to be marked verified, or to be placed higher.</li>
-<li><b>Ads only in clearly labelled slots.</b> Advertising appears only in slots marked <i>Sponsored</i>, and their links are marked <code>rel="sponsored nofollow"</code>.</li>
+<ul><li><b>Ads only in clearly labelled slots.</b> Advertising appears only in slots marked <i>Sponsored</i>, and their links are marked <code>rel="sponsored nofollow"</code>.</li>
 <li><b>Facts with sources and dates.</b> A fact is shown with where it came from and when it was observed, so anyone can check it.</li>
 <li><b>Corrections welcome.</b> If something is wrong, <a href="{e(issues)}/issues" rel="nofollow noopener">open an issue on GitHub</a> (<code>github.com/commonworld-one/commonworld</code>; requests there are public) or email {gm}. Corrections need a source, and are checked like everything else.</li>
 <li><b>Privacy-light by default.</b> No accounts, no advertising cookies; analytics only if you accept them. Details are in the <a href="{priv_url}">Privacy Policy</a> and the <a href="{terms_url}">Terms of Use</a>.</li></ul>
@@ -1392,8 +1391,6 @@ def build_badge_page(site):
 <p>How a card is checked and when it is marked closed is explained in <a href="{b}/about/#verified">How the Atlas works</a> and <a href="{b}/about/#closures">When a card is marked closed</a>.</p>
 <h2 id="rules">Rules</h2>
 <ul><li><b>Free for every published card.</b> Every card that has a page has a badge; nobody has to ask for one.</li>
-<li><b>Cannot be bought.</b> Neither the badge nor a verified status is for sale, and sponsorship does not change it.</li>
-<li><b>Does not affect ranking or inclusion.</b> Showing the badge, or not showing it, changes nothing about the card or its position.</li>
 <li><b>No tracking.</b> The badge is a plain SVG image: no scripts, no cookies, no external fonts or requests, no counters.</li>
 <li><b>Honest status.</b> It shows the card\u2019s real status and last check date, and links to the card with its facts and sources.</li></ul>
 <h2 id="add">How to add it</h2>
