@@ -1,0 +1,35 @@
+# Link check settings for CI (.github/workflows/quality.yml). Two passes share this file:
+#   internal: --offline over the built site (atlas/site/dist), every page-to-page link must resolve -> blocking
+#   external: every outbound link on the built site, retried and cached -> warnings + a tracking issue, never blocking
+# Absolute links to our own site are remapped onto the built files, so the internal pass checks them too.
+remap = ["^https://commonworld\\.one/(.*)$ file://DIST_ROOT/$1"]
+index_files = ["index.html"]
+include_fragments = "none"
+max_retries = 3
+retry_wait_time = 4
+timeout = 25
+max_concurrency = 16
+max_redirects = 10
+user_agent = "Mozilla/5.0 (compatible; CommonworldAtlasLinkCheck/1.0; +https://commonworld.one/atlas/about/)"
+# 403/429 from bot walls and rate limits are not broken links; the official URLs are re-checked by the weekly refresh anyway
+accept = ["100..=103", "200..=299", "403", "429"]
+cache = true
+max_cache_age = "2d"
+cache_exclude_status = ["429", "500..=599"]
+exclude_loopback = true
+exclude_all_private = true
+exclude = [
+  # share intents and sites that answer every robot with a login wall
+  "^https://(www\\.)?(x|twitter)\\.com/intent/",
+  "^https://(www\\.)?linkedin\\.com/",
+  "^https://(www\\.)?facebook\\.com/sharer",
+  "^https://(www\\.)?reddit\\.com/submit",
+  "^https://t\\.me/share",
+  "^mailto:",
+  # analytics endpoints referenced by the consent code, not links
+  "googletagmanager\\.com",
+  "google-analytics\\.com",
+  "cloudflareinsights\\.com",
+  # Cloudflare edge paths exist only on the live site
+  "/cdn-cgi/",
+]

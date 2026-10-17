@@ -61,9 +61,27 @@ ADS_OK = """(() => { const k = Array.from(document.querySelectorAll('#grid > .cw
   return [vis, ads.length, okPos && ads.length === Math.floor(vis / 12)]; })()"""
 
 
+CSP_ERRORS = []  # every page of every context: console CSP violations + securitypolicyviolation events (serve.py sends the real CSP)
+CSP_HOOK = ("document.addEventListener('securitypolicyviolation',function(e){console.error('CSP-VIOLATION '+e.violatedDirective+' '+(e.blockedURI||'inline')+' '+(e.sourceFile||'')+':'+(e.lineNumber||0))});")
+
+
+def _watch(pg):
+    pg.on('console', lambda m: CSP_ERRORS.append(f'{pg.url}: {m.text[:200]}')
+          if m.type == 'error' and ('Content Security Policy' in m.text or 'CSP-VIOLATION' in m.text) else None)
+
+
 def launch(p):
     exe = os.environ.get('CHROMIUM') or ('/usr/bin/chromium' if os.path.exists('/usr/bin/chromium') else None)
-    return p.chromium.launch(**({'executable_path': exe} if exe else {}))
+    br = p.chromium.launch(**({'executable_path': exe} if exe else {}))
+    plain = br.new_context
+
+    def new_context(*a, **k):
+        ctx = plain(*a, **k)
+        ctx.add_init_script(CSP_HOOK)
+        ctx.on('page', _watch)
+        return ctx
+    br.new_context = new_context
+    return br
 
 
 with sync_playwright() as p:
@@ -391,6 +409,8 @@ with sync_playwright() as p:
           and (mp.click('.cw-menu') or mp.wait_for_timeout(300) or mp.is_visible('.cw-side .cw-nav')))
     check('sidebar toggle (390): no horizontal scroll', mp.evaluate(NO_HSCROLL))
     mc.close()
+    # strict CSP (no 'unsafe-inline'): nothing the smoke test touched may trip it
+    check(f'CSP: no violations on any page visited ({len(CSP_ERRORS)}: {sorted(set(CSP_ERRORS))[:5]})', not CSP_ERRORS)
     br.close()
 srv.shutdown()
 print('SMOKE OK' if ok else 'SMOKE FAILED')

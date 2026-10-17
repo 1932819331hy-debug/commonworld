@@ -1,0 +1,139 @@
+name: Quality (links + Lighthouse)
+# Public quality standard for commonworld.one (see README "Quality gates"):
+#   - internal links of the built site must all resolve (lychee --offline)      -> blocking
+#   - outbound links are checked with retries + cache                            -> warning; weekly run keeps one tracking issue
+#   - Lighthouse on 5 representative pages, mobile and desktop: performance,
+#     accessibility, best practices and SEO each >= 95 (median of 3 runs)        -> blocking
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 5 * * 1'   # Mondays 05:23 UTC: full outbound link sweep, updates the tracking issue
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Fetch homepage screenshots (orphan branch atlas-screens)
+        run: git fetch --depth=1 --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens
+      - name: Build
+        env:
+          CW_SCREENS_REQUIRED: '1'
+        run: python atlas/site/build.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: atlas/site/dist/
+          retention-days: 3
+          include-hidden-files: true
+
+  links-internal:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: atlas/site/dist
+      - name: Config for this checkout
+        run: sed "s#DIST_ROOT#$GITHUB_WORKSPACE/atlas/site/dist#" lychee.toml > "$RUNNER_TEMP/lychee.toml"
+      - name: Internal links (blocking)
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --config ${{ runner.temp }}/lychee.toml --offline --root-dir ${{ github.workspace }}/atlas/site/dist
+            --no-progress 'atlas/site/dist/**/*.html'
+          fail: true
+          jobSummary: true
+          output: ${{ runner.temp }}/lychee-internal.md
+
+  links-external:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write   # weekly sweep keeps one open issue in sync
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: atlas/site/dist
+      - name: Config for this checkout
+        run: sed "s#DIST_ROOT#$GITHUB_WORKSPACE/atlas/site/dist#" lychee.toml > "$RUNNER_TEMP/lychee.toml"
+      - name: Restore link cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .lycheecache
+          key: lychee-${{ github.run_id }}
+          restore-keys: lychee-
+      - name: Outbound links (non-blocking)
+        id: lychee
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --config ${{ runner.temp }}/lychee.toml --root-dir ${{ github.workspace }}/atlas/site/dist
+            --scheme https --scheme http --no-progress 'atlas/site/dist/**/*.html'
+          fail: false
+          jobSummary: true
+          output: ${{ runner.temp }}/lychee-external.md
+      - name: Report
+        if: steps.lychee.outputs.exit_code != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REPORT: ${{ runner.temp }}/lychee-external.md
+        run: |
+          echo "::warning::Some outbound links did not answer (details in the job summary). They are tracked, not blocking."
+          if [ "$EVENT" = "schedule" ] || [ "$EVENT" = "workflow_dispatch" ]; then
+            title="Outbound link report"
+            n=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')
+            if [ -n "$n" ]; then gh issue edit "$n" --body-file "$REPORT"; else gh issue create --title "$title" --body-file "$REPORT"; fi
+          fi
+
+  lighthouse:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        form: [mobile, desktop]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: atlas/site/dist
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: Lighthouse CI (budgets >= 95)
+        run: npx --yes @lhci/cli@0.15.1 autorun --config=atlas/site/tools/lighthouse/${{ matrix.form }}.json
+      - name: Scores
+        if: always()
+        run: python3 atlas/site/tools/lighthouse/summary.py atlas/site/screenshots/lighthouse/${{ matrix.form }} ${{ matrix.form }} >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: lighthouse-${{ matrix.form }}
+          path: atlas/site/screenshots/lighthouse/${{ matrix.form }}/
+          retention-days: 14
+          if-no-files-found: ignore

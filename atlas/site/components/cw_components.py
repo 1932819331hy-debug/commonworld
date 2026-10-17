@@ -29,6 +29,7 @@ Cross-product navigation
   mark_icon(base)                          small CW logo mark (light/dark) for that item
 """
 import html
+import re
 import json
 from urllib.parse import quote
 
@@ -281,17 +282,33 @@ def stats_strip(tiles, label='Summary'):
 
 
 def catbar(segments):
-    """segments: [(n, color, title)]"""
+    """segments: [(n, color_class, title)]. No style="" (strict CSP): widths come from .fx-N classes (flex_classes),
+    colors from the category classes (color_classes)."""
     return '<div class="cw-catbar" aria-hidden="true">' + ''.join(
-        f'<i style="flex:{int(n)};background:{e(c)}" title="{e(t)}"></i>' for n, c, t in segments if n) + '</div>'
+        f'<i class="fx-{int(n)} {e(c)}" title="{e(t)}"></i>' for n, c, t in segments if n) + '</div>'
+
+
+def flex_classes(ns):
+    """CSS for catbar segment widths: [96, 10] -> '.fx-96{flex:96}.fx-10{flex:10}' (only the values the build uses)."""
+    return ''.join(f'.fx-{int(n)}{{flex:{int(n)}}}' for n in sorted({int(n) for n in ns if n}))
+
+
+def ad_slot_classes(cfg):
+    """CSS for ad slot sizes (one rule per configured slot) so the markup needs no style="" attribute."""
+    out = []
+    for name, s in sorted((cfg.get('ad_slots') or {}).items()):
+        if re.fullmatch(r'[a-z0-9-]+', name) and s:
+            w, h = (s.get('size') or [728, 90])[:2]
+            out.append(f'.cw-ad[data-ad-slot="{name}"]{{--ad-w:{int(w)}px;--ad-h:{int(h)}px}}')
+    return ''.join(out)
 
 
 def legend(items, tag='button'):
-    """items: [(label, n, live, color, attrs_dict)] -> 'Social & forums 90 (85 live)'."""
+    """items: [(label, n, live, color_class, attrs_dict)] -> 'Social & forums 90 (85 live)'."""
     out = []
     for lab, n, live, color, at in items:
         extra = ' type="button" aria-pressed="false"' if tag == 'button' else ''
-        out.append(f'<{tag}{extra}{attrs(at)}><i style="background:{e(color)}"></i>{e(lab)} <b>{n}</b> <span title="live">({live} live)</span></{tag}>')
+        out.append(f'<{tag}{extra}{attrs(at)}><i class="{e(color)}"></i>{e(lab)} <b>{n}</b> <span title="live">({live} live)</span></{tag}>')
     return '<div class="cw-legend">' + ''.join(out) + '</div>'
 
 
@@ -374,7 +391,6 @@ def ad_slot(cfg, name, cls=''):
         return ''
     w, h = (s.get('size') or [728, 90])[:2]
     c = s.get('creative')
-    style = f'--ad-w:{int(w)}px;--ad-h:{int(h)}px'
     if c and c.get('href'):
         img = (f'<img src="{e(c["image"])}" alt="{e(c.get("alt") or c.get("title") or "")}" width="{int(w)}" height="{int(h)}" loading="lazy" decoding="async">'
                if c.get('image') else
@@ -386,7 +402,7 @@ def ad_slot(cfg, name, cls=''):
     else:
         return ''
     c2 = f' {cls}' if cls else ''
-    return (f'<aside class="cw-ad{c2}" data-ad-slot="{e(name)}" style="{style}" aria-label="Sponsored">'
+    return (f'<aside class="cw-ad{c2}" data-ad-slot="{e(name)}" aria-label="Sponsored">'
             f'<span class="cw-ad-label">Sponsored</span>{inner}</aside>')
 
 

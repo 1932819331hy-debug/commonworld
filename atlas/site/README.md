@@ -276,6 +276,14 @@ components. Operator is just "Commonworld"; the pages name no country or locatio
 
 Build command `python3 atlas/site/build.py`, output directory `atlas/site/dist`. The build fetches the screenshots itself (branch `atlas-screens` via git, else the public tarball); Pages builds of the `atlas-screens` branch itself fail harmlessly (no build.py there) and can be excluded in the Pages branch settings. The repo-root `requirements.txt` (`Pillow>=10`) makes Cloudflare Pages install Pillow for the OG images. Pages serves `dist/atlas/...` at `/atlas/...`, uses `dist/404.html` for missing pages and applies `dist/_headers`. If `/atlas` is mounted inside a bigger Commonworld site, copy `dist/atlas/` into that site's output and merge `robots.txt` (it only has to contain the `Sitemap:` line for `https://commonworld.one/atlas/sitemap.xml`).
 
+### Security headers and CSP
+
+`build.py` writes `dist/_headers` with a strict Content Security Policy (no `'unsafe-inline'`). Rules for page code:
+no `style=""` attributes and no inline `<style>` (add a class to `atlas.css`, or a generated class next to `color_classes` / `flex_classes` / `ad_slot_classes`), no `on…=""` handlers, no `javascript:` URLs.
+An inline `<script>` is allowed automatically: `build.py` hashes every executable inline script it writes and puts the hash in `script-src`; `check.py` re-hashes every page and fails on anything missing.
+Cloudflare injects its own inline JavaScript Detections bootstrap whose text changes per response; `functions/_middleware.js` (Pages Functions, HTML pages only via `dist/_routes.json`) adds a fresh per-request `'nonce-…'` to `script-src`, and Cloudflare stamps that nonce on what it injects. Our markup never uses the nonce.
+`serve.py` sends the same headers (minus HSTS and `upgrade-insecure-requests`) and gzips text, so the smoke test and Lighthouse run under production rules.
+
 ## Link safety
 
 Policy: `atlas/CURATION.md#link-safety`. `atlas/tools/safebrowsing_check.py` (stdlib) extracts every outbound host from the snapshot,

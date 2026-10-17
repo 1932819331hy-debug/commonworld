@@ -18,6 +18,16 @@ The code and open data will be published here. Until then you can already:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Quality gates
+
+Every change to the site passes the same public bar before it ships, and anyone can read the results in [Actions](../../actions):
+
+- **Strict Content Security Policy.** No `'unsafe-inline'`: our one inline boot script is allowed by its sha256 hash, styles live only in stylesheets, and Cloudflare's own injected scripts get a fresh per-request nonce from [`functions/_middleware.js`](functions/_middleware.js). `atlas/site/check.py` re-hashes every inline script on every page, and the browser smoke test fails on any CSP report.
+- **Links.** [lychee](https://github.com/lycheeverse/lychee) checks every link of the built site ([`lychee.toml`](lychee.toml)). Links between our own pages must all resolve; outbound links are retried and cached, and the weekly sweep keeps one "Outbound link report" issue up to date.
+- **Lighthouse.** Five representative pages (`/`, `/atlas/`, `/atlas/about/`, `/atlas/decisions/`, a platform page), mobile and desktop, median of 3 runs: performance, accessibility, best practices and SEO each **95 or higher** ([`atlas/site/tools/lighthouse/`](atlas/site/tools/lighthouse/)).
+
+Workflows: `CI` (build, data mirror, `check.py`, browser smoke test) and `Quality (links + Lighthouse)`.
+
 ## Badges
 
 Every published Atlas card has a free status badge (Verified · date / Listed / Closed · history) that the platform can put on its site or README. Free, never sold, no tracking, rebuilt with every weekly check. Rules and code: https://commonworld.one/atlas/badge/ and [BADGE.md](BADGE.md).

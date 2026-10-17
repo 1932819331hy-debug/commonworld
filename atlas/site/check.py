@@ -614,6 +614,68 @@ def screens_checks(pages):
     return fails
 
 
+def csp_checks(pages):
+    """Strict CSP (no 'unsafe-inline'): every inline <script>/<style> on every page has its sha256 in the CSP,
+    no style="" / on*="" attributes or javascript: URLs, the Pages nonce middleware matches the CSP, the Function
+    only runs for HTML (_routes.json), and Permissions-Policy leaves picture-in-picture alone (Cloudflare's
+    challenge script probes it)."""
+    import base64, hashlib
+    fails = []
+    hd = open(os.path.join(DIST, '_headers'), encoding='utf-8').read()
+    blk = hd[hd.find('\n/*\n') + 1:] if '\n/*\n' in hd else ''
+    m = re.search(r'^  Content-Security-Policy: (.+)$', blk, re.M)
+    if not m:
+        return ['_headers: /* block has no Content-Security-Policy']
+    csp = {d.split(' ')[0]: d.split(' ')[1:] for d in m.group(1).split('; ')}
+    for k in ('script-src', 'style-src'):
+        if k not in csp: fails.append(f'CSP lacks {k}')
+    for k, v in csp.items():
+        for bad in ("'unsafe-inline'", "'unsafe-eval'", "'unsafe-hashes'", '*'):
+            if bad in v: fails.append(f'CSP {k} allows {bad}')
+    if "'self'" not in csp.get('script-src', []): fails.append("CSP script-src lacks 'self' (Cloudflare /cdn-cgi/ scripts)")
+    for k, want in (('object-src', "'none'"), ('base-uri', "'self'"), ('script-src-attr', "'none'"), ('style-src-attr', "'none'")):
+        if csp.get(k) != [want]: fails.append(f'CSP {k} should be {want}')
+    pp = re.search(r'^  Permissions-Policy: (.+)$', blk, re.M)
+    if pp and 'picture-in-picture' in pp.group(1): fails.append('Permissions-Policy names picture-in-picture (Cloudflare challenge script logs an error)')
+    sh = lambda t: "'sha256-" + base64.b64encode(hashlib.sha256(t.encode('utf-8')).digest()).decode() + "'"
+    script_re = re.compile(r'<script\b(?![^>]*\bsrc=)(?![^>]*\btype="application/(?:ld\+)?json")[^>]*>(.*?)</script>', re.S)
+    used = set()
+    every = {os.path.relpath(os.path.join(r, f), DIST): os.path.join(r, f) for r, _, fs in os.walk(DIST) for f in fs if f.endswith('.html')}
+    for u, fp in sorted(every.items()):  # every HTML file, stubs included
+        h = open(fp, encoding='utf-8').read()
+        for mm in script_re.finditer(h):
+            hs = sh(mm.group(1)); used.add(hs)
+            if hs not in csp.get('script-src', []): fails.append(f'{u}: inline script {hs} not allowed by the CSP hash list')
+        for mm in re.finditer(r'<style\b[^>]*>(.*?)</style>', h, re.S):
+            if sh(mm.group(1)) not in csp.get('style-src', []): fails.append(f'{u}: inline <style> without a CSP hash')
+        tags = re.findall(r'<[a-zA-Z][^>]*>', h)
+        if any(re.search(r'\sstyle\s*=', t) for t in tags): fails.append(f'{u}: style="" attribute (blocked by style-src-attr)')
+        if any(re.search(r'\son[a-z]+\s*=', t) for t in tags): fails.append(f'{u}: inline event handler (blocked by script-src-attr)')
+        if re.search(r'(?:href|src|action)\s*=\s*"\s*javascript:', h, re.I): fails.append(f'{u}: javascript: URL')
+    stale = [x for x in csp.get('script-src', []) if x.startswith("'sha256-") and x not in used]
+    if stale: fails.append(f'CSP script-src carries {len(stale)} hash(es) no page uses')
+    for f in ('cw-components.js',):
+        if re.search(r'style=\\?["\']', open(os.path.join(HERE, 'components', f)).read()): fails.append(f'{f} builds markup with style=""')
+    if re.search(r'style=\\?["\']', open(os.path.join(HERE, 'static', 'atlas.js')).read()): fails.append('atlas.js builds markup with style=""')
+    mw = os.path.join(HERE, '..', '..', 'functions', '_middleware.js')
+    if not os.path.exists(mw):
+        fails.append('functions/_middleware.js missing (per-request nonce for Cloudflare-injected scripts)')
+    else:
+        mk = re.search(r'const MARK = "([^"]+)"', open(mw, encoding='utf-8').read())
+        if not mk or mk.group(1) not in m.group(1): fails.append('functions/_middleware.js MARK does not match the CSP script-src')
+    try:
+        rt = json.load(open(os.path.join(DIST, '_routes.json')))
+        rules = rt.get('include', []) + rt.get('exclude', [])
+        if rt.get('version') != 1 or len(rules) > 100 or any(len(r) > 100 or not r.startswith('/') for r in rules): fails.append('_routes.json: invalid (version 1, <=100 rules, each <=100 chars)')
+        for x in ('/atlas/assets/*', '/atlas/og/*', '/atlas/screens/*', '/api/*', '/cdn-cgi/*'):
+            if x not in rt.get('exclude', []): fails.append(f'_routes.json does not exclude {x} (assets must not invoke the Function)')
+    except (OSError, ValueError) as ex:
+        fails.append(f'_routes.json: {ex}')
+    hosts = ' '.join(x for x in csp.get('script-src', []) if not x.startswith("'sha256"))
+    print(f'csp: {len(used)} inline script hash(es), {len(every)} pages scanned, script-src {hosts}' + ('' if not fails else f' ({len(fails)} problems)'))
+    return fails
+
+
 def a11y_checks(pages):
     """Lighthouse follow-ups (static part; the browser part is in tools/smoke_test.py): counters are not faded with opacity
     (contrast >= 4.5:1), footer links have 24x24 tap targets, the landing logo image has >= 2x the pixels it is shown at."""
@@ -1144,6 +1206,7 @@ def main():
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)
     fails += a11y_checks(pages)
+    fails += csp_checks(pages)
     fails += closure_checks(pages)
     fails += screens_checks(pages)
     biggest = max(pages, key=lambda u: os.path.getsize(pages[u]))

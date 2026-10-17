@@ -12,7 +12,7 @@ Output (default atlas/site/dist/) is a plain static tree with clean URLs as dire
   /api/v1/ (static API: index.json, openapi.json, changelog, schemas/, atlas/{index,platforms,earn}.json, atlas/platforms|categories/<id>.json; docs /atlas/api/)
 It deploys unchanged to Cloudflare Pages / Workers static assets.
 """
-import argparse, html, json, os, re, shutil, sys
+import argparse, base64, hashlib, html, json, os, re, shutil, sys
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 
@@ -538,8 +538,8 @@ def build_index(site):
         (f'{n - live:,}', 'closed (history) · filter', {'data-filter': 'status:closed'}, 'closed', True),
         (f'{money:,}', 'with money flow · filter', {'data-filter': 'feat:money'}, 'money', True),
         (f'{nums:,}', 'with numbers · filter', {'data-filter': 'feat:num'}, 'num', True)], label='Atlas summary')
-    bar = cw.catbar([(len(site.by_cat[k]), CAT_COLOR[k], f'{CAT_LABEL[k]}: {len(site.by_cat[k])}') for k in site.cats])
-    leg = cw.legend([(CAT_LABEL[k], len(site.by_cat[k]), sum(1 for c in site.by_cat[k] if c['status'] == 'live'), CAT_COLOR[k],
+    bar = cw.catbar([(len(site.by_cat[k]), 'k-' + k, f'{CAT_LABEL[k]}: {len(site.by_cat[k])}') for k in site.cats])
+    leg = cw.legend([(CAT_LABEL[k], len(site.by_cat[k]), sum(1 for c in site.by_cat[k] if c['status'] == 'live'), 'k-' + k,
                       {'data-cat': k}) for k in site.cats])
     verified = site.latest.strftime('%Y-%m-%d') if site.latest else ''
     corr = cfg['site']['corrections_url']
@@ -680,7 +680,7 @@ def build_platform(site, c):
     tags = cw.tag_chips(c['_tags'], lambda t: tag_href(site, t), limit=99)
     body = f"""{crumbs}
 <article class="entry">
-<header class="entry-head"><div class="cw-meta"><a class="catchip" href="{b}/categories/{cat}/"><i style="background:{CAT_COLOR[cat]}"></i>{e(CAT_LABEL[cat])}</a></div>
+<header class="entry-head"><div class="cw-meta"><a class="catchip" href="{b}/categories/{cat}/"><i class="k-{cat}"></i>{e(CAT_LABEL[cat])}</a></div>
 <h1>{e(c['name'])}</h1>{chips(c)}
 <p class="cw-lead">{e(c['_desc'])}</p>{closed_box}{disclosure_box}{tags}<div class="entry-actions">{f'<p class="actions">{visit}</p>' if visit else ''}{cw.share_bar(site.cfg, site.abs(c['_url']), share_text_entry(c), cls='cw-share-head')}</div></header>
 {cw.ad_slot(site.cfg, 'atlas-platform-top', 'cw-ad-banner')}
@@ -805,10 +805,10 @@ def build_category(site, k):
 def build_categories_index(site):
     b = site.base
     crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), ('Categories', f'{b}/categories/')])
-    tiles = ''.join(f'<a class="cat-tile" href="{b}/categories/{k}/"><span class="catchip"><i style="background:{CAT_COLOR[k]}"></i>'
+    tiles = ''.join(f'<a class="cat-tile" href="{b}/categories/{k}/"><span class="catchip"><i class="k-{k}"></i>'
                     f'{len(site.by_cat[k])} entries · {sum(1 for c in site.by_cat[k] if c["status"] == "live")} live</span>'
                     f'<b>{e(CAT_LABEL[k])}</b><p>{e(CAT_DESC[k])}</p></a>' for k in site.cats)
-    bar = cw.catbar([(len(site.by_cat[k]), CAT_COLOR[k], f'{CAT_LABEL[k]}: {len(site.by_cat[k])}') for k in site.cats])
+    bar = cw.catbar([(len(site.by_cat[k]), 'k-' + k, f'{CAT_LABEL[k]}: {len(site.by_cat[k])}') for k in site.cats])
     body = f"""{crumbs}{cw.hero('Atlas', 'Directions', '<p>Every Atlas entry sits in one direction.</p>', small=True, kicker_href=f'{b}/')}
 {bar}<div class="cat-grid">{tiles}</div>"""
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': 'Atlas categories', 'url': site.abs(f'{b}/categories/'),
@@ -822,7 +822,7 @@ def build_categories_index(site):
 
 
 def list_table(site, cs):
-    rows = ''.join(f'<tr><td><a href="{c["_url"]}">{e(c["name"])}</a></td><td><a class="catchip" href="{site.base}/categories/{c["category"]}/"><i style="background:{CAT_COLOR[c["category"]]}"></i>{e(CAT_LABEL[c["category"]])}</a></td>'
+    rows = ''.join(f'<tr><td><a href="{c["_url"]}">{e(c["name"])}</a></td><td><a class="catchip" href="{site.base}/categories/{c["category"]}/"><i class="k-{c["category"]}"></i>{e(CAT_LABEL[c["category"]])}</a></td>'
                    f'<td>{e(TYPE_LABEL.get(c["entity_type"], c["entity_type"]))}</td><td>{status_chip(c)}</td><td>{time_tag(c["_verified"])}</td></tr>' for c in cs)
     return f'<div class="table-wrap"><table class="list"><thead><tr><th scope="col">Name</th><th scope="col">Direction</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Last verified</th></tr></thead><tbody>{rows}</tbody></table></div>'
 
@@ -853,7 +853,7 @@ def build_closed(site):
     lead = ('<p>Platforms that shut down keep their card as a history record, with the evidence of closure and dates.'
             + (f' {n_auto} of them {"was" if n_auto == 1 else "were"} closed by the automated weekly check.' if n_auto else '') + '</p>')
     body = f"""{crumbs}{cw.hero('Atlas · history', 'Closed platforms', lead, box, small=True, kicker_href=f'{b}/')}
-<div class="cw-grid" style="margin-top:22px">{''.join(card_html(site, c, note=closure_note(c)) for c in cs)}</div>"""
+<div class="cw-grid mt-22">{''.join(card_html(site, c, note=closure_note(c)) for c in cs)}</div>"""
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': 'Closed AI-agent platforms (history)', 'url': site.abs(f'{b}/closed/'),
                      'mainEntity': item_list_ld(site, cs, 'Closed platforms')}]
     return page(site, path=f'{b}/closed/', title=f'Closed agent platforms: {len(cs)} records | Commonworld Atlas',
@@ -949,7 +949,7 @@ def earn_table(site, rs):
         basis = x.get('basis')
         btag = f'<span class="tag {"t-warn" if basis == "operator_claim" else "t-basis"}">{e(BASIS_LABEL.get(basis, basis or "basis unknown"))}</span>'
         src = ext_link(x['source_url'], e(domain(x['source_url']))) if x.get('source_url') else 'No source link'
-        trs.append(f'<tr><td><a href="{c["_url"]}"><b>{e(c["name"])}</b></a><br><a class="catchip" href="{b}/categories/{c["category"]}/"><i style="background:{CAT_COLOR[c["category"]]}"></i>{e(CAT_SHORT[c["category"]])}</a></td>'
+        trs.append(f'<tr><td><a href="{c["_url"]}"><b>{e(c["name"])}</b></a><br><a class="catchip" href="{b}/categories/{c["category"]}/"><i class="k-{c["category"]}"></i>{e(CAT_SHORT[c["category"]])}</a></td>'
                    f'<td class="earn-val"><b>{fmt_value(x["value"])}</b>{unit}{note}</td><td class="earn-win">{window_html(x.get("window")) or "—"}</td><td class="earn-basis">{btag}</td>'
                    f'<td>{time_tag(r["dt"])}</td><td>{src}</td></tr>')
     return ('<div class="table-wrap"><table class="list earn"><thead><tr><th scope="col">Platform</th><th scope="col">Figure (as on the card)</th>'
@@ -2089,23 +2089,52 @@ PUBLIC_FIELDS = ['id', 'slug', 'name', 'entity_type', 'category', 'census_catego
 
 # Security headers for every page (written into /_headers for Cloudflare Pages).
 PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), browsing-topics=(), payment=(), usb=()'
-# script-src keeps 'unsafe-inline': besides our own boot script, Cloudflare injects per-request inline scripts
-# (bot-detection / challenge-platform, email obfuscation) whose content changes on every response, so hashes would block them.
-# style-src needs 'unsafe-inline' for style="" attributes (category swatches, ad slot sizes).
-CSP = '; '.join([
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://*.googletagmanager.com https://static.cloudflareinsights.com",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com https://*.analytics.google.com",
-    "connect-src 'self' https://*.google-analytics.com https://google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cloudflareinsights.com https://*.cloudflareinsights.com",
-    "font-src 'self' data:",
-    "frame-src 'self'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'self'",
-    "upgrade-insecure-requests",
-])
+# Strict CSP, no 'unsafe-inline' anywhere:
+# - our own inline scripts (the tiny pre-paint boot script) are allowed by their sha256 hash, computed from the
+#   written pages (write() collects them; check.py re-hashes every page and fails on any script without a hash);
+# - no style="" attributes and no inline <style>: colors, catbar widths and ad sizes are generated CSS classes;
+# - JSON-LD / application/json blocks are data, not executed, so CSP does not apply to them;
+# - Cloudflare's own scripts load from /cdn-cgi/ on our origin ('self'). Its JavaScript Detections bootstrap is an
+#   inline snippet that changes on every response; functions/_middleware.js adds a fresh per-request nonce to
+#   script-src and Cloudflare stamps that nonce on the scripts it injects (documented Cloudflare behaviour).
+CSP_SCRIPT_HOSTS = "https://www.googletagmanager.com https://*.googletagmanager.com https://static.cloudflareinsights.com"
+
+
+def csp_hash(src):
+    return "'sha256-" + base64.b64encode(hashlib.sha256(src.encode('utf-8')).digest()).decode() + "'"
+
+
+# executable inline <script> (no src, not a JSON data block) and inline <style>; check.py uses the same patterns
+INLINE_SCRIPT_RE = re.compile(r'<script\b(?![^>]*\bsrc=)(?![^>]*\btype="application/(?:ld\+)?json")[^>]*>(.*?)</script>', re.S)
+INLINE_STYLE_RE = re.compile(r'<style\b[^>]*>(.*?)</style>', re.S)
+
+
+def build_csp(script_hashes, style_hashes=()):
+    return '; '.join([
+        "default-src 'self'",
+        ' '.join(["script-src 'self'", *sorted(script_hashes), CSP_SCRIPT_HOSTS]),
+        "script-src-attr 'none'",
+        ' '.join(["style-src 'self'", *sorted(style_hashes)]),
+        "style-src-attr 'none'",
+        "img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com https://*.analytics.google.com",
+        "connect-src 'self' https://*.google-analytics.com https://google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cloudflareinsights.com https://*.cloudflareinsights.com",
+        "font-src 'self' data:",
+        "frame-src 'self'",
+        "worker-src 'self' blob:",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'self'",
+        "upgrade-insecure-requests",
+    ])
+
+
+# Pages Functions run only for HTML pages (the nonce middleware); static assets and JSON skip the Function entirely.
+ROUTES = {'version': 1, 'include': ['/*'],
+          'exclude': ['/atlas/assets/*', '/atlas/og/*', '/atlas/screens/*', '/atlas/badge/*', '/atlas/data/*',
+                      '/atlas/platforms/*.json', '/atlas/categories/*.json', '/atlas/*.json', '/atlas/*.txt', '/atlas/*.xml',
+                      '/atlas/decisions/index.md', '/api/*', '/cdn-cgi/*', '/favicon.ico', '/robots.txt', '/sitemap.xml',
+                      '/llms.txt', '/llms-full.txt', '/404.html']}
 
 
 def main():
@@ -2152,6 +2181,8 @@ def main():
     site.earn = earn_rows(site)
     css = open(os.path.join(HERE, 'components', 'cw-components.css')).read() + '\n' + open(os.path.join(HERE, 'static', 'atlas.css')).read()
     css += '\n/* category swatches (generated from CATEGORIES) */\n' + cw.color_classes([(k, col) for k, _, _, col, _ in CATEGORIES]) + '\n'
+    # strict CSP: no style="" attributes, so widths and slot sizes are classes too
+    css += '/* catbar widths + ad slot sizes (generated) */\n' + cw.flex_classes(len(v) for v in site.by_cat.values()) + cw.ad_slot_classes(cfg) + '\n'
     js = open(os.path.join(HERE, 'components', 'cw-components.js')).read() + '\n' + open(os.path.join(HERE, 'static', 'atlas.js')).read()
     import hashlib
     site.asset_v = hashlib.sha1((css + js).encode()).hexdigest()[:10]
@@ -2162,6 +2193,7 @@ def main():
     root = os.path.join(out, b.strip('/'))
 
     out_root = os.path.realpath(out)
+    script_hashes, style_hashes = set(), set()
 
     def write(rel, content, mode='w'):
         p = os.path.join(out, rel.lstrip('/'))
@@ -2171,6 +2203,9 @@ def main():
         if p.endswith('/'):
             p += 'index.html'
         os.makedirs(os.path.dirname(p), exist_ok=True)
+        if p.endswith('.html') and isinstance(content, str):
+            script_hashes.update(csp_hash(m.group(1)) for m in INLINE_SCRIPT_RE.finditer(content))
+            style_hashes.update(csp_hash(m.group(1)) for m in INLINE_STYLE_RE.finditer(content))
         with open(p, mode, **({} if 'b' in mode else {'encoding': 'utf-8'})) as f:
             f.write(content)
 
@@ -2322,8 +2357,9 @@ def main():
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: {PERMISSIONS_POLICY}
-  Content-Security-Policy: {CSP}
+  Content-Security-Policy: {build_csp(script_hashes, style_hashes)}
 """)
+    write('/_routes.json', json.dumps(ROUTES, indent=1) + '\n')  # which paths run functions/_middleware.js (HTML only)
     total = sum(1 for _ in site.pages)
     print(f'built {total} indexable pages + 404 into {out} ({len(site.cards)} entries, {len(site.cats)} categories, {n_badges} badges x2)')
 

@@ -2,6 +2,12 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-17 — Strict CSP and public quality gates
+
+- **Content Security Policy without `'unsafe-inline'`**, site-wide. The pre-paint boot script is allowed by its sha256 hash (computed by `build.py` from the written pages); category swatches, catbar widths and ad slot sizes moved from `style=""` to generated CSS classes; `script-src-attr 'none'` and `style-src-attr 'none'`. Cloudflare's injected scripts load from `/cdn-cgi/` (`'self'`); its per-response JavaScript Detections bootstrap gets a fresh nonce from the new Pages middleware [`functions/_middleware.js`](../functions/_middleware.js), which runs only for HTML pages (`dist/_routes.json`). GA4 still loads only after "Accept" (Consent Mode v2).
+- `check.py`: every inline script/style on every page must have its hash in the CSP, no inline style or event attributes, no `javascript:` URLs, the middleware must match the CSP and `_routes.json` must keep assets off the Function; Permissions-Policy leaves `picture-in-picture` alone. `serve.py` now sends the real security headers and gzip, so local runs and the browser smoke test (which now fails on any CSP report) see what production serves.
+- New workflow **Quality (links + Lighthouse)**: lychee for internal links (blocking) and outbound links (non-blocking, weekly tracking issue); Lighthouse CI on `/`, `/atlas/`, `/atlas/about/`, `/atlas/decisions/` and a platform page, mobile and desktop, every category at 95 or higher. Documented in the root README under "Quality gates".
+
 ## 2026-10-17 — Trust engine: four sources, any single flag removes
 
 - Link safety now runs on the **Commonworld trust engine** ([`../trust/`](../trust/), standard [`../TRUST.md`](../TRUST.md)): Google Safe Browsing, MetaMask eth-phishing-detect (exact blacklist), ScamSniffer scam-database and the CERT Polska Warning List. All free, no keys; OpenPhish is built in but off (its terms do not allow automated checks).
