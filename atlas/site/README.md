@@ -73,11 +73,11 @@ atlas/site/
   claim-labels.json     curated "Read as" labels for claims whose raw wording could mislead (e.g. TermiX gross vs organic)
   components/           the Commonworld design system (Python + CSS + JS), see "Design system" below
   static/atlas.css      Atlas-only styles (platform page, tables, prose)   static/atlas.js   catalog search/filter/sort/native ads
-  static/*.png|ico      logo (cw-mark-*.png 96 px for the 46 px sidebar mark; cw-mark-*-192.png for the 96 px landing logo, 2x), favicon, fallback OG image
+  static/*.svg|png|ico  logo: vector cw-mark-{light,dark}.svg (sidebar, cross-nav, landing; dark variant swapped by theme CSS) + favicon.svg; PNG fallbacks at the old paths (cw-mark-*.png 96 px, cw-mark-*-192.png, icon-192.png, apple-touch-icon.png 180 px, favicon.ico 16/32/48), fallback OG image; image URLs carry ?v=<hash of static images>
   og_images.py          per-page Open Graph images (Pillow), cached in .og-cache/
   screens.py            homepage screenshots: fetches the orphan branch atlas-screens, validates, makes top-band thumbnails (cached in .screens-cache/)
   tools/extract_census_tags.py   maps + cleans census tags -> atlas/data/census-tags-2026-10-15.json
-  tools/make_images.py  regenerates logo/favicon/OG image from the prototype marks (needs Pillow; not part of the build)
+  tools/make_images.py  regenerates the logo SVG copies, PNG fallbacks, favicon and fallback OG image from the brand assets (vector mark + 1024 px exports; needs Pillow; not part of the build)
   tools/screenshots.py, tools/smoke_test.py   optional, need Playwright + Chromium (a system Chromium works: CHROMIUM=/path)
   screenshots/          reference screenshots (desktop light/dark, platform, mobile, tablet, drawer, tags)
 ```

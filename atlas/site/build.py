@@ -326,9 +326,10 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
 <meta name="twitter:description" content="{e(description)}">
 <meta name="twitter:image" content="{og_img}">
 <meta name="twitter:image:alt" content="{e(og_alt)}">
-<link rel="icon" href="{b}/assets/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="{b}/assets/icon-192.png" sizes="192x192">
-<link rel="apple-touch-icon" href="{b}/assets/apple-touch-icon.png">
+<link rel="icon" href="{b}/assets/favicon.ico?v={site.img_v}" sizes="any">
+<link rel="icon" type="image/svg+xml" href="{b}/assets/favicon.svg?v={site.img_v}">
+<link rel="icon" type="image/png" href="{b}/assets/icon-192.png?v={site.img_v}" sizes="192x192">
+<link rel="apple-touch-icon" href="{b}/assets/apple-touch-icon.png?v={site.img_v}">
 <link rel="alternate" type="application/json" href="{b}/data/snapshot.json" title="Atlas data (JSON)">
 <link rel="alternate" type="application/json" href="{b}/platforms.json" title="Atlas platforms (JSON, for agents)">
 {f'<link rel="alternate" type="application/json" href="{e(alt_json)}" title="This entry (JSON: claims and sources)">' if alt_json else ''}
@@ -1320,8 +1321,8 @@ def build_landing(site):
         (f'{len(site.cats):,}', 'directions', {}, None, False),
         (f'{claims:,}', 'sourced claims', {}, None, False)], label='Atlas at a glance')
     body = f"""<section class="cw-landing" aria-labelledby="landing-title">
-<img class="cw-mark-l landing-mark" src="{b}/assets/cw-mark-light-192.png" alt="Commonworld logo" width="96" height="96">
-<img class="cw-mark-d landing-mark" src="{b}/assets/cw-mark-dark-192.png" alt="Commonworld logo" width="96" height="96">
+<img class="cw-mark-l landing-mark" src="{b}/assets/cw-mark-light.svg?v={site.img_v}" alt="Commonworld logo" width="96" height="96">
+<img class="cw-mark-d landing-mark" src="{b}/assets/cw-mark-dark.svg?v={site.img_v}" alt="Commonworld logo" width="96" height="96">
 <h1 id="landing-title">Commonworld</h1>
 <p class="landing-motto">{e(motto)}</p>
 <p class="landing-soon">{e(LANDING_SOON)}</p>
@@ -2186,6 +2187,9 @@ def main():
     js = open(os.path.join(HERE, 'components', 'cw-components.js')).read() + '\n' + open(os.path.join(HERE, 'static', 'atlas.js')).read()
     import hashlib
     site.asset_v = hashlib.sha1((css + js).encode()).hexdigest()[:10]
+    # logo/favicon images: own version so a new mark reaches cached browsers (assets/* is max-age=7d)
+    sdir = os.path.join(HERE, 'static')
+    site.img_v = cw.MARK_V = hashlib.sha1(b''.join(open(os.path.join(sdir, f), 'rb').read() for f in sorted(os.listdir(sdir)) if f.endswith(('.svg', '.png', '.ico')))).hexdigest()[:10]
 
     out, b = a.out, site.base
     if os.path.isdir(out):

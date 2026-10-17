@@ -692,8 +692,11 @@ def a11y_checks(pages):
         imgs = re.findall(r'<img class="cw-mark-[ld] landing-mark" src="([^"]+)"[^>]*width="(\d+)"', h)
         if len(imgs) != 2: fails.append('/: landing logo images not found')
         for src, w in imgs:
-            fp = os.path.join(DIST, src.lstrip('/'))
+            fp = os.path.join(DIST, src.split('?')[0].lstrip('/'))
             if not os.path.isfile(fp): fails.append(f'/: landing logo {src} missing'); continue
+            if fp.endswith('.svg'):
+                if not open(fp, encoding='utf-8').read().lstrip().startswith('<svg'): fails.append(f'/: landing logo {src} is not an SVG')
+                continue
             pw = struct.unpack('>I', open(fp, 'rb').read(24)[16:20])[0]
             if pw < 2 * int(w): fails.append(f'/: landing logo {src} is {pw}px for {w} CSS px (needs >= 2x)')
     return fails
@@ -1106,7 +1109,7 @@ def main():
         if lp_.canon != ORIGIN + '/': fails.append(f'/: canonical {lp_.canon} != {ORIGIN}/')
         if 'noindex' in (lp_.meta.get('robots') or ''): fails.append('/: landing is noindex')
         for need in ('<h1 id="landing-title">Commonworld</h1>', 'A shared world for humans and agents', 'The platform is coming soon.',
-                     'class="cw-btn cw-btn-primary landing-cta" href="/atlas/"', 'cw-mark-light.png', 'cw-mark-dark.png', 'class="cw-consent"', 'Official channels:', f'href="{X_URL}" rel="me noopener"',
+                     'class="cw-btn cw-btn-primary landing-cta" href="/atlas/"', 'cw-mark-light.svg', 'cw-mark-dark.svg', 'class="cw-consent"', 'Official channels:', f'href="{X_URL}" rel="me noopener"',
                      '<a aria-current="page" href="' + (CFG['site'].get('product_url') or '/') + '" data-xnav="Commonworld"', '"WebSite"'):
             if need not in lh: fails.append(f'/: landing lacks {need!r}')
         if (lp_.meta.get('og:image') or '').split('?')[0] != ORIGIN + '/atlas/og/page-home.png': fails.append('/: og:image is not its own page-home.png')

@@ -99,6 +99,14 @@ def announcement_bar(cfg):
             f'<button type="button" class="cw-announce-x" aria-label="Dismiss announcement">{ICON_CLOSE}</button></div>')
 
 
+# Cache-busting for the logo images (assets are cached for 7 days): build.py sets MARK_V to a hash of static/*.svg|png.
+MARK_V = ''
+
+
+def _mv():
+    return f'?v={MARK_V}' if MARK_V else ''
+
+
 def sidebar(cfg, base, groups, bottom='', top=''):
     """groups: [(title, [(href, label, count|None, active, extra_attrs_dict)])].
     top: HTML placed under the logo, above the first group title (e.g. cross_nav_item(...) to another product)."""
@@ -107,8 +115,8 @@ def sidebar(cfg, base, groups, bottom='', top=''):
     if ' for ' in motto:
         motto = motto.replace(' for ', '<br>for ', 1)
     out = [f'<aside class="cw-side" id="cw-side" aria-label="Site navigation"><div class="cw-side-in">'
-           f'<a class="cw-brand" href="{e(base)}/"><img class="cw-mark cw-mark-l" src="{e(base)}/assets/cw-mark-light.png" alt="" width="46" height="46">'
-           f'<img class="cw-mark cw-mark-d" src="{e(base)}/assets/cw-mark-dark.png" alt="" width="46" height="46">'
+           f'<a class="cw-brand" href="{e(base)}/"><img class="cw-mark cw-mark-l" src="{e(base)}/assets/cw-mark-light.svg{_mv()}" alt="" width="46" height="46">'
+           f'<img class="cw-mark cw-mark-d" src="{e(base)}/assets/cw-mark-dark.svg{_mv()}" alt="" width="46" height="46">'
            f'<span><strong>{e(s.get("name") or "Commonworld")}</strong><small>{motto}</small></span></a>']
     if top:
         out.append(top)
@@ -143,8 +151,8 @@ def cross_nav_item(href, label, icon_html, title=None, cls='cw-xnav'):
 
 def mark_icon(base, size=18):
     """The Commonworld logo mark as a small icon (light + dark variants, swapped by theme CSS)."""
-    return (f'<img class="cw-mark-l" src="{e(base)}/assets/cw-mark-light.png" alt="" width="{size}" height="{size}">'
-            f'<img class="cw-mark-d" src="{e(base)}/assets/cw-mark-dark.png" alt="" width="{size}" height="{size}">')
+    return (f'<img class="cw-mark-l" src="{e(base)}/assets/cw-mark-light.svg{_mv()}" alt="" width="{size}" height="{size}">'
+            f'<img class="cw-mark-d" src="{e(base)}/assets/cw-mark-dark.svg{_mv()}" alt="" width="{size}" height="{size}">')
 
 
 def product_icon(href, label, icon='home'):

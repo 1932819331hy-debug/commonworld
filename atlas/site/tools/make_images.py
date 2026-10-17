@@ -1,31 +1,20 @@
 #!/usr/bin/env python3
 """One-off asset generator (needs Pillow). NOT part of the zero-dependency build.
 
-Takes the Commonworld marks from the prototype UI
-(branch prototype/local-runtime-only-2026-10-09, design-preview/assets/commonworld-mark-{light,dark}.png),
-cuts the rounded-square corners to transparency, and writes small web assets into ../static/:
-cw-mark-{light,dark}.png (96px, shown at 46px), cw-mark-{light,dark}-192.png (landing logo, shown at 96px), favicon.ico, apple-touch-icon.png, icon-192.png,
-og-atlas.png (1200x630 Open Graph image).
+Source: the vector Commonworld mark (redrawn 2026-10-18): cw-mark-{light,dark}.svg plus their transparent 1024 px PNG exports
+(cw-mark-{light,dark}-1024.png, rounded tile with transparent corners). The SVGs are copied as-is into ../static/
+(cw-mark-light.svg, cw-mark-dark.svg, favicon.svg); the PNG fallbacks are downsampled from the 1024 px exports:
+cw-mark-{light,dark}.png (96px), cw-mark-{light,dark}-192.png (192px), favicon.ico (16/32/48), apple-touch-icon.png (180px,
+opaque, full-bleed tile colour), icon-192.png, og-atlas.png (1200x630 Open Graph fallback).
+File names stay the same as before, so already indexed URLs keep working (overwritten in place).
 
-Usage:  python3 tools/make_images.py /path/to/commonworld-mark-light.png /path/to/commonworld-mark-dark.png
-Get the marks with e.g.:
-  git show prototype/local-runtime-only-2026-10-09:design-preview/assets/commonworld-mark-light.png > /tmp/mark-light.png
+Usage:  python3 tools/make_images.py /path/to/brand/assets   (dir with cw-mark-*.svg and png-exports/cw-mark-*-1024.png)
 """
 import os, sys
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, '..', 'static')
-
-
-def rounded(im, inset=5, radius_frac=0.205):
-    im = im.convert('RGBA')
-    w, h = im.size
-    mask = Image.new('L', (w * 4, h * 4), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((inset * 4, inset * 4, (w - inset) * 4, (h - inset) * 4), radius=int(w * 4 * radius_frac), fill=255)
-    mask = mask.resize((w, h), Image.LANCZOS)
-    im.putalpha(mask)
-    return im.crop((inset, inset, w - inset, h - inset))
 
 
 def font(names, size):
@@ -37,18 +26,23 @@ def font(names, size):
     return ImageFont.load_default()
 
 
-def main(light_path, dark_path):
-    L, D = rounded(Image.open(light_path)), rounded(Image.open(dark_path))
+def main(src):
+    import shutil
+    png = lambda n: os.path.join(src, 'png-exports', f'cw-mark-{n}-1024.png')
+    L, D = Image.open(png('light')).convert('RGBA'), Image.open(png('dark')).convert('RGBA')
     sz = lambda im, s: im.resize((s, s), Image.LANCZOS)
+    for name in ('light', 'dark'):
+        shutil.copy(os.path.join(src, f'cw-mark-{name}.svg'), f'{OUT}/cw-mark-{name}.svg')
+    shutil.copy(os.path.join(src, 'cw-mark-light.svg'), f'{OUT}/favicon.svg')
     sz(L, 96).save(f'{OUT}/cw-mark-light.png', optimize=True)
     sz(D, 96).save(f'{OUT}/cw-mark-dark.png', optimize=True)
     # 2x marks for the landing logo (shown at 96 CSS px): palette PNG, visually identical, ~7 KB each
     for name, im in (('light', L), ('dark', D)):
         sz(im, 192).quantize(colors=256, method=Image.FASTOCTREE, dither=Image.FLOYDSTEINBERG).save(f'{OUT}/cw-mark-{name}-192.png', optimize=True)
-    flat = Image.new('RGBA', L.size, (244, 241, 234, 255)); flat.alpha_composite(L)
+    flat = Image.new('RGBA', L.size, (244, 240, 231, 255)); flat.alpha_composite(L)  # iOS masks the corners itself
     sz(flat, 180).convert('RGB').save(f'{OUT}/apple-touch-icon.png', optimize=True)
     sz(L, 192).save(f'{OUT}/icon-192.png', optimize=True)
-    sz(L, 48).save(f'{OUT}/favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
+    sz(L, 256).save(f'{OUT}/favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
 
     W, H = 1200, 630
     og = Image.new('RGB', (W, H), '#f4f1ea')
@@ -66,6 +60,6 @@ def main(light_path, dark_path):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 2:
         sys.exit(__doc__)
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1])

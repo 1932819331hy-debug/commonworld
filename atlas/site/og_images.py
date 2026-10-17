@@ -14,7 +14,7 @@ RENDER_VERSION = 'og-v3'
 W, H = 1200, 630
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, '.og-cache')
-MARK = os.path.join(HERE, 'static', 'cw-mark-light.png')
+MARK = os.path.join(HERE, 'static', 'cw-mark-light-192.png')  # vector mark's 192 px export, downsampled to 64 px
 
 # palette = Commonworld light tokens (components/cw-components.css)
 BG, PAPER, INK, MUTED, LINE = '#f4f1ea', '#fbfaf7', '#202522', '#686e68', '#dfded6'

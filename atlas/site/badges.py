@@ -58,13 +58,17 @@ def alt_text(card):
     return f'{LABEL}: {status_of(card)[1]}'
 
 
+# The vector Commonworld mark (static/cw-mark-light.svg, viewBox 0 0 768 768): ink C + coral W, drawn on the badge's own tile.
+MARK_C = 'M330 213 L378 285 L262 285 A102 92.5 0 0 0 262 470 L318 470 L350 540 L255 540 A167 163.5 0 0 1 255 213 Z'
+MARK_W = 'M283 325 L345 325 L403 412 L470 318 L494 318 L550 410 L626 297 L690 297 L556 535 L541 535 L482 436 L412 530 L396 530 Z'
+MARK_CORAL = '#cb7756'
+
+
 def _mark(x, y, dark):
-    """Commonworld mark (ink C + accent W on a paper tile), 14x14 at (x, y)."""
+    """Commonworld mark (ink C + coral W on a paper tile), 14x14 at (x, y)."""
     tile = BG if not dark else '#e9e4d9'
-    return (f'<rect x="{x}" y="{y}" width="14" height="14" rx="3.5" fill="{tile}"/>'
-            f'<path d="M{x + 7.6} {y + 4.1}a3.4 3.4 0 1 0 0 5.8" fill="none" stroke="{INK}" stroke-width="1.9" stroke-linecap="round"/>'
-            f'<path d="M{x + 7.1} {y + 6.6}l1.15 3.4 1.15-2.4 1.15 2.4 1.15-3.4" fill="none" stroke="{ACCENT}" stroke-width="1.35" '
-            f'stroke-linecap="round" stroke-linejoin="round"/>')
+    return (f'<rect x="{x}" y="{y}" width="14" height="14" rx="3" fill="{tile}"/>'
+            f'<g transform="translate({x} {y}) scale({14 / 768:.6f})"><path fill="{INK}" d="{MARK_C}"/><path fill="{MARK_CORAL}" d="{MARK_W}"/></g>')
 
 
 def _n(v):
