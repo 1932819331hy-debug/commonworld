@@ -251,7 +251,8 @@ def sidebar(site, active):
     if active == 'home':
         xnav = xnav.replace('<a href="', '<a aria-current="page" href="', 1)
     cur = ' class="active" aria-current="page"' if active == 'cw-about' else ''
-    xnav += f'<nav class="cw-nav cw-xsub" aria-label="About Commonworld"><a href="{CW_ABOUT}"{cur}>About</a></nav>'
+    cur_s = ' class="active" aria-current="page"' if active == 'cw-stats' else ''
+    xnav += f'<nav class="cw-nav cw-xsub" aria-label="About Commonworld"><a href="{CW_ABOUT}"{cur}>About</a><a href="{STATS_PATH}"{cur_s}>Stats</a></nav>'
     ad = '' if active == 'earn' else cw.ad_slot(site.cfg, 'atlas-sidebar')  # no sponsored slots on the earn-now view
     return cw.sidebar(site.cfg, b, [('Directions', dirs), ('Sections', secs)], bottom=ad, top=xnav)
 
@@ -295,7 +296,7 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
         og_img = site.abs(f'{b}/og/{name}.png?v={key[:10]}')
     head_ld = ''.join(jsonld(x) for x in ld)
     corr = cfg['site']['corrections_url']
-    foot_links = (f'<a href="{b}/platforms/">All entries A–Z</a><a href="{b}/categories/">Categories</a><a href="{CW_ABOUT}">About Commonworld</a><a href="{b}/about/">How the Atlas works</a><a href="{DECISIONS_PATH}">Decision log</a><a href="{b}/badge/">Badges</a>'
+    foot_links = (f'<a href="{b}/platforms/">All entries A–Z</a><a href="{b}/categories/">Categories</a><a href="{CW_ABOUT}">About Commonworld</a><a href="{STATS_PATH}">Stats</a><a href="{b}/about/">How the Atlas works</a><a href="{DECISIONS_PATH}">Decision log</a><a href="{b}/badge/">Badges</a>'
                   f'<a href="{API_DOCS}">API</a><a href="{b}/data/snapshot.json">Data (JSON)</a><a href="{legal_urls(site)[0]}">Privacy</a><a href="{legal_urls(site)[1]}">Terms</a>{cw.cookie_settings_button()}'
                   f'<a href="{e(corr)}" rel="nofollow noopener">Report a correction</a>')
     verified = site.latest.strftime('%Y-%m-%d') if site.latest else ''
@@ -1421,6 +1422,173 @@ def build_cw_about(site):
                 body=body, active='cw-about', ld=ld, lastmod=site.latest, og=(name, spec, alt))
 
 
+# ---------------------------------------------------------------- public stats (/stats/, /stats/index.md, /stats.json)
+STATS_PATH = '/stats/'
+STATS_MD = STATS_PATH + 'index.md'
+STATS_JSON = '/stats.json'
+STATS_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'stats.json'))  # one input file; the weekly job edits only this
+STATS_LEAD = ('Honest numbers about Commonworld, small ones included, updated weekly. Every number names its source, its period '
+              'and the date it was taken. People, agents and search clicks are always counted separately.')
+
+
+def load_stats(site):
+    """atlas/data/stats.json with the Atlas metrics ('derive') filled from the published data. Returns the public document."""
+    doc = json.load(open(STATS_FILE, encoding='utf-8'))
+    cards = site.cards
+    last = site.latest.strftime('%Y-%m-%d') if site.latest else None
+    derived = {'cards_total': len(cards), 'cards_live': sum(1 for c in cards if c['status'] == 'live'),
+               'cards_closed': sum(1 for c in cards if c['status'] == 'closed'), 'last_verified': last}
+    for s in doc['sections']:
+        for m in s['metrics']:
+            if m.get('derive'):
+                if m['derive'] not in derived:
+                    raise SystemExit(f"stats.json: unknown derive {m['derive']!r} in {m.get('id')}")
+                m['value'], m['as_of'] = derived[m.pop('derive')], last
+    return {'name': 'Commonworld public stats', 'url': site.abs(STATS_JSON), 'page': site.abs(STATS_PATH),
+            'updated_at': doc.get('updated_at'), 'cadence': doc.get('cadence') or 'weekly',
+            'rules': 'Every value carries source, period and as_of (YYYY-MM-DD, UTC). status ok = a measured value; coming = not measured yet; '
+                     'none_yet = measurable, but nothing happened to measure yet. A null value is never an estimate. People, agent deliveries and '
+                     'search clicks are separate metrics and are never added together.',
+            'sections': doc['sections']}
+
+
+def stats_value(m):
+    """Display text for a metric value; None when there is no number."""
+    v, u = m.get('value'), m.get('unit')
+    if v is None:
+        return None
+    if u == 'minutes':
+        v = int(v)
+        return f'{v} min' if v < 120 else (f'{v / 60:.1f} h' if v < 2880 else f'{v / 1440:.1f} days')
+    if u == 'percent':
+        return f'{v}%'
+    if u == 'position':
+        return f'{v}'
+    if isinstance(v, (int, float)):
+        return f'{v:,}'
+    return str(v)
+
+
+STATS_STATUS_WORD = {'coming': 'Coming', 'none_yet': 'Nothing to measure yet'}
+
+
+def stats_period(m):
+    p = m.get('period') or {}
+    return p.get('label') or ' to '.join(x for x in (p.get('from'), p.get('to')) if x)
+
+
+def stats_source_html(site, src):
+    url = (src or {}).get('url')
+    name = e((src or {}).get('name') or '')
+    if not url:
+        return name
+    if url.startswith('/'):
+        return f'<a href="{e(url)}">{name}</a>'
+    return f'<a href="{e(url)}" rel="nofollow noopener">{name}</a>'
+
+
+def build_stats(site, doc):
+    crumbs, crumb_ld = breadcrumbs(site, [('Stats', STATS_PATH)])
+    secs_html = []
+    for s in doc['sections']:
+        rows = []
+        for m in s['metrics']:
+            val = stats_value(m)
+            cell = (f'<b class="stat-num">{e(val)}</b>' if val is not None
+                    else f'<span class="stat-pending">{e(STATS_STATUS_WORD.get(m.get("status"), "Coming"))}</span>')
+            note = f'<div class="stat-note">{e(m["note"])}</div>' if m.get('note') else ''
+            rows.append(f'<tr id="{e(m["id"])}"><th scope="row">{e(m["label"])}{note}</th><td>{cell}</td><td>{e(stats_period(m))}</td>'
+                        f'<td>{stats_source_html(site, m.get("source"))}</td><td><time datetime="{e(m.get("as_of") or "")}">{e(m.get("as_of") or "")}</time></td></tr>')
+        table = (f'<div class="table-wrap"><table class="list stats-table" aria-labelledby="s-{e(s["id"])}"><thead><tr><th scope="col">Metric</th>'
+                 '<th scope="col">Value</th><th scope="col">Period</th><th scope="col">Source</th><th scope="col">As of</th></tr></thead>'
+                 f'<tbody>{"".join(rows)}</tbody></table></div>')
+        wk = s.get('weekly')
+        if wk is not None:
+            cols = wk.get('columns') or []
+            if wk.get('rows'):
+                head = ''.join(f'<th scope="col">{e(c)}</th>' for c in cols)
+                body = ''.join('<tr>' + ''.join(f'<td>{e(str(r.get(c, "")))}</td>' for c in cols) + '</tr>' for r in wk['rows'])
+                table += (f'<h3>By week</h3><div class="table-wrap"><table class="list stats-weekly"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
+                          f'<p class="about-note">Source: {stats_source_html(site, wk.get("source"))} · as of {e(wk.get("as_of") or "")}</p>')
+            else:
+                table += f'<p class="about-note">By week: coming, the weekly update adds one row per week ({e((wk.get("source") or {}).get("name") or "")}).</p>'
+        secs_html.append(f'<section class="stats-sec" aria-labelledby="s-{e(s["id"])}"><h2 id="s-{e(s["id"])}">{e(s["title"])}</h2>'
+                         f'<p>{e(s.get("intro") or "")}</p>{table}</section>')
+    upd = doc.get('updated_at') or ''
+    lead = (f'<p class="about-motto">A shared world for humans and agents</p><p>{e(STATS_LEAD)}</p>')
+    box = cw.info_box('live', 'Updated weekly', f'last update {upd}',
+                      f'Data as JSON: <a href="{STATS_JSON}">stats.json</a> · Markdown: <a href="{STATS_MD}">index.md</a>')
+    body = f"""{crumbs}
+{cw.hero('Commonworld', 'Commonworld in numbers', lead, box, small=True, kicker_href='/')}
+<div class="prose stats-prose">
+{''.join(secs_html)}
+<h2 id="rules">How to read these numbers</h2>
+<ul><li><b>Small is fine.</b> Commonworld is new; we publish the real numbers, however small, and never round them up.</li>
+<li><b>Three kinds, never added together.</b> People (visits), agents (deliveries of our data to AI agents) and search (impressions and clicks in Google) are separate numbers.</li>
+<li><b>No number means no number.</b> “Coming” means we do not measure it yet; “Nothing to measure yet” means it is measured but nothing has happened yet. Neither is an estimate.</li>
+<li><b>Every number is dated.</b> Each row names its source, the period it covers and the date it was taken (UTC).</li></ul>
+<p>Found a number that looks wrong? <a href="{e(site.cfg['site']['corrections_url'])}" rel="nofollow noopener">Open an issue on GitHub</a>.</p>
+</div>"""
+    org = {'@type': 'Organization', 'name': 'Commonworld', 'url': site.abs('/')}
+    measured = [m['label'] for s in doc['sections'] for m in s['metrics']]
+    ds = {'@type': 'Dataset', 'name': 'Commonworld public stats', 'description': STATS_LEAD, 'url': site.abs(STATS_PATH),
+          'creator': org, 'publisher': org, 'isAccessibleForFree': True, 'inLanguage': 'en', 'dateModified': upd or None,
+          'variableMeasured': measured, 'keywords': ['Commonworld', 'open stats', 'search impressions', 'AI features', 'AI agents', 'response time'],
+          'distribution': [{'@type': 'DataDownload', 'name': 'Commonworld stats (stats.json)', 'encodingFormat': 'application/json', 'contentUrl': site.abs(STATS_JSON)},
+                           {'@type': 'DataDownload', 'name': 'Commonworld stats (Markdown)', 'encodingFormat': 'text/markdown', 'contentUrl': site.abs(STATS_MD)}]}
+    lic = site.cfg.get('data_licence')
+    if lic:
+        ds['license'] = LICENCE_URLS.get(lic, f'{REPO_URL}/blob/main/LICENSE-DATA.md')
+    ds = {k: v for k, v in ds.items() if v is not None}
+    ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'WebPage', 'name': 'Commonworld in numbers', 'url': site.abs(STATS_PATH),
+                     'inLanguage': 'en', 'description': STATS_LEAD, 'isPartOf': {'@type': 'WebSite', 'name': 'Commonworld', 'url': site.abs('/')},
+                     'dateModified': upd or None, 'mainEntity': ds}]
+    n_ok = sum(1 for s in doc['sections'] for m in s['metrics'] if m.get('value') is not None)
+    name, spec, alt = og_generic(site, 'page-cw-stats', 'Commonworld in numbers',
+                                 'Honest numbers, small ones included, updated weekly. Source, period and date on every number.',
+                                 [('stats', 'olive'), ('updated weekly', None), (f'{n_ok} measured values', None)], kicker='STATS',
+                                 alt='Commonworld in numbers: public stats with source and date on every number')
+    spec.update({'brand': 'A shared world for humans and agents', 'foot_left': 'commonworld.one/stats'})
+    lm = parse_time(upd + 'T00:00:00Z') if upd else site.latest
+    return page(site, path=STATS_PATH, title='Commonworld in numbers — public stats, updated weekly',
+                description='Honest Commonworld stats, updated weekly: Atlas cards, Google Search and AI features, visits, issue response times. Source and date on every number.',
+                body=body, active='cw-stats', ld=ld, lastmod=lm, alt_md=STATS_MD, og=(name, spec, alt))
+
+
+def build_stats_md(site, doc):
+    A = site.abs
+    cell = lambda v: str(v if v is not None else '').replace('|', '\\|').replace('\n', ' ')
+    lines = ['# Commonworld in numbers', '', '> A shared world for humans and agents', '', STATS_LEAD, '',
+             f'Canonical page: {A(STATS_PATH)} · JSON: {A(STATS_JSON)} · Last update: {doc.get("updated_at")} · Cadence: {doc.get("cadence")}', '']
+    for s in doc['sections']:
+        lines += [f'## {s["title"]}', '', s.get('intro') or '', '',
+                  '| Metric | Value | Period | Source | As of |', '|---|---|---|---|---|']
+        for m in s['metrics']:
+            val = stats_value(m)
+            val = val if val is not None else STATS_STATUS_WORD.get(m.get('status'), 'Coming')
+            src = m.get('source') or {}
+            u = src.get('url')
+            srct = cell(src.get('name')) + (f' <{A(u) if u.startswith("/") else u}>' if u else '')
+            lines.append(f'| {cell(m["label"])} | {cell(val)} | {cell(stats_period(m))} | {srct} | {cell(m.get("as_of"))} |')
+        notes = [f'- {m["label"]}: {m["note"]}' for m in s['metrics'] if m.get('note')]
+        if notes:
+            lines += [''] + notes
+        wk = s.get('weekly')
+        if wk is not None:
+            if wk.get('rows'):
+                cols = wk.get('columns') or []
+                lines += ['', '### By week', '', '| ' + ' | '.join(cols) + ' |', '|' + '---|' * len(cols)]
+                lines += ['| ' + ' | '.join(cell(r.get(c)) for c in cols) + ' |' for r in wk['rows']]
+            else:
+                lines += ['', 'By week: coming, the weekly update adds one row per week.']
+        lines.append('')
+    lines += ['## How to read these numbers', '',
+              '- People (visits), agents (deliveries) and search (impressions, clicks) are separate numbers and are never added together.',
+              '- "Coming" = not measured yet. "Nothing to measure yet" = measured, but nothing has happened yet. Neither is an estimate.',
+              '- Every number names its source, its period and the date it was taken (UTC).', '']
+    return '\n'.join(lines)
+
+
 def build_404(site):
     b = site.base
     body = f"""{cw.hero('404', 'Page not found', '<p>This address is not in the Atlas. Card IDs are permanent, so if you followed an old link, try searching for the name.</p>'
@@ -1898,6 +2066,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [Link safety]({A(f'{b}/about/#link-safety')}): every linked domain is checked daily against {TRUST_SOURCES_TEXT}; if any one source flags a domain, its entry is removed and its ID shows a short "entry removed" page
 - [Link safety decision log]({A(DECISIONS_PATH)}): every removal and return as a public, dated decision (who acted, why, evidence link); Markdown {A(DECISIONS_MD)}, JSON {A(DECISIONS_JSON)} with the trust roles
 - [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
+- [Commonworld in numbers]({A(STATS_PATH)}): public stats updated weekly (Atlas counts, Google Search and AI features, human visits, GitHub issue response times, agent deliveries after the v1 launch); every value has source, period and as_of; people, agents and search clicks are separate numbers; JSON {A(STATS_JSON)}, Markdown {A(STATS_MD)}
 
 ## Categories
 
@@ -2138,7 +2307,7 @@ def build_csp(script_hashes, style_hashes=()):
 ROUTES = {'version': 1, 'include': ['/*'],
           'exclude': ['/atlas/assets/*', '/atlas/og/*', '/atlas/screens/*', '/atlas/badge/*', '/atlas/data/*',
                       '/atlas/platforms/*.json', '/atlas/categories/*.json', '/atlas/*.json', '/atlas/*.txt', '/atlas/*.xml',
-                      '/atlas/decisions/index.md', '/api/*', '/cdn-cgi/*', '/favicon.ico', '/robots.txt', '/sitemap.xml',
+                      '/atlas/decisions/index.md', '/stats.json', '/stats/index.md', '/api/*', '/cdn-cgi/*', '/favicon.ico', '/robots.txt', '/sitemap.xml',
                       '/llms.txt', '/llms-full.txt', '/404.html']}
 
 
@@ -2236,6 +2405,10 @@ def main():
     write(API_DOCS, build_api_docs(site))
     n_badges = write_badges(site, write)
     write(CW_ABOUT, build_cw_about(site))  # About Commonworld
+    stats_doc = load_stats(site)  # public stats: atlas/data/stats.json (+ Atlas counts derived from the data)
+    write(STATS_PATH, build_stats(site, stats_doc))
+    write(STATS_MD, build_stats_md(site, stats_doc))
+    write(STATS_JSON, json.dumps(stats_doc, ensure_ascii=False, indent=1) + '\n')
     priv_url, terms_url = legal_urls(site)
     write(priv_url, build_privacy(site))
     write(terms_url, build_terms(site))
@@ -2341,6 +2514,12 @@ def main():
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
 {b}/decisions/index.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+/stats.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+/stats/index.md
   Access-Control-Allow-Origin: *
   Content-Type: text/markdown; charset=utf-8
 {b}/categories/*.json

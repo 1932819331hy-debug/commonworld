@@ -46,6 +46,8 @@ index, has no per-entry JSON, badge or screenshot, and no built file names its h
 report) is valid, in the Dataset distribution and /atlas/llms.txt; every exported record carries link_safety {status, checked_at}.
 Decision log: /atlas/decisions/ (+ index.md twin, /atlas/decisions.json) lists every decision of removed.json, newest first,
 hosts as defanged plain text, evidence links rel nofollow noopener. Markdown twins: every index.md is linked from its HTML page.
+Public stats: /stats/ (+ /stats/index.md, /stats.json) from atlas/data/stats.json: every metric has source, period and as_of; value null
+exactly when status is coming/none_yet; people, agents and search are separate sections; Atlas counts equal the snapshot; footer + sidebar + llms.txt link it.
 Trust decisions (atlas/tools/trust_check.py): every removed entry has a remove decision and every decision names an actor from
 atlas/data/trust-roles.json, a date, a reason and an https evidence link; a restored host must be clean in the latest safety report.
 Also: native ad cards sit after every 12th card, the tag shelf exists with its expander, every card links to its page.
@@ -801,6 +803,94 @@ def markdown_twin_checks(pages):
     return fails, n
 
 
+STATS_SRC = os.path.join(DATA_DIR, 'stats.json')
+STATS_STATUSES = {'ok', 'coming', 'none_yet'}
+DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
+
+
+def stats_checks(parsed, pages, locs):
+    """Public stats: atlas/data/stats.json (input, edited by the weekly job) and dist /stats.json (published) give every metric an id,
+    label, source.name, period and as_of date (input: as_of may be null only for 'derive' metrics, filled at build); status is ok /
+    coming / none_yet, value is null exactly when status is not ok (no estimates); /stats/ shows one row per metric with its as_of,
+    names the source and period, links stats.json + index.md, is in the root sitemap, linked from every footer and sidebar and from
+    /llms.txt; the derived Atlas counts equal the published snapshot."""
+    fails = []
+    def metrics_of(doc, where):
+        out = []
+        for s in doc.get('sections') or []:
+            if not s.get('id') or not s.get('title'): fails.append(f'{where}: section without id/title')
+            for m in s.get('metrics') or []:
+                out.append((s, m))
+            wk = s.get('weekly')
+            if wk is not None:
+                if not (wk.get('source') or {}).get('name') or not DATE_RE.fullmatch(str(wk.get('as_of') or '')):
+                    fails.append(f'{where}: section {s.get("id")} weekly table lacks source or as_of')
+        return out
+    def check_metric(m, where, derived_ok):
+        mid = m.get('id') or '?'
+        for k in ('id', 'label', 'unit'):
+            if not m.get(k): fails.append(f'{where}: metric {mid} lacks {k}')
+        if not (m.get('source') or {}).get('name'): fails.append(f'{where}: metric {mid} lacks source.name')
+        if not (m.get('period') or {}).get('label') and not (m.get('period') or {}).get('from'): fails.append(f'{where}: metric {mid} lacks period')
+        st = m.get('status')
+        if st not in STATS_STATUSES: fails.append(f'{where}: metric {mid} status {st!r}')
+        if m.get('derive') and derived_ok:
+            return
+        if not DATE_RE.fullmatch(str(m.get('as_of') or '')): fails.append(f'{where}: metric {mid} lacks as_of (YYYY-MM-DD)')
+        if (m.get('value') is None) != (st != 'ok'): fails.append(f'{where}: metric {mid} value {m.get("value")!r} does not match status {st!r}')
+    if not os.path.isfile(STATS_SRC):
+        return [f'missing {STATS_SRC}']
+    src = json.load(open(STATS_SRC, encoding='utf-8'))
+    if not DATE_RE.fullmatch(str(src.get('updated_at') or '')): fails.append('atlas/data/stats.json: updated_at not YYYY-MM-DD')
+    for _, m in metrics_of(src, 'atlas/data/stats.json'):
+        check_metric(m, 'atlas/data/stats.json', True)
+    fp = os.path.join(DIST, 'stats.json')
+    if not os.path.isfile(fp):
+        return fails + ['missing /stats.json']
+    pub = json.load(open(fp, encoding='utf-8'))
+    pm = metrics_of(pub, '/stats.json')
+    ids = [m.get('id') for _, m in pm]
+    if len(ids) != len(set(ids)): fails.append('/stats.json: duplicate metric ids')
+    for _, m in pm:
+        if 'derive' in m: fails.append(f'/stats.json: metric {m.get("id")} still has derive')
+        check_metric(m, '/stats.json', False)
+    kinds = {s.get('kind') for s, _ in pm}
+    for need in ('humans', 'agents', 'search'):
+        if need not in kinds: fails.append(f'/stats.json: no separate {need} section')
+    snap = json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']
+    want = {'atlas_cards': len(snap), 'atlas_live': sum(1 for c in snap if c.get('status') == 'live'),
+            'atlas_closed': sum(1 for c in snap if c.get('status') == 'closed')}
+    vals = {m.get('id'): m.get('value') for _, m in pm}
+    for k, v in want.items():
+        if k in vals and vals[k] != v: fails.append(f'/stats.json: {k}={vals[k]} != snapshot {v}')
+    u = '/stats/'
+    if u not in parsed:
+        return fails + ['missing /stats/ page']
+    h = open(pages[u], encoding='utf-8').read()
+    if ORIGIN + u not in locs: fails.append('/stats/ not in the sitemap')
+    for need in ('<h1>Commonworld in numbers</h1>', 'A shared world for humans and agents', 'href="/stats.json"', 'href="/stats/index.md"',
+                 '<link rel="alternate" type="text/markdown" href="/stats/index.md"', '"Dataset"'):
+        if need not in h: fails.append(f'/stats/: lacks {need!r}')
+    for s, m in pm:
+        row = re.search(rf'<tr id="{re.escape(m["id"])}">(.*?)</tr>', h, re.S)
+        if not row: fails.append(f'/stats/: no row for {m["id"]}'); continue
+        r = row.group(1)
+        if f'datetime="{m["as_of"]}"' not in r: fails.append(f'/stats/: row {m["id"]} lacks as_of')
+        if html.escape(m['source']['name']) not in r: fails.append(f'/stats/: row {m["id"]} lacks its source')
+    side_re = re.compile(r'<aside class="cw-side".*?</aside>', re.S)
+    for pu, pf in pages.items():
+        t = open(pf, encoding='utf-8').read()
+        if 'href="/stats/">Stats</a>' not in t[t.find('<footer class="cw-foot"'):]: fails.append(f'{pu}: footer lacks Stats link')
+        sm = side_re.search(t)
+        if not sm or 'href="/stats/"' not in sm.group(0): fails.append(f'{pu}: sidebar lacks Stats link')
+    llms = open(os.path.join(DIST, 'llms.txt'), encoding='utf-8').read()
+    for need in (ORIGIN + '/stats/', ORIGIN + '/stats.json', ORIGIN + '/stats/index.md'):
+        if need not in llms: fails.append(f'/llms.txt lacks {need}')
+    n_ok = sum(1 for _, m in pm if m.get('value') is not None)
+    print(f'stats: {len(pm)} metrics ({n_ok} with a value, {len(pm) - n_ok} coming / nothing yet), every one with source + period + as_of')
+    return fails
+
+
 def decisions_checks(parsed, pages, locs):
     """Link safety decision log: /atlas/decisions/ (indexable, in the sitemap, linked from /atlas/about/), its Markdown twin and
     /atlas/decisions.json list every decision in atlas/data/removed.json (date, action, slug, actor, evidence) newest first and match
@@ -941,13 +1031,13 @@ def main():
                 txt = open(fp, encoding='utf-8', errors='replace').read()
                 m = FORBIDDEN_ANY.search(txt.replace(CFG0['contact']['general'], ''))
                 if m: fails.append(f'forbidden text {m.group(0)!r} in {os.path.relpath(fp, DIST)}: …{txt[max(0, m.start() - 40):m.end() + 40]}…')
-    for u in [PRIV_URL, TERMS_URL, '/atlas/about/', '/atlas/decisions/', '/atlas/', '/404.html', '/', '/about/']:
+    for u in [PRIV_URL, TERMS_URL, '/atlas/about/', '/atlas/decisions/', '/atlas/', '/404.html', '/', '/about/', '/stats/']:
         if u in pages:
             txt = open(pages[u], encoding='utf-8').read()
             copy = re.sub(r'<script.*?</script>|<style.*?</style>', '', txt, flags=re.S)
             m = FORBIDDEN_SITE_TEXT.search(copy)
             if m: fails.append(f'{u}: operator location wording {m.group(0)!r}')
-            if u in (PRIV_URL, TERMS_URL, '/', '/about/', '/atlas/about/', '/atlas/decisions/'):
+            if u in (PRIV_URL, TERMS_URL, '/', '/about/', '/atlas/about/', '/atlas/decisions/', '/stats/'):
                 m = FORBIDDEN_COMMONWORLD_COPY.search(copy)
                 if m: fails.append(f'{u}: Commonworld-authored copy mentions {m.group(0)!r}')
     for u, p in parsed.items():
@@ -1213,6 +1303,7 @@ def main():
     fails += safety_report_checks(parsed)
     fails += decisions_checks(parsed, pages, locs)
     fails += markdown_twin_checks(pages)[0]
+    fails += stats_checks(parsed, pages, locs)
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)
     fails += a11y_checks(pages)

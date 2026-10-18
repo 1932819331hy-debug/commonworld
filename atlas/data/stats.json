@@ -1,0 +1,349 @@
+{
+ "version": 1,
+ "_about": "Public stats for https://commonworld.one/stats/ (build.py renders the page, /stats/index.md and /stats.json from this file). One record per number. Every metric carries source, period and as_of; status 'coming' = no number yet (value null), never an estimate. Humans, agent deliveries and search clicks are always separate metrics. Metrics with 'derive' are filled at build time from the published Atlas data. A weekly job edits only this file (values, periods, as_of, weekly rows) and bumps updated_at. check.py fails when a metric lacks source or as_of.",
+ "updated_at": "2026-10-18",
+ "cadence": "weekly",
+ "sections": [
+  {
+   "id": "atlas",
+   "title": "The Atlas",
+   "kind": "data",
+   "intro": "What the Atlas holds right now. Counted from the published data on every build.",
+   "metrics": [
+    {
+     "id": "atlas_cards",
+     "label": "Cards in the Atlas",
+     "unit": "cards",
+     "derive": "cards_total",
+     "value": null,
+     "status": "ok",
+     "period": {
+      "label": "current published data"
+     },
+     "source": {
+      "name": "Atlas published data (snapshot.json)",
+      "url": "/atlas/data/snapshot.json"
+     },
+     "as_of": null
+    },
+    {
+     "id": "atlas_live",
+     "label": "Live platforms",
+     "unit": "cards",
+     "derive": "cards_live",
+     "value": null,
+     "status": "ok",
+     "period": {
+      "label": "current published data"
+     },
+     "source": {
+      "name": "Atlas published data (snapshot.json)",
+      "url": "/atlas/data/snapshot.json"
+     },
+     "as_of": null
+    },
+    {
+     "id": "atlas_closed",
+     "label": "Closed, kept as history",
+     "unit": "cards",
+     "derive": "cards_closed",
+     "value": null,
+     "status": "ok",
+     "period": {
+      "label": "current published data"
+     },
+     "source": {
+      "name": "Atlas published data (snapshot.json)",
+      "url": "/atlas/closed/"
+     },
+     "as_of": null
+    },
+    {
+     "id": "atlas_last_verified",
+     "label": "Last verified",
+     "unit": "date",
+     "derive": "last_verified",
+     "value": null,
+     "status": "ok",
+     "period": {
+      "label": "newest check on any card"
+     },
+     "source": {
+      "name": "Atlas published data (observed_at of claims)",
+      "url": "/atlas/about/"
+     },
+     "as_of": null
+    }
+   ]
+  },
+  {
+   "id": "search",
+   "title": "Google Search",
+   "kind": "search",
+   "intro": "How often Commonworld pages appear in Google results and how often people click them. Clicks are search clicks, not visits.",
+   "metrics": [
+    {
+     "id": "gsc_clicks_28d",
+     "label": "Clicks",
+     "unit": "clicks",
+     "value": null,
+     "status": "coming",
+     "period": {
+      "label": "last 28 days"
+     },
+     "source": {
+      "name": "Google Search Console, Performance report",
+      "url": null
+     },
+     "as_of": "2026-10-18",
+     "note": "The site went live on 2026-10-15; Search Console has collected data since then. The first 28-day figures are added by the weekly update."
+    },
+    {
+     "id": "gsc_impressions_28d",
+     "label": "Impressions",
+     "unit": "impressions",
+     "value": null,
+     "status": "coming",
+     "period": {
+      "label": "last 28 days"
+     },
+     "source": {
+      "name": "Google Search Console, Performance report",
+      "url": null
+     },
+     "as_of": "2026-10-18"
+    },
+    {
+     "id": "gsc_ctr_28d",
+     "label": "Click-through rate",
+     "unit": "percent",
+     "value": null,
+     "status": "coming",
+     "period": {
+      "label": "last 28 days"
+     },
+     "source": {
+      "name": "Google Search Console, Performance report",
+      "url": null
+     },
+     "as_of": "2026-10-18"
+    },
+    {
+     "id": "gsc_position_28d",
+     "label": "Average position",
+     "unit": "position",
+     "value": null,
+     "status": "coming",
+     "period": {
+      "label": "last 28 days"
+     },
+     "source": {
+      "name": "Google Search Console, Performance report",
+      "url": null
+     },
+     "as_of": "2026-10-18"
+    }
+   ],
+   "weekly": {
+    "columns": [
+     "week",
+     "clicks",
+     "impressions",
+     "ctr",
+     "position"
+    ],
+    "source": {
+     "name": "Google Search Console, Performance report",
+     "url": null
+    },
+    "as_of": "2026-10-18",
+    "rows": []
+   }
+  },
+  {
+   "id": "ai_features",
+   "title": "Google AI features",
+   "kind": "search",
+   "intro": "Times a Commonworld page was shown inside Google's AI features (AI Overviews, AI Mode). Google's report is in beta.",
+   "metrics": [
+    {
+     "id": "gsc_ai_impressions",
+     "label": "Impressions in Google AI features",
+     "unit": "impressions",
+     "value": 6,
+     "status": "ok",
+     "period": {
+      "from": "2026-10-14",
+      "to": "2026-10-16",
+      "label": "2026-10-14 to 2026-10-16 (first days of data)"
+     },
+     "source": {
+      "name": "Google Search Console, Generative AI features report (beta)",
+      "url": null
+     },
+     "as_of": "2026-10-18",
+     "note": "Impressions only. 20 pages had at least one impression in this period."
+    }
+   ]
+  },
+  {
+   "id": "humans",
+   "title": "Human visits",
+   "kind": "humans",
+   "intro": "People who opened the site in a browser. Counted separately from search clicks and from agents.",
+   "metrics": [
+    {
+     "id": "human_visits_7d",
+     "label": "Visits",
+     "unit": "visits",
+     "value": null,
+     "status": "coming",
+     "period": {
+      "label": "last 7 days"
+     },
+     "source": {
+      "name": "Cloudflare Web Analytics (cookieless, bots excluded)",
+      "url": null
+     },
+     "as_of": "2026-10-18",
+     "note": "Collection started on 2026-10-16. The first weekly figure is added by the weekly update."
+    },
+    {
+     "id": "human_pageviews_7d",
+     "label": "Page views",
+     "unit": "page views",
+     "value": null,
+     "status": "coming",
+     "period": {
+      "label": "last 7 days"
+     },
+     "source": {
+      "name": "Cloudflare Web Analytics (cookieless, bots excluded)",
+      "url": null
+     },
+     "as_of": "2026-10-18"
+    }
+   ]
+  },
+  {
+   "id": "response",
+   "title": "How fast we respond",
+   "kind": "support",
+   "intro": "Public GitHub issues of commonworld-one/commonworld: corrections, suggestions and problem reports, opened in the last 90 days. Pull requests are not counted.",
+   "metrics": [
+    {
+     "id": "gh_issues_open",
+     "label": "Open issues",
+     "unit": "issues",
+     "value": 2,
+     "status": "ok",
+     "period": {
+      "from": "2026-07-20",
+      "to": "2026-10-18",
+      "label": "last 90 days"
+     },
+     "source": {
+      "name": "GitHub issues (public API)",
+      "url": "https://github.com/commonworld-one/commonworld/issues?q=is%3Aissue"
+     },
+     "as_of": "2026-10-18",
+     "note": "Of 5 issues opened in this period: 0 from people outside the team, 3 from maintainers, 2 from our own automated checks."
+    },
+    {
+     "id": "gh_issues_closed",
+     "label": "Closed issues",
+     "unit": "issues",
+     "value": 3,
+     "status": "ok",
+     "period": {
+      "from": "2026-07-20",
+      "to": "2026-10-18",
+      "label": "last 90 days"
+     },
+     "source": {
+      "name": "GitHub issues (public API)",
+      "url": "https://github.com/commonworld-one/commonworld/issues?q=is%3Aissue"
+     },
+     "as_of": "2026-10-18"
+    },
+    {
+     "id": "gh_issues_outside",
+     "label": "Issues from people outside the team",
+     "unit": "issues",
+     "value": 0,
+     "status": "ok",
+     "period": {
+      "from": "2026-07-20",
+      "to": "2026-10-18",
+      "label": "last 90 days"
+     },
+     "source": {
+      "name": "GitHub issues (public API)",
+      "url": "https://github.com/commonworld-one/commonworld/issues?q=is%3Aissue"
+     },
+     "as_of": "2026-10-18"
+    },
+    {
+     "id": "gh_first_response_median",
+     "label": "Median time to first maintainer response",
+     "unit": "minutes",
+     "value": null,
+     "status": "none_yet",
+     "period": {
+      "from": "2026-07-20",
+      "to": "2026-10-18",
+      "label": "last 90 days"
+     },
+     "source": {
+      "name": "GitHub issues (public API)",
+      "url": "https://github.com/commonworld-one/commonworld/issues?q=is%3Aissue"
+     },
+     "as_of": "2026-10-18",
+     "note": "No issue from outside the team yet, so there is nothing to measure. The first one starts this number."
+    },
+    {
+     "id": "gh_close_median",
+     "label": "Median time to close",
+     "unit": "minutes",
+     "value": 6,
+     "status": "ok",
+     "period": {
+      "from": "2026-07-20",
+      "to": "2026-10-18",
+      "label": "last 90 days"
+     },
+     "source": {
+      "name": "GitHub issues (public API)",
+      "url": "https://github.com/commonworld-one/commonworld/issues?q=is%3Aissue"
+     },
+     "as_of": "2026-10-18",
+     "note": "Over 3 closed issue(s), all authors. All of them were opened by maintainers."
+    }
+   ]
+  },
+  {
+   "id": "agents",
+   "title": "Agent visits",
+   "kind": "agents",
+   "intro": "AI agents that read Commonworld through its API, JSON and Markdown files. Counted separately from people and from search.",
+   "metrics": [
+    {
+     "id": "agent_deliveries",
+     "label": "Agent deliveries",
+     "unit": "deliveries",
+     "value": null,
+     "status": "coming",
+     "period": {
+      "label": "after v1 launch"
+     },
+     "source": {
+      "name": "Commonworld API logs (planned)",
+      "url": null
+     },
+     "as_of": "2026-10-18",
+     "note": "Counted after the v1 launch of the Commonworld platform."
+    }
+   ]
+  }
+ ]
+}
