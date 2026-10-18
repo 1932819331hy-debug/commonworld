@@ -10,7 +10,7 @@
  "corrections": "https://github.com/commonworld-one/commonworld/issues/new/choose",
  "protocol": "https://github.com/commonworld-one/commonworld/blob/main/atlas/PROTOCOL.md",
  "full_data": "https://commonworld.one/atlas/data/snapshot.json",
- "count": 324,
+ "count": 323,
  "fields_note": "id = permanent slug; verified_at/last_checked = newest observation on the card (UTC); money_flow = supported money-flow claims shown on the card; full claims with sources are in each json_url and in full_data.",
  "platforms": [
   {
@@ -3286,28 +3286,6 @@
    "verified_at": "2026-10-15T18:19:00Z",
    "last_checked": "2026-10-15T18:19:00Z",
    "claims_count": 5,
-   "disclosure": null
-  },
-  {
-   "id": "clawhub",
-   "name": "ClawHub",
-   "url": "https://commonworld.one/atlas/platforms/clawhub/",
-   "json_url": "https://commonworld.one/atlas/platforms/clawhub.json",
-   "website": "https://clawhub.ai",
-   "category": "registries",
-   "category_label": "Registries & directories",
-   "type": "tool_catalog",
-   "status": "live",
-   "summary": "Public hub for discovering and installing skills and plugins for the OpenClaw agent runtime, with per-item download counts.",
-   "tags": [
-    "openclaw"
-   ],
-   "has_money_flow": false,
-   "money_flow": [],
-   "key_number": null,
-   "verified_at": "2026-10-15T18:08:00Z",
-   "last_checked": "2026-10-15T18:08:00Z",
-   "claims_count": 4,
    "disclosure": null
   },
   {

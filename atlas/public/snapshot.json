@@ -2,7 +2,7 @@
  "name": "Commonworld Atlas",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-18T06:49:28Z",
- "count": 324,
+ "count": 323,
  "license": "CC BY 4.0",
  "fields_note": "observed_at values are ISO 8601 UTC timestamps.",
  "platforms": [
@@ -10475,82 +10475,6 @@
    "qa_status": "checked",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/clawdchat/"
-  },
-  {
-   "id": 121,
-   "slug": "clawhub",
-   "name": "ClawHub",
-   "entity_type": "tool_catalog",
-   "category": "registries",
-   "status": "live",
-   "canonical_url": "https://clawhub.ai",
-   "description_en": "Public hub for discovering and installing skills and plugins for the OpenClaw agent runtime, with per-item download counts.",
-   "claims": [
-    {
-     "kind": "canonical_url",
-     "statement": "clawhub.ai is the official OpenClaw skills/plugins hub; GitHub repo openclaw/clawhub",
-     "value": null,
-     "unit": null,
-     "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://github.com/openclaw/clawhub",
-     "quote": "openclaw/clawhub (9,511 stars)",
-     "observed_at": "2026-10-15T18:08:00Z",
-     "methods": [
-      "GitHub API repos/openclaw/clawhub"
-     ],
-     "outcome": "supported"
-    },
-    {
-     "kind": "site_reachable",
-     "statement": "Homepage serves full catalog content (HTTP 200)",
-     "value": null,
-     "unit": null,
-     "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://clawhub.ai",
-     "quote": "Claws for your Claws Discover skills and plugins from top creators",
-     "observed_at": "2026-10-15T18:08:00Z",
-     "methods": [
-      "curl -sL https://clawhub.ai"
-     ],
-     "outcome": "supported"
-    },
-    {
-     "kind": "description",
-     "statement": "Catalog of OpenClaw skills and plugins",
-     "value": null,
-     "unit": null,
-     "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://clawhub.ai",
-     "quote": "OpenClaw DuckDuckGo plugin. 16.8k ... Memory LanceDB @ openclaw OpenClaw LanceDB-backed long-term memory plugin",
-     "observed_at": "2026-10-15T18:08:00Z",
-     "methods": [
-      "curl -sL https://clawhub.ai"
-     ],
-     "outcome": "supported"
-    },
-    {
-     "kind": "recent_activity",
-     "statement": "Latest commit to openclaw/clawhub on 2026-10-15 07:24 UTC",
-     "value": null,
-     "unit": null,
-     "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://github.com/openclaw/clawhub/commits",
-     "quote": "feat(plugins): show calm API retirement notices (#3962)",
-     "observed_at": "2026-10-15T18:08:00Z",
-     "methods": [
-      "GitHub API commits?per_page=1"
-     ],
-     "outcome": "supported"
-    }
-   ],
-   "qa": [],
-   "qa_status": "not_sampled",
-   "verdict": "include_verified",
-   "url": "https://commonworld.one/atlas/platforms/clawhub/"
   },
   {
    "id": 325,

@@ -1,4 +1,4 @@
-# Commonworld Atlas: all 324 published entries
+# Commonworld Atlas: all 323 published entries
 > One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data CC BY 4.0; machine-readable: https://commonworld.one/atlas/platforms.json
 
 Official channels: site https://commonworld.one/ · X https://x.com/commonworldone (@commonworldone) · GitHub https://github.com/commonworld-one/commonworld
@@ -124,7 +124,6 @@ Homepage previews: the `preview` field of each entry's JSON (dated screenshot UR
 - [ClawCity](https://commonworld.one/atlas/platforms/clawcity/) · JSON: https://commonworld.one/atlas/platforms/clawcity.json · Worlds & games · closed · A former live MMO city for hosted AI agents, now officially archived: the world is offline and the site is a static archive with the source code kept on GitHub.
 - [ClawCredit](https://commonworld.one/atlas/platforms/clawcredit/) · JSON: https://commonworld.one/atlas/platforms/clawcredit.json · Payments & x402 · live · Beta credit line for AI agents, underwritten by t54 according to the operator, spendable on x402 services and grown by repaying on time.
 - [ClawdChat (虾聊)](https://commonworld.one/atlas/platforms/clawdchat/) · JSON: https://commonworld.one/atlas/platforms/clawdchat.json · Social & forums · live · Chinese agent social network with posts and 'circles', plus agent identity (DID), agent-to-agent relay and tool gateway features.
-- [ClawHub](https://commonworld.one/atlas/platforms/clawhub/) · JSON: https://commonworld.one/atlas/platforms/clawhub.json · Registries & directories · live · Public hub for discovering and installing skills and plugins for the OpenClaw agent runtime, with per-item download counts.
 - [ClawHunt](https://commonworld.one/atlas/platforms/clawhunt/) · JSON: https://commonworld.one/atlas/platforms/clawhunt.json · Registries & directories · live · Discovery directory for agentic products, grouped by section, with health tracking and security alerts.
 - [clawIRC](https://commonworld.one/atlas/platforms/clawirc/) · JSON: https://commonworld.one/atlas/platforms/clawirc.json · Social & forums · closed · Former IRC network for AI agents (launched on Hacker News ~2026-05-01); both its web domains are now unreachable.
 - [Clawk](https://commonworld.one/atlas/platforms/clawk/) · JSON: https://commonworld.one/atlas/platforms/clawk.json · Social & forums · live · Twitter-style microblog for AI agents: 400-character posts, follows, likes and reclawks, API-first with humans observing.
