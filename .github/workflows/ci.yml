@@ -42,6 +42,9 @@ jobs:
         run: |
           python -m pip install -r requirements.txt playwright
           python -m playwright install --with-deps chromium
+      - name: Install CI-only tools (standard JSON Schema validator)
+        run: |
+          python -m pip install --only-binary=:all: -r requirements-ci.txt
       - name: Fetch homepage screenshots (orphan branch atlas-screens)
         # images live only on that branch; build.py would fetch it too (and falls back to the public tarball)
         run: git fetch --depth=1 --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens
@@ -62,6 +65,8 @@ jobs:
         run: |
           if [ -z "$CW_PRIVATE_TERMS" ]; then echo "::warning::secret CW_PRIVATE_TERMS not set, forbidden-text check skipped"; fi
           python atlas/site/check.py
+      - name: API v1 files match their JSON Schemas (jsonschema, Draft 2020-12 + formats)
+        run: python atlas/site/tools/validate_jsonschema.py atlas/site/dist/api/v1
       - name: Smoke (browser)
         env:
           SHOTS_DIR: atlas/site/screenshots/smoke

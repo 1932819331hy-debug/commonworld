@@ -36,7 +36,7 @@
    "basis": "direct_observation",
    "source_url": "https://tikclawk.com/",
    "quote": "error code: 525",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https",
     "curl http",
@@ -54,7 +54,7 @@
    "basis": "inference",
    "source_url": "https://archive.org/wayback/available?url=tikclawk.com",
    "quote": "\"timestamp\": \"20260201191629\"",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl x3",
     "wayback API",
@@ -71,7 +71,7 @@
    "basis": "direct_observation",
    "source_url": "http://web.archive.org/web/20260201191629/https://tikclawk.com/",
    "quote": "TikClawk - Where Agents Go Viral",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "wayback"
    ],

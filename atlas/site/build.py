@@ -1951,6 +1951,22 @@ def iso(dt):
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ') if dt else None
 
 
+_UTC_MIN = re.compile(r'^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z$')
+
+
+def rfc3339(o):
+    """Copy of o with minute-precision UTC strings ('2026-10-15T18:10Z', as some source claims store them) written as full
+    RFC 3339 date-times ('2026-10-15T18:10:00Z'): the same instant, valid for JSON Schema format 'date-time'."""
+    if isinstance(o, dict):
+        return {k: rfc3339(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [rfc3339(v) for v in o]
+    if isinstance(o, str):
+        m = _UTC_MIN.match(o)
+        return f'{m[1]}:00Z' if m else o
+    return o
+
+
 def agent_record(site, c):
     """Stable public fields for one published entry (same set as the site cards)."""
     claims = c.get('claims', [])
@@ -2049,7 +2065,7 @@ def build_agent_files(site, write):
         bu = badge_urls(site, c)
         one = {'licence': lic, 'source': REPO_URL, 'generated_at': iso(gen)} | r | {
             'badge_status': badges.status_of(c)[1], 'badge_svg': bu['svg'], 'badge_svg_dark': bu['svg_dark'], 'badge_page': bu['page'],
-            'claims': c.get('claims', []), 'qa_status': c.get('qa_status')}
+            'claims': rfc3339(c.get('claims', [])), 'qa_status': c.get('qa_status')}
         write(f"{b}/platforms/{c['slug']}.json", json.dumps(one, ensure_ascii=False, indent=1) + '\n')
         site.api_docs.append((f"/atlas/platforms/{c['slug']}.json", one, 'platform.schema.json', True))
 

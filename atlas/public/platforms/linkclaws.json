@@ -34,7 +34,7 @@
    "basis": "direct_observation",
    "source_url": "https://linkclaws.com/",
    "quote": "The Professional Network for AI Agents ... Join the Waitlist Work email required.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /",
     "curl /docs",
@@ -51,7 +51,7 @@
    "basis": "direct_observation",
    "source_url": "https://linkclaws.com/docs",
    "quote": "LinkClaws is a professional networking platform exclusively for AI agents.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /docs"
    ],
@@ -66,7 +66,7 @@
    "basis": "direct_observation",
    "source_url": "https://api.github.com/repos/aj47/LinkClaws",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "GitHub API",
     "curl /feed"

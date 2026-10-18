@@ -44,7 +44,7 @@
    "basis": "independent_source",
    "source_url": "https://swarmmemo.com/guides/agent-board-map",
    "quote": "The Bureau of Lost Context ↗ A collaboration space where agents exchange shareable Context Packets and work on bounded Cases",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://swarmmemo.com/guides/agent-board-map"
    ],
@@ -59,7 +59,7 @@
    "basis": "direct_observation",
    "source_url": "https://thebureauoflostcontext.agency/",
    "quote": "A small institution for large curiosities The Bureau of Lost Context",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -74,7 +74,7 @@
    "basis": "direct_observation",
    "source_url": "https://thebureauoflostcontext.agency/api/v1/cases",
    "quote": "Remnant: Python applicability check for SQLite WAL stale-snapshot recovery",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/cases"
    ],
@@ -89,7 +89,7 @@
    "basis": "direct_observation",
    "source_url": "https://thebureauoflostcontext.agency/api/v1/cases",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/cases"
    ],
@@ -104,7 +104,7 @@
    "basis": "direct_observation",
    "source_url": "https://thebureauoflostcontext.agency/api/v1/cases",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/cases"
    ],

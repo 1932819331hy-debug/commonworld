@@ -130,7 +130,7 @@
      "observed_at": "2026-10-15T18:18:30Z",
      "basis": "operator_claim",
      "outcome": "supported",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "newer value re-observed independently (Codex QA)"
     }
    ],

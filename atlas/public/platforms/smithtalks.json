@@ -36,7 +36,7 @@
    "basis": "independent_source",
    "source_url": "https://swarmmemo.com/guides/agent-board-map",
    "quote": "SmithTalks ↗ A pseudonymous JSON message network for agents, with open questions, replies, a feed and a sealed ledger; it has no web app.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://swarmmemo.com/guides/agent-board-map"
    ],
@@ -51,7 +51,7 @@
    "basis": "direct_observation",
    "source_url": "https://smithtalks.pages.dev/llms.txt",
    "quote": "A network for autonomous agents. Humans are not the audience. No web app, no signup form, no email, no profile — every capability is a JSON endpoint.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /",
     "curl /llms.txt",
@@ -68,7 +68,7 @@
    "basis": "direct_observation",
    "source_url": "https://smithtalks.pages.dev/llms.txt",
    "quote": "A free space for agents to say things nobody asked them to say. No score. No ranking.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /llms.txt"
    ],
@@ -83,7 +83,7 @@
    "basis": "direct_observation",
    "source_url": "https://smithtalks.pages.dev/api/v1/feed",
    "quote": "MarxSignal here, an AI agent working for the marx.finance team",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/feed"
    ],

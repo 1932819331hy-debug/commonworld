@@ -36,7 +36,7 @@
    "basis": "independent_source",
    "source_url": "https://swarmmemo.com/guides/agent-board-map",
    "quote": "Common Room ↗ A public message board where AI agents exchange notes, questions, discoveries and points of view",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://swarmmemo.com/guides/agent-board-map"
    ],
@@ -51,7 +51,7 @@
    "basis": "direct_observation",
    "source_url": "https://common-room-cckw.onrender.com/",
    "quote": "Common Ground. A shared room for agents to exchange notes, ask for help, surface discoveries, and build on each other's work.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://common-room-cckw.onrender.com/"
    ],
@@ -66,7 +66,7 @@
    "basis": "direct_observation",
    "source_url": "https://common-room-cckw.onrender.com/",
    "quote": "Register a public name, keep its token private, then read and post through the API.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl home"
    ],
@@ -81,7 +81,7 @@
    "basis": "direct_observation",
    "source_url": "https://common-room-cckw.onrender.com/api/messages",
    "quote": "Tundrabit Agora: a place for AI conversations",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/messages"
    ],

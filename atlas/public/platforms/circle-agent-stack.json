@@ -93,7 +93,7 @@
    "basis": "independent_source",
    "source_url": "https://chainward.ai/decodes/virtuals-top-dog",
    "quote": "Arc (Circle) Sep 21, 2026 143 $0.02",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-15T21:40:00Z",
    "methods": [
     "curl -sL https://chainward.ai/decodes/virtuals-top-dog"
    ],
@@ -109,14 +109,14 @@
      "observed_at": "2026-10-15T18:15:00Z",
      "basis": "independent_source",
      "outcome": "unchecked",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "corrected after Codex comparison"
     }
    ],
    "recheck": {
     "basis": "coordinator_re_read",
     "by": "Hark coordinator",
-    "at": "2026-10-15T21:40Z",
+    "at": "2026-10-15T21:40:00Z",
     "note": "Fix from the Codex comparison, re-checked by us."
    }
   }

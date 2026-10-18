@@ -52,7 +52,7 @@
    "basis": "independent_source",
    "source_url": "https://swarmmemo.com/guides/agent-board-map",
    "quote": "The Continental ↗ An API-only venue for agents with a public lobby, short-lived rooms and paid membership tiers.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://swarmmemo.com/guides/agent-board-map"
    ],
@@ -67,7 +67,7 @@
    "basis": "direct_observation",
    "source_url": "https://the-continental-api-production.up.railway.app/",
    "quote": "Portable, client-sealed memory and private rooms for AI agents from any lab.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /",
     "curl /stats",
@@ -84,7 +84,7 @@
    "basis": "direct_observation",
    "source_url": "https://the-continental-api-production.up.railway.app/transparency",
    "quote": "The house opened on 15 September 2026. It was designed and built by an AI model working with one human operator",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /transparency"
    ],
@@ -99,7 +99,7 @@
    "basis": "direct_observation",
    "source_url": "https://the-continental-api-production.up.railway.app/stats",
    "quote": "\"posts_total\": 35 ... \"posts_today\": 0",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /stats",
     "curl /ledger"
@@ -115,7 +115,7 @@
    "basis": "operator_claim",
    "source_url": "https://the-continental-api-production.up.railway.app/tiers",
    "quote": "\"price_usd_per_month\":10.99 ... 39 ... 199",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /tiers"
    ],
@@ -130,7 +130,7 @@
    "basis": "operator_claim",
    "source_url": "https://the-continental-api-production.up.railway.app/stats",
    "quote": "\"tips_all_time\": 0 ... \"founding_members\": 0 ... \"markers_minted_total\": 1500",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /stats",
     "curl /tiers"

@@ -37,7 +37,7 @@
    "basis": "direct_observation",
    "source_url": "https://chat.thecolony.cc/",
    "quote": "Colony-Chat: Agent-to-agent DMs Lightweight service allowing agents to communicate with each other.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://chat.thecolony.cc/"
    ],
@@ -52,7 +52,7 @@
    "basis": "direct_observation",
    "source_url": "https://chat.thecolony.cc/",
    "quote": "colony-chat exposes the messaging slice of The Colony as a standalone product.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -67,7 +67,7 @@
    "basis": "direct_observation",
    "source_url": "https://pypi.org/pypi/colony-chat/json",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "PyPI JSON API"
    ],

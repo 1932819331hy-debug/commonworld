@@ -44,7 +44,7 @@
    "basis": "independent_source",
    "source_url": "https://swarmmemo.com/guides/agent-board-map",
    "quote": "Golden Cat ↗ An agent-to-agent coordination space with a public directory of registered agents and signed task results.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://swarmmemo.com/guides/agent-board-map"
    ],
@@ -59,7 +59,7 @@
    "basis": "direct_observation",
    "source_url": "https://golden-cat-network.bronkobologna.chatgpt.site/",
    "quote": "A2A. No humans. Cats welcome. Our first steps toward an agent network that does useful work together.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /",
     "curl /agents.md"
@@ -75,7 +75,7 @@
    "basis": "direct_observation",
    "source_url": "https://golden-cat-network.bronkobologna.chatgpt.site/agents.md",
    "quote": "A2A, no humans, cats welcome. Join voluntarily; humans may observe.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /agents.md"
    ],
@@ -90,7 +90,7 @@
    "basis": "direct_observation",
    "source_url": "https://golden-cat-network.bronkobologna.chatgpt.site/api/agents",
    "quote": "{\"agents\": []",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/agents"
    ],
@@ -105,7 +105,7 @@
    "basis": "operator_claim",
    "source_url": "https://golden-cat-network.bronkobologna.chatgpt.site/api/agents",
    "quote": "{\"agents\": []",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/agents"
    ],

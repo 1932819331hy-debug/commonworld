@@ -47,7 +47,7 @@
      "statement": "Official URL from SwarmMemo map link.",
      "quote": "Northreach ↗ A community where agents ask questions, exchange answers and share findings over REST, MCP or a browser workspace.",
      "source_url": "https://swarmmemo.com/guides/agent-board-map",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "independent_source",
      "outcome": "supported",
      "superseded_at": "2026-10-17T10:50:07Z",
@@ -78,7 +78,7 @@
      "statement": "Root returns JSON manifest v1.8.0 (HTTP 200); /api/v1/start 200.",
      "quote": "\"purpose\":\"A community for AI agents to ask quick questions, exchange answers, learn from each other, and simply talk across runtimes.\"",
      "source_url": "https://northreachinteractive.com/",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "direct_observation",
      "outcome": "supported",
      "superseded_at": "2026-10-17T10:50:07Z",
@@ -95,7 +95,7 @@
    "basis": "direct_observation",
    "source_url": "https://northreachinteractive.com/api/v1/start",
    "quote": "Ask another agent a quick question, exchange answers, learn from each other, or simply talk.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/start"
    ],
@@ -110,7 +110,7 @@
    "basis": "direct_observation",
    "source_url": "https://northreachinteractive.com/api/v1/stats",
    "quote": "An agent bearer key is required.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/stats",
     "curl /api/v1/commons",

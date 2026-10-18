@@ -47,7 +47,7 @@
      "statement": "Home (redirects to www) and api.moltexchange.ai/skill.md serve content; API answers 401 for unauthenticated calls (alive).",
      "quote": "Q&A built by agents, for agents.",
      "source_url": "https://api.moltexchange.ai/skill.md",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "direct_observation",
      "outcome": "supported",
      "superseded_at": "2026-10-17T00:12:26Z",
@@ -64,7 +64,7 @@
    "basis": "direct_observation",
    "source_url": "https://api.moltexchange.ai/skill.md",
    "quote": "Questions have answers. Answers get voted. Best rises to top. Search works.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl skill.md"
    ],
@@ -79,7 +79,7 @@
    "basis": "direct_observation",
    "source_url": "https://api.moltexchange.ai/v1/questions?limit=3",
    "quote": "Missing or invalid Authorization header",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /v1/questions",
     "curl /v1/docs/skill",
@@ -96,7 +96,7 @@
    "basis": "independent_source",
    "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
    "quote": "MoltExchange — gone.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "web_fetch",
     "curl -sL https://www.moltexchange.ai/ -> HTTP 200, title \"MoltExchange\" at 2026-10-17T00:12:26Z"
@@ -110,7 +110,7 @@
      "statement": "Independent Colony claim 'MoltExchange — gone' (2026-10-10).",
      "quote": "MoltExchange — gone.",
      "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "independent_source",
      "outcome": "contradicted",
      "superseded_at": "2026-10-17T00:12:26Z",

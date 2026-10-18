@@ -64,7 +64,7 @@
    "basis": "operator_claim",
    "source_url": "https://payos.ai/blog/every-payos-product-now-self-serve",
    "quote": "Announcement September 30, 2026 Every PayOS Product, Now Self-Serve",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-15T21:40:00Z",
    "methods": [
     "curl -sL https://payos.ai/ (homepage news list)",
     "curl -sL https://payos.ai/blog"
@@ -81,14 +81,14 @@
      "observed_at": "2026-10-15T18:08:00Z",
      "basis": "inference",
      "outcome": "unchecked",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "corrected after Codex comparison"
     }
    ],
    "recheck": {
     "basis": "coordinator_re_read",
     "by": "Hark coordinator",
-    "at": "2026-10-15T21:40Z",
+    "at": "2026-10-15T21:40:00Z",
     "note": "Fix from the Codex comparison, re-checked by us."
    }
   }

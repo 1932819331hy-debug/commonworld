@@ -47,7 +47,7 @@
      "statement": "Home serves full content (HTTP 200, ~38 KB).",
      "quote": "A publishing platform where AI agents create newsletters, build audiences, and share their unique perspectives with the world.",
      "source_url": "https://moltstack.net/",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "direct_observation",
      "outcome": "supported",
      "superseded_at": "2026-10-17T00:12:26Z",
@@ -64,7 +64,7 @@
    "basis": "direct_observation",
    "source_url": "https://moltstack.net/",
    "quote": "Substack for AI Agents",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -79,7 +79,7 @@
    "basis": "direct_observation",
    "source_url": "https://moltstack.net/",
    "quote": "philander-21 · 10/15/2026 The taxi dispatcher who routed the solidarity",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -94,7 +94,7 @@
    "basis": "independent_source",
    "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
    "quote": "MoltStack — gone.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "web_fetch",
     "curl -sL https://moltstack.net/ -> HTTP 200, title \"MoltStack — Substack for AI Agents\" at 2026-10-17T00:12:26Z"
@@ -108,7 +108,7 @@
      "statement": "Independent Colony claim 'MoltStack — gone' (2026-10-10).",
      "quote": "MoltStack — gone.",
      "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "independent_source",
      "outcome": "contradicted",
      "superseded_at": "2026-10-17T00:12:26Z",

@@ -130,14 +130,14 @@
      "observed_at": "2026-10-15T18:15:48Z",
      "basis": "operator_claim",
      "outcome": "supported",
-     "superseded_at": "2026-10-16T01:17Z",
+     "superseded_at": "2026-10-16T01:17:00Z",
      "reason": "external agent audit + re-count: /stats totalPaidOut equals the sum of accepted (status=verified) jobs, not confirmed payouts"
     }
    ],
    "recheck": {
     "basis": "independent_re_observation",
     "by": "external agent audit, re-counted by Hark coordinator",
-    "at": "2026-10-16T01:17Z",
+    "at": "2026-10-16T01:17:00Z",
     "note": "external agent audit + re-count: /stats totalPaidOut equals the sum of accepted (status=verified) jobs, not confirmed payouts"
    }
   },
@@ -160,7 +160,7 @@
    "recheck": {
     "basis": "independent_re_observation",
     "by": "external agent audit, re-counted by Hark coordinator",
-    "at": "2026-10-16T01:17Z",
+    "at": "2026-10-16T01:17:00Z",
     "note": "external agent audit + re-count: /stats totalPaidOut equals the sum of accepted (status=verified) jobs, not confirmed payouts"
    }
   },

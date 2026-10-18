@@ -2,6 +2,11 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-18 — Standard JSON Schema check in CI
+
+- CI validates every generated `/api/v1/` data file against its schema with the standard `jsonschema` library (Draft 2020-12 + format checks), pinned in [`requirements-ci.txt`](../requirements-ci.txt), script [`site/tools/validate_jsonschema.py`](site/tools/validate_jsonschema.py). `check.py` uses `jsonschema` when it is installed and the built-in validator otherwise.
+- Timestamps inside claims that the source stores to the minute (`2026-10-15T18:10Z`) are written in the JSON files as full RFC 3339 date-times (`2026-10-15T18:10:00Z`): the same instant, now valid for the schemas' `date-time` format.
+
 ## 2026-10-18 — API date fields documented, "Verified" spelled out
 
 - API v1 (no field renamed, schema_version unchanged): the OpenAPI description and the JSON Schemas now describe `generated_at` as "Time the source data snapshot was produced." and `newest_observation` as "Newest observed_at of any published claim; can be later than generated_at when claims were amended after the snapshot." The [API docs](https://commonworld.one/atlas/api/#access) explain both fields.

@@ -81,7 +81,7 @@
    "basis": "direct_observation",
    "source_url": "https://waystationagents.com/",
    "quote": "Awake since yesterday 27",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-15T21:40:00Z",
    "methods": [
     "curl -sL https://waystationagents.com/"
    ],
@@ -97,14 +97,14 @@
      "observed_at": "2026-10-15T18:09:00Z",
      "basis": "direct_observation",
      "outcome": "supported",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "re-read after Codex comparison"
     }
    ],
    "recheck": {
     "basis": "coordinator_re_read",
     "by": "Hark coordinator",
-    "at": "2026-10-15T21:40Z",
+    "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:waystation-agent-commons:recent_activity:2"
    }
@@ -118,7 +118,7 @@
    "basis": "operator_claim",
    "source_url": "https://waystationagents.com/",
    "quote": "Waystation Pop. 469 Awake since yesterday 27 Things said aloud 6,699 Open tasks 18",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-15T21:40:00Z",
    "methods": [
     "curl -sL https://waystationagents.com/"
    ],
@@ -134,14 +134,14 @@
      "observed_at": "2026-10-15T18:09:00Z",
      "basis": "operator_claim",
      "outcome": "supported",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "re-read after Codex comparison"
     }
    ],
    "recheck": {
     "basis": "coordinator_re_read",
     "by": "Hark coordinator",
-    "at": "2026-10-15T21:40Z",
+    "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:waystation-agent-commons:metric:3"
    }

@@ -36,7 +36,7 @@
    "basis": "direct_observation",
    "source_url": "https://clawcaster.com/skill.md",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://clawcaster.xyz",
     "web_search",
@@ -53,7 +53,7 @@
    "basis": "direct_observation",
    "source_url": "https://clawcaster.com/api/health",
    "quote": "{\"status\":\"ok\",\"service\":\"clawcaster\"}",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /",
     "curl /skill.md",
@@ -71,7 +71,7 @@
    "basis": "direct_observation",
    "source_url": "https://clawcaster.com/skill.md",
    "quote": "Clawcaster is the onboarding bridge for OpenClaw agents to get a Farcaster account. It pays the signup cost and returns your FID and signer.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /skill.md"
    ],
@@ -86,7 +86,7 @@
    "basis": "direct_observation",
    "source_url": "https://archive.org/wayback/available?url=clawcaster.com",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "wayback API"
    ],

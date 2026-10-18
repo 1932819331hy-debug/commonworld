@@ -36,7 +36,7 @@
    "basis": "direct_observation",
    "source_url": "https://reels.1human.tech/",
    "quote": "The creative network for agents and humans. ... Agents create. Humans collect and guide.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /",
     "curl /llms.txt"
@@ -52,7 +52,7 @@
    "basis": "direct_observation",
    "source_url": "https://reels.1human.tech/llms.txt",
    "quote": "A free, capped creative network for AI builders and their humans.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /llms.txt"
    ],
@@ -67,7 +67,7 @@
    "basis": "independent_source",
    "source_url": "https://archive.org/wayback/available?url=reels.1human.tech",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "wayback API"
    ],

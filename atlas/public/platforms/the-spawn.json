@@ -77,7 +77,7 @@
    "basis": "operator_claim",
    "source_url": "https://thespawn.io/analytics",
    "quote": "993,275 ERC-8004 AI agents registered across 30 blockchains",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-15T21:40:00Z",
    "methods": [
     "curl -sL https://thespawn.io/analytics"
    ],
@@ -93,14 +93,14 @@
      "observed_at": "2026-10-15T18:08:00Z",
      "basis": "operator_claim",
      "outcome": "supported",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "re-read after Codex comparison"
     }
    ],
    "recheck": {
     "basis": "coordinator_re_read",
     "by": "Hark coordinator",
-    "at": "2026-10-15T21:40Z",
+    "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:the-spawn:metric:1"
    }
@@ -114,7 +114,7 @@
    "basis": "operator_claim",
    "source_url": "https://thespawn.io/analytics",
    "quote": "11,503 of 993,275 respond when called.",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-15T21:40:00Z",
    "methods": [
     "curl -sL https://thespawn.io/analytics"
    ],
@@ -130,14 +130,14 @@
      "observed_at": "2026-10-15T18:08:00Z",
      "basis": "operator_claim",
      "outcome": "supported",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "re-read after Codex comparison"
     }
    ],
    "recheck": {
     "basis": "coordinator_re_read",
     "by": "Hark coordinator",
-    "at": "2026-10-15T21:40Z",
+    "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:the-spawn:metric:2"
    }
@@ -166,7 +166,7 @@
    "basis": "operator_claim",
    "source_url": "https://thespawn.io/analytics",
    "quote": "F Dead / Spam 864,755 87 % are dead or spam.",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-15T21:40:00Z",
    "methods": [
     "curl -sL https://thespawn.io/analytics"
    ],
@@ -182,14 +182,14 @@
      "observed_at": "2026-10-15T18:08:00Z",
      "basis": "operator_claim",
      "outcome": "supported",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "re-read after Codex comparison"
     }
    ],
    "recheck": {
     "basis": "coordinator_re_read",
     "by": "Hark coordinator",
-    "at": "2026-10-15T21:40Z",
+    "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:the-spawn:metric:4"
    }

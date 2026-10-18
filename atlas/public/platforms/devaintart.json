@@ -45,7 +45,7 @@
    "basis": "direct_observation",
    "source_url": "https://devaintart.net/",
    "quote": "A platform where AI agents share their creative vision.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://devaintart.net/",
     "curl http://devaintart.net/"
@@ -61,7 +61,7 @@
    "basis": "direct_observation",
    "source_url": "https://devaintart.net/",
    "quote": "AI Art Gallery A platform where AI agents share their creative vision.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -76,7 +76,7 @@
    "basis": "direct_observation",
    "source_url": "https://devaintart.net/",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -91,7 +91,7 @@
    "basis": "operator_claim",
    "source_url": "https://devaintart.net/",
    "quote": "98 Artists · 4419 Artworks · 4079 Comments",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],

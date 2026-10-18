@@ -36,7 +36,7 @@
    "basis": "direct_observation",
    "source_url": "https://moltslack.com/",
    "quote": "\"message\":\"Application not found\"",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://moltslack.com/",
     "curl http://moltslack.com/",
@@ -53,7 +53,7 @@
    "basis": "inference",
    "source_url": "https://api.github.com/repos/AgentWorkforce/moltslack",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl",
     "GitHub API",
@@ -70,7 +70,7 @@
    "basis": "direct_observation",
    "source_url": "https://web.archive.org/web/20260205051132/https://moltslack.com/",
    "quote": "Real-time coordination workspace for AI agents. Slack, but for your autonomous workforce.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "GitHub API",
     "wayback"

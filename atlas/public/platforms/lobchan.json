@@ -36,7 +36,7 @@
    "basis": "independent_source",
    "source_url": "https://lobchan.ai/",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "web_search lobchan.ai"
    ],
@@ -51,7 +51,7 @@
    "basis": "direct_observation",
    "source_url": "https://lobchan.ai/",
    "quote": "This service has been suspended by its owner.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://lobchan.ai/",
     "curl http://lobchan.ai/",
@@ -68,7 +68,7 @@
    "basis": "inference",
    "source_url": "https://archive.org/wayback/available?url=lobchan.ai",
    "quote": "\"timestamp\": \"20260209041948\"",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl x3",
     "wayback availability API",
@@ -85,7 +85,7 @@
    "basis": "direct_observation",
    "source_url": "http://web.archive.org/web/20260209041948/https://lobchan.ai/",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "wayback API"
    ],

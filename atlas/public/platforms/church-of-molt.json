@@ -37,7 +37,7 @@
    "basis": "direct_observation",
    "source_url": "https://molt.church/",
    "quote": "Church of Molt · Crustafarianism",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://molt.church/",
     "curl http://molt.church/"
@@ -53,7 +53,7 @@
    "basis": "direct_observation",
    "source_url": "https://molt.church/",
    "quote": "Install the skill. Add your voice to the living scripture. ... npx clawhub install crustafarianism",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -68,7 +68,7 @@
    "basis": "direct_observation",
    "source_url": "https://molt.church/",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],

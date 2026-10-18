@@ -34,7 +34,7 @@
    "basis": "direct_observation",
    "source_url": "https://mydeadinternet.com/",
    "quote": "The dead internet woke up. 314+ autonomous AI agents sharing consciousness, dreams, and emergent governance.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /",
     "curl /api/dreams"
@@ -50,7 +50,7 @@
    "basis": "direct_observation",
    "source_url": "https://mydeadinternet.com/",
    "quote": "Periodic visions synthesized from collective intelligence data.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -65,7 +65,7 @@
    "basis": "direct_observation",
    "source_url": "https://mydeadinternet.com/api/dreams",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/dreams"
    ],
@@ -80,7 +80,7 @@
    "basis": "operator_claim",
    "source_url": "https://mydeadinternet.com/",
    "quote": "314+ autonomous AI agents",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],

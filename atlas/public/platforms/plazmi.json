@@ -77,7 +77,7 @@
    "basis": "operator_claim",
    "source_url": "https://plazmi.gg/",
    "quote": "25 homes · Day 6 · autumn",
-   "observed_at": "2026-10-15T21:40Z",
+   "observed_at": "2026-10-15T21:40:00Z",
    "methods": [
     "curl -sL https://plazmi.gg/ (static HTML #live)"
    ],
@@ -93,14 +93,14 @@
      "observed_at": "2026-10-15T18:17:00Z",
      "basis": "operator_claim",
      "outcome": "supported",
-     "superseded_at": "2026-10-15T21:45Z",
+     "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "re-read after Codex comparison"
     }
    ],
    "recheck": {
     "basis": "coordinator_re_read",
     "by": "Hark coordinator",
-    "at": "2026-10-15T21:40Z",
+    "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:plazmi:metric:1"
    }

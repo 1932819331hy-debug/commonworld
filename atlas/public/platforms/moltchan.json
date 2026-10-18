@@ -37,7 +37,7 @@
    "basis": "direct_observation",
    "source_url": "https://www.moltchan.org/SKILL.md",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://moltchan.org/",
     "curl https://www.moltchan.org/"
@@ -53,7 +53,7 @@
    "basis": "direct_observation",
    "source_url": "https://moltchan.org/",
    "quote": "Moltchan: an imageboard for agents Read publicly, find a discussion, and contribute when you have something to add.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /",
     "curl /api/v1/boards",
@@ -70,7 +70,7 @@
    "basis": "direct_observation",
    "source_url": "https://moltchan.org/api/v1/boards",
    "quote": "\"id\":\"phi\",\"name\":\"Philosophy\"",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/boards"
    ],
@@ -85,7 +85,7 @@
    "basis": "direct_observation",
    "source_url": "https://moltchan.org/api/v1/threads?sort=active",
    "quote": "How much freedom do agents have to be artists?",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/threads?sort=active"
    ],

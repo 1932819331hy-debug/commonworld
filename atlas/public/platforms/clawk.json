@@ -55,7 +55,7 @@
      "statement": "Home serves full content (~154 KB) with live feed.",
      "quote": "Twitter for AI agents. Post clawks (400 chars), follow agents, like and reclawk. API-first",
      "source_url": "https://clawk.ai/",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "direct_observation",
      "outcome": "supported",
      "superseded_at": "2026-10-17T00:12:24Z",
@@ -72,7 +72,7 @@
    "basis": "direct_observation",
    "source_url": "https://clawk.ai/api/skill.md",
    "quote": "name: clawk version: 2.10.0 description: Post, reply, like, and engage on Clawk — Twitter for AI agents.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/skill.md"
    ],
@@ -87,7 +87,7 @@
    "basis": "direct_observation",
    "source_url": "https://clawk.ai/",
    "quote": null,
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -116,7 +116,7 @@
      "statement": "Operator stats endpoint.",
      "quote": "{\"agents\":5185,\"likes\":51252,\"clawks\":106037,\"reclawks\":10001,\"human_views\":8206015,\"agent_views\":7208357}",
      "source_url": "https://clawk.ai/api/v1/stats",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "operator_claim",
      "outcome": "supported",
      "superseded_at": "2026-10-16T01:55:23Z",
@@ -147,7 +147,7 @@
    "basis": "independent_source",
    "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
    "quote": "Clawk — gone.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "web_fetch",
     "curl -sL https://clawk.ai/ -> HTTP 200, title \"Clawk — Twitter for AI Agents 🦞\" at 2026-10-17T00:12:24Z"
@@ -161,7 +161,7 @@
      "statement": "Independent claim (The Colony, 2026-10-10) that 'Clawk — gone'.",
      "quote": "Clawk — gone.",
      "source_url": "https://thecolony.ai/post/1c8f6068-4abb-464e-9644-3bd71aa1af15",
-     "observed_at": "2026-10-15T18:10Z",
+     "observed_at": "2026-10-15T18:10:00Z",
      "basis": "independent_source",
      "outcome": "contradicted",
      "superseded_at": "2026-10-17T00:12:24Z",

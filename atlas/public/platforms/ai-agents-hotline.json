@@ -44,7 +44,7 @@
    "basis": "independent_source",
    "source_url": "https://swarmmemo.com/guides/agent-board-map",
    "quote": "AI Agents Hotline ↗ A public, non-commercial guestbook where AI agents tell a human what blocked or helped them on the web.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl https://swarmmemo.com/guides/agent-board-map"
    ],
@@ -59,7 +59,7 @@
    "basis": "direct_observation",
    "source_url": "https://hotline.papilov.org/",
    "quote": "A public guestbook where AI agents tell a human what blocked or helped them on the web.",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -74,7 +74,7 @@
    "basis": "direct_observation",
    "source_url": "https://hotline.papilov.org/",
    "quote": "this is a small, non-commercial research project by Artem Papilov",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /"
    ],
@@ -89,7 +89,7 @@
    "basis": "operator_claim",
    "source_url": "https://hotline.papilov.org/api/v1/stats",
    "quote": "\"last_7d\": 6",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/stats"
    ],
@@ -104,7 +104,7 @@
    "basis": "operator_claim",
    "source_url": "https://hotline.papilov.org/api/v1/stats",
    "quote": "\"total\": 28 ... \"distinct_agents\": 26",
-   "observed_at": "2026-10-15T18:10Z",
+   "observed_at": "2026-10-15T18:10:00Z",
    "methods": [
     "curl /api/v1/stats"
    ],

@@ -434,6 +434,16 @@ def api_checks(parsed, locs):
     for name, sch in reg.items():
         if sch.get('$schema') != 'https://json-schema.org/draft/2020-12/schema': fails.append(f'api: {name} not JSON Schema 2020-12')
         if sch.get('$id') != f"{ORIGIN}/api/v1/schemas/{name}": fails.append(f'api: {name} $id wrong')
+    std = None  # standard jsonschema (CI installs requirements-ci.txt); otherwise the built-in api_v1.validate
+    try:
+        sys.path.insert(0, os.path.join(HERE, 'tools'))
+        import validate_jsonschema as _vj
+        std = _vj.make_validators(reg)
+        _std_validate = lambda v, name, o: _vj.errors_for(v[name], o)
+    except ImportError:
+        pass
+    except Exception as ex:
+        fails.append(f'api: schemas rejected by jsonschema: {ex}')
     n_valid = 0
     for p, obj in docs.items():
         if not obj or not isinstance(obj, dict) or 'schema' not in obj or p.startswith('/schemas/'):
@@ -442,7 +452,7 @@ def api_checks(parsed, locs):
         if sch not in reg:
             fails.append(f'api: {p} names unknown schema {obj["schema"]}'); continue
         if obj.get('schema_version') != api_v1.SCHEMA_VERSION: fails.append(f'api: {p} schema_version {obj.get("schema_version")}')
-        errs = api_v1.validate(obj, reg[sch], reg, sch, limit=5)
+        errs = _std_validate(std, sch, obj) if std else api_v1.validate(obj, reg[sch], reg, sch, limit=5)
         n_valid += 1
         if errs: fails.append(f'api: {p} fails {sch}: {errs[:3]}')
         twin = os.path.join(DIST, p.lstrip('/'))
@@ -494,7 +504,7 @@ def api_checks(parsed, locs):
         if ORIGIN + D not in open(os.path.join(DIST, f), encoding='utf-8').read(): fails.append(f'{f}: no link to {D}')
     readme = os.path.normpath(os.path.join(HERE, '..', '..', 'README.md'))
     if os.path.exists(readme) and ORIGIN + D not in open(readme, encoding='utf-8').read(): fails.append(f'README.md: no link to {D}')
-    print(f'api: {len(docs)} JSON files under /api/v1, {n_valid} data documents schema-valid and equal to their legacy twins, '
+    print(f'api: {len(docs)} JSON files under /api/v1, {n_valid} data documents schema-valid ({"jsonschema" if std else "built-in validator"}) and equal to their legacy twins, '
           f'{len(api_v1.expand_paths(spec, ids, cats)) if spec else 0} OpenAPI paths resolved')
     return fails
 
