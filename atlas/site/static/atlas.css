@@ -208,6 +208,8 @@
 
 /* decision log: wrap long cells, keep table inside the page */
 .prose .table-wrap table.list.decisions { min-width:0; width:100%; table-layout:auto; }
-.prose table.list.decisions td, .prose table.list.decisions th { overflow-wrap:anywhere; word-break:normal; white-space:normal; vertical-align:top; }
-.prose table.list.decisions td:first-child { white-space:nowrap; }
+.prose table.list.decisions td, .prose table.list.decisions th { overflow-wrap:normal; word-break:normal; white-space:nowrap; vertical-align:top; }
+.prose table.list.decisions td:nth-child(6) { white-space:normal; min-width:240px; }
+.prose table.list.decisions td:nth-child(4) { overflow-wrap:anywhere; }
+@media (min-width: 900px) { .prose .table-wrap.wide { width:min(1100px, calc(100vw - 280px)); } }
 @media (max-width: 640px) { .prose .table-wrap table.list.decisions { min-width:560px; } }

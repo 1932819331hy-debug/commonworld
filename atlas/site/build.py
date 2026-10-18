@@ -1750,7 +1750,7 @@ def build_decisions(site):
                    f'<td><a href="{b}/platforms/{e(d.get("slug") or "")}/"><code>{e(d.get("slug") or "")}</code></a></td>'
                    f'<td><code>{e(defang(d.get("host")))}</code></td><td><code>{e(d.get("by") or "")}</code></td>'
                    f'<td>{e(d.get("reason") or "")}</td><td>{evh}</td></tr>')
-    table = ('<div class="table-wrap"><table class="list decisions" aria-labelledby="log"><thead><tr><th scope="col">Date</th><th scope="col">Action</th>'
+    table = ('<div class="table-wrap wide"><table class="list decisions" aria-labelledby="log"><thead><tr><th scope="col">Date</th><th scope="col">Action</th>'
              '<th scope="col">Entry ID</th><th scope="col">Domain</th><th scope="col">By</th><th scope="col">Reason</th><th scope="col">Evidence</th></tr></thead>'
              f'<tbody>{"".join(trs)}</tbody></table></div>') if trs else '<p>No decisions recorded yet.</p>'
     who = ', '.join(f'<code>{e(a["id"])}</code>' for a in actors)
