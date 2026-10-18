@@ -205,3 +205,9 @@
 }
 .stats-table td:nth-child(2), .stats-table td:nth-child(5) { white-space:nowrap; }
 .stats-table td:nth-child(3) { min-width:110px; }
+
+/* decision log: wrap long cells, keep table inside the page */
+.prose .table-wrap table.list.decisions { min-width:0; width:100%; table-layout:auto; }
+.prose table.list.decisions td, .prose table.list.decisions th { overflow-wrap:anywhere; word-break:normal; white-space:normal; vertical-align:top; }
+.prose table.list.decisions td:first-child { white-space:nowrap; }
+@media (max-width: 640px) { .prose .table-wrap table.list.decisions { min-width:560px; } }

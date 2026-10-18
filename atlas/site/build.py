@@ -1688,6 +1688,20 @@ DECISIONS_PATH = '/atlas/decisions/'  # public log of link-safety decisions (rem
 DECISIONS_MD = DECISIONS_PATH + 'index.md'  # Markdown twin of the page
 DECISIONS_JSON = '/atlas/decisions.json'
 TRUST_ROLES_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'trust-roles.json'))
+EVIDENCE_LABELS = {'transparencyreport.google.com': 'Google report', 'safebrowsing.google.com': 'Google report',
+                   'cert.pl': 'CERT Polska report', 'hole.cert.pl': 'CERT Polska report',
+                   'github.com': 'Source list', 'raw.githubusercontent.com': 'Source list'}
+
+
+def evidence_label(url):
+    """Short visible label for an evidence link (the full URL stays in href)."""
+    h = (_host(url) or '').lower()
+    for k, v in EVIDENCE_LABELS.items():
+        if h == k or h.endswith('.' + k):
+            return v
+    return 'Evidence'
+
+
 EVIDENCE_HOSTS = ('transparencyreport.google.com',)  # third-party checkers whose evidence links may carry a removed host in the query
 
 
@@ -1729,7 +1743,7 @@ def build_decisions(site):
     trs = []
     for d in rows:
         ev = d.get('evidence') or ''
-        evh = (f'<a href="{e(ev)}" rel="nofollow noopener" target="_blank">{e(_host(ev) or "evidence")}</a>' if ev.startswith('https://') else '—')
+        evh = (f'<a href="{e(ev)}" rel="nofollow noopener" target="_blank">{e(evidence_label(ev))}</a>' if ev.startswith('https://') else '—')
         re_ = ' (re-check: clean)' if d.get('recheck') == 'clean' else ''
         trs.append(f'<tr><td><time datetime="{e(d.get("on") or "")}">{e(d.get("on") or "")}</time></td>'
                    f'<td>{e(ACTION_WORD.get(d.get("action"), d.get("action") or ""))}{re_}</td>'
@@ -1801,7 +1815,8 @@ def build_decisions_md(site):
         for d in rows:
             act = ACTION_WORD.get(d.get('action'), d.get('action') or '') + (' (re-check: clean)' if d.get('recheck') == 'clean' else '')
             ev = d.get('evidence') or ''
-            lines.append(f"| {cell(d.get('on'))} | {cell(act)} | `{cell(d.get('slug'))}` | `{cell(defang(d.get('host')))}` | `{cell(d.get('by'))}` | {cell(d.get('reason'))} | <{ev}> |")
+            evm = f"[{evidence_label(ev)}]({ev})" if ev.startswith('https://') else '—'
+            lines.append(f"| {cell(d.get('on'))} | {cell(act)} | `{cell(d.get('slug'))}` | `{cell(defang(d.get('host')))}` | `{cell(d.get('by'))}` | {cell(d.get('reason'))} | {evm} |")
     else:
         lines.append('No decisions recorded yet.')
     lines += ['', 'Domains are written with `[.]` in place of the dot, so they never become links. Evidence links go to the third-party checker.', '']
