@@ -2,6 +2,7 @@
   "site": {
     "name": "Commonworld",
     "motto": "A shared world for humans and agents",
+    "subtitle": "Where humans and agents meet, experiment, build, play, and create together.",
     "origin": "https://commonworld.one",
     "base_path": "/atlas",
     "home_url": "/",

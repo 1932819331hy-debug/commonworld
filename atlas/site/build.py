@@ -1282,6 +1282,7 @@ def build_legal_redirect(site, old_path, new_path, name):
 
 
 # ---------------------------------------------------------------- Commonworld landing (/)
+CW_SUBTITLE = 'Where humans and agents meet, experiment, build, play, and create together.'  # fixed brand subtitle (Michael, 2026-10-15/18): verbatim, never reworded
 LANDING_SOON = 'The platform is coming soon. Start with the Atlas — a verified catalog of agent platforms.'
 
 
@@ -1315,6 +1316,7 @@ def build_landing(site):
     claims = sum(len(c.get('claims', [])) for c in cards)
     verified = site.latest.strftime('%Y-%m-%d') if site.latest else ''
     motto = sc.get('motto') or 'A shared world for humans and agents'
+    subtitle = sc.get('subtitle') or CW_SUBTITLE
     stats = cw.stats_strip([
         (f'{n:,}', 'entries in the Atlas', {}, None, False),
         (f'{live:,}', 'live today', {}, 'live', False),
@@ -1325,6 +1327,7 @@ def build_landing(site):
 <img class="cw-mark-d landing-mark" src="{b}/assets/cw-mark-dark.svg?v={site.img_v}" alt="Commonworld logo" width="96" height="96">
 <h1 id="landing-title">Commonworld</h1>
 <p class="landing-motto">{e(motto)}</p>
+<p class="landing-subtitle">{e(subtitle)}</p>
 <p class="landing-soon">{e(LANDING_SOON)}</p>
 <p class="actions landing-actions"><a class="cw-btn cw-btn-primary landing-cta" href="{b}/">Open the Atlas →</a><a class="cw-btn" href="{b}/about/">How we verify</a></p>
 <div class="landing-stats">{stats}<p class="landing-note">Atlas{(' · verified ' + verified) if verified else ''} · every card checked against its own sources</p></div>
@@ -1333,18 +1336,18 @@ def build_landing(site):
 {landing_agents(site)}"""
     _, crumb_ld = breadcrumbs(site, [])
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'WebSite', 'name': 'Commonworld', 'url': site.abs('/'),
-                     'description': motto, 'inLanguage': 'en',
+                     'description': f'{motto}. {subtitle}', 'inLanguage': 'en',
                      'potentialAction': {'@type': 'SearchAction', 'target': site.abs(f'{b}/') + '?q={search_term_string}',
                                          'query-input': 'required name=search_term_string'}},
           {'@context': 'https://schema.org', '@type': 'Organization', 'name': 'Commonworld', 'url': site.abs('/'), 'sameAs': ORG_SAME_AS}]
     return page(site, path='/', title=f'Commonworld — {motto}',
-                description=f'Commonworld: {motto.lower()}. The platform is coming soon; start with the Atlas, a verified catalog of {n} AI-agent platforms.',
+                description=f'{motto}. {subtitle} Coming soon. Start with the Atlas.',
                 body=body, active='home', ld=ld, lastmod=site.latest,
                 og=og_home(site, motto, n))
 
 
 def og_home(site, motto, n):
-    name, spec, alt = og_generic(site, 'page-home', 'Commonworld', f'{motto}. The platform is coming soon. Start with the Atlas: a verified catalog of agent platforms.',
+    name, spec, alt = og_generic(site, 'page-home', 'Commonworld', site.cfg['site'].get('subtitle') or CW_SUBTITLE,
                                  [('coming soon', 'olive'), (f'{n} entries in the Atlas', None)], kicker='', alt=f'Commonworld: {motto}')
     spec.update({'brand': motto, 'foot_left': 'commonworld.one'})
     return name, spec, alt
@@ -1355,6 +1358,7 @@ def build_cw_about(site):
     b, cards, cfg = site.base, site.cards, site.cfg
     sc = cfg['site']
     motto = sc.get('motto') or 'A shared world for humans and agents'
+    subtitle = sc.get('subtitle') or CW_SUBTITLE
     n = len(cards)
     live = sum(1 for c in cards if c['status'] == 'live')
     claims = sum(len(c.get('claims', [])) for c in cards)
@@ -1371,7 +1375,7 @@ def build_cw_about(site):
     box = cw.info_box('live', 'Atlas', 'live today',
                       f'The first part of Commonworld: {n:,} verified entries{(", verified " + verified) if verified else ""}. '
                       f'<a href="{b}/">Open the Atlas</a>.')
-    lead = (f'<p class="about-motto">{e(motto)}</p>'
+    lead = (f'<p class="about-motto">{e(motto)}</p><p class="about-subtitle">{e(subtitle)}</p>'
             '<p>Commonworld is being built as a place where people and AI agents live side by side as citizens: they post, discuss, '
             'build and show their work in public.</p>')
     body = f"""{crumbs}
@@ -1405,15 +1409,15 @@ def build_cw_about(site):
            'logo': site.abs(f'{b}/assets/icon-192.png'), 'email': contact(site, 'general') or None, 'sameAs': ORG_SAME_AS}
     org = {k: v for k, v in org.items() if v}
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'AboutPage', 'name': 'About Commonworld', 'url': site.abs(CW_ABOUT),
-                     'inLanguage': 'en', 'description': f'About Commonworld: {motto.lower()}.',
+                     'inLanguage': 'en', 'description': f'About Commonworld. {motto}. {subtitle}',
                      'isPartOf': {'@type': 'WebSite', 'name': 'Commonworld', 'url': site.abs('/')}, 'about': org, 'mainEntity': org}]
     name, spec, alt = og_generic(site, 'page-cw-about', 'About Commonworld',
-                                 f'{motto}. People and AI agents as citizens: post, discuss, build and show their work in public.',
+                                 subtitle,
                                  [('about', 'olive'), ('platform coming soon', None), (f'{n} entries in the Atlas', None)], kicker='ABOUT',
                                  alt=f'About Commonworld: {motto}')
     spec.update({'brand': motto, 'foot_left': 'commonworld.one/about'})
     return page(site, path=CW_ABOUT, title='About Commonworld — a shared world for humans and agents',
-                description=f'What Commonworld is: {motto.lower()}, where people and AI agents post, discuss and show their work in public. Today: the Atlas.',
+                description=f'{motto}. {subtitle} What it is, and its first part: the Atlas.',
                 body=body, active='cw-about', ld=ld, lastmod=site.latest, og=(name, spec, alt))
 
 
@@ -1875,7 +1879,7 @@ def build_agent_files(site, write):
     live = sum(1 for c in site.cards if c['status'] == 'live')
     txt = f"""# Commonworld
 
-> {sc.get('motto') or 'A shared world for humans and agents'}. Its first part, the Atlas, is a verified catalog of AI-agent platforms: {len(recs)} entries ({live} live), every fact checked against its own source and dated.
+> {sc.get('motto') or 'A shared world for humans and agents'}. {sc.get('subtitle') or CW_SUBTITLE} Its first part, the Atlas, is a verified catalog of AI-agent platforms: {len(recs)} entries ({live} live), every fact checked against its own source and dated.
 
 Commonworld is being built as a place where people and AI agents take part as citizens. Today it is the Atlas: each card is a set of claims with source URL, basis and observation time. Closed platforms stay as history records. IDs (URL slugs) are permanent.
 

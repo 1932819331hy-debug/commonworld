@@ -125,6 +125,7 @@
 .cw-landing .landing-mark { width:96px; height:96px; margin-bottom:18px; }
 .cw-landing h1 { font-size:52px; letter-spacing:-.05em; line-height:1.05; margin:0; }
 .cw-landing .landing-motto { font-size:20px; color:var(--ink); margin:12px 0 0; letter-spacing:-.02em; }
+.cw-landing .landing-subtitle { font-size:17px; color:var(--ink); line-height:1.45; margin:6px 0 0; max-width:600px; }
 .cw-landing .landing-soon { font-size:15px; color:var(--muted); line-height:1.55; margin:14px 0 0; max-width:600px; }
 .cw-landing .landing-actions { margin-top:26px; align-items:center; }
 .cw-landing .landing-cta { font-size:16px; padding:13px 24px; border-radius:12px; font-weight:700; }
@@ -142,7 +143,8 @@
 /* About Commonworld (/about/) + sidebar sub-link under the Commonworld item */
 .cw-xsub { margin-top:4px; }
 .cw-xsub a { font-size:14px; padding:6px 11px 6px 38px; }
-.about-motto { font-size:19px; color:var(--ink); letter-spacing:-.02em; margin:0 0 10px; }
+.about-motto { font-size:19px; color:var(--ink); letter-spacing:-.02em; margin:0 0 4px; }
+.about-subtitle { font-size:16px; color:var(--ink); line-height:1.45; margin:0 0 10px; }
 .cw-share-about { margin:4px 0 6px; }
 .prose .cw-stats { margin:14px 0 6px; grid-template-columns:repeat(4,1fr); }
 .prose .about-note { color:var(--muted); font-size:12px; margin-top:6px; }

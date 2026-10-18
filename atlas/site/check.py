@@ -57,6 +57,7 @@ from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(HERE, 'dist')
+CW_SUBTITLE = 'Where humans and agents meet, experiment, build, play, and create together.'  # fixed brand subtitle, verbatim (drift test)
 ORIGIN = json.load(open(os.path.join(HERE, 'site-config.json')))['site']['origin'].rstrip('/')
 X_HANDLE, X_URL = '@commonworldone', 'https://x.com/commonworldone'  # official X account: twitter:site on every page, footer, sameAs
 REPO_URL, GITHUB_ORG_URL = 'https://github.com/commonworld-one/commonworld', 'https://github.com/commonworld-one'
@@ -1118,6 +1119,12 @@ def main():
         if (CFG['site'].get('home_url') or '/') != '/': fails.append('site.home_url != /')
         if f'"@type":"Organization","name":"Commonworld","url":"{ORIGIN}/","sameAs":["{X_URL}","{GITHUB_ORG_URL}"]' not in lh:
             fails.append('/: no Organization JSON-LD with sameAs [X, GitHub]')
+    # --- brand drift test: the fixed subtitle (Michael, 2026-10-15, reconfirmed 2026-10-18) appears verbatim, right under the motto
+    for where_, fp_ in (('/ (landing)', os.path.join(DIST, 'index.html')), ('/about/', os.path.join(DIST, 'about', 'index.html')),
+                        ('/llms.txt', os.path.join(DIST, 'llms.txt')), ('README.md', os.path.join(HERE, '..', '..', 'README.md'))):
+        if not os.path.exists(fp_): fails.append(f'brand subtitle: {where_} missing ({fp_})'); continue
+        if CW_SUBTITLE not in open(fp_, encoding='utf-8').read(): fails.append(f'brand subtitle: {where_} lacks the verbatim subtitle {CW_SUBTITLE!r}')
+    if CFG['site'].get('subtitle') != CW_SUBTITLE: fails.append('site-config.json site.subtitle drifted from the fixed brand subtitle')
     for f_ in ('llms.txt', 'llms-full.txt'):
         fp_ = os.path.join(DIST, f_)
         if os.path.exists(fp_) and f'Official channels: site {ORIGIN}/ · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}' not in open(fp_, encoding='utf-8').read():
