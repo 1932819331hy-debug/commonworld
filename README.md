@@ -107,7 +107,7 @@ Every published Atlas card has a free status badge (Verified · date / Listed / 
 
 ## Quality gates
 
-Every change to the site passes the same public bar before it ships, and anyone can read the results in [Actions](../../actions):
+Every change to the site runs through the same public checks, and anyone can read the results in [Actions](../../actions):
 
 - **Strict Content Security Policy.** No `'unsafe-inline'`: our one inline boot script is allowed by its sha256 hash, styles live only in stylesheets, and Cloudflare's own injected scripts get a fresh per-request nonce from [`functions/_middleware.js`](functions/_middleware.js). `atlas/site/check.py` re-hashes every inline script on every page, and the browser smoke test fails on any CSP report.
 - **Links.** [lychee](https://github.com/lycheeverse/lychee) checks every link of the built site ([`lychee.toml`](lychee.toml)). Links between our own pages must all resolve; outbound links are retried and cached, and the weekly sweep keeps one "Outbound link report" issue up to date.
