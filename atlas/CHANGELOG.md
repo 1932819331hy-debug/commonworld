@@ -2,6 +2,12 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-18 — API date fields documented, "Verified" spelled out
+
+- API v1 (no field renamed, schema_version unchanged): the OpenAPI description and the JSON Schemas now describe `generated_at` as "Time the source data snapshot was produced." and `newest_observation` as "Newest observed_at of any published claim; can be later than generated_at when claims were amended after the snapshot." The [API docs](https://commonworld.one/atlas/api/#access) explain both fields.
+- [How the Atlas works](https://commonworld.one/atlas/about/#verified) and [`PROTOCOL.md`](PROTOCOL.md) (`include_verified`) say what a Verified badge confirms: the official address, that the site is reachable now, and a factual description, each with a dated source; money figures are separate claims with their own basis label.
+- Stats: the Google AI features intro now reads "Commonworld pages that Google showed inside its AI features (AI Overviews, AI Mode). Google's report is in beta."
+
 ## 2026-10-18 — Fix: Dataset structured data on the decision log (Google Search Console)
 
 - Google Search Console reported "Datasets structured data: Invalid object type for field `hasPart`" for [`/atlas/decisions/`](https://commonworld.one/atlas/decisions/). The Dataset's `hasPart` held an `ItemList` of the decisions; Google allows only a `Dataset` or a URL there. The ItemList is removed from the JSON-LD; the decisions stay in the page table and in the downloads (`decisions.json`, `index.md`) listed under `distribution`. The Dataset `size` still states the decision count.

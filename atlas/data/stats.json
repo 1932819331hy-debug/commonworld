@@ -249,7 +249,7 @@
    "id": "ai_features",
    "title": "Google AI features",
    "kind": "search",
-   "intro": "Times a Commonworld page was shown inside Google's AI features (AI Overviews, AI Mode). Google's report is in beta.",
+   "intro": "Commonworld pages that Google showed inside its AI features (AI Overviews, AI Mode). Google's report is in beta.",
    "metrics": [
     {
      "id": "gsc_ai_pages",

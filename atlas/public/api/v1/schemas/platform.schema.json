@@ -38,7 +38,8 @@
     "null"
    ],
    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
-   "format": "date-time"
+   "format": "date-time",
+   "description": "Time the source data snapshot was produced."
   },
   "badge_status": {
    "type": "string"

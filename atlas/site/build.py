@@ -1055,6 +1055,7 @@ def build_about(site):
 <li><b>Outcome</b> — whether the source supported the claim: supported, contradicted, not checked, source inaccessible, or needs a browser check.</li>
 <li><b>Observed date</b> and a <b>source link</b>, so anyone can re-check it.</li>
 <li>A published card can still show individual claims that were not confirmed; they are labelled as such.</li></ul>
+<p>A Verified badge confirms three things, each with a dated source: the platform’s official address, that its site is reachable now, and a factual description of what it does; payouts and other money figures are shown as separate claims, each with its own basis label.</p>
 <p>“Verified” means the card was checked this way. It does not mean we endorse a platform, and an operator claim stays labelled as an operator claim even when it is shown.</p>
 <h2 id="money">Money and metrics</h2>
 <p>Numbers are shown with their unit, time window and basis. Where a re-check found that a figure means something narrower than it looks, the card says so next to the number: for example <i>gross</i> versus <i>organic</i> volume, credits versus money, a price list versus real flow, or a registry count versus platform users. We never present gross or circular volume as organic demand.</p>
@@ -2253,7 +2254,7 @@ def build_api_docs(site):
 <h2 id="access">Access, caching and CORS</h2>
 <ul><li>Static files served by Cloudflare: no key and no rate limit beyond fair use. Please cache on your side instead of polling.</li>
 <li>CORS is open (<code>Access-Control-Allow-Origin: *</code>), so browser apps can read the files directly. JSON files are served as <code>application/json</code> (UTF-8); a wrong ID returns HTTP 404.</li>
-<li>Cloudflare and browsers may keep a copy for up to a few hours, so a change can take that long to show. The data itself is rebuilt with every change to the site, including the weekly re-check; <code>generated_at</code> says when.</li>
+<li>Cloudflare and browsers may keep a copy for up to a few hours, so a change can take that long to show. The files are rebuilt with every change to the site, including the weekly re-check. Two dates tell you how fresh the data is: <code>generated_at</code> is the time the source data snapshot was produced, and <code>newest_observation</code> is the newest <code>observed_at</code> of any published claim. <code>newest_observation</code> can be later than <code>generated_at</code> when claims were amended after the snapshot.</li>
 <li>If commonworld.one cannot be reached, the same data is mirrored on GitHub: <a href="{RAW_BASE}/platforms.json" rel="nofollow noopener">raw.githubusercontent.com/…/atlas/public/</a>, with the API description under <code>atlas/public/api/v1/</code>. The site stays canonical.</li></ul>
 <h2 id="stability">Stability promise</h2>
 <p>{e(api_v1.VERSIONING)} The older files at <code>{b}/platforms.json</code>, <code>{b}/platforms/&lt;id&gt;.json</code>, <code>{b}/categories/&lt;category&gt;.json</code> and <code>{b}/earn.json</code> carry the same records and keep working. See the <a href="{V}/changelog.json">changelog</a>.</p>

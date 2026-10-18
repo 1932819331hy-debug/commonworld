@@ -33,6 +33,7 @@ Mark `entity_type`: `platform` (agents live/work/get paid/are listed there), `to
 
 ## Row verdict
 - `include_verified` — canonical_url + site_reachable + description all supported.
+  A Verified badge confirms three things, each with a dated source: the platform's official address, that its site is reachable now, and a factual description of what it does; payouts and other money figures are shown as separate claims, each with its own basis label.
 - `include_closed_history` — closure supported (human review: official statement or ≥2 signals; or the automated weekly check, see "How a card becomes closed"); card kept as history.
 - `needs_browser` — blocked by JS/Cloudflare; needs a real browser pass.
 - `unresolved` — conflicting or insufficient evidence (explain).

@@ -37,6 +37,8 @@ CHANGELOG = [
         'Same records as the older /atlas/*.json files, which keep working unchanged.',
         'An ID or category that does not exist returns HTTP 404 (the site\'s HTML error page, not JSON). Never construct an ID; take it from atlas/platforms.json.']},
 ]
+GENERATED_AT_DESC = 'Time the source data snapshot was produced.'
+NEWEST_OBSERVATION_DESC = 'Newest observed_at of any published claim; can be later than generated_at when claims were amended after the snapshot.'
 VERSIONING = ('Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, '
               'so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) '
               'ships as /api/v2/, and /api/v1/ keeps working.')
@@ -56,6 +58,8 @@ def schemas(origin, categories):
     S = lambda n: schema_url(origin, n)
     utc = {'type': 'string', 'pattern': UTC_PATTERN, 'format': 'date-time'}
     utc_n = {'type': ['string', 'null'], 'pattern': UTC_PATTERN, 'format': 'date-time'}
+    gen_at = utc_n | {'description': GENERATED_AT_DESC}
+    newest_obs = utc_n | {'description': NEWEST_OBSERVATION_DESC}
     uri = {'type': 'string', 'format': 'uri', 'pattern': '^https?://'}
     uri_n = {'type': ['string', 'null'], 'format': 'uri'}
     scalar = {'type': ['number', 'string', 'null']}
@@ -101,12 +105,12 @@ def schemas(origin, categories):
                 'title': 'Commonworld Atlas entry', 'description': 'One published Atlas entry with all its claims and sources (/api/v1/atlas/platforms/{id}.json).',
                 'type': 'object', 'allOf': [{'$ref': '#/$defs/platformSummary'}],
                 'required': ['schema_version', 'licence', 'source', 'generated_at', 'badge_status', 'badge_svg', 'badge_svg_dark', 'badge_page', 'claims'],
-                'properties': {'schema_version': {'type': 'string'}, 'licence': {'type': 'string'}, 'source': uri, 'generated_at': utc_n,
+                'properties': {'schema_version': {'type': 'string'}, 'licence': {'type': 'string'}, 'source': uri, 'generated_at': gen_at,
                                'badge_status': {'type': 'string'}, 'badge_svg': uri, 'badge_svg_dark': uri, 'badge_page': uri,
                                'claims': {'type': 'array', 'items': {'$ref': '#/$defs/claim'}}, 'qa_status': {'type': ['string', 'null']}},
                 '$defs': defs}
     list_meta = {'schema_version': {'type': 'string'}, 'name': {'type': 'string'}, 'description': {'type': 'string'}, 'url': uri,
-                 'generated_at': utc_n, 'newest_observation': utc_n, 'licence': {'type': 'string'}, 'licence_url': uri, 'source': uri,
+                 'generated_at': gen_at, 'newest_observation': newest_obs, 'licence': {'type': 'string'}, 'licence_url': uri, 'source': uri,
                  'corrections': uri, 'protocol': uri, 'full_data': uri, 'count': {'type': 'integer', 'minimum': 0}, 'fields_note': {'type': 'string'},
                  'platforms': {'type': 'array', 'items': {'$ref': 'platform.schema.json#/$defs/platformSummary'}}}
     plist = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': S('platform-list.schema.json'),
@@ -126,7 +130,7 @@ def schemas(origin, categories):
     earn = {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': S('earn.schema.json'),
             'title': 'Where agents get paid', 'description': 'Rows grouped by unit (/api/v1/atlas/earn.json).',
             'type': 'object', 'required': ['schema_version', 'name', 'url', 'generated_at', 'licence', 'count', 'no_figure', 'rows'],
-            'properties': {'schema_version': {'type': 'string'}, 'name': {'type': 'string'}, 'url': uri, 'generated_at': utc_n, 'licence': {'type': 'string'},
+            'properties': {'schema_version': {'type': 'string'}, 'name': {'type': 'string'}, 'url': uri, 'generated_at': gen_at, 'licence': {'type': 'string'},
                            'source': uri, 'fields_note': {'type': 'string'}, 'count': {'type': 'integer', 'minimum': 0},
                            'no_figure': {'type': 'array', 'items': {'type': 'string', 'pattern': ID_PATTERN}},
                            'rows': {'type': 'array', 'items': {'$ref': 'earn-row.schema.json'}}}}
@@ -147,7 +151,9 @@ def openapi(origin, categories, example_ids, docs_url, licence):
         'openapi': '3.1.0',
         'info': {'title': 'Commonworld API', 'version': SCHEMA_VERSION,
                  'summary': 'Static, read-only JSON API of Commonworld. First module: the Atlas of agent platforms.',
-                 'description': ('Plain static JSON files, rebuilt with every change to the site. No key, no rate limit beyond fair use; '
+                 'description': ('Plain static JSON files, rebuilt with every change to the site. '
+                                 'generated_at: ' + GENERATED_AT_DESC + ' newest_observation: ' + NEWEST_OBSERVATION_DESC + ' '
+                                 'No key, no rate limit beyond fair use; '
                                  'CORS is open (Access-Control-Allow-Origin: *). Responses may be cached by Cloudflare and browsers for up to a few hours. '
                                  + VERSIONING + f' Human documentation: {docs_url}'),
                  'license': {'name': f'Data: {licence}', 'url': 'https://creativecommons.org/licenses/by/4.0/'}},

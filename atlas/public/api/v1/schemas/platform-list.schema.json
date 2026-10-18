@@ -34,7 +34,8 @@
     "null"
    ],
    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
-   "format": "date-time"
+   "format": "date-time",
+   "description": "Time the source data snapshot was produced."
   },
   "newest_observation": {
    "type": [
@@ -42,7 +43,8 @@
     "null"
    ],
    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z$",
-   "format": "date-time"
+   "format": "date-time",
+   "description": "Newest observed_at of any published claim; can be later than generated_at when claims were amended after the snapshot."
   },
   "licence": {
    "type": "string"
