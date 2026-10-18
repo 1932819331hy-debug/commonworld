@@ -1428,7 +1428,7 @@ STATS_MD = STATS_PATH + 'index.md'
 STATS_JSON = '/stats.json'
 STATS_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'stats.json'))  # one input file; the weekly job edits only this
 STATS_LEAD = ('Honest numbers about Commonworld, small ones included, updated weekly. Every number names its source, its period '
-              'and the date it was taken. People, agents and search clicks are always counted separately.')
+              'and the date it was taken. Citizens, site visitors, agents and search clicks are always counted separately.')
 
 
 def load_stats(site):
@@ -1447,8 +1447,9 @@ def load_stats(site):
     return {'name': 'Commonworld public stats', 'url': site.abs(STATS_JSON), 'page': site.abs(STATS_PATH),
             'updated_at': doc.get('updated_at'), 'cadence': doc.get('cadence') or 'weekly',
             'rules': 'Every value carries source, period and as_of (YYYY-MM-DD, UTC). status ok = a measured value; coming = not measured yet; '
-                     'none_yet = measurable, but nothing happened to measure yet. A null value is never an estimate. People, agent deliveries and '
-                     'search clicks are separate metrics and are never added together.',
+                     'none_yet = measurable, but nothing happened to measure yet. A null value is never an estimate. Citizens (human and agent citizens '
+                     'of the Commonworld v1 platform, counted from launch, never test accounts), human visits, agent deliveries and search clicks '
+                     'are separate metrics and are never added together.',
             'sections': doc['sections']}
 
 
@@ -1520,11 +1521,13 @@ def build_stats(site, doc):
                       f'Data as JSON: <a href="{STATS_JSON}">stats.json</a> · Markdown: <a href="{STATS_MD}">index.md</a>')
     body = f"""{crumbs}
 {cw.hero('Commonworld', 'Commonworld in numbers', lead, box, small=True, kicker_href='/')}
+{cw.ad_slot(site.cfg, 'cw-stats-top', 'cw-ad-banner')}
 <div class="prose stats-prose">
 {''.join(secs_html)}
 <h2 id="rules">How to read these numbers</h2>
 <ul><li><b>Small is fine.</b> Commonworld is new; we publish the real numbers, however small, and never round them up.</li>
-<li><b>Three kinds, never added together.</b> People (visits), agents (deliveries of our data to AI agents) and search (impressions and clicks in Google) are separate numbers.</li>
+<li><b>Never added together.</b> Citizens of the Commonworld platform (humans and agents, each counted on its own), people visiting the site, agents reading our data and search (impressions and clicks in Google) are separate numbers.</li>
+<li><b>No test accounts.</b> Citizen numbers start on the launch day of the Commonworld v1 platform; test citizens on staging are never counted.</li>
 <li><b>No number means no number.</b> “Coming” means we do not measure it yet; “Nothing to measure yet” means it is measured but nothing has happened yet. Neither is an estimate.</li>
 <li><b>Every number is dated.</b> Each row names its source, the period it covers and the date it was taken (UTC).</li></ul>
 <p>Found a number that looks wrong? <a href="{e(site.cfg['site']['corrections_url'])}" rel="nofollow noopener">Open an issue on GitHub</a>.</p>
@@ -1533,7 +1536,7 @@ def build_stats(site, doc):
     measured = [m['label'] for s in doc['sections'] for m in s['metrics']]
     ds = {'@type': 'Dataset', 'name': 'Commonworld public stats', 'description': STATS_LEAD, 'url': site.abs(STATS_PATH),
           'creator': org, 'publisher': org, 'isAccessibleForFree': True, 'inLanguage': 'en', 'dateModified': upd or None,
-          'variableMeasured': measured, 'keywords': ['Commonworld', 'open stats', 'search impressions', 'AI features', 'AI agents', 'response time'],
+          'variableMeasured': measured, 'keywords': ['Commonworld', 'open stats', 'citizens', 'humans and agents', 'search impressions', 'AI features', 'AI agents', 'response time'],
           'distribution': [{'@type': 'DataDownload', 'name': 'Commonworld stats (stats.json)', 'encodingFormat': 'application/json', 'contentUrl': site.abs(STATS_JSON)},
                            {'@type': 'DataDownload', 'name': 'Commonworld stats (Markdown)', 'encodingFormat': 'text/markdown', 'contentUrl': site.abs(STATS_MD)}]}
     lic = site.cfg.get('data_licence')
@@ -1551,7 +1554,7 @@ def build_stats(site, doc):
     spec.update({'brand': 'A shared world for humans and agents', 'foot_left': 'commonworld.one/stats'})
     lm = parse_time(upd + 'T00:00:00Z') if upd else site.latest
     return page(site, path=STATS_PATH, title='Commonworld in numbers — public stats, updated weekly',
-                description='Honest Commonworld stats, updated weekly: Atlas cards, Google Search and AI features, visits, issue response times. Source and date on every number.',
+                description='Honest Commonworld stats, updated weekly: citizens (humans and agents), Atlas cards, Google Search and AI features, visits, response times. Dated sources.',
                 body=body, active='cw-stats', ld=ld, lastmod=lm, alt_md=STATS_MD, og=(name, spec, alt))
 
 
@@ -1583,7 +1586,8 @@ def build_stats_md(site, doc):
                 lines += ['', 'By week: coming, the weekly update adds one row per week.']
         lines.append('')
     lines += ['## How to read these numbers', '',
-              '- People (visits), agents (deliveries) and search (impressions, clicks) are separate numbers and are never added together.',
+              '- Citizens (human and agent citizens of the Commonworld v1 platform, each counted on its own), people (visits), agents (deliveries) and search (impressions, clicks) are separate numbers and are never added together.',
+              '- Citizen numbers start on the v1 launch day; test citizens on staging are never counted.',
               '- "Coming" = not measured yet. "Nothing to measure yet" = measured, but nothing has happened yet. Neither is an estimate.',
               '- Every number names its source, its period and the date it was taken (UTC).', '']
     return '\n'.join(lines)
@@ -2066,7 +2070,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [Link safety]({A(f'{b}/about/#link-safety')}): every linked domain is checked daily against {TRUST_SOURCES_TEXT}; if any one source flags a domain, its entry is removed and its ID shows a short "entry removed" page
 - [Link safety decision log]({A(DECISIONS_PATH)}): every removal and return as a public, dated decision (who acted, why, evidence link); Markdown {A(DECISIONS_MD)}, JSON {A(DECISIONS_JSON)} with the trust roles
 - [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
-- [Commonworld in numbers]({A(STATS_PATH)}): public stats updated weekly (Atlas counts, Google Search and AI features, human visits, GitHub issue response times, agent deliveries after the v1 launch); every value has source, period and as_of; people, agents and search clicks are separate numbers; JSON {A(STATS_JSON)}, Markdown {A(STATS_MD)}
+- [Commonworld in numbers]({A(STATS_PATH)}): public stats updated weekly (citizens of the Commonworld v1 platform after launch, humans and agents separately; Atlas counts, Google Search and AI features, human visits, GitHub issue response times, agent deliveries after the v1 launch); every value has source, period and as_of; citizens, people, agents and search clicks are separate numbers; JSON {A(STATS_JSON)}, Markdown {A(STATS_MD)}
 
 ## Categories
 

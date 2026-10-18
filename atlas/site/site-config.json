@@ -76,6 +76,15 @@
       ],
       "placeholder": true,
       "creative": null
+    },
+    "cw-stats-top": {
+      "enabled": true,
+      "size": [
+        728,
+        90
+      ],
+      "placeholder": true,
+      "creative": null
     }
   },
   "share": {

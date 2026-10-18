@@ -805,6 +805,8 @@ def markdown_twin_checks(pages):
 
 STATS_SRC = os.path.join(DATA_DIR, 'stats.json')
 STATS_STATUSES = {'ok', 'coming', 'none_yet'}
+CITIZEN_METRICS = ('citizens_total', 'citizens_humans', 'citizens_agents', 'citizens_active_7d', 'citizens_posts')
+V1_LAUNCHED = False  # flip when Commonworld v1 is live in production; until then citizen rows stay 'coming' (staging test citizens never shown)
 DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
 
 
@@ -855,8 +857,18 @@ def stats_checks(parsed, pages, locs):
         if 'derive' in m: fails.append(f'/stats.json: metric {m.get("id")} still has derive')
         check_metric(m, '/stats.json', False)
     kinds = {s.get('kind') for s, _ in pm}
-    for need in ('humans', 'agents', 'search'):
+    for need in ('citizens', 'humans', 'agents', 'search'):
         if need not in kinds: fails.append(f'/stats.json: no separate {need} section')
+    # Citizens (main product, Commonworld v1) come first; humans and agents are separate rows, never a web-traffic metric.
+    secs = pub.get('sections') or []
+    if secs and secs[0].get('kind') != 'citizens': fails.append('/stats.json: the Citizens section must come first')
+    cit = {m.get('id'): m for s, m in pm if s.get('kind') == 'citizens'}
+    for need in CITIZEN_METRICS:
+        if need not in cit: fails.append(f'/stats.json: Citizens section lacks {need}')
+    for mid, m in cit.items():
+        if mid not in CITIZEN_METRICS: fails.append(f'/stats.json: unexpected metric {mid} in Citizens')
+        if not V1_LAUNCHED and (m.get('status') != 'coming' or m.get('value') is not None):
+            fails.append(f'/stats.json: {mid} must be coming with no value until the v1 launch (no staging numbers)')
     snap = json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']
     want = {'atlas_cards': len(snap), 'atlas_live': sum(1 for c in snap if c.get('status') == 'live'),
             'atlas_closed': sum(1 for c in snap if c.get('status') == 'closed')}
@@ -868,6 +880,14 @@ def stats_checks(parsed, pages, locs):
         return fails + ['missing /stats/ page']
     h = open(pages[u], encoding='utf-8').read()
     if ORIGIN + u not in locs: fails.append('/stats/ not in the sitemap')
+    ad = re.search(r'<aside class="cw-ad cw-ad-banner" data-ad-slot="cw-stats-top" aria-label="Sponsored"><span class="cw-ad-label">Sponsored</span>', h)
+    hero_end = h.find('</section>', h.find('class="cw-hero'))
+    slot = (CFG0.get('ad_slots') or {}).get('cw-stats-top') or {}
+    if slot.get('enabled') and (slot.get('placeholder') or slot.get('creative')) and not ad: fails.append('/stats/: lacks the sponsored slot cw-stats-top')
+    elif not ad: pass
+    elif not (0 <= hero_end < ad.start() < h.find('class="stats-sec"')): fails.append('/stats/: sponsored slot not between the header and the first section')
+    first = re.search(r'<section class="stats-sec" aria-labelledby="s-([a-z_]+)"', h)
+    if not first or first.group(1) != 'citizens': fails.append('/stats/: the Citizens section must come first')
     for need in ('<h1>Commonworld in numbers</h1>', 'A shared world for humans and agents', 'href="/stats.json"', 'href="/stats/index.md"',
                  '<link rel="alternate" type="text/markdown" href="/stats/index.md"', '"Dataset"'):
         if need not in h: fails.append(f'/stats/: lacks {need!r}')

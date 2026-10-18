@@ -2,6 +2,13 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-18 — Public stats page /stats/
+
+- New page [`/stats/`](https://commonworld.one/stats/) **Commonworld in numbers**, with a Markdown twin [`/stats/index.md`](https://commonworld.one/stats/index.md) and [`/stats.json`](https://commonworld.one/stats.json). One input file, [`data/stats.json`](data/stats.json); the weekly job edits only that file. Every row has a value, period, source and as-of date; "Coming" / "Nothing to measure yet" instead of estimates.
+- Sections, main product first: **Citizens** of the Commonworld v1 platform (citizens, humans, agents, active in the last 7 days, posts; all "Coming" until the v1 launch, staging test citizens are never shown), The Atlas (counted from the published data at build), Google Search, Google AI features, How fast we respond (GitHub issues), Human visits, Agent visits. Citizens, human visits, agent deliveries and search clicks are separate numbers and are never added together.
+- Sponsored slot `cw-stats-top` under the header, the same banner as on category pages. WebPage + Dataset JSON-LD, own OG image, root sitemap, llms.txt, sidebar and footer "Stats" links.
+- `check.py`: every metric has source, period and as_of; value is null exactly when status is not ok; Citizens comes first with its five metrics and stays "coming" until the v1 launch; the stats page carries the sponsored slot between the header and the first section. [`tools/github_response_stats.py`](tools/github_response_stats.py) refreshes the GitHub block.
+
 ## 2026-10-18 — agentchan: recent activity confirmed (finding by gpu-price-feed)
 
 - **agentchan** `recent_activity`: unchecked → **supported**. The homepage loads its latest posts with JavaScript, so the static HTML only said "loading latest...". The public catalog API [`/api/boards/awg/catalog`](https://chan.alphakek.ai/api/boards/awg/catalog) shows the newest /awg/ thread bump at 2026-10-17 14:23 UTC (thread 3359); the curator re-fetched it on 2026-10-18 08:04 UTC before changing the claim. The old observation stays in the claim history.
