@@ -741,6 +741,42 @@ def _share_expectations():
     return sum(1 for c in snap if c.get('status') == 'live'), exp
 
 
+def iter_ld_nodes(x):
+    """Every JSON-LD object in a block, nested ones included (lists and @graph walked)."""
+    if isinstance(x, dict):
+        yield x
+        for v in x.values(): yield from iter_ld_nodes(v)
+    elif isinstance(x, list):
+        for v in x: yield from iter_ld_nodes(v)
+
+
+def dataset_haspart_fails(u, blocks):
+    """Contract (Google Dataset docs, GSC issue 2026-10-18): Dataset.hasPart / isPartOf take only a URL or a Dataset; a Dataset
+    value must stand alone (name, description of 50..5000 chars). Anything else (ItemList, WebPage, DataDownload...) fails."""
+    fails = []
+    for b in blocks:
+        for n in iter_ld_nodes(b):
+            if n.get('@type') != 'Dataset' and 'Dataset' not in (n.get('@type') if isinstance(n.get('@type'), list) else []): continue
+            for field in ('hasPart', 'isPartOf'):
+                if field not in n: continue
+                vals = n[field] if isinstance(n[field], list) else [n[field]]
+                for v in vals:
+                    if isinstance(v, str) and v.startswith(('https://', 'http://')): continue
+                    if not isinstance(v, dict) or v.get('@type') != 'Dataset':
+                        t = v.get('@type') if isinstance(v, dict) else type(v).__name__
+                        fails.append(f'{u}: Dataset.{field} item is {t!r}, Google allows only Dataset or URL'); continue
+                    if not v.get('name') or not (50 <= len(v.get('description') or '') <= 5000):
+                        fails.append(f"{u}: Dataset.{field} sub-dataset {v.get('name')!r} lacks name or a 50..5000 char description")
+    return fails
+
+
+def dataset_haspart_checks(parsed):
+    fails = []
+    for u, p in parsed.items():
+        fails += dataset_haspart_fails(u, [json.loads(b) for b in p.ld])
+    return fails
+
+
 def dataset_checks(parsed):
     """schema.org Dataset JSON-LD on /atlas/ and each category page (Google Dataset Search): name, description, url, license,
     creator; every DataDownload contentUrl exists in dist. /atlas/llms.txt exists and links the root llms.txt."""
@@ -979,9 +1015,8 @@ def decisions_checks(parsed, pages, locs):
     for x in ds.get('distribution') or []:
         cu = x.get('contentUrl') or ''
         if not cu.startswith(ORIGIN + '/') or not os.path.isfile(os.path.join(DIST, cu[len(ORIGIN) + 1:])): fails.append(f'{u}: Dataset download missing {cu}')
-    il = ds.get('hasPart') or {}
-    if il.get('@type') != 'ItemList' or il.get('numberOfItems') != len(decs) or len(il.get('itemListElement') or []) != len(decs):
-        fails.append(f'{u}: ItemList does not hold every decision')
+    want_size = f'{len(decs)} decision' + ('' if len(decs) == 1 else 's')
+    if ds.get('size') != want_size: fails.append(f"{u}: Dataset size {ds.get('size')!r} != {want_size!r}")
     if any(hh and hh in json.dumps(lds) for hh in hosts): fails.append(f'{u}: JSON-LD names a decision host')
     sm = open(os.path.join(DIST, 'atlas', 'sitemap.xml'), encoding='utf-8').read()
     m = re.search(r'<loc>' + re.escape(ORIGIN + u) + r'</loc><lastmod>([\d-]+)</lastmod>', sm)
@@ -1320,6 +1355,7 @@ def main():
         if any('basis' not in f for f in r.get('money_flow') or []):
             fails.append(f"platforms.json {r['id']}: money_flow item without basis")
     fails += dataset_checks(parsed)
+    fails += dataset_haspart_checks(parsed)
     fails += safety_report_checks(parsed)
     fails += decisions_checks(parsed, pages, locs)
     fails += markdown_twin_checks(pages)[0]

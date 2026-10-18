@@ -1764,22 +1764,18 @@ def build_decisions(site):
 
 
 def decisions_ld(site, rows):
-    """CollectionPage whose mainEntity is a Dataset (the decision log, with JSON and Markdown downloads) holding an ItemList of
-    the decisions, newest first. No item links to a removed entry's page or host."""
+    """CollectionPage whose mainEntity is a Dataset (the decision log, with JSON and Markdown downloads). Google's Dataset rules allow
+    only Dataset objects or URLs in hasPart, so the decisions themselves are not listed in JSON-LD: they are the table on the page and
+    the DataDownload files (GSC 2026-10-18: "Invalid object type for field hasPart" for the old ItemList). No host in the JSON-LD."""
     lic = site.cfg.get('data_licence')
     org = {'@type': 'Organization', 'name': 'Commonworld', 'url': site.abs('/')}
-    items = [{'@type': 'ListItem', 'position': i + 1,
-              'name': f"{d.get('on')} · {ACTION_WORD.get(d.get('action'), d.get('action'))} · {d.get('slug')}",
-              'description': f"By {d.get('by')}: {d.get('reason')}"} for i, d in enumerate(rows)]
     ds = {'@type': 'Dataset', 'name': 'Commonworld Atlas link safety decision log', 'description': DECISIONS_LEAD,
           'url': site.abs(DECISIONS_PATH), 'sameAs': f'{REPO_URL}/blob/main/atlas/data/removed.json', 'creator': org, 'publisher': org,
           'isAccessibleForFree': True, 'inLanguage': 'en', 'keywords': ['link safety', *TRUST_SOURCE_NAMES, 'phishing', 'crypto scams', 'trust decisions', 'AI agents', 'open data'],
           'dateModified': rows[0].get('on') if rows else None, 'size': f'{len(rows)} decision' + ('' if len(rows) == 1 else 's'),
           'variableMeasured': ['date', 'action (remove or restore)', 'entry ID', 'domain (defanged)', 'actor ID', 'reason', 'evidence link'],
           'distribution': [{'@type': 'DataDownload', 'name': 'Decision log with trust roles (decisions.json)', 'encodingFormat': 'application/json', 'contentUrl': site.abs(DECISIONS_JSON)},
-                           {'@type': 'DataDownload', 'name': 'Decision log (Markdown)', 'encodingFormat': 'text/markdown', 'contentUrl': site.abs(DECISIONS_MD)}],
-          'hasPart': {'@type': 'ItemList', 'name': 'Decisions, newest first', 'itemListOrder': 'https://schema.org/ItemListOrderDescending',
-                      'numberOfItems': len(items), 'itemListElement': items}}
+                           {'@type': 'DataDownload', 'name': 'Decision log (Markdown)', 'encodingFormat': 'text/markdown', 'contentUrl': site.abs(DECISIONS_MD)}]}
     if lic:
         ds['license'] = LICENCE_URLS.get(lic, f'{REPO_URL}/blob/main/LICENSE-DATA.md')
     ds = {k: v for k, v in ds.items() if v is not None}
