@@ -252,10 +252,10 @@
    "intro": "Times a Commonworld page was shown inside Google's AI features (AI Overviews, AI Mode). Google's report is in beta.",
    "metrics": [
     {
-     "id": "gsc_ai_impressions",
-     "label": "Impressions in Google AI features",
-     "unit": "impressions",
-     "value": 6,
+     "id": "gsc_ai_pages",
+     "label": "Pages shown in Google AI features",
+     "unit": "pages",
+     "value": 20,
      "status": "ok",
      "period": {
       "from": "2026-10-14",
@@ -267,7 +267,7 @@
       "url": null
      },
      "as_of": "2026-10-18",
-     "note": "Impressions only. 20 pages had at least one impression in this period."
+     "note": "Pages with at least one impression in this period. The total impression count will be added once read directly from the report."
     }
    ]
   },
