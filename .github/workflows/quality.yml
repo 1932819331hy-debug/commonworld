@@ -2,7 +2,7 @@ name: Quality (links + Lighthouse)
 # Public quality standard for commonworld.one (see README "Quality gates"):
 #   - internal links of the built site must all resolve (lychee --offline)      -> blocking
 #   - outbound links are checked with retries + cache                            -> warning; weekly run keeps one tracking issue
-#   - Lighthouse on 5 representative pages, mobile and desktop: performance,
+#   - Lighthouse on 6 representative pages, mobile and desktop: performance,
 #     accessibility, best practices and SEO each >= 95 (median of 3 runs)        -> blocking
 on:
   pull_request:

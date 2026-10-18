@@ -26,7 +26,7 @@ Every change to the site passes the same public bar before it ships, and anyone 
 
 - **Strict Content Security Policy.** No `'unsafe-inline'`: our one inline boot script is allowed by its sha256 hash, styles live only in stylesheets, and Cloudflare's own injected scripts get a fresh per-request nonce from [`functions/_middleware.js`](functions/_middleware.js). `atlas/site/check.py` re-hashes every inline script on every page, and the browser smoke test fails on any CSP report.
 - **Links.** [lychee](https://github.com/lycheeverse/lychee) checks every link of the built site ([`lychee.toml`](lychee.toml)). Links between our own pages must all resolve; outbound links are retried and cached, and the weekly sweep keeps one "Outbound link report" issue up to date.
-- **Lighthouse.** Five representative pages (`/`, `/atlas/`, `/atlas/about/`, `/atlas/decisions/`, a platform page), mobile and desktop, median of 3 runs: performance, accessibility, best practices and SEO each **95 or higher** ([`atlas/site/tools/lighthouse/`](atlas/site/tools/lighthouse/)).
+- **Lighthouse.** Six representative pages (`/`, `/atlas/`, `/atlas/about/`, `/atlas/decisions/`, a platform page, `/stats/`), mobile and desktop, median of 3 runs: performance, accessibility, best practices and SEO each **95 or higher** ([`atlas/site/tools/lighthouse/`](atlas/site/tools/lighthouse/)).
 
 Workflows: `CI` (build, data mirror, `check.py`, browser smoke test), `Quality (links + Lighthouse)` and `Live CSP check` (daily and on demand: production pages in headless Chromium, including the scripts Cloudflare adds at the edge, with zero CSP reports).
 

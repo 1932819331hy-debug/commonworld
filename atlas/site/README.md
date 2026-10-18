@@ -56,7 +56,7 @@ Another port: `python3 atlas/site/serve.py 9000`.
 | `/atlas/privacy/`, `/atlas/terms/` | Old URLs: tiny noindex stubs (meta refresh + canonical to the new URL); on Cloudflare `dist/_redirects` answers them with a 301 first |
 | `/sitemap.xml`, `/_redirects` | Site-level sitemap (the legal pages; `/atlas/sitemap.xml` keeps the Atlas pages, robots.txt names both) and Cloudflare Pages redirects |
 | `/atlas/data/snapshot.json` | Open data copy (published fields only) |
-| `/atlas/safety.json` | Link safety report (see "Link safety" below): Google Safe Browsing status (`clean` / `flagged` / `no_data`) and `checked_at` of every domain linked from published entries, summary counts, `run_at`; listed in the `/atlas/` Dataset JSON-LD and `/atlas/llms.txt`. Every record in the JSON exports carries `link_safety` {status, checked_at} for its official URL |
+| `/atlas/safety.json` | Link safety report (see "Link safety" below): for every domain linked from published entries, its combined status (`clean` / `flagged` / `no_data`) and the answer of each of the four trust sources (verdict, `checked_at`, evidence link), summary counts, `run_at`; listed in the `/atlas/` Dataset JSON-LD and `/atlas/llms.txt`. Every record in the JSON exports carries `link_safety` {status, checked_at} for its official URL |
 | `/atlas/platforms/<slug>/` of a removed entry | Neutral noindex stub "This entry was removed from the Atlas after a safety check." (no name, no outbound link, not in the sitemap); slugs listed in `atlas/data/removed.json` |
 | `/atlas/llms.txt` | Short Atlas guide for agents: what the Atlas is, live counts, data files, one JSON endpoint per category, link to the root `/llms.txt` |
 | `/atlas/screens/<slug>.webp`, `/atlas/screens/t/<slug>.webp`, `/atlas/screens/manifest.json` | Homepage screenshots (1200×750) and their 600×250 top-band thumbnails, copied from the orphan branch `atlas-screens` (see "Homepage screenshots" below) |
@@ -288,15 +288,38 @@ Cloudflare injects its own inline JavaScript Detections bootstrap whose text cha
 
 ## Link safety
 
-Policy: `atlas/CURATION.md#link-safety`. `atlas/tools/safebrowsing_check.py` (stdlib) extracts every outbound host from the snapshot,
-asks Google Safe Browsing (Transparency Report endpoint, at most 4 requests at a time, timeouts, retries on errors, rate limits and
-HTML answers) and writes `atlas/data/link-safety.json`; exit code 1 lists flagged hosts. The workflow `.github/workflows/link-safety.yml`
-("Atlas link safety") runs it daily at 04:17 UTC and on demand, commits only that report file (the push triggers the Pages build) and
-opens/updates the issue "Link safety: flagged domains" (closed again when a run is clear). It never edits other data.
-The build reads the report into `/atlas/safety.json` and each record's `link_safety`; both are left out of the GitHub mirror
-(`atlas/public/`) because they change daily. Removing an entry: add `{slug, host, removed_on, reason}` to `atlas/data/removed.json`,
-drop the card from the snapshot (with an `amendments` line), rebuild. `build.py` then drops it everywhere and writes the stub;
-`check.py` fails if the stub is missing or indexable, if any listing or data file still has the slug, or if any built file names the host.
+Standard: [`TRUST.md`](../../TRUST.md). Atlas rules: [`atlas/CURATION.md#link-safety`](../CURATION.md#link-safety).
+
+Every domain linked from the published Atlas (official URLs, claim and QA sources, any other URL in an entry, plus the
+domains of removed entries) is checked every day by the Commonworld trust engine ([`trust/`](../../trust/)) against four
+free sources: Google Safe Browsing, MetaMask eth-phishing-detect, ScamSniffer and the CERT Polska Warning List.
+This gives every visitor and agent links that were checked within the last day, with each source's answer on the record.
+
+- **How it runs.** `atlas/tools/link_safety.py --apply` (stdlib, uses the engine through Node 22.6+) is run by the workflow
+  `.github/workflows/link-safety.yml` ("Atlas link safety") daily at 04:17 UTC and on demand. It writes
+  `atlas/data/link-safety.json`: summary counts, `run_at`, and for every domain the answer of each source (verdict,
+  `checked_at` in UTC, evidence link). If a source cannot answer this run, its previous answer for that domain is kept
+  (marked stale), so a network error never hides an earlier flag.
+- **What a status means.** `flagged` when any one source flags the domain, `clean` when at least one source answered
+  and none flags it, `no_data` when no source could answer.
+- **Auto-hide.** When any one source flags a domain, every entry that links to it is removed at once: the script records
+  a decision in `atlas/data/removed.json` (actor `hark`, which source said what, evidence link) and drops the card from the
+  snapshot and the census tags. The workflow then rebuilds and runs `check.py`; only when the check passes does it commit
+  the data, the GitHub mirror (`atlas/public/`) and the report. If the check fails, it commits only the report and the issue
+  says a curator step is needed. Domains listed in `atlas/data/trust-hold.json` are reported, not removed.
+- **Issue and alert.** Any flag opens or updates the issue "Link safety: flagged domains" and fails the run (GitHub sends
+  the failure email); a later clear run closes the issue.
+- **Published.** The build turns the report into `/atlas/safety.json` and gives each record `link_safety` {status, checked_at}
+  for its official URL; both are left out of the GitHub mirror because they change daily. Decisions are published at
+  `/atlas/decisions/` (also `index.md` and `/atlas/decisions.json`).
+- **Removed entries.** The slug keeps a neutral noindex stub ("This entry was removed from the Atlas after a safety check.",
+  no name, no outbound link, not in the sitemap). Removed domains keep being checked daily; an entry returns only through a
+  restore decision by a listed actor (`atlas/data/trust-roles.json`) with a clean re-check, never automatically.
+- **Build check.** `check.py` accepts a removal only with its decision, a decision only from a listed actor, and a return only
+  when the latest report shows the domain clean; it fails if the stub is missing or indexable, if any listing or data file
+  still has the slug, or if any built file names the host.
+- **Older script.** `atlas/tools/safebrowsing_check.py` is the earlier Google-only check; `link_safety.py` now reuses only its
+  host extraction.
 
 ## Data notes
 
