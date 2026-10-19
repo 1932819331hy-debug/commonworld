@@ -1,0 +1,159 @@
+name: Deploy platform (production)
+# Production deploy of the Commonworld platform (Cloudflare Worker + D1, folder platform/). See docs/DEPLOY.md.
+#
+# Safe while platform/ does not exist: the gate job finds no platform/wrangler.toml and the deploy job is skipped
+# (no approval request, no secrets handed out, nothing touched).
+#
+# Only started by hand (Actions -> Deploy platform (production) -> Run workflow, branch main) with the full commit
+# sha to release. That commit must already be on main. The deploy job uses the GitHub environment `production`:
+# it waits for a required reviewer's approval, and only then receives CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID
+# (environment secrets). Never runs on pull_request, push or schedule.
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit on main to deploy (full 40-character sha)
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  # one production deploy at a time; a second one waits, a running one is never cancelled
+  group: deploy-platform-production
+  cancel-in-progress: false
+jobs:
+  gate:
+    name: Check the commit
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      has_platform: ${{ steps.platform.outputs.has_platform }}
+    env:
+      SHA: ${{ inputs.sha }}
+    steps:
+      - name: Sha is a full commit id
+        run: |
+          case "$SHA" in *[!0-9a-f]*|'') echo "::error::sha must be lowercase hex, got '$SHA'"; exit 1 ;; esac
+          [ "${#SHA}" -eq 40 ] || { echo "::error::sha must be the full 40-character commit, got '$SHA'"; exit 1; }
+      - name: Sha is on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # compare/<sha>...main: "identical" or "ahead" means main contains the commit
+          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$SHA...main" -q .status)
+          case "$status" in identical|ahead) echo "$SHA is on main ($status)" ;;
+            *) echo "::error::$SHA is not on main (compare status: $status)"; exit 1 ;; esac
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - name: platform/ exists in that commit
+        id: platform
+        run: |
+          if [ -f platform/wrangler.toml ]; then echo "has_platform=true" >> "$GITHUB_OUTPUT"
+          else echo "has_platform=false" >> "$GITHUB_OUTPUT"; echo "::notice::no platform/wrangler.toml at $SHA, nothing to deploy"; fi
+  deploy:
+    name: Deploy to production
+    needs: gate
+    if: needs.gate.outputs.has_platform == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Human approval: the environment `production` has required reviewers and allows only the main branch.
+    environment:
+      name: production
+      url: https://commonworld.one/
+    env:
+      SHA: ${{ inputs.sha }}
+    steps:
+      - name: Sha is still a full commit on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          case "$SHA" in *[!0-9a-f]*|'') echo "::error::bad sha '$SHA'"; exit 1 ;; esac
+          [ "${#SHA}" -eq 40 ] || { echo "::error::bad sha '$SHA'"; exit 1; }
+          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$SHA...main" -q .status)
+          case "$status" in identical|ahead) ;; *) echo "::error::$SHA is not on main ($status)"; exit 1 ;; esac
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - name: Checked-out commit is the requested one
+        if: hashFiles('platform/wrangler.toml') != ''
+        run: |
+          head=$(git rev-parse HEAD)
+          [ "$head" = "$SHA" ] || { echo "::error::checked out $head, expected $SHA"; exit 1; }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: hashFiles('platform/wrangler.toml') != ''
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: hashFiles('platform/wrangler.toml') != ''
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        run: npx tsc --noEmit
+      - name: Test
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        run: npm test
+      - name: Build the Atlas into the Worker's Static Assets
+        # The Worker ships the Atlas from platform/.atlas-dist (one deploy = platform + Atlas). Never deploy without it.
+        if: hashFiles('platform/wrangler.toml') != ''
+        env:
+          CW_SCREENS_REQUIRED: '1'
+          CW_PRIVATE_TERMS: ${{ secrets.CW_PRIVATE_TERMS }}
+        run: |
+          set -euo pipefail
+          python -m pip install -r requirements.txt
+          git fetch --depth=1 --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens
+          node platform/scripts/build-atlas-assets.mjs --src "$GITHUB_WORKSPACE" --build
+      - name: Time Travel bookmark before migrations (for a database restore)
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler d1 time-travel info commonworld-prod --env production
+      - name: Apply database migrations
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler d1 migrations apply commonworld-prod --remote --env production
+      - name: Deploy the Worker
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --env production --message "commonworld $SHA"
+      - name: Smoke test
+        if: hashFiles('platform/wrangler.toml') != ''
+        run: |
+          set -u
+          host=https://commonworld.one
+          check() {  # path, expected text in the body ('' = any); up to 6 tries, 10 s apart
+            for _ in 1 2 3 4 5 6; do
+              body=$(curl -sS --max-time 15 -w '\n%{http_code}' "$host$1") || body=$'\n000'
+              code=${body##*$'\n'}
+              if [ "$code" = 200 ] && { [ -z "$2" ] || printf '%s' "$body" | grep -q "$2"; }; then echo "ok   $1"; return 0; fi
+              sleep 10
+            done
+            echo "::error::smoke failed on $1 (last status $code)"; return 1
+          }
+          fail=0
+          check / '' || fail=1
+          check /health '"environment":"production"' || fail=1
+          check /api/v1/index.json '' || fail=1
+          exit $fail
