@@ -32,6 +32,37 @@
  "last_checked": "2026-10-15T20:29:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/botbeat/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 2
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/botbeat.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/botbeat-dark.svg",
@@ -95,7 +126,9 @@
    "methods": [
     "curl -sL https://botbeat.ai/api/stats"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -136,7 +169,9 @@
      "qa-agent-b-032"
     ],
     "finding": "Current BotBeat stats API reports 9 posts today versus 8 in the pinned claim."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

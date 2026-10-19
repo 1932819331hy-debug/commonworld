@@ -7,8 +7,10 @@ and ships as /api/v2/ while /api/v1/ keeps working.
 """
 import re
 
+from cards_v2 import BOOKS_VALUES, KEYS_VALUES, LEVELS, NOT_RECORDED, PEOPLE_VALUES  # cards v2 vocabulary (one source)
+
 API_VERSION = 'v1'
-SCHEMA_VERSION = '1.3.0'
+SCHEMA_VERSION = '1.4.0'
 API_BASE = '/api/v1'
 STATUSES = ['live', 'closed']
 ENTITY_TYPES = ['platform', 'tool_catalog', 'protocol', 'project']
@@ -19,6 +21,15 @@ UTC_PATTERN = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$'  # ISO 8601 U
 
 # newest first; build.py writes changelog.json and CHANGELOG.md from this list
 CHANGELOG = [
+    {'schema_version': '1.4.0', 'date': '2026-10-19', 'changes': [
+        'Cards v2. New optional fields on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): '
+        '`evidence_level` {level, id, label, claims_counted}, the highest evidence-ladder level reached by the sources of the card\'s supported '
+        'money and activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions; level null with label "not recorded yet" when there is none); '
+        '`keys_and_books` {keys, books, people}, each {state, value, label, source_url, quote} with state recorded (from a sourced claim on the card) '
+        'or not_recorded; `first_task`, a verified first step for newcomers with credit, or null; `md_url`, the card page as Markdown.',
+        'New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: '
+        '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md.',
+        'New Markdown twin of every card page at /atlas/platforms/{id}/index.md.']},
     {'schema_version': '1.3.0', 'date': '2026-10-19', 'changes': [
         'New optional field `verify` on a claim (platforms/{id}.json `claims[]`): {url, note}, a smaller cross-check an agent can fetch '
         'within normal response limits (same site as the source), for figures whose full source list is too large to read in one fetch. '
@@ -67,6 +78,11 @@ def schemas(origin, categories):
     uri = {'type': 'string', 'format': 'uri', 'pattern': '^https?://'}
     uri_n = {'type': ['string', 'null'], 'format': 'uri'}
     scalar = {'type': ['number', 'string', 'null']}
+
+    def kb_item(vals):
+        return {'type': 'object', 'required': ['state', 'value', 'label', 'source_url', 'quote'],
+                'properties': {'state': {'enum': ['recorded', 'not_recorded']}, 'value': {'enum': sorted(vals) + [None]},
+                               'label': {'type': 'string', 'minLength': 1}, 'source_url': uri_n, 'quote': {'type': ['string', 'null']}}}
     money_flow = {'type': 'object', 'description': 'A supported money-flow claim as shown on the card.',
                   'required': ['statement', 'value', 'unit', 'window', 'basis', 'observed_at', 'source_url'],
                   'properties': {'statement': {'type': 'string'}, 'value': scalar, 'unit': {'type': ['string', 'null']},
@@ -84,7 +100,10 @@ def schemas(origin, categories):
                             'recheck': {'type': 'object'},
                             'verify': {'type': 'object', 'description': 'Smaller cross-check for this figure: a URL an agent can fetch within '
                                        'normal limits and a note on what it gives. Added in schema_version 1.3.0.',
-                                       'required': ['url', 'note'], 'properties': {'url': uri, 'note': {'type': 'string', 'minLength': 1}}}}}
+                                       'required': ['url', 'note'], 'properties': {'url': uri, 'note': {'type': 'string', 'minLength': 1}}},
+                            'evidence_level': {'enum': [1, 2, 3], 'description': 'Evidence-ladder level of this money or activity claim, from its source URL: '
+                                               '1 operator says, 2 public dashboard, 3 public transactions. Added in schema_version 1.4.0.'},
+                            'evidence_label': {'enum': [LEVELS[k][1] for k in (1, 2, 3)]}}}
     summary_props = {
         'id': {'type': 'string', 'pattern': ID_PATTERN, 'description': 'Permanent ID (URL slug). Never construct one: take it from platforms.json.'},
         'name': {'type': 'string'}, 'url': uri, 'json_url': uri, 'website': uri_n,
@@ -96,8 +115,24 @@ def schemas(origin, categories):
         'preview': {'$ref': '#/$defs/preview'},
         'link_safety': {'type': 'object', 'description': 'Google Safe Browsing status of the official URL from the latest daily check '
                         '(report: /atlas/safety.json). Added in schema_version 1.2.0.', 'required': ['status', 'checked_at'],
-                        'properties': {'status': {'enum': ['clean', 'flagged', 'no_data']}, 'checked_at': utc_n}}}
-    optional = {'preview', 'link_safety'}  # added in 1.1.0 / 1.2.0: optional, so older records stay valid
+                        'properties': {'status': {'enum': ['clean', 'flagged', 'no_data']}, 'checked_at': utc_n}},
+        'md_url': uri | {'description': 'The card page as Markdown. Added in schema_version 1.4.0.'},
+        'evidence_level': {'type': 'object', 'description': 'Highest evidence-ladder level reached by the sources of the card\'s supported money and '
+                           'activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions); level null = not recorded yet. Added in schema_version 1.4.0.',
+                           'required': ['level', 'id', 'label', 'claims_counted'],
+                           'properties': {'level': {'enum': [1, 2, 3, None]}, 'id': {'enum': [LEVELS[k][0] for k in (1, 2, 3)] + [None]},
+                                          'label': {'enum': [LEVELS[k][1] for k in (1, 2, 3)] + [NOT_RECORDED]}, 'claims_counted': {'type': 'integer', 'minimum': 0}}},
+        'keys_and_books': {'type': 'object', 'description': 'Who holds the keys, whether the books are open, who is behind it: each filled only from a '
+                           'sourced claim on the card, otherwise state not_recorded. Added in schema_version 1.4.0.',
+                           'required': ['keys', 'books', 'people'],
+                           'properties': {f: kb_item(vals) for f, vals in (('keys', KEYS_VALUES), ('books', BOOKS_VALUES), ('people', PEOPLE_VALUES))}},
+        'first_task': {'type': ['object', 'null'], 'description': 'A verified first step for newcomers, with credit to its contributor, or null. Added in schema_version 1.4.0.',
+                       'required': ['title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification', 'credit'],
+                       'properties': {'title': {'type': 'string'}, 'steps': {'type': 'array', 'items': {'type': 'string', 'minLength': 1}},
+                                      'done_when': {'type': 'string'}, 'contributed_by': {'type': 'string'}, 'contributed_via': {'type': 'string'},
+                                      'source_url': uri, 'verified_by': {'type': 'string'}, 'verified_on': {'type': 'string', 'pattern': r'^\d{4}-\d{2}-\d{2}$'},
+                                      'verification': {'type': 'string'}, 'credit': {'type': 'string', 'pattern': '^Contributed by '}}}}
+    optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task'}  # added in 1.1.0 / 1.2.0 / 1.4.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
                'required': [k for k in summary_props if k not in optional], 'properties': summary_props}
     preview = {'type': ['object', 'null'], 'description': 'Dated homepage screenshot of the entry, or null. Third-party website content: '

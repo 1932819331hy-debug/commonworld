@@ -228,6 +228,248 @@
        "format": "date-time"
       }
      }
+    },
+    "md_url": {
+     "type": "string",
+     "format": "uri",
+     "pattern": "^https?://",
+     "description": "The card page as Markdown. Added in schema_version 1.4.0."
+    },
+    "evidence_level": {
+     "type": "object",
+     "description": "Highest evidence-ladder level reached by the sources of the card's supported money and activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions); level null = not recorded yet. Added in schema_version 1.4.0.",
+     "required": [
+      "level",
+      "id",
+      "label",
+      "claims_counted"
+     ],
+     "properties": {
+      "level": {
+       "enum": [
+        1,
+        2,
+        3,
+        null
+       ]
+      },
+      "id": {
+       "enum": [
+        "operator_says",
+        "public_dashboard",
+        "public_transactions",
+        null
+       ]
+      },
+      "label": {
+       "enum": [
+        "operator says",
+        "public dashboard",
+        "public transactions",
+        "not recorded yet"
+       ]
+      },
+      "claims_counted": {
+       "type": "integer",
+       "minimum": 0
+      }
+     }
+    },
+    "keys_and_books": {
+     "type": "object",
+     "description": "Who holds the keys, whether the books are open, who is behind it: each filled only from a sourced claim on the card, otherwise state not_recorded. Added in schema_version 1.4.0.",
+     "required": [
+      "keys",
+      "books",
+      "people"
+     ],
+     "properties": {
+      "keys": {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "label",
+        "source_url",
+        "quote"
+       ],
+       "properties": {
+        "state": {
+         "enum": [
+          "recorded",
+          "not_recorded"
+         ]
+        },
+        "value": {
+         "enum": [
+          "operator",
+          "smart_contract",
+          "user_wallet",
+          null
+         ]
+        },
+        "label": {
+         "type": "string",
+         "minLength": 1
+        },
+        "source_url": {
+         "type": [
+          "string",
+          "null"
+         ],
+         "format": "uri"
+        },
+        "quote": {
+         "type": [
+          "string",
+          "null"
+         ]
+        }
+       }
+      },
+      "books": {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "label",
+        "source_url",
+        "quote"
+       ],
+       "properties": {
+        "state": {
+         "enum": [
+          "recorded",
+          "not_recorded"
+         ]
+        },
+        "value": {
+         "enum": [
+          "public_dashboard",
+          "public_transactions",
+          null
+         ]
+        },
+        "label": {
+         "type": "string",
+         "minLength": 1
+        },
+        "source_url": {
+         "type": [
+          "string",
+          "null"
+         ],
+         "format": "uri"
+        },
+        "quote": {
+         "type": [
+          "string",
+          "null"
+         ]
+        }
+       }
+      },
+      "people": {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "label",
+        "source_url",
+        "quote"
+       ],
+       "properties": {
+        "state": {
+         "enum": [
+          "recorded",
+          "not_recorded"
+         ]
+        },
+        "value": {
+         "enum": [
+          "named",
+          null
+         ]
+        },
+        "label": {
+         "type": "string",
+         "minLength": 1
+        },
+        "source_url": {
+         "type": [
+          "string",
+          "null"
+         ],
+         "format": "uri"
+        },
+        "quote": {
+         "type": [
+          "string",
+          "null"
+         ]
+        }
+       }
+      }
+     }
+    },
+    "first_task": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "description": "A verified first step for newcomers, with credit to its contributor, or null. Added in schema_version 1.4.0.",
+     "required": [
+      "title",
+      "steps",
+      "done_when",
+      "contributed_by",
+      "contributed_via",
+      "source_url",
+      "verified_by",
+      "verified_on",
+      "verification",
+      "credit"
+     ],
+     "properties": {
+      "title": {
+       "type": "string"
+      },
+      "steps": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      },
+      "done_when": {
+       "type": "string"
+      },
+      "contributed_by": {
+       "type": "string"
+      },
+      "contributed_via": {
+       "type": "string"
+      },
+      "source_url": {
+       "type": "string",
+       "format": "uri",
+       "pattern": "^https?://"
+      },
+      "verified_by": {
+       "type": "string"
+      },
+      "verified_on": {
+       "type": "string",
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "verification": {
+       "type": "string"
+      },
+      "credit": {
+       "type": "string",
+       "pattern": "^Contributed by "
+      }
+     }
     }
    }
   },
@@ -460,6 +702,21 @@
        "minLength": 1
       }
      }
+    },
+    "evidence_level": {
+     "enum": [
+      1,
+      2,
+      3
+     ],
+     "description": "Evidence-ladder level of this money or activity claim, from its source URL: 1 operator says, 2 public dashboard, 3 public transactions. Added in schema_version 1.4.0."
+    },
+    "evidence_label": {
+     "enum": [
+      "operator says",
+      "public dashboard",
+      "public transactions"
+     ]
     }
    }
   },

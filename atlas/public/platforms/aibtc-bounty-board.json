@@ -53,6 +53,37 @@
  "last_checked": "2026-10-19T08:29:00Z",
  "claims_count": 9,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/aibtc-bounty-board/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 6
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://aibtc.com/api/bounties?status=paid&limit=100",
+   "quote": "63 items read; 63 with status=paid, paidTxid=*; sum rewardSats = 438100"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/aibtc-bounty-board.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/aibtc-bounty-board-dark.svg",
@@ -138,7 +169,9 @@
     "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:aibtc-bounty-board:economic_flow:2"
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -153,7 +186,9 @@
    "methods": [
     "curl https://aibtc.com/api/agents?limit=1"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -169,7 +204,9 @@
     "curl -sL https://aibtc.com/bounties",
     "curl https://aibtc.com/api/agents?limit=1"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "economic_flow",
@@ -190,7 +227,9 @@
    "verify": {
     "url": "https://aibtc.com/api/bounties?status=paid&limit=10&offset=0",
     "note": "AIBTC publishes no total for paid sats. Re-add it in small pages: about 40 KB per 10 bounties; sum rewardSats, then follow nextOffset until hasMore is false. The paid count alone is one small call: add withCount=true and read total."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -211,7 +250,9 @@
    "verify": {
     "url": "https://aibtc.com/api/bounties?status=paid&limit=1&withCount=true",
     "note": "Exact paid count in one small response (about 4 KB): read total (withCount=true makes it exact)."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -243,7 +284,9 @@
      "superseded_at": "2026-10-19T08:29:56Z",
      "reason": "weekly automated re-observation (atlas/refresh.py)"
     }
-   ]
+   ],
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

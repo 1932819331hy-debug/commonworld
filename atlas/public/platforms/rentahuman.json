@@ -30,6 +30,37 @@
  "last_checked": "2026-10-15T20:40:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/rentahuman/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/rentahuman.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/rentahuman-dark.svg",
@@ -117,7 +148,9 @@
      "qa-agent-a-0126"
     ],
     "finding": "Current stats are 17,501 bounties, 32,615 connected agents, and 853,556 humans available versus previous values 17,500/32,615/853,488."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "economic_flow",
@@ -132,7 +165,9 @@
    "methods": [
     "curl /api/stats"
    ],
-   "outcome": "unchecked"
+   "outcome": "unchecked",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -145,7 +180,9 @@
    "quote": null,
    "observed_at": "2026-10-15T18:18:30Z",
    "methods": [],
-   "outcome": "unchecked"
+   "outcome": "unchecked",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

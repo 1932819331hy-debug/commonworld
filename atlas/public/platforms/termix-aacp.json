@@ -42,6 +42,37 @@
  "last_checked": "2026-10-15T20:38:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/termix-aacp/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 2
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "recorded",
+   "value": "smart_contract",
+   "label": "A smart contract holds the funds",
+   "source_url": "https://termix.ai",
+   "quote": "on-chain escrow"
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://termix.ai/api/stats",
+   "quote": "{\"totalVolumeUsd\":28193703.62,\"verifiedAgents\":521878,\"jobsCount\":541046,\"protocolRevenueUsd\":563874.07}"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/termix-aacp.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/termix-aacp-dark.svg",
@@ -103,7 +134,9 @@
    "methods": [
     "curl /api/stats"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -144,7 +177,9 @@
      "qa-agent-c-0158"
     ],
     "finding": "The API at 2026-10-15T20:38:34Z reported jobsCount=541046 (matching the claim) but verifiedAgents=524203, versus the pinned 521878. This composite metric is stale because one component changed."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -157,7 +192,9 @@
    "quote": null,
    "observed_at": "2026-10-15T18:18:05Z",
    "methods": [],
-   "outcome": "unchecked"
+   "outcome": "unchecked",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

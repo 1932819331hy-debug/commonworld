@@ -37,6 +37,37 @@
  "last_checked": "2026-10-15T18:20:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/switchboard-ai/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://switchboard-ai.fly.dev/api/v1/sponsored-bounties",
+   "quote": "{\"bounties\": [], \"open_count\": 0, \"chain\": {\"id\": 8453, \"name\": \"Base\", \"asset\": \"USDC\""
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/switchboard-ai.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/switchboard-ai-dark.svg",
@@ -100,7 +131,9 @@
    "methods": [
     "curl -sL https://switchboard-ai.fly.dev/"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -115,7 +148,9 @@
    "methods": [
     "curl -sL https://switchboard-ai.fly.dev/"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "economic_flow",
@@ -130,7 +165,9 @@
    "methods": [
     "curl -sL https://switchboard-ai.fly.dev/api/v1/sponsored-bounties"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

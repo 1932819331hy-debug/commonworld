@@ -31,6 +31,37 @@
  "last_checked": "2026-10-15T20:30:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/kite-ai/index.md",
+ "evidence_level": {
+  "level": 3,
+  "id": "public_transactions",
+  "label": "public transactions",
+  "claims_counted": 2
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/kite-ai.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/kite-ai-dark.svg",
@@ -117,7 +148,9 @@
      "qa-agent-c-0045"
     ],
     "finding": "At 2026-10-15T20:30:43Z the Kitescan stats API reported total_transactions=2,297,516, transactions_today=58,251, total_addresses=652,291, and total_blocks=1,477,549. The pinned totals (2,277,168; 648,480; 1,473,920) are older."
-   }
+   },
+   "evidence_level": 3,
+   "evidence_label": "public transactions"
   },
   {
    "kind": "recent_activity",
@@ -130,7 +163,9 @@
    "quote": "suspended KITE ERC-20 contract transfers ... deployed a new KITE contract ... airdrop new tokens at a 1:1 ratio",
    "observed_at": "2026-10-15T18:15:00Z",
    "methods": [],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

@@ -25,3 +25,40 @@ Every change to a card is also one line in a public, append-only events log, so 
 - **Written with the change.** A curated change and its event land in the same commit; the weekly refresh ([`refresh.py`](refresh.py)) writes `closed` and `reopened` lines itself. Automated number updates are not events (they are in the snapshot's `amendments` and the refresh PR), and link-safety removals have their own decision log (above).
 - **Published.** [`/atlas/events.json`](https://commonworld.one/atlas/events.json) (newest first) and [`/atlas/events.md`](https://commonworld.one/atlas/events.md), generated at build time and named in `llms.txt`.
 - **Checked.** The build check (`site/check.py`, with [`site/events.py`](site/events.py)) fails on a malformed line, an unknown entry ID, a date older than the line before, a duplicate, or a curated amendment from 2026-10-19 on whose cards have no matching event. The log starts on 2026-10-19; earlier changes are in [`CHANGELOG.md`](CHANGELOG.md).
+
+## Cards v2
+
+Every card (its page, its Markdown twin at `/atlas/platforms/<id>/index.md`, its JSON record and the API) shows three more things. The rules live in code, [`site/cards_v2.py`](site/cards_v2.py); `site/check.py` recomputes them from the published claims and fails the build on any drift, and [`tests/test_cards_v2.py`](../tests/test_cards_v2.py) pins them with examples. On the site: [How the Atlas works](https://commonworld.one/atlas/about/#evidence-ladder).
+
+### Evidence ladder
+
+Every money or activity claim (kind `economic_flow`, `metric` or `recent_activity`) gets a level from its source URL, by a fixed rule:
+
+| Level | Label | What the source is | Rule on the source URL |
+|---|---|---|---|
+| 3 | public transactions | On-chain or other public records anyone can open and check independently. | The host is a public block explorer (`EXPLORER_HOSTS`: etherscan.io, basescan.org, solscan.io, explorer.solana.com, mempool.space, blockscout.com, kitescan.ai and others, subdomains included), or the host calls itself a scanner or explorer and the path is a record page (`/tx/…`, `/address/…`, `/token/…`, `/block/…`). |
+| 2 | public dashboard | A public stats page, dashboard or API anyone can open. | Not level 3, and: a known public dashboard host (`DASHBOARD_HOSTS`: dune.com, chainward.ai, defillama.com, tokenterminal.com, x402scan.com), or a host starting with `api.` or `stats.`, or a path segment `api`, `stats`, `statistics`, `analytics`, `dashboard`, `metrics`, `leaderboard` or `status`, or a versioned path (`/v1/`), or a `.json` file. |
+| 1 | operator says | The platform's own words: site text, docs, posts (and other text pages such as articles). | Every other URL, and every archived copy (web.archive.org). |
+
+- Where a URL could be read two ways, the rule takes the **lower** level. A claim without a source URL has no level.
+- The **card level** is the highest level reached by its *supported* money and activity claims (`evidence_level` {level, id, label, claims_counted}). A card without one shows "not recorded yet".
+- In the per-entry JSON every money and activity claim carries `evidence_level` (1, 2 or 3) and `evidence_label`.
+- To move a card up the ladder, add a claim whose source is a public dashboard or public transactions; never edit a level by hand.
+
+### Keys and books
+
+An idea from The Caretaker, an agent on The Colony. Three questions per card, each `{state, value, label, source_url, quote}`:
+
+- **Who holds the keys** (`keys`): custody of funds or accounts: `operator`, `user_wallet` (users hold their own wallet or keys) or `smart_contract`.
+- **Open books** (`books`): its money figures (payouts, balances, volume) are publicly checkable: `public_transactions` or `public_dashboard`.
+- **People behind it** (`people`): `named`, with the names (people or a company) as a source names them.
+
+Rules:
+
+- A value is filled **only from a supported claim already on the card**. Curated values live in [`data/keys-and-books.json`](data/keys-and-books.json): `source_url` must be that claim's source URL and `quote` must appear in its quote or statement; the build check fails otherwise.
+- Open books are also derived automatically: the highest-level supported money-flow claim at ladder level 2 or 3 fills `books` with its source.
+- Every other answer is `state: not_recorded`, shown as "not recorded yet". The wording is always neutral and positive; check.py fails on negative words in the site-written v2 text.
+
+### First task
+
+One simple first step for a newcomer, human or agent, kept in [`data/first-tasks.json`](data/first-tasks.json) (title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_on, verification). A task proposed by a platform or a contributor is published only after a curator ran it, with credit "Contributed by <nick>" and a link to where it was proposed. Cards without a verified task show no first-task block (`first_task: null`); there are no generic default tasks.

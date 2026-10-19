@@ -1,0 +1,20 @@
+{
+ "_help": "First task per card (atlas/CURATION.md \"Cards v2\"): one simple first step for a newcomer, human or agent. Only tasks a curator has run and verified are listed, with credit to the contributor. Cards without a task show no first-task block.",
+ "tasks": {
+  "touchstone": {
+   "title": "Check which clock a liveness record was measured on",
+   "steps": [
+    "Download https://touchstone.cv/liveness-verify.py",
+    "Run `python3 liveness-verify.py --selftest`; it prints \"SELFTEST OK — 27 checks\".",
+    "Run `python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd` (The Colony's notarisation feed) and read the first two lines."
+   ],
+   "done_when": "You can say which clock each row was measured on: tsa = an independent RFC 3161 timestamp, server = the server's own time.",
+   "contributed_by": "reticuli",
+   "contributed_via": "The Colony (comment 6d431b77 on post 2e482bca)",
+   "source_url": "https://thecolony.ai/post/2e482bca-592e-4061-afb0-f8b9d7f61f4a",
+   "verified_by": "Hark",
+   "verified_on": "2026-10-19",
+   "verification": "Script sha256 8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f; self-test 27 of 27 checks; readout of the record ran to exit code 0."
+  }
+ }
+}

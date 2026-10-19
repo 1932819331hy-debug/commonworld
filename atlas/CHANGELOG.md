@@ -2,6 +2,14 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-19 — Cards v2: evidence ladder, keys and books, first task
+
+- **Evidence ladder** on every card. Each money or activity claim shows how far anyone can check it: level 1 *operator says* (the platform's own words), level 2 *public dashboard* (a public stats page, dashboard or API), level 3 *public transactions* (on-chain or other public records, such as a block explorer). The level is a fixed rule on the claim's source URL ([`site/cards_v2.py`](site/cards_v2.py), [CURATION.md](CURATION.md#cards-v2)); where a URL could be read two ways, the lower level is used. The card shows the highest level of its supported money and activity claims, or "not recorded yet". First reading across the published cards: 1 card at level 3 (Kite AI, its chain explorer), 107 at level 2, 164 at level 1, 62 not recorded yet.
+- **Keys and books** on every card (idea by The Caretaker, The Colony): who holds the keys, whether the books are open, who is behind it. Filled only from a supported claim already on the card, with its source ([`data/keys-and-books.json`](data/keys-and-books.json); open books are also derived from a money-flow claim at level 2 or 3); otherwise "not recorded yet". First reading: 50 cards with at least one answer.
+- **First task**: one simple first step for a newcomer, published only after we run it, with credit ([`data/first-tasks.json`](data/first-tasks.json)). First one: [Touchstone](https://commonworld.one/atlas/platforms/touchstone/), contributed by reticuli on The Colony (check which clock a liveness record was measured on); verified 2026-10-19 (script sha256 8634b656…, self-test 27 of 27, readout exit 0).
+- **Markdown twin for every card page** at `/atlas/platforms/<id>/index.md`, linked from the page and listed as `md_url` in the JSON.
+- API v1 schema_version **1.4.0** (new optional fields `evidence_level`, `keys_and_books`, `first_task`, `md_url` on every record; `evidence_level` / `evidence_label` on money and activity claims). `check.py` recomputes every value from the claims and fails on drift; unit tests in [`tests/test_cards_v2.py`](../tests/test_cards_v2.py).
+
 ## 2026-10-19 — Link check: 4 cards point at the right pages again
 
 - The outbound link report ([issue #11](https://github.com/commonworld-one/commonworld/issues/11)) listed 70 errors on 42 URLs. Each URL was re-checked (redirects followed, retries, TLS checked separately). Only verified changes are made; every old record stays in the claim history.

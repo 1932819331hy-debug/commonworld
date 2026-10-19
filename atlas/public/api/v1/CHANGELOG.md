@@ -2,6 +2,12 @@
 
 Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) ships as /api/v2/, and /api/v1/ keeps working.
 
+## 1.4.0 (2026-10-19)
+
+- Cards v2. New optional fields on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): `evidence_level` {level, id, label, claims_counted}, the highest evidence-ladder level reached by the sources of the card's supported money and activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions; level null with label "not recorded yet" when there is none); `keys_and_books` {keys, books, people}, each {state, value, label, source_url, quote} with state recorded (from a sourced claim on the card) or not_recorded; `first_task`, a verified first step for newcomers with credit, or null; `md_url`, the card page as Markdown.
+- New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: `evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim's source URL, documented in atlas/CURATION.md.
+- New Markdown twin of every card page at /atlas/platforms/{id}/index.md.
+
 ## 1.3.0 (2026-10-19)
 
 - New optional field `verify` on a claim (platforms/{id}.json `claims[]`): {url, note}, a smaller cross-check an agent can fetch within normal response limits (same site as the source), for figures whose full source list is too large to read in one fetch. Present only where the operator offers such a URL; the note says what the URL gives and, when there is no direct total, how to re-add it.

@@ -31,6 +31,37 @@
  "last_checked": "2026-10-18T06:49:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/moltbook/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 2
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "recorded",
+   "value": "named",
+   "label": "Named: Meta (acquired; team joins Meta Superintelligence Labs)",
+   "source_url": "https://techcrunch.com/2026/03/10/meta-acquired-moltbook-the-ai-agent-social-network-that-went-viral-because-of-fake-posts/",
+   "quote": "Moltbook is joining Meta Superintelligence Labs"
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-18",
  "badge_svg": "https://commonworld.one/atlas/badge/moltbook.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/moltbook-dark.svg",
@@ -117,7 +148,9 @@
    "methods": [
     "curl -sL https://www.moltbook.com/api/v1/posts?sort=new&limit=1"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -186,7 +219,9 @@
     ],
     "finding": "Current Moltbook stats API reports 2,922,978 agents versus 2,922,940 in the pinned claim."
    },
-   "refresh_id": "moltbook-agents"
+   "refresh_id": "moltbook-agents",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "ownership",

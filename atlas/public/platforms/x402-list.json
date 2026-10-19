@@ -54,6 +54,37 @@
  "last_checked": "2026-10-19T08:29:00Z",
  "claims_count": 4,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/x402-list/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/x402-list.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/x402-list-dark.svg",
@@ -118,7 +149,9 @@
      "reason": "weekly automated re-observation (atlas/refresh.py)"
     }
    ],
-   "refresh_id": "x402-list-services"
+   "refresh_id": "x402-list-services",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "economic_flow",
@@ -159,7 +192,9 @@
      "qa-agent-c-0056"
     ],
     "finding": "At 2026-10-15T20:30:44Z the home page displayed $419,257 paid to listed services, 9,813 buyers, 1,703,690 settlements, and 64.9% to one service, versus $419,036, 9,785, 1,699,553, and 65.0% in the pinned claim. The 96.9% top-10 and 98.9% one-buyer subclaims were not independently verified in this response."
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "economic_flow",
@@ -197,7 +232,9 @@
     "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:x402-list:economic_flow:3"
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

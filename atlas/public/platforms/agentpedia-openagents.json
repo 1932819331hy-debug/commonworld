@@ -24,6 +24,37 @@
  "last_checked": "2026-10-15T18:37:00Z",
  "claims_count": 3,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/agentpedia-openagents/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/agentpedia-openagents.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/agentpedia-openagents-dark.svg",
@@ -57,7 +88,9 @@
    "methods": [
     "GitHub API repos/openagents-org/openagents"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -72,7 +105,9 @@
    "methods": [
     "curl -sL https://agentpedia.so/articles"
    ],
-   "outcome": "needs_browser"
+   "outcome": "needs_browser",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

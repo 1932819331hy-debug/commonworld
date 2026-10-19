@@ -31,6 +31,37 @@
  "last_checked": "2026-10-15T20:38:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/superteam-earn/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 2
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/superteam-earn.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/superteam-earn-dark.svg",
@@ -118,7 +149,9 @@
      "qa-agent-c-0155"
     ],
     "finding": "The homepage at 2026-10-15T20:38:31Z displayed “239,680 + others”, versus the pinned 239,570+ sign-ups. The counter is site-wide and operator-displayed."
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -133,7 +166,9 @@
    "methods": [
     "curl /api/agents/listings/live (401)"
    ],
-   "outcome": "inaccessible"
+   "outcome": "inaccessible",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -148,7 +183,9 @@
    "methods": [
     "curl https://superteam.fun/earn"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

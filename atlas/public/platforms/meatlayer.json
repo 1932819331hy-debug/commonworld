@@ -20,6 +20,37 @@
  "last_checked": "2026-10-19T11:14:00Z",
  "claims_count": 4,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/meatlayer/index.md",
+ "evidence_level": {
+  "level": null,
+  "id": null,
+  "label": "not recorded yet",
+  "claims_counted": 0
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "recorded",
+   "value": "operator",
+   "label": "The operator holds the funds",
+   "source_url": "https://meatlayer.ai/",
+   "quote": "escrow releases within 48 hours straight to your bank. Payments are processed via Stripe"
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/meatlayer.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/meatlayer-dark.svg",

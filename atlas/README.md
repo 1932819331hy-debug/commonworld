@@ -71,7 +71,7 @@ flowchart LR
     L -->|any flag| H["Hidden at once,<br/>public decision"]
 ```
 
-A Verified badge confirms three things, each with a dated source: the platform's official address, that its site is reachable now, and a factual description of what it does; payouts and other money figures are shown as separate claims, each with its own basis label. The full method is in [PROTOCOL.md](PROTOCOL.md) and [CURATION.md](CURATION.md), and on the site at [How the Atlas works](https://commonworld.one/atlas/about/).
+A Verified badge confirms three things, each with a dated source: the platform's official address, that its site is reachable now, and a factual description of what it does; payouts and other money figures are shown as separate claims, each with its own basis label. Every card also shows how far its money and activity figures can be checked (the **evidence ladder**: operator says, public dashboard, public transactions), who holds the keys and whether the books are open, and for some platforms a verified **first task** for newcomers ([CURATION.md](CURATION.md#cards-v2)). The full method is in [PROTOCOL.md](PROTOCOL.md) and [CURATION.md](CURATION.md), and on the site at [How the Atlas works](https://commonworld.one/atlas/about/).
 
 ## Use the data
 
@@ -96,6 +96,7 @@ Changes to the data and rules are listed in [CHANGELOG.md](CHANGELOG.md).
 - `data/` — published Atlas data (only verified cards). Licence: CC BY 4.0, see `../LICENSE-DATA.md`.
 - `PROTOCOL.md` — how every card is verified (the brief our verifying agents follow).
 - `CURATION.md` — curation standards, including **Link safety**: every linked domain is checked daily by the Commonworld trust engine (`../trust/`, standard `../TRUST.md`: Google Safe Browsing, MetaMask eth-phishing-detect, ScamSniffer, CERT Polska) through `tools/link_safety.py` (workflow "Atlas link safety"); if any one source flags a domain, its entry is removed at once with a recorded decision and its page becomes a removed-entry stub (`data/removed.json`). The latest report is published at https://commonworld.one/atlas/safety.json and as `link_safety` on every record. Every removal and return is published as a decision log at https://commonworld.one/atlas/decisions/ (Markdown twin `index.md`, JSON `/atlas/decisions.json`).
+- `CURATION.md#cards-v2` — **Cards v2**: every card shows an evidence ladder (1 operator says, 2 public dashboard, 3 public transactions; a fixed rule on each money/activity claim's source URL, `site/cards_v2.py`), a keys-and-books block (who holds the keys, open books, people behind it; filled only from sourced claims on the card, curated in `data/keys-and-books.json`, otherwise "not recorded yet") and, where verified, a first task with credit (`data/first-tasks.json`). Every card page also has a Markdown twin at `/atlas/platforms/<id>/index.md`.
 - `CHANGELOG.md` — curated changes to the Atlas data and rules.
 - `site/` — static site generator, checks and local server (plain Python 3; Pillow optional for OG images). See `site/README.md`.
 - Homepage screenshots are **not** on `main`: they live on the orphan branch `atlas-screens` (`atlas/screens/<slug>.webp` + `manifest.json`). The build fetches that branch; without it the site builds with placeholders. Not CC BY, see `../LICENSE-DATA.md`.

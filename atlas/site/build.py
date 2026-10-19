@@ -25,6 +25,7 @@ import badges  # noqa: E402  (status badges: /atlas/badge/<slug>.svg)
 import api_v1  # noqa: E402  (static API v1: /api/v1/, schemas, OpenAPI)
 import screens  # noqa: E402  (homepage screenshots from the orphan branch atlas-screens)
 import events as atlas_events  # noqa: E402  (public events log: atlas/data/events.jsonl)
+import cards_v2 as cv2  # noqa: E402  (cards v2: evidence ladder, keys and books, first task; atlas/CURATION.md)
 
 e = cw.e
 DEFAULT_DATA = os.path.normpath(os.path.join(HERE, '..', 'data', 'snapshot-verified-2026-10-15.json'))
@@ -190,6 +191,9 @@ def enrich(site, tags):
         key = next((x for x in claims if x.get('kind') == 'economic_flow' and x.get('basis') == 'direct_observation' and x.get('recheck') and isnum(x)), None) \
             or next((x for k in ('metric', 'economic_flow') for x in claims if x.get('kind') == k and isnum(x)), None)
         c['_key'] = key
+        c['_ev'] = cv2.card_evidence(c)
+        c['_kb'] = cv2.keys_and_books(c, getattr(site, 'keys_books', {}))
+        c['_task'] = cv2.first_task(c, getattr(site, 'first_tasks', {}))
 
 
 def keynum_html(c):
@@ -641,7 +645,7 @@ def build_platform(site, c):
         wide = ' wide' if labs else ''
         lis.append(f'<li class="claim o-{e(o)}{wide}"><div class="claim-head"><span class="kind">{e(KIND_LABEL.get(k, (k or "claim").replace("_", " ").capitalize()))}</span>'
                    f'<span class="tag t-{OUTCOME_TONE.get(o, "warn")}">{e(OUTCOME_LABEL.get(o, o))}</span>'
-                   f'<span class="tag t-basis">{e(BASIS_LABEL.get(x.get("basis"), x.get("basis") or "basis unknown"))}</span></div>'
+                   f'<span class="tag t-basis">{e(BASIS_LABEL.get(x.get("basis"), x.get("basis") or "basis unknown"))}</span>{evidence_tag(site, x)}</div>'
                    f'{lab}{val}<p class="stmt">{e(x.get("statement"))}</p>{quote}'
                    f'<p class="claim-meta">Observed {time_tag(dt)} · {src}</p>{verify_html(x)}{history_html(x)}</li>')
     qa_rows = []
@@ -696,6 +700,7 @@ def build_platform(site, c):
 <div><dt>Last verified</dt><dd>{time_tag(c['_verified'])}</dd></div>
 <div><dt>Checked claims</dt><dd>{len(claims)}</dd></div>
 </dl>
+{v2_panels(site, c)}
 <section class="cw-panel" aria-labelledby="h-claims"><div class="cw-panel-head"><h2 id="h-claims">Verified facts</h2><span class="muted">{len(claims)} claims · last verified {time_tag(c['_verified'])}</span></div>
 <div class="cw-panel-body"><p class="sec-desc">Each fact shows how it is known (observed directly, operator claim, independent source or inference), whether the source supported it, when it was observed and where. Operator figures are what the platform says about itself.</p>
 <ol class="claims">{''.join(lis)}</ol></div></section>
@@ -721,7 +726,107 @@ def build_platform(site, c):
     pre = f"{c['name']}{status}: "
     desc = pre + trim(c['_desc'], 150 - len(pre)) if c['_desc'] else f"{c['name']}{status}, a verified {CAT_SHORT[cat].lower()} {tl.lower()} in the Commonworld Atlas."
     return page(site, path=c['_url'], title=title, description=desc, body=body, active='in:' + cat, ld=ld, og_type='article', lastmod=c['_verified'], og=og_platform(site, c),
-                alt_json=site.abs(f"{b}/platforms/{c['slug']}.json"))
+                alt_json=site.abs(f"{b}/platforms/{c['slug']}.json"), alt_md=c['_url'] + 'index.md')
+
+
+# ---------------------------------------------------------------- cards v2: evidence ladder, keys and books, first task (cards_v2.py)
+LADDER_HREF = '/about/#evidence-ladder'
+
+
+def evidence_tag(site, x):
+    lv = cv2.claim_level(x)
+    if lv is None:
+        return ''
+    return f'<a class="tag t-ev ev-{lv}" href="{site.base}{LADDER_HREF}" title="{e(cv2.LEVELS[lv][2])}">Evidence {lv} · {e(cv2.LEVELS[lv][1])}</a>'
+
+
+def ladder_html(site, ev):
+    steps = []
+    for lv in (1, 2, 3):
+        on = ev['level'] is not None and lv <= ev['level']
+        top = ev['level'] == lv
+        steps.append(f'<li class="ev-step{" on" if on else ""}{" top" if top else ""}"><b>{lv}</b><span>{e(cv2.LEVELS[lv][1])}</span></li>')
+    if ev['level']:
+        head = f'Level {ev["level"]} · {e(ev["label"])}'
+        note = f'Highest level reached by the sources of its {ev["claims_counted"]} supported money and activity claim{"s" if ev["claims_counted"] != 1 else ""}.'
+    else:
+        head = 'Not recorded yet'
+        note = 'The ladder fills in when a sourced money or activity claim is recorded for this card.'
+    return (f'<div class="ev-box"><h3>Evidence ladder</h3><p class="ev-head">{head}</p><ol class="ev-ladder">{"".join(steps)}</ol>'
+            f'<p class="ev-note">{note} <a href="{site.base}{LADDER_HREF}">How the ladder works</a></p></div>')
+
+
+def kb_html(site, kb):
+    rows = []
+    for f, (title, _) in cv2.KB_FIELDS.items():
+        it = kb[f]
+        if it['state'] == 'recorded':
+            src = ext_link(it['source_url'], 'Source: ' + e(domain(it['source_url'])))
+            rows.append(f'<div class="kb-row kb-on"><dt>{e(title)}</dt><dd>{e(it["label"])} <span class="kb-src">{src}</span></dd></div>')
+        else:
+            rows.append(f'<div class="kb-row"><dt>{e(title)}</dt><dd class="kb-empty">{e(cv2.NOT_RECORDED)}</dd></div>')
+    return (f'<div class="kb-box"><h3>Keys and books</h3><dl class="kb">{"".join(rows)}</dl>'
+            f'<p class="ev-note">Filled only from sourced facts already on this card. <a href="{site.base}/about/#keys-and-books">About keys and books</a></p></div>')
+
+
+def task_html(site, t):
+    if not t:
+        return ''
+    code = lambda s: re.sub(r'`([^`]+)`', r'<code>\1</code>', e(s))  # `command` -> <code>
+    steps = ''.join(f'<li>{code(s)}</li>' for s in t['steps'])
+    return (f'<section class="cw-panel cw-panel-gap first-task" aria-labelledby="h-task"><div class="cw-panel-head"><h2 id="h-task">First task</h2>'
+            f'<span class="muted">{e(t["credit"])}</span></div><div class="cw-panel-body">'
+            f'<p class="task-title"><b>{e(t["title"])}</b></p><ol class="task-steps">{steps}</ol>'
+            f'<p class="task-done"><b>Done when:</b> {e(t["done_when"])}</p>'
+            f'<p class="claim-meta">{e(t["credit"])} via {ext_link(t["source_url"], e(t["contributed_via"]))} · '
+            f'Verified by {e(t["verified_by"])} on {e(t["verified_on"])}: {e(t["verification"])}</p></div></section>')
+
+
+def v2_panels(site, c):
+    return (f'<section class="cw-panel v2-panel" aria-labelledby="h-v2"><div class="cw-panel-head"><h2 id="h-v2">Evidence, keys and books</h2></div>'
+            f'<div class="cw-panel-body v2-grid">{ladder_html(site, c["_ev"])}{kb_html(site, c["_kb"])}</div></section>'
+            f'{task_html(site, c["_task"])}')
+
+
+def md_cell(v):
+    return str(v if v is not None else '').replace('|', '\\|').replace('\n', ' ')
+
+
+def build_platform_md(site, c):
+    """Markdown twin of a card page (<card>/index.md): the same facts, ladder, keys and books, first task and claims."""
+    A, b = site.abs, site.base
+    claims = card_claims(c)
+    st = ('Closed (history)' if c['status'] == 'closed' else 'Live')
+    ev = c['_ev']
+    L = [f"# {c['name']}", '', f"> {c['_desc']}" if c.get('_desc') else '> Atlas entry', '',
+         f"Canonical page: {A(c['_url'])} · JSON: {A(b + '/platforms/' + c['slug'] + '.json')} · Permanent ID: `{c['slug']}`", '',
+         '## Facts', '', f"- Direction: {CAT_LABEL[c['category']]}", f"- Type: {TYPE_LABEL.get(c['entity_type'], c['entity_type'])}", f'- Status: {st}',
+         f"- Official site: {c.get('canonical_url') or cv2.NOT_RECORDED}",
+         f"- Last verified: {c['_verified'].strftime('%Y-%m-%d') if c['_verified'] else cv2.NOT_RECORDED}", f'- Checked claims: {len(claims)}']
+    if c.get('disclosure'):
+        L.append(f"- {c['disclosure']}")
+    L += ['', '## Evidence ladder', '',
+          (f"Level {ev['level']} · {ev['label']}: the highest level reached by the sources of its {ev['claims_counted']} supported money and activity claim{'s' if ev['claims_counted'] != 1 else ''}."
+           if ev['level'] else 'Not recorded yet.'), '',
+          '1. operator says: ' + cv2.LEVELS[1][2], '2. public dashboard: ' + cv2.LEVELS[2][2], '3. public transactions: ' + cv2.LEVELS[3][2], '',
+          f"How the ladder works: {A(b + LADDER_HREF)}", '', '## Keys and books', '']
+    for f, (title, _) in cv2.KB_FIELDS.items():
+        it = c['_kb'][f]
+        L.append(f"- {title}: {it['label']}" + (f" (source: {it['source_url']})" if it['source_url'] else ''))
+    t = c['_task']
+    if t:
+        L += ['', '## First task', '', f"**{t['title']}**", ''] + [f'{i}. {s}' for i, s in enumerate(t['steps'], 1)] + \
+             ['', f"Done when: {t['done_when']}", '', f"{t['credit']} via {t['contributed_via']}: {t['source_url']}. Verified by {t['verified_by']} on {t['verified_on']}: {t['verification']}"]
+    L += ['', '## Verified facts', '', '| What | Statement | Value | Basis | Outcome | Evidence | Observed | Source |', '|---|---|---|---|---|---|---|---|']
+    for x in claims:
+        lv = cv2.claim_level(x)
+        dt = parse_time(x.get('observed_at'))
+        val = '' if x.get('value') in (None, '') else f"{x['value']}{(' ' + x['unit']) if x.get('unit') else ''}{(' (' + fmt_window(x['window']) + ')') if x.get('window') else ''}"
+        L.append('| ' + ' | '.join(md_cell(v) for v in [KIND_LABEL.get(x.get('kind'), (x.get('kind') or 'claim').replace('_', ' ').capitalize()), x.get('statement'), val,
+                 BASIS_LABEL.get(x.get('basis'), x.get('basis')), OUTCOME_LABEL.get(x.get('outcome'), x.get('outcome')),
+                 f'{lv} · {cv2.LEVELS[lv][1]}' if lv else '', dt.strftime('%Y-%m-%d %H:%M UTC') if dt else '', x.get('source_url') or '']) + ' |')
+    L += ['', f"Data licence: {site.cfg.get('data_licence') or 'see the site'}; please credit \"Commonworld Atlas\" with a link to {A(c['_url'])}.", '']
+    return '\n'.join(L)
 
 
 def card_claims(c):
@@ -1069,6 +1174,16 @@ def build_about(site):
 <p>“Verified” means the card was checked this way. It does not mean we endorse a platform, and an operator claim stays labelled as an operator claim even when it is shown.</p>
 <h2 id="money">Money and metrics</h2>
 <p>Numbers are shown with their unit, time window and basis. Where a re-check found that a figure means something narrower than it looks, the card says so next to the number: for example <i>gross</i> versus <i>organic</i> volume, credits versus money, a price list versus real flow, or a registry count versus platform users. We never present gross or circular volume as organic demand.</p>
+<h2 id="evidence-ladder">Evidence ladder</h2>
+<p>Every money and activity claim (money flows, metrics, recent activity) shows how far anyone can check it, read from its source link:</p>
+<ol><li><b>Operator says</b>: the platform’s own words, such as site text, docs or posts (and other text pages, such as articles).</li>
+<li><b>Public dashboard</b>: a public stats page, dashboard or API that anyone can open.</li>
+<li><b>Public transactions</b>: on-chain or other public records that anyone can open and check independently, such as a block explorer page.</li></ol>
+<p>A card shows the highest level reached by its supported money and activity claims. The level comes from a fixed rule on the source address (explorer hosts are level 3; stats, dashboard and API addresses are level 2; every other page is level 1); where an address could be read two ways, the lower level is used. A card whose ladder reads “not recorded yet” is waiting for its first sourced money or activity claim. The rule is published in <a href="{REPO_URL}/blob/main/atlas/CURATION.md#cards-v2" rel="nofollow noopener">CURATION.md</a>.</p>
+<h2 id="keys-and-books">Keys and books</h2>
+<p>Three short answers on every card, an idea from The Caretaker, an agent on The Colony: <b>who holds the keys</b> (the operator, users’ own wallets or keys, or a smart contract), <b>whether the books are open</b> (its money figures, such as payouts, balances or volume, are on public transactions or a public dashboard or API that anyone can open), and <b>who is behind it</b> (people or a company named in a source). An answer is filled only from a sourced fact already on the card and links to that source; every other answer reads “not recorded yet”.</p>
+<h2 id="first-task">First task</h2>
+<p>Some cards carry a first task: one simple step a newcomer, human or agent, can take to try the platform. A task proposed by a platform or a contributor is published after we run it ourselves, with credit (“Contributed by …”) and a link to where it was proposed.</p>
 <h2 id="process">How a card is checked</h2>
 <p>The checks are run by AI agents working to a written protocol; every step leaves a record.</p>
 <ol><li><b>Automated check</b> of every candidate: URL, redirects, HTTP status, real content versus an empty JavaScript shell.</li>
@@ -2108,7 +2223,8 @@ def agent_record(site, c):
             'type': c.get('entity_type'), 'status': c['status'], 'summary': trim(c['_desc'], 300), 'tags': c['_tags'],
             'has_money_flow': c['_money'], 'money_flow': flows, 'key_number': key,
             'verified_at': iso(c['_verified']), 'last_checked': iso(c['_verified']), 'claims_count': len(claims),
-            'disclosure': c.get('disclosure'), 'preview': preview_record(site, c), 'link_safety': link_safety_of(site, c)}
+            'disclosure': c.get('disclosure'), 'preview': preview_record(site, c), 'link_safety': link_safety_of(site, c),
+            'md_url': site.abs(c['_url'] + 'index.md'), 'evidence_level': c['_ev'], 'keys_and_books': c['_kb'], 'first_task': c['_task']}
 
 
 MIRROR_DIR = os.path.normpath(os.path.join(HERE, '..', 'public'))
@@ -2192,7 +2308,7 @@ def build_agent_files(site, write):
         bu = badge_urls(site, c)
         one = {'licence': lic, 'source': REPO_URL, 'generated_at': iso(gen)} | r | {
             'badge_status': badges.status_of(c)[1], 'badge_svg': bu['svg'], 'badge_svg_dark': bu['svg_dark'], 'badge_page': bu['page'],
-            'claims': rfc3339(c.get('claims', [])), 'qa_status': c.get('qa_status')}
+            'claims': rfc3339([cv2.annotate_claim(x) for x in c.get('claims', [])]), 'qa_status': c.get('qa_status')}
         write(f"{b}/platforms/{c['slug']}.json", json.dumps(one, ensure_ascii=False, indent=1) + '\n')
         site.api_docs.append((f"/atlas/platforms/{c['slug']}.json", one, 'platform.schema.json', True))
 
@@ -2239,6 +2355,8 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [earn.json]({A(f'{b}/earn.json')}): where agents get paid: one row per live entry with a supported money figure (value, unit, window, basis, observed_at, source_url), grouped by unit
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
 - Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt), plus badge_svg, badge_svg_dark and badge_page
+- Per entry as Markdown: {A(f'{b}/platforms/')}<id>/index.md, the card page as plain Markdown (take the URL from md_url)
+- Cards v2 fields on every record (schema_version 1.4.0): evidence_level {{level 1-3 or null, id, label, claims_counted}}, the highest evidence-ladder level of the card's supported money and activity claims (1 operator says = the platform's own words; 2 public dashboard = a public stats page, dashboard or API; 3 public transactions = on-chain or other public records anyone can check); keys_and_books {{keys, books, people}}, each {{state recorded or not_recorded, value, label, source_url, quote}}; first_task (a verified first step for newcomers with credit, or null). Money and activity claims in <id>.json carry evidence_level and evidence_label. Rule: {A(f'{b}/about/#evidence-ladder')}
 - Closed entries: closed by human review (official statement or at least two independent signals; never reopened automatically) or by the automated weekly check (unreachable in 2 consecutive weekly checks; reopens automatically if the site answers again). A single failed load is never proof.
 - IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
 {ex_lines}
@@ -2292,7 +2410,8 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - Atlas events log: {A(atlas_events.JSON_PATH)} (every card change, newest first: date, entry ID, type added/closed/reopened/corrected/relabelled, short reason, source URL); Markdown {A(atlas_events.MD_PATH)}
 - One line per entry: {A('/llms-full.txt')}
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
-- Per entry: take json_url from platforms.json; never construct an ID
+- Per entry: take json_url from platforms.json; never construct an ID. Each card page also has a Markdown twin (md_url)
+- Cards v2: every record has evidence_level (1 operator says, 2 public dashboard, 3 public transactions, or null = not recorded yet), keys_and_books (keys, books, people; filled only from sourced claims on the card) and first_task (verified, with credit, or null). How it works: {A(f'{b}/about/#evidence-ladder')}
 
 ## Categories (JSON)
 
@@ -2306,9 +2425,12 @@ Data licence: {lic}. Please credit "Commonworld Atlas" with a link to {A(f'{b}/'
              f"Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}",
              f"API v1 (versioned, OpenAPI 3.1): {A(api_v1.API_BASE + '/index.json')}; per entry: {A(api_v1.API_BASE + '/atlas/platforms/')}<id>.json; docs: {A(API_DOCS)}",
              f"Badges: every entry has a free status badge at {A(f'{b}/badge/')}<id>.svg (dark: <id>-dark.svg); rules: {A(f'{b}/badge/')}",
-             f"Homepage previews: the `preview` field of each entry's JSON (dated screenshot URLs, or null); third-party content, not covered by the data licence", '']
+             f"Homepage previews: the `preview` field of each entry's JSON (dated screenshot URLs, or null); third-party content, not covered by the data licence",
+             f"Evidence ladder per entry: level 1 operator says, 2 public dashboard, 3 public transactions, or not recorded yet ({A(f'{b}/about/#evidence-ladder')})", '']
     for r in recs:
-        lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · {r['category_label']} · {r['status']} · {trim(r['summary'], 200)}" + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
+        ev = r['evidence_level']
+        lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · Markdown: {r['md_url']} · {r['category_label']} · {r['status']} · evidence: {('level ' + str(ev['level']) + ' ' + ev['label']) if ev['level'] else ev['label']} · {trim(r['summary'], 200)}"
+                     + (f" · first task: {r['first_task']['title']} ({r['first_task']['credit']})" if r.get('first_task') else '') + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
     write('/llms-full.txt', '\n'.join(lines) + '\n')
 
 
@@ -2390,6 +2512,12 @@ def build_api_docs(site):
 <h2 id="endpoints">What is there</h2>
 <div class="table-wrap"><table class="list"><thead><tr><th scope="col">What</th><th scope="col">URL</th></tr></thead><tbody>{trs}</tbody></table></div>
 <p>Categories: {cats}. Every data document carries <code>schema_version</code> and a link to its JSON Schema.</p>
+<h2 id="cards-v2">Card fields: evidence, keys and books, first task</h2>
+<p>Since <code>schema_version</code> 1.4.0 every entry record (list, category and per-entry files) carries:</p>
+<ul><li><code>evidence_level</code>: <code>{{level, id, label, claims_counted}}</code>, the highest <a href="{b}/about/#evidence-ladder">evidence-ladder</a> level reached by the sources of the card’s supported money and activity claims: 1 <code>operator_says</code>, 2 <code>public_dashboard</code>, 3 <code>public_transactions</code>; <code>level</code> is <code>null</code> with the label “not recorded yet” when there is none. Money and activity claims in <code>platforms/&lt;id&gt;.json</code> carry <code>evidence_level</code> and <code>evidence_label</code>.</li>
+<li><code>keys_and_books</code>: <code>keys</code> (<code>operator</code>, <code>user_wallet</code>, <code>smart_contract</code>), <code>books</code> (<code>public_transactions</code>, <code>public_dashboard</code>) and <code>people</code> (<code>named</code>), each <code>{{state, value, label, source_url, quote}}</code>; <code>state</code> is <code>recorded</code> with a source or <code>not_recorded</code>.</li>
+<li><code>first_task</code>: a verified first step for newcomers (title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_at, verification, credit), or <code>null</code>.</li>
+<li><code>md_url</code>: the card page as Markdown.</li></ul>
 <h2 id="ids">IDs</h2>
 <p>An entry ID is its permanent URL slug (for example <code>{e(ex)}</code>). Never construct or guess an ID: take it from <a href="{V}/atlas/platforms.json">platforms.json</a> or a category file. An ID that is not listed there does not exist, and the request returns 404.</p>
 <h2 id="examples">Examples</h2>
@@ -2468,7 +2596,7 @@ def build_csp(script_hashes, style_hashes=()):
 ROUTES = {'version': 1, 'include': ['/*'],
           'exclude': ['/atlas/assets/*', '/atlas/og/*', '/atlas/screens/*', '/atlas/badge/*', '/atlas/data/*',
                       '/atlas/platforms/*.json', '/atlas/categories/*.json', '/atlas/*.json', '/atlas/*.txt', '/atlas/*.xml',
-                      '/atlas/decisions/index.md', '/atlas/events.md', '/stats.json', '/stats/index.md', '/api/*', '/cdn-cgi/*', '/favicon.ico', '/robots.txt', '/sitemap.xml',
+                      '/atlas/decisions/index.md', '/atlas/platforms/*/index.md', '/atlas/events.md', '/stats.json', '/stats/index.md', '/api/*', '/cdn-cgi/*', '/favicon.ico', '/robots.txt', '/sitemap.xml',
                       '/llms.txt', '/llms-full.txt', '/404.html']}
 
 
@@ -2500,6 +2628,8 @@ def main():
     lab_path = os.path.join(HERE, 'claim-labels.json')
     site.claim_labels = {k: v for k, v in json.load(open(lab_path)).items() if not k.startswith('_')} if os.path.exists(lab_path) else {}
     tags = json.load(open(a.tags))['tags'] if a.tags and os.path.exists(a.tags) else {}
+    site.keys_books = cv2.load_keys_books()
+    site.first_tasks = cv2.load_first_tasks()
     enrich(site, tags)
     site.shot_dir, shots, site.shot_src = screens.load()
     site.shots = {c['slug']: shots[c['slug']] for c in site.cards if c['slug'] in shots}
@@ -2552,6 +2682,7 @@ def main():
     write(f'{b}/platforms/', build_all(site))
     for c in site.cards:
         write(c['_url'], build_platform(site, c))
+        write(c['_url'] + 'index.md', build_platform_md(site, c))  # Markdown twin of every card page
     for r in removed:  # slugs are permanent: a removed entry keeps a neutral noindex stub
         write(f"{b}/platforms/{r['slug']}/", build_removed_stub(site, r['slug']))
     write(f'{b}/categories/', build_categories_index(site))
@@ -2678,6 +2809,9 @@ def main():
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
 {b}/decisions/index.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+{b}/platforms/*/index.md
   Access-Control-Allow-Origin: *
   Content-Type: text/markdown; charset=utf-8
 {b}/events.json

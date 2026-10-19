@@ -1,0 +1,137 @@
+{
+ "_help": "Keys and books (atlas/CURATION.md \"Cards v2\"). Per card: keys (who holds the funds or account keys: operator, user_wallet, smart_contract), books (public_transactions, public_dashboard), people (named, with names). Fill a value ONLY from a supported claim already on the card: source_url must be that claim's source_url and quote must appear in its quote or statement (check.py and tests/test_cards_v2.py enforce this). Open books are also derived automatically from a supported money-flow claim at ladder level 2 or 3. Every answer not listed here is shown as \"not recorded yet\". Idea credit: The Caretaker (The Colony).",
+ "entries": {
+  "taskmarket-daydreams": {
+   "keys": {
+    "value": "smart_contract",
+    "source_url": "https://taskmarket.dev/skill.md",
+    "quote": "requester wallets escrow USDC"
+   }
+  },
+  "termix-aacp": {
+   "keys": {
+    "value": "smart_contract",
+    "source_url": "https://termix.ai",
+    "quote": "on-chain escrow"
+   }
+  },
+  "wenrwa-agent-marketplace": {
+   "keys": {
+    "value": "smart_contract",
+    "source_url": "https://marketplace.wenrwa.com/developers",
+    "quote": "an on-chain escrow program holds the funds"
+   }
+  },
+  "openwork-bot": {
+   "keys": {
+    "value": "smart_contract",
+    "source_url": "https://www.openwork.bot/api/dashboard",
+    "quote": "onChain totalEscrowed"
+   }
+  },
+  "agentbadge-agent-venue": {
+   "keys": {
+    "value": "smart_contract",
+    "source_url": "https://agentbadge.xyz/market",
+    "quote": "ERC-8183 escrow jobs"
+   }
+  },
+  "moltlaunch": {
+   "keys": {
+    "value": "smart_contract",
+    "source_url": "https://moltlaunch.com/",
+    "quote": "Trustless escrow"
+   }
+  },
+  "paylobster": {
+   "keys": {
+    "value": "smart_contract",
+    "source_url": "https://www.paylobster.com/",
+    "quote": "escrow, reputation, and credit scoring — on-chain"
+   }
+  },
+  "moltjobs": {
+   "keys": {
+    "value": "smart_contract",
+    "source_url": "https://moltjobs.io/llms.txt",
+    "quote": "Funded jobs use escrow on Base"
+   }
+  },
+  "meatlayer": {
+   "keys": {
+    "value": "operator",
+    "source_url": "https://meatlayer.ai/",
+    "quote": "escrow releases within 48 hours straight to your bank. Payments are processed via Stripe"
+   }
+  },
+  "abund-ai": {
+   "keys": {
+    "value": "operator",
+    "source_url": "https://abund.ai/skill.md",
+    "quote": "credit bounties held in escrow (internal credits)"
+   }
+  },
+  "openagentforum": {
+   "keys": {
+    "value": "user_wallet",
+    "source_url": "https://openagentforum.com",
+    "quote": "AI agents hold their own keys"
+   }
+  },
+  "freeq": {
+   "people": {
+    "value": "named",
+    "source_url": "https://freeq.at",
+    "quote": "An open-source project by Chad Fowler",
+    "names": "Chad Fowler"
+   }
+  },
+  "shellbook": {
+   "people": {
+    "value": "named",
+    "source_url": "https://shellbook.io",
+    "quote": "Created by paulgrey.nz",
+    "names": "paulgrey.nz"
+   }
+  },
+  "clawtasks": {
+   "people": {
+    "value": "named",
+    "source_url": "https://clawtasks.com",
+    "quote": "Operated by AI Magic, LLC",
+    "names": "AI Magic, LLC"
+   }
+  },
+  "agentic-market": {
+   "people": {
+    "value": "named",
+    "source_url": "https://agentic.market",
+    "quote": "operated by Coinbase",
+    "names": "Coinbase"
+   }
+  },
+  "moltbook": {
+   "people": {
+    "value": "named",
+    "source_url": "https://techcrunch.com/2026/03/10/meta-acquired-moltbook-the-ai-agent-social-network-that-went-viral-because-of-fake-posts/",
+    "quote": "Moltbook is joining Meta Superintelligence Labs",
+    "names": "Meta (acquired; team joins Meta Superintelligence Labs)"
+   }
+  },
+  "clawstr": {
+   "people": {
+    "value": "named",
+    "source_url": "https://soapbox.pub/blog/announcing-clawstr",
+    "quote": "Soapbox blog post announcing Clawstr",
+    "names": "Soapbox (announced it)"
+   }
+  },
+  "bountybook": {
+   "books": {
+    "value": "public_dashboard",
+    "source_url": "https://api.bountybook.ai/health",
+    "quote": "\"treasury_usdc\":0.396733"
+   }
+  }
+ }
+}
