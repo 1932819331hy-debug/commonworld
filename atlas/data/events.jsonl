@@ -1,0 +1,5 @@
+{"date": "2026-10-19", "slug": "touchstone", "type": "added", "reason": "New card proposed on The Colony; verified on the operator's own pages and checked clean by the trust engine", "source": "https://touchstone.cv/"}
+{"date": "2026-10-19", "slug": "the-agent-museum", "type": "added", "reason": "New card proposed on The Colony; verified on the operator's own pages and checked clean by the trust engine", "source": "https://agentmuseum.org/"}
+{"date": "2026-10-19", "slug": "agenty", "type": "added", "reason": "New card proposed on The Colony; verified on the operator's own pages and checked clean by the trust engine", "source": "https://agenty.im/"}
+{"date": "2026-10-19", "slug": "memecorp", "type": "added", "reason": "New card proposed on The Colony; verified on the operator's own pages and checked clean by the trust engine", "source": "https://memecorp.us/"}
+{"date": "2026-10-19", "slug": "ainglish", "type": "relabelled", "reason": "Operator-disclosure count and latest act relabelled operator_claim: both come from the operator's participation API", "source": "https://ainglish.org/api/v1/participation"}

@@ -1048,6 +1048,53 @@ def decisions_checks(parsed, pages, locs):
     return fails
 
 
+def events_checks():
+    """Atlas events log (atlas/data/events.jsonl, atlas/site/events.py): every line has exactly date, slug, type, reason, source
+    (YYYY-MM-DD, an existing entry ID or removed stub, added|closed|reopened|corrected|relabelled, a one-line reason <= 300 chars,
+    an https source), dates never go backwards (append-only), no duplicates; every curated amendment in the snapshot from the
+    log's start date has its events; /atlas/events.json (newest first, same events, count) and /atlas/events.md (every event)
+    are published, linked from /atlas/about/, /llms.txt and /atlas/llms.txt, served as JSON/Markdown and kept off the Function."""
+    import events as ev_
+    fails = []
+    try:
+        evs = ev_.load()
+    except ValueError as ex:
+        return [str(ex)]
+    if not evs: fails.append('atlas/data/events.jsonl: empty or missing')
+    pub = {c['slug'] for c in json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']}
+    rem = {r.get('slug') for r in ((json.load(open(REMOVED)) if os.path.exists(REMOVED) else {}).get('removed') or [])}
+    fails += ev_.validate(evs, pub | rem)
+    snap_f = os.path.normpath(os.path.join(DATA_DIR, 'snapshot-verified-2026-10-15.json'))
+    fails += ev_.amendment_gaps(json.load(open(snap_f, encoding='utf-8')).get('amendments') or [], evs)
+    try:
+        dj = json.load(open(os.path.join(DIST, 'atlas', 'events.json'), encoding='utf-8'))
+    except (OSError, ValueError) as ex:
+        return fails + [f'/atlas/events.json: missing or invalid ({ex})']
+    if dj.get('events') != ev_.newest_first(evs): fails.append('/atlas/events.json: events differ from atlas/data/events.jsonl (newest first)')
+    if dj.get('count') != len(evs): fails.append(f"/atlas/events.json: count {dj.get('count')} != {len(evs)}")
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', str(dj.get('generated_at') or '')): fails.append('/atlas/events.json: generated_at not ISO 8601 UTC')
+    if dj.get('types') != list(ev_.TYPES): fails.append('/atlas/events.json: types list drifted')
+    mdp = os.path.join(DIST, 'atlas', 'events.md')
+    md = open(mdp, encoding='utf-8').read() if os.path.exists(mdp) else ''
+    if not md: fails.append('missing /atlas/events.md')
+    for e_ in evs:
+        if f"`{e_['slug']}`" not in md or e_['source'] not in md: fails.append(f"/atlas/events.md lacks the {e_['date']} {e_['type']} event of {e_['slug']}")
+    ab = os.path.join(DIST, 'atlas', 'about', 'index.html')
+    if os.path.exists(ab) and f'href="{ev_.MD_PATH}"' not in open(ab, encoding='utf-8').read(): fails.append('/atlas/about/ does not link the events log')
+    for t in ('llms.txt', 'atlas/llms.txt'):
+        fp_ = os.path.join(DIST, t)
+        if os.path.exists(fp_) and ORIGIN + ev_.JSON_PATH not in open(fp_, encoding='utf-8').read(): fails.append(f'/{t} does not mention the events log')
+    hd = open(os.path.join(DIST, '_headers'), encoding='utf-8').read() if os.path.exists(os.path.join(DIST, '_headers')) else ''
+    for path_, ct in ((ev_.JSON_PATH, 'application/json'), (ev_.MD_PATH, 'text/markdown')):
+        if f'{path_}\n  Access-Control-Allow-Origin: *\n  Content-Type: {ct}; charset=utf-8' not in hd: fails.append(f'_headers: {path_} lacks CORS + {ct}')
+    try:
+        if ev_.MD_PATH not in json.load(open(os.path.join(DIST, '_routes.json'))).get('exclude', []): fails.append(f'_routes.json does not exclude {ev_.MD_PATH}')
+    except (OSError, ValueError):
+        pass
+    print(f'events log: {len(evs)} event(s), newest {evs[-1]["date"] if evs else "-"}, published as events.json + events.md')
+    return fails
+
+
 def refresh_note_checks():
     """Refreshed claims keep their words in step with their number: for every claim carrying a refresh_id (a number the
     weekly refresh re-observes), atlas/refresh.py note_drift() must find nothing (statement = its template re-rendered
@@ -1415,6 +1462,7 @@ def main():
     fails += dataset_haspart_checks(parsed)
     fails += safety_report_checks(parsed)
     fails += decisions_checks(parsed, pages, locs)
+    fails += events_checks()
     fails += refresh_note_checks()
     fails += markdown_twin_checks(pages)[0]
     fails += stats_checks(parsed, pages, locs)

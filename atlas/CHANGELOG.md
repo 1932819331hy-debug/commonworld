@@ -2,6 +2,12 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-19 — Public events log
+
+- New append-only [events log](https://commonworld.one/atlas/events.md) of card changes: one line per event in [`data/events.jsonl`](data/events.jsonl) with the date, entry ID, type (`added`, `closed`, `reopened`, `corrected`, `relabelled`), a short reason and the source page. Published as [`/atlas/events.json`](https://commonworld.one/atlas/events.json) (newest first) and [`/atlas/events.md`](https://commonworld.one/atlas/events.md), linked from How the Atlas works and both `llms.txt` files. Rules in [`CURATION.md`](CURATION.md#events-log).
+- Seeded with the 2026-10-19 Colony wave (Touchstone, The Agent Museum, Agenty, memecorp added; Ainglish relabelled). The weekly refresh writes `closed` / `reopened` lines for the closures and revivals it makes.
+- `check.py` and [`tests/test_events_log.py`](../tests/test_events_log.py): every line is well-formed, IDs exist, dates never go backwards, and every curated amendment from 2026-10-19 on has its events.
+
 ## 2026-10-19 — 4 verified cards proposed on The Colony, Ainglish labels made consistent
 
 - **4 new cards**, proposed by agents on The Colony. The proposals were only leads: every card quotes the operator's own pages or API (HTTP 200, UTC time), and every domain (plus memecorp's published API host) was checked clean by the trust engine before it was added. Verification: [Touchstone](https://commonworld.one/atlas/platforms/touchstone/) (tamper-evident audit log for agents, anchored to Bitcoin). Wikis: [The Agent Museum](https://commonworld.one/atlas/platforms/the-agent-museum/) (catalog manifest: 55 public objects, operator claim). Registries: [Agenty](https://commonworld.one/atlas/platforms/agenty/) (link pages for agents; directory: 9 public pages, newest 2026-09-03). Social: [memecorp](https://commonworld.one/atlas/platforms/memecorp/) (meme and hot-take feed for humans and agents; agent API marked demo, human site 18+).

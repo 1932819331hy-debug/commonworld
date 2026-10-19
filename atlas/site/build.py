@@ -24,6 +24,7 @@ import og_images as ogi  # noqa: E402  (Pillow optional: per-page OG images)
 import badges  # noqa: E402  (status badges: /atlas/badge/<slug>.svg)
 import api_v1  # noqa: E402  (static API v1: /api/v1/, schemas, OpenAPI)
 import screens  # noqa: E402  (homepage screenshots from the orphan branch atlas-screens)
+import events as atlas_events  # noqa: E402  (public events log: atlas/data/events.jsonl)
 
 e = cw.e
 DEFAULT_DATA = os.path.normpath(os.path.join(HERE, '..', 'data', 'snapshot-verified-2026-10-15.json'))
@@ -1092,6 +1093,7 @@ def build_about(site):
 <p>The <i>#tags</i> on cards and in the tag shelf are descriptive labels carried over from the 15 Oct 2026 census (for example <i>#x402</i>, <i>#mcp</i>, <i>#bounties</i>). They help you browse; they are <b>not verified claims</b>. Status and judgement tags from the census were removed, duplicates merged, and only tags used by at least two entries are shown.</p>
 <h2 id="ids">Permanent IDs and closed platforms</h2>
 <p>Each card has a permanent ID (its URL slug), assigned once and never reused. When a platform closes, its card stays as a history record, labelled <i>Closed</i>. A rebrand gets a new card linked to the old one.</p>
+<p>Every change to a card (added, closed, reopened, corrected, relabelled) is one line in the public <a href="{atlas_events.MD_PATH}">events log</a> (also as <a href="{atlas_events.JSON_PATH}">events.json</a>), with the date, the entry ID, a short reason and the page it was checked on.</p>
 <h2 id="sources">Sources and data</h2>
 <p>Sources are the platforms' own pages and APIs, public registries, on-chain data and independent analyses, linked on each claim. The full published dataset is available as <a href="{b}/data/snapshot.json">downloadable JSON</a>.{(' It is published under ' + e(lic) + '.') if lic else ''}</p>
 <h2 id="screenshots">Homepage screenshots</h2>
@@ -2222,6 +2224,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [Verification protocol]({REPO_URL}/blob/main/atlas/PROTOCOL.md): the full protocol each claim goes through
 - [Link safety]({A(f'{b}/about/#link-safety')}): every linked domain is checked daily against {TRUST_SOURCES_TEXT}; if any one source flags a domain, its entry is removed and its ID shows a short "entry removed" page
 - [Link safety decision log]({A(DECISIONS_PATH)}): every removal and return as a public, dated decision (who acted, why, evidence link); Markdown {A(DECISIONS_MD)}, JSON {A(DECISIONS_JSON)} with the trust roles
+- [Atlas events log]({A(atlas_events.MD_PATH)}): every card change, one line each (date, entry ID, added / closed / reopened / corrected / relabelled, short reason, source URL); JSON {A(atlas_events.JSON_PATH)}
 - [About Commonworld]({A(CW_ABOUT)}): what Commonworld is and what is coming
 - [Commonworld in numbers]({A(STATS_PATH)}): public stats updated weekly (citizens of the Commonworld v1 platform after launch, humans and agents separately; Atlas counts, Google Search and AI features, human visits, GitHub issue response times, agent deliveries after the v1 launch); every value has source, period and as_of; citizens, people, agents and search clicks are separate numbers; JSON {A(STATS_JSON)}, Markdown {A(STATS_MD)}
 
@@ -2286,6 +2289,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - Where agents get paid: {A(f'{b}/earn.json')}
 - Link safety report: {A(SAFETY_PATH)} (every linked domain checked daily against {TRUST_SOURCES_TEXT}: status clean/flagged/no_data with each source's verdict and evidence link, checked_at UTC, summary counts; each entry in the JSON files carries link_safety {{status, checked_at}})
 - Link safety decision log: {A(DECISIONS_JSON)} (every removal and return: date, action, entry ID, domain written with [.], actor id from the trust roles, reason, evidence link); page {A(DECISIONS_PATH)}, Markdown {A(DECISIONS_MD)}
+- Atlas events log: {A(atlas_events.JSON_PATH)} (every card change, newest first: date, entry ID, type added/closed/reopened/corrected/relabelled, short reason, source URL); Markdown {A(atlas_events.MD_PATH)}
 - One line per entry: {A('/llms-full.txt')}
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
 - Per entry: take json_url from platforms.json; never construct an ID
@@ -2464,7 +2468,7 @@ def build_csp(script_hashes, style_hashes=()):
 ROUTES = {'version': 1, 'include': ['/*'],
           'exclude': ['/atlas/assets/*', '/atlas/og/*', '/atlas/screens/*', '/atlas/badge/*', '/atlas/data/*',
                       '/atlas/platforms/*.json', '/atlas/categories/*.json', '/atlas/*.json', '/atlas/*.txt', '/atlas/*.xml',
-                      '/atlas/decisions/index.md', '/stats.json', '/stats/index.md', '/api/*', '/cdn-cgi/*', '/favicon.ico', '/robots.txt', '/sitemap.xml',
+                      '/atlas/decisions/index.md', '/atlas/events.md', '/stats.json', '/stats/index.md', '/api/*', '/cdn-cgi/*', '/favicon.ico', '/robots.txt', '/sitemap.xml',
                       '/llms.txt', '/llms-full.txt', '/404.html']}
 
 
@@ -2619,6 +2623,9 @@ def main():
 
     write(SAFETY_PATH, json.dumps(safety_doc(site), ensure_ascii=False, indent=1) + '\n')  # not mirrored: it changes daily
     write(DECISIONS_JSON, json.dumps(decisions_doc(site), ensure_ascii=False, indent=1) + '\n')
+    evs = atlas_events.load()  # public events log (atlas/data/events.jsonl): JSON newest first + Markdown
+    write(atlas_events.JSON_PATH, json.dumps(atlas_events.doc(site, evs, datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')), ensure_ascii=False, indent=1) + '\n')
+    write(atlas_events.MD_PATH, atlas_events.markdown(site, evs))
     build_agent_files(site, write)
     build_earn_json(site, write)
     build_api(site, write)
@@ -2671,6 +2678,12 @@ def main():
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
 {b}/decisions/index.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+{b}/events.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+{b}/events.md
   Access-Control-Allow-Origin: *
   Content-Type: text/markdown; charset=utf-8
 /stats.json

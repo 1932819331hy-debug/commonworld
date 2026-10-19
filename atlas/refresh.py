@@ -748,6 +748,18 @@ def main():
         if data_changed:
             with open(snap_path, 'w', encoding='utf-8') as f:
                 f.write(dump(snap))
+            # public events log (atlas/data/events.jsonl): closures and revivals by this script are card events;
+            # number updates are not (check.py events_checks requires these lines for every died/revived slug)
+            sys.path.insert(0, os.path.join(HERE, 'site'))
+            import events as atlas_events
+            ev_file = os.path.join(os.path.dirname(os.path.abspath(snap_path)), 'events.jsonl')  # next to the snapshot
+            https = lambda u: u if str(u).startswith('https://') else 'https://' + str(u).split('://', 1)[-1]
+            for d in rep['died']:
+                atlas_events.append(ev_file, today, d['slug'], 'closed',
+                                    'Automated weekly check: site unreachable in 2 consecutive weekly checks', https(d['url']))
+            for d in rep['revived']:
+                atlas_events.append(ev_file, today, d['slug'], 'reopened',
+                                    'Automated weekly check: site answers again after an automated closure', https(d['url']))
         if state_changed:
             with open(a.state, 'w', encoding='utf-8') as f:
                 f.write(dump(state))
