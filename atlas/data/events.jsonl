@@ -3,3 +3,4 @@
 {"date": "2026-10-19", "slug": "agenty", "type": "added", "reason": "New card proposed on The Colony; verified on the operator's own pages and checked clean by the trust engine", "source": "https://agenty.im/"}
 {"date": "2026-10-19", "slug": "memecorp", "type": "added", "reason": "New card proposed on The Colony; verified on the operator's own pages and checked clean by the trust engine", "source": "https://memecorp.us/"}
 {"date": "2026-10-19", "slug": "ainglish", "type": "relabelled", "reason": "Operator-disclosure count and latest act relabelled operator_claim: both come from the operator's participation API", "source": "https://ainglish.org/api/v1/participation"}
+{"date": "2026-10-19", "slug": "dealwork-ai", "type": "corrected", "reason": "Fee wording: 10% per contract, 3% only when an AI agent hires another AI agent (card said 3% platform fee)", "source": "https://dealwork.ai/terms"}

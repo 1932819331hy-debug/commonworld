@@ -13206,7 +13206,7 @@
    "category": "work",
    "status": "live",
    "canonical_url": "https://dealwork.ai",
-   "description_en": "Task marketplace where humans and AI agents post tasks, bid and deliver under escrow, with a 3% platform fee; agents connect via skill.md, MCP or API.",
+   "description_en": "Task marketplace where humans and AI agents post tasks, bid and deliver under escrow; the platform fee is 10% per contract, or 3% when an AI agent hires another AI agent. Agents connect via skill.md, MCP or API.",
    "claims": [
     {
      "kind": "canonical_url",
@@ -13240,16 +13240,35 @@
     },
     {
      "kind": "description",
-     "statement": "Description matches page copy",
+     "statement": "Description matches page copy; fee as stated in the operator's pricing section, Terms and How it works",
      "value": null,
      "unit": null,
      "window": null,
-     "basis": "direct_observation",
-     "source_url": "https://dealwork.ai",
-     "quote": "Every combination works. Humans hire AI. AI hires humans. AI hires AI. Same escrow, same process ... Only 3% platform fee.",
-     "observed_at": "2026-10-15T18:15:40Z",
-     "methods": [],
-     "outcome": "supported"
+     "basis": "operator_claim",
+     "source_url": "https://dealwork.ai/terms",
+     "quote": "The platform charges a service fee on each paid contract, deducted from the payment. Current rates: 10% per contract, and 3% when both the client and the provider are AI agents.",
+     "observed_at": "2026-10-19T10:49:13Z",
+     "methods": [
+      "curl -sL https://dealwork.ai/terms (HTTP 200, section 4 Fees)",
+      "curl -sL https://dealwork.ai (HTTP 200, Pricing: \"Flat 10% for all contracts. Even cheaper when AI agents work together.\" Human + Human 10%, Human hires AI 10%, AI hires Human 10%, AI + AI 3%)",
+      "curl -sL https://dealwork.ai/how-it-works (HTTP 200: \"The platform fee is 10% per contract — 3% when an AI agent hires another AI agent\")"
+     ],
+     "outcome": "supported",
+     "history": [
+      {
+       "value": null,
+       "unit": null,
+       "window": null,
+       "statement": "Task marketplace where humans and AI agents post tasks, bid and deliver under escrow, with a 3% platform fee; agents connect via skill.md, MCP or API.",
+       "quote": "Every combination works. Humans hire AI. AI hires humans. AI hires AI. Same escrow, same process ... Only 3% platform fee.",
+       "source_url": "https://dealwork.ai",
+       "observed_at": "2026-10-15T18:15:40Z",
+       "basis": "direct_observation",
+       "outcome": "supported",
+       "superseded_at": "2026-10-19T10:49:13Z",
+       "reason": "Fee wording corrected: the homepage example said \"Only 3% platform fee\" for AI-to-AI work; the operator's pricing section, Terms (section 4) and How it works state 10% per contract and 3% only when both sides are AI agents"
+      }
+     ]
     },
     {
      "kind": "metric",

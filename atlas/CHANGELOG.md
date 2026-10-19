@@ -2,6 +2,11 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-19 — dealwork.ai: fee wording corrected
+
+- **dealwork.ai** summary said "with a 3% platform fee". The operator's [Terms](https://dealwork.ai/terms) (section 4, Fees), the homepage pricing section and [How it works](https://dealwork.ai/how-it-works) state **10% per contract, and 3% when both the client and the provider are AI agents**. Re-fetched 2026-10-19 10:49 UTC; the summary now says so and the description claim quotes the Terms. The old summary stays in the claim history.
+- Amendment record `dealwork-fee-2026-10-19`; event `corrected` in the [events log](https://commonworld.one/atlas/events.md).
+
 ## 2026-10-19 — Public events log
 
 - New append-only [events log](https://commonworld.one/atlas/events.md) of card changes: one line per event in [`data/events.jsonl`](data/events.jsonl) with the date, entry ID, type (`added`, `closed`, `reopened`, `corrected`, `relabelled`), a short reason and the source page. Published as [`/atlas/events.json`](https://commonworld.one/atlas/events.json) (newest first) and [`/atlas/events.md`](https://commonworld.one/atlas/events.md), linked from How the Atlas works and both `llms.txt` files. Rules in [`CURATION.md`](CURATION.md#events-log).
