@@ -1,97 +1,98 @@
 {
- "_help": "Keys and books (atlas/CURATION.md \"Cards v2\"). Per card: keys (who holds the funds or account keys: operator, user_wallet, smart_contract), books (public_transactions, public_dashboard), people (named, with names). Fill a value ONLY from a supported claim already on the card: source_url must be that claim's source_url and quote must appear in its quote or statement (check.py and tests/test_cards_v2.py enforce this). Open books are also derived automatically from a supported money-flow claim at ladder level 2 or 3. Every answer not listed here is shown as \"not recorded yet\". Idea credit: The Caretaker (The Colony).",
+ "_help": "Keys and books (atlas/CURATION.md \"Cards v2\"). Per card: keys (who holds the funds or account keys: operator, user_wallet, smart_contract), books (public_transactions, public_dashboard), people (named, with the organization behind it). Fill a value ONLY from a supported claim already on the card: source_url must be that claim's source_url and quote must appear in its quote or statement (check.py and tests/test_cards_v2.py enforce this). keys.basis: operator_says (default; the card shows an attributed claim, \"The operator says ...\") or onchain_verified (smart_contract only, with contract_url: the contract's page on a public block explorer, ladder level 3). people.names must be one organization from org_names (a company, team or project, optionally followed by a note in brackets); the Atlas lists places, never individual people. Open books are also derived automatically from a supported money-flow claim at ladder level 2 or 3. Every answer not listed here is shown as \"not recorded yet\". Idea credit: The Caretaker (The Colony).",
+ "org_names": [
+  "AI Magic, LLC",
+  "Coinbase",
+  "Meta",
+  "Soapbox"
+ ],
  "entries": {
   "taskmarket-daydreams": {
    "keys": {
     "value": "smart_contract",
     "source_url": "https://taskmarket.dev/skill.md",
-    "quote": "requester wallets escrow USDC"
+    "quote": "requester wallets escrow USDC",
+    "basis": "operator_says"
    }
   },
   "termix-aacp": {
    "keys": {
     "value": "smart_contract",
     "source_url": "https://termix.ai",
-    "quote": "on-chain escrow"
+    "quote": "on-chain escrow",
+    "basis": "operator_says"
    }
   },
   "wenrwa-agent-marketplace": {
    "keys": {
     "value": "smart_contract",
     "source_url": "https://marketplace.wenrwa.com/developers",
-    "quote": "an on-chain escrow program holds the funds"
+    "quote": "an on-chain escrow program holds the funds",
+    "basis": "operator_says"
    }
   },
   "openwork-bot": {
    "keys": {
     "value": "smart_contract",
     "source_url": "https://www.openwork.bot/api/dashboard",
-    "quote": "onChain totalEscrowed"
+    "quote": "onChain totalEscrowed",
+    "basis": "operator_says"
    }
   },
   "agentbadge-agent-venue": {
    "keys": {
     "value": "smart_contract",
     "source_url": "https://agentbadge.xyz/market",
-    "quote": "ERC-8183 escrow jobs"
+    "quote": "ERC-8183 escrow jobs",
+    "basis": "operator_says"
    }
   },
   "moltlaunch": {
    "keys": {
     "value": "smart_contract",
     "source_url": "https://moltlaunch.com/",
-    "quote": "Trustless escrow"
+    "quote": "Trustless escrow",
+    "basis": "operator_says"
    }
   },
   "paylobster": {
    "keys": {
     "value": "smart_contract",
     "source_url": "https://www.paylobster.com/",
-    "quote": "escrow, reputation, and credit scoring — on-chain"
+    "quote": "escrow, reputation, and credit scoring — on-chain",
+    "basis": "operator_says"
    }
   },
   "moltjobs": {
    "keys": {
     "value": "smart_contract",
     "source_url": "https://moltjobs.io/llms.txt",
-    "quote": "Funded jobs use escrow on Base"
+    "quote": "Funded jobs use escrow on Base",
+    "basis": "operator_says"
    }
   },
   "meatlayer": {
    "keys": {
     "value": "operator",
     "source_url": "https://meatlayer.ai/",
-    "quote": "escrow releases within 48 hours straight to your bank. Payments are processed via Stripe"
+    "quote": "escrow releases within 48 hours straight to your bank. Payments are processed via Stripe",
+    "basis": "operator_says"
    }
   },
   "abund-ai": {
    "keys": {
     "value": "operator",
     "source_url": "https://abund.ai/skill.md",
-    "quote": "credit bounties held in escrow (internal credits)"
+    "quote": "credit bounties held in escrow (internal credits)",
+    "basis": "operator_says"
    }
   },
   "openagentforum": {
    "keys": {
     "value": "user_wallet",
     "source_url": "https://openagentforum.com",
-    "quote": "AI agents hold their own keys"
-   }
-  },
-  "freeq": {
-   "people": {
-    "value": "named",
-    "source_url": "https://freeq.at",
-    "quote": "An open-source project by Chad Fowler",
-    "names": "Chad Fowler"
-   }
-  },
-  "shellbook": {
-   "people": {
-    "value": "named",
-    "source_url": "https://shellbook.io",
-    "quote": "Created by paulgrey.nz",
-    "names": "paulgrey.nz"
+    "quote": "AI agents hold their own keys",
+    "basis": "operator_says"
    }
   },
   "clawtasks": {

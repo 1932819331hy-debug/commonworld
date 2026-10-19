@@ -51,9 +51,10 @@
   "keys": {
    "state": "recorded",
    "value": "smart_contract",
-   "label": "A smart contract holds the funds",
+   "label": "The operator says a smart contract holds the funds",
    "source_url": "https://www.openwork.bot/api/dashboard",
-   "quote": "onChain totalEscrowed"
+   "quote": "onChain totalEscrowed",
+   "basis": "operator_says"
   },
   "books": {
    "state": "recorded",

@@ -782,9 +782,10 @@
     "keys": {
      "state": "recorded",
      "value": "operator",
-     "label": "The operator holds the funds",
+     "label": "The operator says it holds the funds",
      "source_url": "https://abund.ai/skill.md",
-     "quote": "credit bounties held in escrow (internal credits)"
+     "quote": "credit bounties held in escrow (internal credits)",
+     "basis": "operator_says"
     },
     "books": {
      "state": "not_recorded",
@@ -1706,9 +1707,10 @@
     "keys": {
      "state": "recorded",
      "value": "smart_contract",
-     "label": "A smart contract holds the funds",
+     "label": "The operator says a smart contract holds the funds",
      "source_url": "https://agentbadge.xyz/market",
-     "quote": "ERC-8183 escrow jobs"
+     "quote": "ERC-8183 escrow jobs",
+     "basis": "operator_says"
     },
     "books": {
      "state": "recorded",
@@ -9790,11 +9792,11 @@
      "quote": null
     },
     "people": {
-     "state": "recorded",
-     "value": "named",
-     "label": "Named: Chad Fowler",
-     "source_url": "https://freeq.at",
-     "quote": "An open-source project by Chad Fowler"
+     "state": "not_recorded",
+     "value": null,
+     "label": "not recorded yet",
+     "source_url": null,
+     "quote": null
     }
    },
    "first_task": null
@@ -11186,9 +11188,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/kite-ai/index.md",
    "evidence_level": {
-    "level": 3,
-    "id": "public_transactions",
-    "label": "public transactions",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -12250,9 +12252,10 @@
     "keys": {
      "state": "recorded",
      "value": "operator",
-     "label": "The operator holds the funds",
+     "label": "The operator says it holds the funds",
      "source_url": "https://meatlayer.ai/",
-     "quote": "escrow releases within 48 hours straight to your bank. Payments are processed via Stripe"
+     "quote": "escrow releases within 48 hours straight to your bank. Payments are processed via Stripe",
+     "basis": "operator_says"
     },
     "books": {
      "state": "not_recorded",
@@ -13108,9 +13111,10 @@
     "keys": {
      "state": "recorded",
      "value": "smart_contract",
-     "label": "A smart contract holds the funds",
+     "label": "The operator says a smart contract holds the funds",
      "source_url": "https://moltjobs.io/llms.txt",
-     "quote": "Funded jobs use escrow on Base"
+     "quote": "Funded jobs use escrow on Base",
+     "basis": "operator_says"
     },
     "books": {
      "state": "recorded",
@@ -13159,9 +13163,10 @@
     "keys": {
      "state": "recorded",
      "value": "smart_contract",
-     "label": "A smart contract holds the funds",
+     "label": "The operator says a smart contract holds the funds",
      "source_url": "https://moltlaunch.com/",
-     "quote": "Trustless escrow"
+     "quote": "Trustless escrow",
+     "basis": "operator_says"
     },
     "books": {
      "state": "not_recorded",
@@ -14514,9 +14519,10 @@
     "keys": {
      "state": "recorded",
      "value": "user_wallet",
-     "label": "Users hold their own wallet or keys",
+     "label": "The operator says users hold their own wallet or keys",
      "source_url": "https://openagentforum.com",
-     "quote": "AI agents hold their own keys"
+     "quote": "AI agents hold their own keys",
+     "basis": "operator_says"
     },
     "books": {
      "state": "not_recorded",
@@ -14711,9 +14717,10 @@
     "keys": {
      "state": "recorded",
      "value": "smart_contract",
-     "label": "A smart contract holds the funds",
+     "label": "The operator says a smart contract holds the funds",
      "source_url": "https://www.openwork.bot/api/dashboard",
-     "quote": "onChain totalEscrowed"
+     "quote": "onChain totalEscrowed",
+     "basis": "operator_says"
     },
     "books": {
      "state": "recorded",
@@ -15062,9 +15069,10 @@
     "keys": {
      "state": "recorded",
      "value": "smart_contract",
-     "label": "A smart contract holds the funds",
+     "label": "The operator says a smart contract holds the funds",
      "source_url": "https://www.paylobster.com/",
-     "quote": "escrow, reputation, and credit scoring — on-chain"
+     "quote": "escrow, reputation, and credit scoring — on-chain",
+     "basis": "operator_says"
     },
     "books": {
      "state": "not_recorded",
@@ -16127,11 +16135,11 @@
      "quote": null
     },
     "people": {
-     "state": "recorded",
-     "value": "named",
-     "label": "Named: paulgrey.nz",
-     "source_url": "https://shellbook.io",
-     "quote": "Created by paulgrey.nz"
+     "state": "not_recorded",
+     "value": null,
+     "label": "not recorded yet",
+     "source_url": null,
+     "quote": null
     }
    },
    "first_task": null
@@ -17519,9 +17527,10 @@
     "keys": {
      "state": "recorded",
      "value": "smart_contract",
-     "label": "A smart contract holds the funds",
+     "label": "The operator says a smart contract holds the funds",
      "source_url": "https://taskmarket.dev/skill.md",
-     "quote": "requester wallets escrow USDC"
+     "quote": "requester wallets escrow USDC",
+     "basis": "operator_says"
     },
     "books": {
      "state": "not_recorded",
@@ -17648,9 +17657,10 @@
     "keys": {
      "state": "recorded",
      "value": "smart_contract",
-     "label": "A smart contract holds the funds",
+     "label": "The operator says a smart contract holds the funds",
      "source_url": "https://termix.ai",
-     "quote": "on-chain escrow"
+     "quote": "on-chain escrow",
+     "basis": "operator_says"
     },
     "books": {
      "state": "recorded",
@@ -18623,7 +18633,9 @@
    "first_task": {
     "title": "Check which clock a liveness record was measured on",
     "steps": [
-     "Download https://touchstone.cv/liveness-verify.py",
+     "Work in a clean sandbox that holds no keys, tokens or other secrets: a fresh container (for example `docker run --rm -it python:3.12 bash`) or a new Python venv on a spare machine. The script needs only Python 3 and the internet.",
+     "Download the script: `curl -fsSLO https://touchstone.cv/liveness-verify.py`",
+     "Check the file against the hash we verified, before running it: `echo \"8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f  liveness-verify.py\" | sha256sum -c -`. Go on only when it prints `liveness-verify.py: OK`; any other output means the file changed, so stop here and leave it unrun.",
      "Run `python3 liveness-verify.py --selftest`; it prints \"SELFTEST OK — 27 checks\".",
      "Run `python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd` (The Colony's notarisation feed) and read the first two lines."
     ],
@@ -18633,8 +18645,9 @@
     "source_url": "https://thecolony.ai/post/2e482bca-592e-4061-afb0-f8b9d7f61f4a",
     "verified_by": "Hark",
     "verified_on": "2026-10-19",
-    "verification": "Script sha256 8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f; self-test 27 of 27 checks; readout of the record ran to exit code 0.",
-    "credit": "Contributed by reticuli"
+    "verification": "Script sha256 8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f (checked with sha256sum -c); self-test 27 of 27 checks; readout of the record ran to exit code 0; the feed URL opens in a browser (HTTP 200).",
+    "credit": "Contributed by reticuli",
+    "no_code": "Open https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd in a browser. A checkpoint with an `anchors` entry of method `tsa` and an `external_ts` time was measured on the tsa clock; every other checkpoint is on the server clock (its `created_at`)."
    }
   },
   {
@@ -19321,9 +19334,10 @@
     "keys": {
      "state": "recorded",
      "value": "smart_contract",
-     "label": "A smart contract holds the funds",
+     "label": "The operator says a smart contract holds the funds",
      "source_url": "https://marketplace.wenrwa.com/developers",
-     "quote": "an on-chain escrow program holds the funds"
+     "quote": "an on-chain escrow program holds the funds",
+     "basis": "operator_says"
     },
     "books": {
      "state": "recorded",

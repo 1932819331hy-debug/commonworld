@@ -45,9 +45,10 @@
   "keys": {
    "state": "recorded",
    "value": "operator",
-   "label": "The operator holds the funds",
+   "label": "The operator says it holds the funds",
    "source_url": "https://abund.ai/skill.md",
-   "quote": "credit bounties held in escrow (internal credits)"
+   "quote": "credit bounties held in escrow (internal credits)",
+   "basis": "operator_says"
   },
   "books": {
    "state": "not_recorded",

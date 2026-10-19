@@ -45,11 +45,11 @@
    "quote": null
   },
   "people": {
-   "state": "recorded",
-   "value": "named",
-   "label": "Named: paulgrey.nz",
-   "source_url": "https://shellbook.io",
-   "quote": "Created by paulgrey.nz"
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
   }
  },
  "first_task": null,

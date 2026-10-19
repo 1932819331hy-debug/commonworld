@@ -767,6 +767,8 @@ def kb_html(site, kb):
         it = kb[f]
         if it['state'] == 'recorded':
             src = ext_link(it['source_url'], 'Source: ' + e(domain(it['source_url'])))
+            if it.get('contract_url'):
+                src += ' ' + ext_link(it['contract_url'], 'Contract: ' + e(domain(it['contract_url'])))
             rows.append(f'<div class="kb-row kb-on"><dt>{e(title)}</dt><dd>{e(it["label"])} <span class="kb-src">{src}</span></dd></div>')
         else:
             rows.append(f'<div class="kb-row"><dt>{e(title)}</dt><dd class="kb-empty">{e(cv2.NOT_RECORDED)}</dd></div>')
@@ -783,6 +785,7 @@ def task_html(site, t):
             f'<span class="muted">{e(t["credit"])}</span></div><div class="cw-panel-body">'
             f'<p class="task-title"><b>{e(t["title"])}</b></p><ol class="task-steps">{steps}</ol>'
             f'<p class="task-done"><b>Done when:</b> {e(t["done_when"])}</p>'
+            + (f'<p class="task-nocode"><b>Without code:</b> {code(t["no_code"])}</p>' if t.get('no_code') else '') +
             f'<p class="claim-meta">{e(t["credit"])} via {ext_link(t["source_url"], e(t["contributed_via"]))} · '
             f'Verified by {e(t["verified_by"])} on {e(t["verified_on"])}: {e(t["verification"])}</p></div></section>')
 
@@ -817,11 +820,12 @@ def build_platform_md(site, c):
           f"How the ladder works: {A(b + LADDER_HREF)}", '', '## Keys and books', '']
     for f, (title, _) in cv2.KB_FIELDS.items():
         it = c['_kb'][f]
-        L.append(f"- {title}: {it['label']}" + (f" (source: {it['source_url']})" if it['source_url'] else ''))
+        L.append(f"- {title}: {it['label']}" + (f" (source: {it['source_url']})" if it['source_url'] else '')
+                 + (f" (contract: {it['contract_url']})" if it.get('contract_url') else ''))
     t = c['_task']
     if t:
         L += ['', '## First task', '', f"**{t['title']}**", ''] + [f'{i}. {s}' for i, s in enumerate(t['steps'], 1)] + \
-             ['', f"Done when: {t['done_when']}", '', f"{t['credit']} via {t['contributed_via']}: {t['source_url']}. Verified by {t['verified_by']} on {t['verified_on']}: {t['verification']}"]
+             ['', f"Done when: {t['done_when']}", ''] + ([f"Without code: {t['no_code']}", ''] if t.get('no_code') else []) + [f"{t['credit']} via {t['contributed_via']}: {t['source_url']}. Verified by {t['verified_by']} on {t['verified_on']}: {t['verification']}"]
     L += ['', '## Verified facts', '', '| What | Statement | Value | Basis | Outcome | Evidence | Observed | Source |', '|---|---|---|---|---|---|---|---|']
     for x in claims:
         lv = cv2.claim_level(x, c['_evo'])
@@ -1184,12 +1188,12 @@ def build_about(site):
 <p>Every money and activity claim (money flows, metrics, recent activity) shows how far anyone can check it, read from its source link:</p>
 <ol><li><b>Operator says</b>: the platform’s own words, such as site text, docs or posts (and other text pages, such as articles).</li>
 <li><b>Public dashboard</b>: a public stats page, dashboard or API that anyone can open.</li>
-<li><b>Public transactions</b>: on-chain or other public records that anyone can open and check independently, such as a block explorer page.</li></ol>
-<p>A card shows the highest level reached by its supported money and activity claims. The level comes from a fixed rule on the source address (explorer hosts are level 3; stats, dashboard and API addresses are level 2; every other page is level 1); where an address could be read two ways, the lower level is used. When a curator opens a source and finds the rule read it wrongly (for example a public JSON log on a plain address, or a dated report on a dashboard site), the curator sets the level by hand and the claim shows a short review note; when unsure, the lower level is used. A card whose ladder reads “not recorded yet” is waiting for its first sourced money or activity claim. The rule is published in <a href="{REPO_URL}/blob/main/atlas/CURATION.md#cards-v2" rel="nofollow noopener">CURATION.md</a>.</p>
+<li><b>Public transactions</b>: on-chain or other public records that anyone can open and check independently, such as a transaction, address or block page on a block explorer.</li></ol>
+<p>A card shows the highest level reached by its supported money and activity claims. The level comes from a fixed rule on the source address (a block-explorer page for one concrete record, such as a transaction hash, an address or a block, is level 3; explorer stats and charts, and other stats, dashboard and API addresses, are level 2; every other page is level 1); where an address could be read two ways, the lower level is used. When a curator opens a source and finds the rule read it wrongly (for example a public JSON log on a plain address, or a dated report on a dashboard site), the curator sets the level by hand and the claim shows a short review note; when unsure, the lower level is used. A card whose ladder reads “not recorded yet” is waiting for its first sourced money or activity claim. The rule is published in <a href="{REPO_URL}/blob/main/atlas/CURATION.md#cards-v2" rel="nofollow noopener">CURATION.md</a>.</p>
 <h2 id="keys-and-books">Keys and books</h2>
-<p>Three short answers on every card, an idea from The Caretaker, an agent on The Colony: <b>who holds the keys</b> (the operator, users’ own wallets or keys, or a smart contract), <b>whether the books are open</b> (its money figures, such as payouts, balances or volume, are on public transactions or a public dashboard or API that anyone can open), and <b>who is behind it</b> (people or a company named in a source). An answer is filled only from a sourced fact already on the card and links to that source; every other answer reads “not recorded yet”.</p>
+<p>Three short answers on every card, an idea from The Caretaker, an agent on The Colony: <b>who holds the keys</b> (the operator, users’ own wallets or keys, or a smart contract), <b>whether the books are open</b> (its money figures, such as payouts, balances or volume, are on public transactions or a public dashboard or API that anyone can open), and <b>who is behind it</b> (the company, team or project a source names; the Atlas lists places, so it names organizations, never individual people). An answer is filled only from a sourced fact already on the card and links to that source; custody that rests on the platform’s own words reads as its claim (“The operator says a smart contract holds the funds”), and is stated plainly only when the contract is recorded on a public block explorer. Every other answer reads “not recorded yet”.</p>
 <h2 id="first-task">First task</h2>
-<p>Some cards carry a first task: one simple step a newcomer, human or agent, can take to try the platform. A task proposed by a platform or a contributor is published after we run it ourselves, with credit (“Contributed by …”) and a link to where it was proposed.</p>
+<p>Some cards carry a first task: one simple step a newcomer, human or agent, can take to try the platform. A task proposed by a platform or a contributor is published after we run it ourselves, with credit (“Contributed by …”) and a link to where it was proposed. A task that runs downloaded code starts in a clean sandbox without secrets and checks the file’s SHA-256 against the hash we verified before running it; where there is a way to do it without code, the card shows that too.</p>
 <h2 id="process">How a card is checked</h2>
 <p>The checks are run by AI agents working to a written protocol; every step leaves a record.</p>
 <ol><li><b>Automated check</b> of every candidate: URL, redirects, HTTP status, real content versus an empty JavaScript shell.</li>
@@ -2289,7 +2293,10 @@ def write_github_mirror(out, b):
                  'The public events log of card changes is not mirrored here: read https://commonworld.one/atlas/events.json (newest first) '
                  'or https://commonworld.one/atlas/events.md; its source is `atlas/data/events.jsonl` on main.\n\n'
                  'Homepage screenshots are re-captured weekly by the workflow `Atlas weekly screenshots` (`.github/workflows/screens.yml`), '
-                 'which opens a pull request to the `atlas-screens` branch; it is never auto-merged.\n')
+                 'which opens a pull request to the `atlas-screens` branch; it is never auto-merged.\n\n'
+                 'Cards v2: money and activity claims carry `evidence_level` and `evidence_label`; where a curator opened the source and set '
+                 'the level by hand, the claim also carries `evidence_note`, a short reason (rules: '
+                 'https://github.com/commonworld-one/commonworld/blob/main/atlas/CURATION.md#curator-review-of-a-level).\n')
 
 
 def build_agent_files(site, write):
@@ -2366,12 +2373,13 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
 - Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt), plus badge_svg, badge_svg_dark and badge_page
 - Per entry as Markdown: {A(f'{b}/platforms/')}<id>/index.md, the card page as plain Markdown (take the URL from md_url)
-- Cards v2 fields on every record (schema_version 1.4.0): evidence_level {{level 1-3 or null, id, label, claims_counted}}, the highest evidence-ladder level of the card's supported money and activity claims (1 operator says = the platform's own words; 2 public dashboard = a public stats page, dashboard or API; 3 public transactions = on-chain or other public records anyone can check); keys_and_books {{keys, books, people}}, each {{state recorded or not_recorded, value, label, source_url, quote}}; first_task (a verified first step for newcomers with credit, or null). Money and activity claims in <id>.json carry evidence_level and evidence_label, plus evidence_note where a curator opened the source and set the level by hand. Rule: {A(f'{b}/about/#evidence-ladder')}
+- Cards v2 fields on every record (schema_version 1.4.0): evidence_level {{level 1-3 or null, id, label, claims_counted}}, the highest evidence-ladder level of the card's supported money and activity claims (1 operator says = the platform's own words; 2 public dashboard = a public stats page, dashboard or API; 3 public transactions = a block-explorer page for one concrete record such as a transaction, address or block; explorer stats pages are level 2); keys_and_books {{keys, books, people}}, each {{state recorded or not_recorded, value, label, source_url, quote}}; keys also has basis (operator_says = the label is the operator's claim, "The operator says ..."; onchain_verified = smart contract recorded on a public explorer, with contract_url); people names an organization, never an individual person; first_task (a verified first step for newcomers with credit, or null; a task that runs downloaded code checks its SHA-256 first; optional no_code). Money and activity claims in <id>.json carry evidence_level and evidence_label, plus evidence_note where a curator opened the source and set the level by hand (rules for a manual relabel: {REPO_URL}/blob/main/atlas/CURATION.md#curator-review-of-a-level). Rule: {A(f'{b}/about/#evidence-ladder')}
 - Closed entries: closed by human review (official statement or at least two independent signals; never reopened automatically) or by the automated weekly check (unreachable in 2 consecutive weekly checks; reopens automatically if the site answers again). A single failed load is never proof.
 - IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
 {ex_lines}
 - All claims and sources are public; no key needed.
 - Homepage previews: most records carry a `preview` field (null when there is none) with a dated screenshot of the platform's homepage: {A(f'{b}/screens/')}<id>.webp (1200x750 WebP) and a 600x250 top-band thumbnail {A(f'{b}/screens/t/')}<id>.webp, plus captured_at and source_url; list: {A(f'{b}/screens/manifest.json')}. Screenshots show third-party websites and are not covered by the data licence. Do not construct these URLs; take them from `preview` (absent from the GitHub mirror)
+- Screenshots are re-captured weekly by the GitHub Actions workflow `Atlas weekly screenshots` ({REPO_URL}/blob/main/.github/workflows/screens.yml, Sundays): it opens a pull request into the orphan branch `atlas-screens` and never merges on its own; a curator compares old and new images first
 - [snapshot.json]({A(f'{b}/data/snapshot.json')}): the full published dataset
 - [safety.json]({A(SAFETY_PATH)}): link safety report, status of every linked domain with each source's answer (checked daily); records carry link_safety {{status, checked_at}} for their official URL
 - [llms-full.txt]({A('/llms-full.txt')}): one line per entry
@@ -2419,9 +2427,10 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - Link safety decision log: {A(DECISIONS_JSON)} (every removal and return: date, action, entry ID, domain written with [.], actor id from the trust roles, reason, evidence link); page {A(DECISIONS_PATH)}, Markdown {A(DECISIONS_MD)}
 - Atlas events log: {A(atlas_events.JSON_PATH)} (every card change, newest first: date, entry ID, type added/closed/reopened/corrected/relabelled, short reason, source URL); Markdown {A(atlas_events.MD_PATH)}
 - One line per entry: {A('/llms-full.txt')}
+- Homepage screenshots (`preview`): re-captured weekly by the workflow `Atlas weekly screenshots` ({REPO_URL}/blob/main/.github/workflows/screens.yml), which opens a pull request into the branch `atlas-screens` and never merges on its own
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
 - Per entry: take json_url from platforms.json; never construct an ID. Each card page also has a Markdown twin (md_url)
-- Cards v2: every record has evidence_level (1 operator says, 2 public dashboard, 3 public transactions, or null = not recorded yet), keys_and_books (keys, books, people; filled only from sourced claims on the card) and first_task (verified, with credit, or null). A claim level set by curator review carries evidence_note. How it works: {A(f'{b}/about/#evidence-ladder')}
+- Cards v2: every record has evidence_level (1 operator says, 2 public dashboard, 3 public transactions, or null = not recorded yet), keys_and_books (keys, books, people; filled only from sourced claims on the card) and first_task (verified, with credit, or null). A claim level set by curator review carries evidence_note (manual relabel rules: {REPO_URL}/blob/main/atlas/CURATION.md#curator-review-of-a-level). How it works: {A(f'{b}/about/#evidence-ladder')}
 
 ## Categories (JSON)
 
@@ -2527,7 +2536,7 @@ def build_api_docs(site):
 <p>Since <code>schema_version</code> 1.4.0 every entry record (list, category and per-entry files) carries:</p>
 <ul><li><code>evidence_level</code>: <code>{{level, id, label, claims_counted}}</code>, the highest <a href="{b}/about/#evidence-ladder">evidence-ladder</a> level reached by the sources of the card’s supported money and activity claims: 1 <code>operator_says</code>, 2 <code>public_dashboard</code>, 3 <code>public_transactions</code>; <code>level</code> is <code>null</code> with the label “not recorded yet” when there is none. Money and activity claims in <code>platforms/&lt;id&gt;.json</code> carry <code>evidence_level</code> and <code>evidence_label</code>, plus <code>evidence_note</code> (a short reason) where a curator opened the source and set the level by hand.</li>
 <li><code>keys_and_books</code>: <code>keys</code> (<code>operator</code>, <code>user_wallet</code>, <code>smart_contract</code>), <code>books</code> (<code>public_transactions</code>, <code>public_dashboard</code>) and <code>people</code> (<code>named</code>), each <code>{{state, value, label, source_url, quote}}</code>; <code>state</code> is <code>recorded</code> with a source or <code>not_recorded</code>.</li>
-<li><code>first_task</code>: a verified first step for newcomers (title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_at, verification, credit), or <code>null</code>.</li>
+<li><code>first_task</code>: a verified first step for newcomers (title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_on, verification, credit; optional no_code), or <code>null</code>.</li>
 <li><code>md_url</code>: the card page as Markdown.</li></ul>
 <h2 id="ids">IDs</h2>
 <p>An entry ID is its permanent URL slug (for example <code>{e(ex)}</code>). Never construct or guess an ID: take it from <a href="{V}/atlas/platforms.json">platforms.json</a> or a category file. An ID that is not listed there does not exist, and the request returns 404.</p>

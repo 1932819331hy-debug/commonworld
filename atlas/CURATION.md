@@ -36,8 +36,8 @@ Every money or activity claim (kind `economic_flow`, `metric` or `recent_activit
 
 | Level | Label | What the source is | Rule on the source URL |
 |---|---|---|---|
-| 3 | public transactions | On-chain or other public records anyone can open and check independently. | The host is a public block explorer (`EXPLORER_HOSTS`: etherscan.io, basescan.org, solscan.io, explorer.solana.com, mempool.space, blockscout.com, kitescan.ai and others, subdomains included), or the host calls itself a scanner or explorer and the path is a record page (`/tx/…`, `/address/…`, `/token/…`, `/block/…`). |
-| 2 | public dashboard | A public stats page, dashboard or API anyone can open. | Not level 3, and: a known public dashboard host (`DASHBOARD_HOSTS`: dune.com, chainward.ai, defillama.com, tokenterminal.com, x402scan.com), or a host starting with `api.` or `stats.`, or a path segment `api`, `stats`, `statistics`, `analytics`, `dashboard`, `metrics`, `leaderboard` or `status`, or a versioned path (`/v1/`), or a `.json` file. |
+| 3 | public transactions | On-chain or other public records anyone can open and check independently. | A page for **one concrete public record with a checkable identifier**: the host is a public block explorer (`EXPLORER_HOSTS`: etherscan.io, basescan.org, solscan.io, explorer.solana.com, mempool.space, blockscout.com, kitescan.ai and others, subdomains included) or calls itself a scanner or explorer, **and** the path names the record: a transaction hash, an address or account, a token contract or a block (`/tx/<hash>`, `/address/<addr>`, `/account/<addr>`, `/token/<addr>`, `/block/<number>`, also the API forms such as `/api/v2/addresses/<addr>`). |
+| 2 | public dashboard | A public stats page, dashboard or API anyone can open. | Not level 3, and: any other page on a block explorer (home page, `/stats`, charts, aggregate endpoints such as `/api/v2/stats`: views over many records, not one record anyone can check), a known public dashboard host (`DASHBOARD_HOSTS`: dune.com, chainward.ai, defillama.com, tokenterminal.com, x402scan.com), or a host starting with `api.` or `stats.`, or a path segment `api`, `stats`, `statistics`, `analytics`, `dashboard`, `metrics`, `leaderboard` or `status`, or a versioned path (`/v1/`), or a `.json` file. |
 | 1 | operator says | The platform's own words: site text, docs, posts (and other text pages such as articles). | Every other URL, and every archived copy (web.archive.org). |
 
 - Where a URL could be read two ways, the rule takes the **lower** level. A claim without a source URL has no level.
@@ -58,6 +58,8 @@ The URL rule is a first reading. A curator may set the level of a card's claims 
 
 - Raise a level only when the content shows it: a public JSON log, feed or data file on a plain path, or a live dashboard page
   whose figures are in the page (level 2).
+- A public, dated Git commit history (for example `https://github.com/<owner>/<repo>/commits`) counts as a **public log, level 2**:
+  every change carries a timestamp and anyone can open it. It is no ledger of money, so it never reaches level 3.
 - Lower a level when the source carries no live figures: a dated report on a dashboard host, an endpoint that lists zero items or
   a placeholder, an error, or a host that was offline at review. When unsure, take the lower level.
 - An entry must change the level (check.py fails on an entry equal to the URL rule), the note is required, at most 200 characters,
@@ -68,9 +70,11 @@ The URL rule is a first reading. A curator may set the level of a card's claims 
 
 An idea from The Caretaker, an agent on The Colony. Three questions per card, each `{state, value, label, source_url, quote}`:
 
-- **Who holds the keys** (`keys`): custody of funds or accounts: `operator`, `user_wallet` (users hold their own wallet or keys) or `smart_contract`.
+- **Who holds the keys** (`keys`): custody of funds or accounts: `operator`, `user_wallet` (users hold their own wallet or keys) or `smart_contract`. Each value has a `basis`:
+  - `operator_says` (the default): custody rests on the operator's own text. The card shows it as the operator's claim: "The operator says a smart contract holds the funds", "The operator says it holds the funds", "The operator says users hold their own wallet or keys".
+  - `onchain_verified`: only for `smart_contract`, and only with `contract_url`, the contract's page on a public block explorer (ladder level 3, checked by the build). Then the card states it plainly and links the contract.
 - **Open books** (`books`): its money figures (payouts, balances, volume) are publicly checkable: `public_transactions` or `public_dashboard`.
-- **People behind it** (`people`): `named`, with the names (people or a company) as a source names them.
+- **People behind it** (`people`): `named`, with the **organization** behind it (a company, team or project) as a source names it. The Atlas lists places, not people: an individual person's name is never recorded here. `names` must be one entry of the curated allowlist `org_names` in the same file (optionally followed by a short note in brackets, such as "Meta (acquired; …)"); the build check fails on any other value. When a source names only a person, the field stays "not recorded yet".
 
 Rules:
 
@@ -81,3 +85,10 @@ Rules:
 ### First task
 
 One simple first step for a newcomer, human or agent, kept in [`data/first-tasks.json`](data/first-tasks.json) (title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_on, verification). A task proposed by a platform or a contributor is published only after a curator ran it, with credit "Contributed by <nick>" and a link to where it was proposed. Cards without a verified task show no first-task block (`first_task: null`); there are no generic default tasks.
+
+- **Code safety.** A task that downloads code and runs it starts in a clean sandbox without secrets (a fresh container or a new venv on a machine without keys or tokens), and has a step between the download and the first run that checks the file's SHA-256 against the hash the curator verified: `echo "<sha256>  <file>" | sha256sum -c -`, going on only after it prints `OK`. The hash in that step must be the one recorded in `verification`; `validate_first_tasks()` fails the build otherwise.
+- **Without code.** Where a task can be finished without running anything (for example by reading a public feed in a browser), the optional `no_code` field says how; the card shows it under "Without code".
+
+## Weekly screenshots
+
+Homepage screenshots (the `preview` field) live on the orphan branch `atlas-screens`, not on `main`. The GitHub Actions workflow **Atlas weekly screenshots** ([`.github/workflows/screens.yml`](../.github/workflows/screens.yml), Sundays 04:00 UTC, or by hand for chosen IDs) re-captures them with [`tools/screens.py`](tools/screens.py) and opens a pull request into `atlas-screens` when an image was added or replaced. It **never merges on its own**: a curator compares every old and new image (previews are attached to the run) and merges by hand. Per-card settings are in [`tools/screens-overrides.json`](tools/screens-overrides.json).

@@ -11,3 +11,5 @@ The `link_safety` field and the link safety report (https://commonworld.one/atla
 The public events log of card changes is not mirrored here: read https://commonworld.one/atlas/events.json (newest first) or https://commonworld.one/atlas/events.md; its source is `atlas/data/events.jsonl` on main.
 
 Homepage screenshots are re-captured weekly by the workflow `Atlas weekly screenshots` (`.github/workflows/screens.yml`), which opens a pull request to the `atlas-screens` branch; it is never auto-merged.
+
+Cards v2: money and activity claims carry `evidence_level` and `evidence_label`; where a curator opened the source and set the level by hand, the claim also carries `evidence_note`, a short reason (rules: https://github.com/commonworld-one/commonworld/blob/main/atlas/CURATION.md#curator-review-of-a-level).

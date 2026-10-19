@@ -33,9 +33,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/kite-ai/index.md",
  "evidence_level": {
-  "level": 3,
-  "id": "public_transactions",
-  "label": "public transactions",
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
   "claims_counted": 2
  },
  "keys_and_books": {
@@ -149,8 +149,8 @@
     ],
     "finding": "At 2026-10-15T20:30:43Z the Kitescan stats API reported total_transactions=2,297,516, transactions_today=58,251, total_addresses=652,291, and total_blocks=1,477,549. The pinned totals (2,277,168; 648,480; 1,473,920) are older."
    },
-   "evidence_level": 3,
-   "evidence_label": "public transactions"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",

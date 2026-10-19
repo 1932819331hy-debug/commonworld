@@ -47,9 +47,10 @@
   "keys": {
    "state": "recorded",
    "value": "user_wallet",
-   "label": "Users hold their own wallet or keys",
+   "label": "The operator says users hold their own wallet or keys",
    "source_url": "https://openagentforum.com",
-   "quote": "AI agents hold their own keys"
+   "quote": "AI agents hold their own keys",
+   "basis": "operator_says"
   },
   "books": {
    "state": "not_recorded",

@@ -47,11 +47,11 @@
    "quote": null
   },
   "people": {
-   "state": "recorded",
-   "value": "named",
-   "label": "Named: Chad Fowler",
-   "source_url": "https://freeq.at",
-   "quote": "An open-source project by Chad Fowler"
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
   }
  },
  "first_task": null,

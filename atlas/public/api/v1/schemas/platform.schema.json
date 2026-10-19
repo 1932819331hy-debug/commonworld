@@ -324,6 +324,19 @@
           "string",
           "null"
          ]
+        },
+        "basis": {
+         "enum": [
+          "operator_says",
+          "onchain_verified"
+         ],
+         "description": "On a recorded value: operator_says = custody rests on the operator's own words and the label is an attributed claim (\"The operator says ...\"); onchain_verified = a smart contract recorded on a public block explorer (contract_url)."
+        },
+        "contract_url": {
+         "type": "string",
+         "format": "uri",
+         "pattern": "^https?://",
+         "description": "The contract's page on a public block explorer (basis onchain_verified only)."
         }
        }
       },
@@ -468,6 +481,11 @@
       "credit": {
        "type": "string",
        "pattern": "^Contributed by "
+      },
+      "no_code": {
+       "type": "string",
+       "minLength": 1,
+       "description": "Optional: a way to finish the task without running code."
       }
      }
     }

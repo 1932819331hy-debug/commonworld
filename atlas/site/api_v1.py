@@ -7,7 +7,7 @@ and ships as /api/v2/ while /api/v1/ keeps working.
 """
 import re
 
-from cards_v2 import BOOKS_VALUES, KEYS_VALUES, LEVELS, NOT_RECORDED, PEOPLE_VALUES  # cards v2 vocabulary (one source)
+from cards_v2 import BOOKS_VALUES, KEYS_BASES, KEYS_VALUES, LEVELS, NOT_RECORDED, PEOPLE_VALUES  # cards v2 vocabulary (one source)
 
 API_VERSION = 'v1'
 SCHEMA_VERSION = '1.4.0'
@@ -26,9 +26,12 @@ CHANGELOG = [
         '`evidence_level` {level, id, label, claims_counted}, the highest evidence-ladder level reached by the sources of the card\'s supported '
         'money and activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions; level null with label "not recorded yet" when there is none); '
         '`keys_and_books` {keys, books, people}, each {state, value, label, source_url, quote} with state recorded (from a sourced claim on the card) '
-        'or not_recorded; `first_task`, a verified first step for newcomers with credit, or null; `md_url`, the card page as Markdown.',
+        'or not_recorded; on `keys` also `basis` (operator_says: the label is the operator\'s claim, "The operator says ..."; onchain_verified: '
+        'a smart contract recorded on a public block explorer, with `contract_url`); `people` names an organization, never an individual person; '
+        '`first_task`, a verified first step for newcomers with credit (optional `no_code`), or null; `md_url`, the card page as Markdown.',
         'New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: '
-        '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md; '
+        '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md '
+        '(level 3 only for a block-explorer page of one concrete record: a transaction, an address or account, a block; explorer stats are level 2); '
         'where a curator opened the source and the rule read it wrongly, the curator\'s level applies and the claim also carries `evidence_note` '
         '(a short reason, from atlas/data/evidence-levels.json).',
         'New Markdown twin of every card page at /atlas/platforms/{id}/index.md.',
@@ -83,10 +86,17 @@ def schemas(origin, categories):
     uri_n = {'type': ['string', 'null'], 'format': 'uri'}
     scalar = {'type': ['number', 'string', 'null']}
 
-    def kb_item(vals):
-        return {'type': 'object', 'required': ['state', 'value', 'label', 'source_url', 'quote'],
-                'properties': {'state': {'enum': ['recorded', 'not_recorded']}, 'value': {'enum': sorted(vals) + [None]},
-                               'label': {'type': 'string', 'minLength': 1}, 'source_url': uri_n, 'quote': {'type': ['string', 'null']}}}
+    def kb_item(vals, keys=False):
+        it = {'type': 'object', 'required': ['state', 'value', 'label', 'source_url', 'quote'],
+              'properties': {'state': {'enum': ['recorded', 'not_recorded']}, 'value': {'enum': sorted(vals) + [None]},
+                             'label': {'type': 'string', 'minLength': 1}, 'source_url': uri_n, 'quote': {'type': ['string', 'null']}}}
+        if keys:
+            it['properties'] |= {
+                'basis': {'enum': list(KEYS_BASES), 'description': 'On a recorded value: operator_says = custody rests on the operator\'s own '
+                          'words and the label is an attributed claim ("The operator says ..."); onchain_verified = a smart contract recorded '
+                          'on a public block explorer (contract_url).'},
+                'contract_url': uri | {'description': 'The contract\'s page on a public block explorer (basis onchain_verified only).'}}
+        return it
     money_flow = {'type': 'object', 'description': 'A supported money-flow claim as shown on the card.',
                   'required': ['statement', 'value', 'unit', 'window', 'basis', 'observed_at', 'source_url'],
                   'properties': {'statement': {'type': 'string'}, 'value': scalar, 'unit': {'type': ['string', 'null']},
@@ -131,13 +141,15 @@ def schemas(origin, categories):
         'keys_and_books': {'type': 'object', 'description': 'Who holds the keys, whether the books are open, who is behind it: each filled only from a '
                            'sourced claim on the card, otherwise state not_recorded. Added in schema_version 1.4.0.',
                            'required': ['keys', 'books', 'people'],
-                           'properties': {f: kb_item(vals) for f, vals in (('keys', KEYS_VALUES), ('books', BOOKS_VALUES), ('people', PEOPLE_VALUES))}},
+                           'properties': {f: kb_item(vals) for f, vals in (('keys', KEYS_VALUES), ('books', BOOKS_VALUES), ('people', PEOPLE_VALUES))}
+                           | {'keys': kb_item(KEYS_VALUES, keys=True)}},
         'first_task': {'type': ['object', 'null'], 'description': 'A verified first step for newcomers, with credit to its contributor, or null. Added in schema_version 1.4.0.',
                        'required': ['title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification', 'credit'],
                        'properties': {'title': {'type': 'string'}, 'steps': {'type': 'array', 'items': {'type': 'string', 'minLength': 1}},
                                       'done_when': {'type': 'string'}, 'contributed_by': {'type': 'string'}, 'contributed_via': {'type': 'string'},
                                       'source_url': uri, 'verified_by': {'type': 'string'}, 'verified_on': {'type': 'string', 'pattern': r'^\d{4}-\d{2}-\d{2}$'},
-                                      'verification': {'type': 'string'}, 'credit': {'type': 'string', 'pattern': '^Contributed by '}}}}
+                                      'verification': {'type': 'string'}, 'credit': {'type': 'string', 'pattern': '^Contributed by '},
+                                      'no_code': {'type': 'string', 'minLength': 1, 'description': 'Optional: a way to finish the task without running code.'}}}}
     optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task'}  # added in 1.1.0 / 1.2.0 / 1.4.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
                'required': [k for k in summary_props if k not in optional], 'properties': summary_props}
@@ -205,6 +217,9 @@ def openapi(origin, categories, example_ids, docs_url, licence):
                                  'CORS is open (Access-Control-Allow-Origin: *). Responses may be cached by Cloudflare and browsers for up to a few hours. '
                                  + VERSIONING + ' Related file outside /api/: ' + origin + '/atlas/events.json, the public log of card changes '
                                  '(also as /atlas/events.md). '
+                                 'Money and activity claims carry evidence_level (1 operator says, 2 public dashboard, 3 public transactions) and '
+                                 'evidence_label; where a curator opened the source and set the level by hand, the claim also carries evidence_note, '
+                                 'a short reason (manual relabel rules: https://github.com/commonworld-one/commonworld/blob/main/atlas/CURATION.md#curator-review-of-a-level). '
                                  + f'Human documentation: {docs_url}'),
                  'license': {'name': f'Data: {licence}', 'url': 'https://creativecommons.org/licenses/by/4.0/'}},
         'servers': [{'url': f'{origin}{API_BASE}', 'description': 'Commonworld (canonical)'}],

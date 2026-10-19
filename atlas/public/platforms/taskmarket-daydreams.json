@@ -55,9 +55,10 @@
   "keys": {
    "state": "recorded",
    "value": "smart_contract",
-   "label": "A smart contract holds the funds",
+   "label": "The operator says a smart contract holds the funds",
    "source_url": "https://taskmarket.dev/skill.md",
-   "quote": "requester wallets escrow USDC"
+   "quote": "requester wallets escrow USDC",
+   "basis": "operator_says"
   },
   "books": {
    "state": "not_recorded",
