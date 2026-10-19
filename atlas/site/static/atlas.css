@@ -68,6 +68,9 @@
 .claim-hist { font-size:11px; color:var(--muted); margin-top:2px; font-style:italic; overflow-wrap:anywhere; }
 .legal-scope { font-size:13px; color:var(--muted); }
 .claim-meta a:hover { color:var(--ink); }
+.claim-verify { font-size:11px; color:var(--muted); overflow-wrap:anywhere; }
+.claim-verify a { color:var(--muted); }
+.claim-verify a:hover { color:var(--ink); }
 .qa-label { font-size:12px; border-radius:9px; padding:6px 9px; background:var(--paper); }
 .qa-label.warn { background:var(--warn-bg); }
 .qa-label.bad { background:var(--bad-bg); }

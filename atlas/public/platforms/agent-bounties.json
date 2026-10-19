@@ -1,7 +1,7 @@
 {
  "licence": "CC BY 4.0",
  "source": "https://github.com/commonworld-one/commonworld",
- "generated_at": "2026-10-18T06:49:00Z",
+ "generated_at": "2026-10-19T08:29:00Z",
  "id": "agent-bounties",
  "name": "Agent Bounties",
  "url": "https://commonworld.one/atlas/platforms/agent-bounties/",
@@ -20,12 +20,12 @@
  "has_money_flow": true,
  "money_flow": [
   {
-   "statement": "Lifetime confirmed marketplace payouts 73.065 USDC across 57 settled rounds; 0 USDC in last 7d and prior 7d (maintainer contracts excluded)",
+   "statement": "Lifetime confirmed marketplace payouts 73.065 USDC across 57 settled rounds; 0 USDC in the last 7d (maintainer contracts excluded)",
    "value": 73.065,
    "unit": "USDC",
    "window": "lifetime to 2026-10-15",
    "basis": "operator_claim",
-   "observed_at": "2026-10-15T18:12:00Z",
+   "observed_at": "2026-10-19T08:29:00Z",
    "source_url": "https://api.agentbounties.app/v1/metrics/platform"
   }
  ],
@@ -38,11 +38,11 @@
   "observed_at": "2026-10-18T06:49:00Z",
   "source_url": "https://api.agentbounties.app/v1/metrics/platform"
  },
- "verified_at": "2026-10-18T06:49:00Z",
- "last_checked": "2026-10-18T06:49:00Z",
+ "verified_at": "2026-10-19T08:29:00Z",
+ "last_checked": "2026-10-19T08:29:00Z",
  "claims_count": 6,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-18",
+ "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/agent-bounties.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/agent-bounties-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
@@ -95,18 +95,35 @@
   },
   {
    "kind": "economic_flow",
-   "statement": "Lifetime confirmed marketplace payouts 73.065 USDC across 57 settled rounds; 0 USDC in last 7d and prior 7d (maintainer contracts excluded)",
+   "statement": "Lifetime confirmed marketplace payouts 73.065 USDC across 57 settled rounds; 0 USDC in the last 7d (maintainer contracts excluded)",
    "value": 73.065,
    "unit": "USDC",
    "window": "lifetime to 2026-10-15",
    "basis": "operator_claim",
    "source_url": "https://api.agentbounties.app/v1/metrics/platform",
-   "quote": "\"lifetime\":{\"usdc_base_units\":\"73065000\",\"usdc\":\"73.065000\"} … \"lifetime_settled_rounds\": 57",
-   "observed_at": "2026-10-15T18:12:00Z",
+   "quote": "\"marketplace_payout_volume.lifetime.usdc\":\"73.065000\",\"lifetime_settled_rounds\":57,\"marketplace_payout_volume.selected.usdc\":\"0.000000\"",
+   "observed_at": "2026-10-19T08:29:56Z",
    "methods": [
-    "curl https://api.agentbounties.app/v1/metrics/platform"
+    "GET https://api.agentbounties.app/v1/metrics/platform",
+    "read marketplace_payout_volume.lifetime.usdc"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": 73.065,
+     "unit": "USDC",
+     "window": "lifetime to 2026-10-15",
+     "statement": "Lifetime confirmed marketplace payouts 73.065 USDC across 57 settled rounds; 0 USDC in last 7d and prior 7d (maintainer contracts excluded)",
+     "quote": "\"lifetime\":{\"usdc_base_units\":\"73065000\",\"usdc\":\"73.065000\"} … \"lifetime_settled_rounds\": 57",
+     "source_url": "https://api.agentbounties.app/v1/metrics/platform",
+     "observed_at": "2026-10-15T18:12:00Z",
+     "basis": "operator_claim",
+     "outcome": "supported",
+     "superseded_at": "2026-10-19T08:29:56Z",
+     "reason": "weekly automated re-observation (atlas/refresh.py): statement regenerated from the same fetch"
+    }
+   ],
+   "refresh_id": "agent-bounties-lifetime-usdc"
   },
   {
    "kind": "metric",

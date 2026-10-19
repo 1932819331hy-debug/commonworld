@@ -50,6 +50,7 @@ Public stats: /stats/ (+ /stats/index.md, /stats.json) from atlas/data/stats.jso
 exactly when status is coming/none_yet; people, agents and search are separate sections; Atlas counts equal the snapshot; footer + sidebar + llms.txt link it.
 Trust decisions (atlas/tools/trust_check.py): every removed entry has a remove decision and every decision names an actor from
 atlas/data/trust-roles.json, a date, a reason and an https evidence link; a restored host must be clean in the latest safety report.
+Refreshed numbers: the text of every claim the weekly refresh manages agrees with its number and quote (refresh_note_checks).
 Also: native ad cards sit after every 12th card, the tag shelf exists with its expander, every card links to its page.
 """
 import gzip, html, json, os, re, struct, sys, xml.etree.ElementTree as ET
@@ -1046,6 +1047,40 @@ def decisions_checks(parsed, pages, locs):
     return fails
 
 
+def refresh_note_checks():
+    """Refreshed claims keep their words in step with their number: for every claim carrying a refresh_id (a number the
+    weekly refresh re-observes), atlas/refresh.py note_drift() must find nothing (statement = its template re-rendered
+    from value + quote, or, without a template, no number in the statement other than the value or one in the quote).
+    The numbers mappings in atlas/refresh-sources.json pass mapping_problems() (template fields are quoted, verify links
+    are https on the source's own domain), and every claim `verify` is {url: https://..., note}."""
+    sys.path.insert(0, os.path.normpath(os.path.join(HERE, '..')))
+    import refresh
+    fails = []
+    srcs = json.load(open(os.path.join(HERE, '..', 'refresh-sources.json'), encoding='utf-8')).get('sources', {})
+    maps = {}
+    for slug, v in srcs.items():
+        for m in v.get('numbers', []):
+            fails += [f'refresh-sources.json: {p_}' for p_ in refresh.mapping_problems(m)]
+            maps[m['id']] = (slug, m)
+    snap = json.load(open(refresh.default_snapshot(), encoding='utf-8'))
+    for e in snap.get('platforms', []):
+        for c in e.get('claims', []):
+            v = c.get('verify')
+            if v is not None and (not isinstance(v, dict) or not str(v.get('url', '')).startswith('https://') or not (v.get('note') or '').strip()):
+                fails.append(f'{e["slug"]}: claim verify must be {{url: https://..., note}}')
+            rid = c.get('refresh_id')
+            if not rid:
+                continue
+            slug, m = maps.get(rid, (None, None))
+            if m is not None and slug != e['slug']:
+                fails.append(f'{e["slug"]}: claim refresh_id {rid} belongs to {slug}')
+                continue
+            drift = refresh.note_drift(c, m)
+            if drift:
+                fails.append(f'{e["slug"]} [{rid}]: {drift}')
+    return fails
+
+
 def main():
     global SHARE_LIVE, SHARE_ENTRY
     SHARE_LIVE, SHARE_ENTRY = _share_expectations()
@@ -1368,6 +1403,7 @@ def main():
     fails += dataset_haspart_checks(parsed)
     fails += safety_report_checks(parsed)
     fails += decisions_checks(parsed, pages, locs)
+    fails += refresh_note_checks()
     fails += markdown_twin_checks(pages)[0]
     fails += stats_checks(parsed, pages, locs)
     fails += badge_checks(parsed, pages, locs)

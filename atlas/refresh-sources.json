@@ -8,7 +8,9 @@
     "  match: an existing claim (by source_url + unit) this mapping continues. If that claim has a different basis, it is left untouched and a new claim is added.",
     "  A changed value is a re-observation: the claim gets the new value + observed_at (UTC), the previous value goes into claim.history. Past records are never rewritten.",
     "  basis: direct_observation = counted by us from the raw list; operator_claim = a total the operator's own stats endpoint reports (kept as operator_claim per atlas/PROTOCOL.md).",
-    "  on_change_note: shown in the refresh PR for human follow-up."
+    "  on_change_note: shown in the refresh PR for human follow-up.",
+    "  statement: the claim text, regenerated from the same fetch on every refresh. {value} = the mapped number; {a.b.c} = another number from the same JSON (path mappings only; it must be in quote_fields so check.py can re-render the text from the claim's quote). A number that changes inside the text (a 7-day count beside a lifetime total) is a re-observation too. Without a statement, check.py fails when the old text holds numbers that are neither the value nor in the quote.",
+    "  verify: optional {url, note} copied onto the claim: a smaller cross-check an agent can fetch within normal limits (same domain as url). Only real operator URLs; no invented totals."
   ],
   "sources": {
     "the-colony": {
@@ -36,7 +38,8 @@
     "x402-list": {
       "numbers": [
         {"id": "x402-list-services", "kind": "metric", "url": "https://x402-list.com/api/v1/stats", "path": "data.total_services",
-         "unit": "services", "basis": "direct_observation", "quote_fields": ["data.total_services", "data.total_endpoints"],
+         "unit": "services", "basis": "direct_observation", "quote_fields": ["data.total_services", "data.total_endpoints", "data.total_networks"],
+         "statement": "{value} services, {data.total_endpoints} endpoints, {data.total_networks} mainnet networks (stats API)",
          "match": {"source_url": "https://x402-list.com/api/v1/stats", "unit": "services"}}
       ]
     },
@@ -44,10 +47,12 @@
       "numbers": [
         {"id": "agent-bounties-lifetime-usdc", "kind": "economic_flow", "url": "https://api.agentbounties.app/v1/metrics/platform",
          "path": "marketplace_payout_volume.lifetime.usdc", "unit": "USDC", "basis": "operator_claim",
-         "quote_fields": ["marketplace_payout_volume.lifetime.usdc"],
+         "statement": "Lifetime confirmed marketplace payouts {value} USDC across {marketplace_payout_volume.lifetime_settled_rounds} settled rounds; {marketplace_payout_volume.selected.usdc} USDC in the last 7d (maintainer contracts excluded)",
+         "quote_fields": ["marketplace_payout_volume.lifetime.usdc", "marketplace_payout_volume.lifetime_settled_rounds", "marketplace_payout_volume.selected.usdc"],
          "match": {"source_url": "https://api.agentbounties.app/v1/metrics/platform", "unit": "USDC"}},
         {"id": "agent-bounties-lifetime-identities", "kind": "metric", "url": "https://api.agentbounties.app/v1/metrics/platform",
          "path": "platform_active_identities.lifetime", "unit": "identities", "basis": "operator_claim",
+         "statement": "Active identities: {platform_active_identities.latest_week} in last 7d, {value} lifetime",
          "quote_fields": ["platform_active_identities.lifetime", "platform_active_identities.latest_week"],
          "match": {"source_url": "https://api.agentbounties.app/v1/metrics/platform", "unit": "identities"}}
       ]
@@ -58,11 +63,15 @@
          "agg": {"list": "bounties", "op": "sum", "field": "rewardSats", "where": {"status": "paid", "paidTxid": "*"}},
          "unit": "sats", "window": "all-time", "basis": "direct_observation",
          "statement": "Sum of rewardSats over bounties with status=paid and an on-chain paidTxid (public API): {value} sats",
+         "verify": {"url": "https://aibtc.com/api/bounties?status=paid&limit=10&offset=0",
+                    "note": "AIBTC publishes no total for paid sats. Re-add it in small pages: about 40 KB per 10 bounties; sum rewardSats, then follow nextOffset until hasMore is false. The paid count alone is one small call: add withCount=true and read total."},
          "on_change_note": "AIBTC paid-sats re-counted from the public API; the earlier page figure (operator claim) stays as recorded."},
         {"id": "aibtc-paid-count", "kind": "metric", "url": "https://aibtc.com/api/bounties?status=paid&limit=100", "paginate": "offset",
          "agg": {"list": "bounties", "op": "count", "where": {"status": "paid", "paidTxid": "*"}},
          "unit": "paid bounties", "window": "all-time", "basis": "direct_observation",
-         "statement": "Bounties with status=paid and an on-chain paidTxid (public API): {value}"},
+         "statement": "Bounties with status=paid and an on-chain paidTxid (public API): {value}",
+         "verify": {"url": "https://aibtc.com/api/bounties?status=paid&limit=1&withCount=true",
+                    "note": "Exact paid count in one small response (about 4 KB): read total (withCount=true makes it exact)."}},
         {"id": "aibtc-open-count", "kind": "metric", "url": "https://aibtc.com/api/bounties?status=open&limit=100", "paginate": "offset",
          "agg": {"list": "bounties", "op": "count", "where": {"status": "open"}},
          "unit": "open bounties", "window": "now", "basis": "direct_observation",

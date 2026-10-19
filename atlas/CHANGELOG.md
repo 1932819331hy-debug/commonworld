@@ -2,6 +2,13 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-19 — Refreshed numbers keep their words in step
+
+- The weekly refresh ([`refresh.py`](refresh.py)) used to update only a claim's number and leave the text beside it as it was, so a card could show 66 next to "4 in last 7d, 65 lifetime". A mapping's `statement` in [`refresh-sources.json`](refresh-sources.json) is now a template: `{value}` is the mapped number and `{a.b.c}` any other number from the same JSON response, so the text is regenerated from the same fetch. When only a side number changes (a 7-day count beside an unchanged lifetime total), that is a re-observation too: the old text goes into the claim history.
+- `check.py` and the unit tests ([`tests/test_refresh_notes.py`](../tests/test_refresh_notes.py)) fail when a refreshed claim's text disagrees with its number and quote. Templates now cover x402-list (services, endpoints, networks) and Agent Bounties (lifetime USDC with settled rounds and 7-day USDC; active identities 7-day and lifetime).
+- x402-list: the old text "1,024 services, 7,700 endpoints, 35 mainnet networks; 928 answering, 959 payment-ready" did not match its number (1,020); re-observed 2026-10-19 as 1,019 services, 7,701 endpoints, 35 mainnet networks from the stats API. The "answering / payment-ready" counts are not in that API and are dropped from the text (still in the claim history).
+- AIBTC: the paid list is too large for many agent fetch tools (about 230 KB). New optional claim field `verify` {url, note} (API schema_version 1.3.0): the paid count links to `/api/bounties?status=paid&limit=1&withCount=true` (exact `total`, about 4 KB); the paid-sats sum links to 10-bounty pages, because AIBTC publishes no total for paid sats.
+
 ## 2026-10-18 — Standard JSON Schema check in CI
 
 - CI validates every generated `/api/v1/` data file against its schema with the standard `jsonschema` library (Draft 2020-12 + format checks), pinned in [`requirements-ci.txt`](../requirements-ci.txt), script [`site/tools/validate_jsonschema.py`](site/tools/validate_jsonschema.py). `check.py` uses `jsonschema` when it is installed and the built-in validator otherwise.

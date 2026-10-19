@@ -341,8 +341,8 @@ def get_json(url, with_size=False, max_bytes=None):
     return out if with_size else out[:2]
 
 
-def read_mapping(m):
-    """-> (value, quote, methods, error)"""
+def read_mapping(m, fields_out=None):
+    """-> (value, quote, methods, error). fields_out (dict) receives the quote/statement fields of a path mapping."""
     if m.get('agg'):
         ag = m['agg']
         url, pages, methods, total_bytes, total_items, selected_items, total_value = m['url'], 0, [], 0, 0, 0, 0
@@ -418,8 +418,114 @@ def read_mapping(m):
     val = as_number(dig(doc, m['path']))
     if val is None:
         return None, None, [f'GET {m["url"]}'], f'no number at {m["path"]}'
-    q = ','.join(f'"{f.split(".")[-1]}":{json.dumps(dig(doc, f))}' for f in (m.get('quote_fields') or [m['path']]))
-    return val, q[:200], [f'GET {m["url"]}', f'read {m["path"]}'], None
+    qf = m.get('quote_fields') or [m['path']]
+    if fields_out is not None:
+        for f in set(qf) | set(statement_fields(m.get('statement'))):
+            fields_out[f] = as_number(dig(doc, f))
+    q = ','.join(f'"{quote_key(f, qf)}":{json.dumps(dig(doc, f))}' for f in qf)
+    return val, q[:QUOTE_MAX], [f'GET {m["url"]}', f'read {m["path"]}'], None
+
+
+# ------------------------------------------------------------------ claim statements (the text next to the number)
+# A mapping's `statement` is a template: {value} is the mapped number, {a.b.c} is any other number from the same JSON
+# document (it must be listed in quote_fields, so the claim's quote carries it and check.py can re-render the text).
+# The statement is regenerated from the same fetch on every refresh, so the words beside a number never keep old figures.
+QUOTE_MAX = 200
+_PLACEHOLDER = re.compile(r'\{([A-Za-z0-9_.]+)\}')
+_NUM = re.compile(r'(?<![\w.])-?\d[\d,]*(?:\.\d+)?(?![\d.]*[A-Za-z])')
+
+
+def quote_key(field, fields):
+    """Key used for one field in a claim quote: its last path segment, or the full path when two fields share it."""
+    last = field.split('.')[-1]
+    return field if sum(1 for f in fields if f.split('.')[-1] == last) > 1 else last
+
+
+def statement_fields(template):
+    return [f for f in _PLACEHOLDER.findall(template or '') if f != 'value']
+
+
+def render_statement(template, value, fields):
+    """-> (text, missing_fields). fields: {dot.path: number}."""
+    missing = []
+
+    def sub(mt):
+        k = mt.group(1)
+        v = value if k == 'value' else (fields or {}).get(k)
+        if v is None:
+            missing.append(k)
+            return mt.group(0)
+        return fmt_value(v)
+    text = _PLACEHOLDER.sub(sub, template or '')
+    return (text or None), missing
+
+
+def fields_from_quote(quote, quote_fields):
+    """Inverse of the quote built by read_mapping: {dot.path: number} for every quote field found in the quote."""
+    out = {}
+    for f in quote_fields or []:
+        mt = re.search(r'"' + re.escape(quote_key(f, quote_fields)) + r'"\s*:\s*("?)(-?[\d.]+(?:[eE][-+]?\d+)?)\1', quote or '')
+        if mt:
+            out[f] = as_number(mt.group(2))
+    return out
+
+
+def numbers_in(text):
+    out = []
+    for t in _NUM.findall(text or ''):
+        n = as_number(t.replace(',', ''))
+        if n is not None:
+            out.append(n)
+    return out
+
+
+def _same(a, b):
+    return abs(float(a) - float(b)) <= 1e-9 * max(1.0, abs(float(a)), abs(float(b)))
+
+
+def note_drift(claim, mapping):
+    """Why a refreshed claim's statement disagrees with its own number and quote, or None.
+    With a template: the statement must equal the template re-rendered from claim.value and the numbers in claim.quote.
+    Without one: every number in the statement (not counting window tokens like 7d or 24h) must be claim.value or a number
+    in claim.quote, and a statement that has numbers must contain claim.value."""
+    st, val = claim.get('statement') or '', claim.get('value')
+    tpl = (mapping or {}).get('statement')
+    if tpl:
+        fields = fields_from_quote(claim.get('quote'), [f for f in (mapping.get('quote_fields') or [mapping.get('path')]) if f])
+        want, missing = render_statement(tpl, val, fields)
+        if missing:
+            return f'statement template needs {missing} but the quote does not carry them'
+        if want != st:
+            return f'statement {st!r} != {want!r} (template re-rendered from value + quote)'
+        return None
+    nums = numbers_in(st)
+    if not nums or val is None:
+        return None
+    allowed = [val] + numbers_in(claim.get('quote'))
+    stray = [n for n in nums if not any(_same(n, a) for a in allowed)]
+    if stray:
+        return f'statement numbers {stray} are neither the value {val} nor in the quote (stale note?)'
+    if not any(_same(n, val) for n in nums):
+        return f'statement does not mention the value {val}'
+    return None
+
+
+def mapping_problems(m):
+    """Config lint for one numbers mapping."""
+    probs = []
+    qf = m.get('quote_fields') or [m.get('path')]
+    for f in statement_fields(m.get('statement')):
+        if m.get('agg'):
+            probs.append(f'{m["id"]}: aggregate mappings only support {{value}} in statement, not {{{f}}}')
+        elif f not in qf:
+            probs.append(f'{m["id"]}: statement field {{{f}}} is not in quote_fields')
+    v = m.get('verify')
+    if v is not None:
+        if not isinstance(v, dict) or not str(v.get('url', '')).startswith('https://') or not (v.get('note') or '').strip():
+            probs.append(f'{m["id"]}: verify must be {{url: https://..., note: ...}}')
+        elif reg_domain(v['url']) != reg_domain(m['url']):
+            probs.append(f'{m["id"]}: verify url is on another domain than the mapping url')
+    return probs
 
 
 def fmt_value(v):
@@ -428,32 +534,42 @@ def fmt_value(v):
     return f'{v:,.6f}'.rstrip('0').rstrip('.')
 
 
-def apply_number(entry, m, val, quote, methods, ts):
-    """Mutates entry. Returns ('new'|'changed'|'same', old_value)."""
+def apply_number(entry, m, val, quote, methods, ts, fields=None):
+    """Mutates entry. Returns ('new'|'changed'|'note'|'same', old_value).
+    'note': the number is unchanged but the statement beside it (rendered from the same fetch) changed, e.g. a 7-day
+    count inside a lifetime claim; it is a re-observation too, so the old statement goes into history."""
     claims = entry.setdefault('claims', [])
     c = next((x for x in claims if x.get('refresh_id') == m['id']), None)
     if c is None and m.get('match'):
         mt = m['match']
         c = next((x for x in claims if x.get('source_url') == mt.get('source_url') and x.get('unit') == mt.get('unit')
                   and x.get('kind') == m['kind'] and x.get('basis') == m['basis']), None)
-    statement = (m.get('statement') or '').replace('{value}', fmt_value(val)) or None
+    statement, missing = render_statement(m.get('statement'), val, fields)
+    if missing:
+        statement = None   # never publish a half-filled template; check.py then flags the stale note for a human
     if c is None:
-        claims.append({'kind': m['kind'], 'statement': statement or f'{fmt_value(val)} {m["unit"]}', 'value': val, 'unit': m['unit'],
-                       'window': m.get('window'), 'basis': m['basis'], 'source_url': m['url'], 'quote': quote, 'observed_at': ts,
-                       'methods': methods, 'outcome': 'supported', 'refresh_id': m['id']})
+        claim = {'kind': m['kind'], 'statement': statement or f'{fmt_value(val)} {m["unit"]}', 'value': val, 'unit': m['unit'],
+                 'window': m.get('window'), 'basis': m['basis'], 'source_url': m['url'], 'quote': quote, 'observed_at': ts,
+                 'methods': methods, 'outcome': 'supported', 'refresh_id': m['id']}
+        if m.get('verify'):
+            claim['verify'] = dict(m['verify'])
+        claims.append(claim)
         return 'new', None
-    if c.get('value') == val:
+    if m.get('verify') and c.get('verify') != m['verify']:
+        c['verify'] = dict(m['verify'])
+    if c.get('value') == val and (not statement or c.get('statement') == statement):
         return 'same', val
+    what = 'changed' if c.get('value') != val else 'note'
     old = {k: c.get(k) for k in ('value', 'unit', 'window', 'statement', 'quote', 'source_url', 'observed_at', 'basis', 'outcome')}
     old['superseded_at'] = ts
-    old['reason'] = 'weekly automated re-observation (atlas/refresh.py)'
+    old['reason'] = 'weekly automated re-observation (atlas/refresh.py)' + ('' if what == 'changed' else ': statement regenerated from the same fetch')
     c.setdefault('history', []).append(old)
     c.update({'value': val, 'quote': quote, 'observed_at': ts, 'methods': methods, 'outcome': 'supported', 'refresh_id': m['id']})
     if statement:
         c['statement'] = statement
     if m.get('window') and not c.get('window'):
         c['window'] = m['window']
-    return 'changed', old['value']
+    return what, old['value']
 
 
 # ------------------------------------------------------------------ main
@@ -524,7 +640,7 @@ def main():
     print(f'checked {len(results)} entries in {time.time() - t0:.0f}s', file=sys.stderr)
 
     rep = {'run_at': ts, 'dry_run': a.dry_run, 'counts': {}, 'died': [], 'suspected': [], 'recovered': [], 'revived': [],
-           'moved': [], 'closed_responding': [], 'numbers': [], 'number_errors': [], 'notes': []}
+           'moved': [], 'closed_responding': [], 'numbers': [], 'number_errors': [], 'note_drift': [], 'notes': []}
     from collections import Counter
     rep['counts'] = dict(Counter(r['cls'] for r in results.values()))
     rep['counts_by_status'] = {st: dict(Counter(results[e['slug']]['cls'] for e in entries if e['status'] == st)) for st in ('live', 'closed')}
@@ -589,11 +705,21 @@ def main():
         if e['status'] != 'live' or results[e['slug']]['cls'] == 'fail':
             continue
         for m in (sources.get(e['slug']) or {}).get('numbers', []):
-            val, quote, methods, err = read_mapping(m)
+            fields = {}
+            val, quote, methods, err = read_mapping(m, fields)
             if err:
                 rep['number_errors'].append({'slug': e['slug'], 'id': m['id'], 'error': err})
                 continue
-            what, old = apply_number(e, m, val, quote, methods, ts)
+            before = json.dumps(e.get('claims'), sort_keys=True)
+            what, old = apply_number(e, m, val, quote, methods, ts, fields)
+            c = next((x for x in e.get('claims', []) if x.get('refresh_id') == m['id']), None)
+            drift = note_drift(c, m) if c and c.get('value') == val else None
+            if drift:
+                rep['note_drift'].append({'slug': e['slug'], 'id': m['id'], 'problem': drift})
+                rep['notes'].append(f'{e["slug"]}: the text beside {m["id"]} no longer matches its number ({drift}); '
+                                    f'give the mapping a statement template in atlas/refresh-sources.json or fix the claim by hand.')
+            if what == 'same' and json.dumps(e.get('claims'), sort_keys=True) != before:
+                changed_slugs.add(e['slug'])   # e.g. a verify link added from the mapping
             if what != 'same':
                 changed_slugs.add(e['slug'])
                 rep['numbers'].append({'slug': e['slug'], 'id': m['id'], 'kind': m['kind'], 'basis': m['basis'], 'unit': m['unit'],
@@ -646,7 +772,8 @@ def summary_md(rep, snap_path):
           f'| failed this week | {c.get("fail", 0)} |',
           f'| **died** (2nd failed week → closed history) | {len(rep["died"])} |', f'| suspected down (1st failed week) | {len(rep["suspected"])} |',
           f'| recovered from suspected | {len(rep["recovered"])} |', f'| **revived** (closed by refresh → live) | {len(rep["revived"])} |',
-          f'| domain moved (needs human review) | {len(rep["moved"])} |', f'| number changes | {len(rep["numbers"])} |', '']
+          f'| domain moved (needs human review) | {len(rep["moved"])} |', f'| number changes | {len(rep["numbers"])} |',
+          f'| statements out of step with their number (needs a human) | {len(rep.get("note_drift", []))} |', '']
 
     def table(title, rows, cols):
         if not rows:
@@ -662,7 +789,7 @@ def summary_md(rep, snap_path):
     table('Revived', rep['revived'], [('entry', lambda r: pg(r['slug'])), ('url', lambda r: r['url']), ('HTTP', lambda r: r['status'])])
     table('Recovered (was suspected)', rep['recovered'], [('entry', lambda r: pg(r['slug'])), ('failed weeks before', lambda r: r['was_failed_weeks'])])
     table('Redirects to another domain (flag only, data unchanged)', rep['moved'], [('entry', lambda r: pg(r['slug'])), ('status', lambda r: r['status']), ('canonical', lambda r: r['canonical']), ('now ends at', lambda r: r['final_url']), ('previously seen', lambda r: r['previous'] or '—')])
-    table('Number changes (re-observations; old value kept in claim history)', rep['numbers'], [('entry', lambda r: pg(r['slug'])), ('claim', lambda r: r['id']), ('basis', lambda r: r['basis']), ('old', lambda r: '—' if r['old'] is None else fmt_value(r['old'])), ('new', lambda r: fmt_value(r['new'])), ('unit', lambda r: r['unit']), ('source', lambda r: r['source'])])
+    table('Number changes (re-observations; old value kept in claim history)', rep['numbers'], [('entry', lambda r: pg(r['slug'])), ('claim', lambda r: r['id']), ('basis', lambda r: r['basis']), ('change', lambda r: r['action']), ('old', lambda r: '—' if r['old'] is None else fmt_value(r['old'])), ('new', lambda r: fmt_value(r['new'])), ('unit', lambda r: r['unit']), ('source', lambda r: r['source'])])
     if rep['notes']:
         L.append('### Needs a human'); L.append(''); L += [f'- {n}' for n in rep['notes']]; L.append('')
     if rep['closed_responding']:

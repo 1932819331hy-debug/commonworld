@@ -642,7 +642,7 @@ def build_platform(site, c):
                    f'<span class="tag t-{OUTCOME_TONE.get(o, "warn")}">{e(OUTCOME_LABEL.get(o, o))}</span>'
                    f'<span class="tag t-basis">{e(BASIS_LABEL.get(x.get("basis"), x.get("basis") or "basis unknown"))}</span></div>'
                    f'{lab}{val}<p class="stmt">{e(x.get("statement"))}</p>{quote}'
-                   f'<p class="claim-meta">Observed {time_tag(dt)} · {src}</p>{history_html(x)}</li>')
+                   f'<p class="claim-meta">Observed {time_tag(dt)} · {src}</p>{verify_html(x)}{history_html(x)}</li>')
     qa_rows = []
     for q in c.get('qa', []):
         dt = parse_time(q.get('observed_at'))
@@ -726,6 +726,15 @@ def build_platform(site, c):
 def card_claims(c):
     """Claims in the order a platform card shows them."""
     return sorted(c.get('claims', []), key=lambda x: (KIND_ORDER.index(x['kind']) if x.get('kind') in KIND_ORDER else 50 + (x.get('kind') == 'site_reachable')))
+
+
+def verify_html(x):
+    """Optional smaller cross-check for a claim (claim.verify = {url, note}), e.g. when the full source list is too big for one agent fetch."""
+    v = x.get('verify')
+    if not isinstance(v, dict) or not v.get('url'):
+        return ''
+    return (f'<p class="claim-verify">Cross-check: {ext_link(v["url"], e(domain(v["url"])) + " (small fetch)")}'
+            f'{" · " + e(v["note"]) if v.get("note") else ""}</p>')
 
 
 def history_html(x):

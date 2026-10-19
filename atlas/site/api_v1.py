@@ -8,7 +8,7 @@ and ships as /api/v2/ while /api/v1/ keeps working.
 import re
 
 API_VERSION = 'v1'
-SCHEMA_VERSION = '1.2.0'
+SCHEMA_VERSION = '1.3.0'
 API_BASE = '/api/v1'
 STATUSES = ['live', 'closed']
 ENTITY_TYPES = ['platform', 'tool_catalog', 'protocol', 'project']
@@ -19,6 +19,10 @@ UTC_PATTERN = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$'  # ISO 8601 U
 
 # newest first; build.py writes changelog.json and CHANGELOG.md from this list
 CHANGELOG = [
+    {'schema_version': '1.3.0', 'date': '2026-10-19', 'changes': [
+        'New optional field `verify` on a claim (platforms/{id}.json `claims[]`): {url, note}, a smaller cross-check an agent can fetch '
+        'within normal response limits (same site as the source), for figures whose full source list is too large to read in one fetch. '
+        'Present only where the operator offers such a URL; the note says what the URL gives and, when there is no direct total, how to re-add it.']},
     {'schema_version': '1.2.0', 'date': '2026-10-17', 'changes': [
         'New optional field `link_safety` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): '
         '{status, checked_at}, the Google Safe Browsing status of the entry\'s official URL from the latest daily check '
@@ -71,13 +75,16 @@ def schemas(origin, categories):
                   'required': ['kind', 'value', 'unit', 'window', 'basis', 'observed_at', 'source_url'],
                   'properties': {'kind': {'type': 'string'}, 'value': scalar, 'unit': {'type': ['string', 'null']}, 'window': {'type': ['string', 'null']},
                                  'basis': {'enum': BASES}, 'observed_at': utc_n, 'source_url': uri_n}}
-    claim = {'type': 'object', 'description': 'One checked statement with its source, basis, outcome and observation time. Extra keys (history, recheck, methods) may appear.',
+    claim = {'type': 'object', 'description': 'One checked statement with its source, basis, outcome and observation time. Extra keys (history, recheck, methods, verify) may appear.',
              'required': ['kind', 'statement', 'basis', 'outcome'],
              'properties': {'kind': {'type': 'string'}, 'statement': {'type': 'string'}, 'value': scalar, 'unit': {'type': ['string', 'null']},
                             'window': {'type': ['string', 'null']}, 'basis': {'enum': BASES}, 'outcome': {'enum': OUTCOMES},
                             'source_url': uri_n, 'quote': {'type': ['string', 'null']}, 'observed_at': utc_n,
                             'methods': {'type': 'array', 'items': {'type': 'string'}}, 'history': {'type': 'array', 'items': {'type': 'object'}},
-                            'recheck': {'type': 'object'}}}
+                            'recheck': {'type': 'object'},
+                            'verify': {'type': 'object', 'description': 'Smaller cross-check for this figure: a URL an agent can fetch within '
+                                       'normal limits and a note on what it gives. Added in schema_version 1.3.0.',
+                                       'required': ['url', 'note'], 'properties': {'url': uri, 'note': {'type': 'string', 'minLength': 1}}}}}
     summary_props = {
         'id': {'type': 'string', 'pattern': ID_PATTERN, 'description': 'Permanent ID (URL slug). Never construct one: take it from platforms.json.'},
         'name': {'type': 'string'}, 'url': uri, 'json_url': uri, 'website': uri_n,

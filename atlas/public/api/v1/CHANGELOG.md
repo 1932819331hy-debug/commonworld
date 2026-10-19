@@ -2,6 +2,10 @@
 
 Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) ships as /api/v2/, and /api/v1/ keeps working.
 
+## 1.3.0 (2026-10-19)
+
+- New optional field `verify` on a claim (platforms/{id}.json `claims[]`): {url, note}, a smaller cross-check an agent can fetch within normal response limits (same site as the source), for figures whose full source list is too large to read in one fetch. Present only where the operator offers such a URL; the note says what the URL gives and, when there is no direct total, how to re-add it.
+
 ## 1.2.0 (2026-10-17)
 
 - New optional field `link_safety` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): {status, checked_at}, the Google Safe Browsing status of the entry's official URL from the latest daily check (clean, flagged or no_data; checked_at in ISO 8601 UTC, or null).

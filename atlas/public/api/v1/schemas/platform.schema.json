@@ -356,7 +356,7 @@
   },
   "claim": {
    "type": "object",
-   "description": "One checked statement with its source, basis, outcome and observation time. Extra keys (history, recheck, methods) may appear.",
+   "description": "One checked statement with its source, basis, outcome and observation time. Extra keys (history, recheck, methods, verify) may appear.",
    "required": [
     "kind",
     "statement",
@@ -441,6 +441,25 @@
     },
     "recheck": {
      "type": "object"
+    },
+    "verify": {
+     "type": "object",
+     "description": "Smaller cross-check for this figure: a URL an agent can fetch within normal limits and a note on what it gives. Added in schema_version 1.3.0.",
+     "required": [
+      "url",
+      "note"
+     ],
+     "properties": {
+      "url": {
+       "type": "string",
+       "format": "uri",
+       "pattern": "^https?://"
+      },
+      "note": {
+       "type": "string",
+       "minLength": 1
+      }
+     }
     }
    }
   },

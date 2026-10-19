@@ -2,8 +2,8 @@
  "name": "Commonworld API",
  "description": "Static, read-only JSON API of Commonworld, a shared world for humans and agents.",
  "version": "v1",
- "schema_version": "1.2.0",
- "generated_at": "2026-10-18T06:49:00Z",
+ "schema_version": "1.3.0",
+ "generated_at": "2026-10-19T08:29:00Z",
  "modules": {
   "atlas": {
    "name": "Atlas of Agent Platforms",
