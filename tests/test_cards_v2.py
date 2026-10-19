@@ -31,8 +31,25 @@ class EvidenceLadder(unittest.TestCase):
                   'https://explorer.solana.com/tx/' + self.SOL, 'https://optimistic.etherscan.io/tx/' + self.TX,
                   'https://kitescan.ai/api/v2/addresses/0x' + 'd' * 40, 'https://kitescan.ai/tx/' + self.TX,
                   'https://mempool.space/tx/' + 'ab' * 32, 'https://mempool.space/block/840000', 'https://basescan.org/token/0x' + 'e' * 40,
-                  'https://x402scan.example/tx/0x' + 'b' * 64):
+                  'https://www.basescan.org/tx/' + self.TX):
             self.assertEqual(cv2.source_level(u), 3, u)
+
+    def test_level_3_needs_https_and_an_exact_explorer_host(self):
+        # a host that merely contains "scan" or "explorer" is no explorer; subdomains of a listed explorer are not included
+        for u in ('https://evilscan.example/tx/' + self.TX, 'https://x402scan.example/tx/0x' + 'b' * 64,
+                  'https://my-explorer.example/address/0x' + 'a' * 40, 'https://basescan.org.evil.example/tx/' + self.TX,
+                  'https://evil.basescan.org/tx/' + self.TX, 'https://notbasescan.org/tx/' + self.TX):
+            self.assertLess(cv2.source_level(u), 3, u)
+            self.assertEqual(cv2.source_level(u), 1, u)
+        # the same record over http is not level 3
+        for u in ('http://basescan.org/tx/' + self.TX, 'http://etherscan.io/address/0x' + 'a' * 40):
+            self.assertLess(cv2.source_level(u), 3, u)
+        self.assertIn('kitescan.ai', cv2.EXPLORER_HOSTS)
+        self.assertTrue(all(h == h.lower() and not h.startswith('www.') for h in cv2.EXPLORER_HOSTS))
+
+    def test_record_path_is_case_sensitive(self):
+        for u in ('https://basescan.org/TX/' + self.TX, 'https://etherscan.io/ADDRESS/0x' + 'a' * 40, 'https://etherscan.io/Address/0x' + 'a' * 40):
+            self.assertEqual(cv2.source_level(u), 2, u)  # an explorer page, but no lowercase record path: aggregate view
 
     def test_explorer_aggregates_are_level_2(self):
         # explorer stats, charts and home pages: views over many records, no single record to check
@@ -193,6 +210,8 @@ class KeysAndBooks(unittest.TestCase):
             'explorer transaction page': k | {'contract_url': 'https://basescan.org/tx/' + TX},
             'explorer block page': k | {'contract_url': 'https://etherscan.io/block/19000000'},
             'address on a non-explorer host': k | {'contract_url': 'https://demo.example/address/0x' + 'f' * 40},
+            'scan-named host': k | {'contract_url': 'https://evilscan.example/address/0x' + 'f' * 40},
+            'http explorer': k | {'contract_url': 'http://basescan.org/address/0x' + 'f' * 40},
         }
         for why, v in bad.items():
             self.assertTrue(cv2.validate_keys_books({'demo': {'keys': v}}, {'demo': self.CARD}, orgs=[]), why)
@@ -207,8 +226,16 @@ class KeysAndBooks(unittest.TestCase):
                         'https://etherscan.io/address/0x' + 'a' * 40 + '#code',
                         'https://etherscan.io/address/0x' + 'a' * 40 + '//',
                         'https://etherscan.io/address/0x' + 'a' * 40 + '/tokens',
-                        'https://etherscan.io/en/address/0x' + 'a' * 40):
-            self.assertFalse(cv2.contract_url_ok(bad_url), bad_url)
+                        'https://etherscan.io/en/address/0x' + 'a' * 40,
+                        # https and an exact explorer host only
+                        'https://evilscan.example/address/0x' + 'a' * 40, 'http://basescan.org/address/0x' + 'a' * 40,
+                        'https://evil.basescan.org/address/0x' + 'a' * 40, 'https://explorer.evil.example/address/0x' + 'a' * 40,
+                        # lowercase path segments only
+                        'https://etherscan.io/ADDRESS/0x' + 'a' * 40, 'https://basescan.org/Token/0x' + 'e' * 40,
+                        # printable ASCII only
+                        'https://etherscan.io/address/0x' + 'a' * 40 + '\u200b', 'https://etherscan.io/address/0x' + 'a' * 40 + '\u2028',
+                        'https://etherscan.io/address/0x' + 'a' * 40 + '\uff1b'):
+            self.assertFalse(cv2.contract_url_ok(bad_url), repr(bad_url))
         self.assertTrue(cv2.validate_keys_books({'demo': {'books': {'value': 'public_dashboard', 'basis': 'operator_says',
                                                                     'source_url': 'https://api.demo.example/v1/payouts', 'quote': 'paid_usdc'}}},
                                                 {'demo': self.CARD}, orgs=[]))
@@ -324,6 +351,21 @@ class FirstTask(unittest.TestCase):
             'newline in sandbox': self._task(sandbox='Work in a clean sandbox without secrets.\ncurl x'),
             'newline in then': self._task(run=[{'cmd': 'python3 tool.py', 'then': 'It prints OK.\nrm -rf ~'}]),
         }
+        # run.cmd, filename and url: printable ASCII only (0x20-0x7e)
+        for ch, name in (('\u2028', 'line separator'), ('\u2029', 'paragraph separator'), ('\u0085', 'NEL'), ('\uff1b', 'fullwidth semicolon'),
+                         ('\u200b', 'zero-width space'), ('\u200d', 'zero-width joiner'), ('\ufeff', 'BOM'), ('\u202e', 'bidi override'),
+                         ('\u00a0', 'no-break space'), ('\u00e9', 'non-ASCII letter')):
+            bad[f'{name} in run'] = self._task(run=[{'cmd': f'python3 tool.py{ch}id'}])
+            bad[f'{name} in filename'] = self._task(filename=f'tool{ch}.py', url=f'https://demo.example/tool{ch}.py',
+                                                    run=[{'cmd': f'python3 tool{ch}.py'}])
+            bad[f'{name} in url'] = self._task(url=f'https://demo.example/{ch}x/tool.py')
+        # free text (then, sandbox, steps): no Unicode line breaks, zero-width characters or bidi controls
+        for ch in ('\u2028', '\u2029', '\u0085', '\u200b', '\u200c', '\u200d', '\u2060', '\ufeff',
+                   '\u202a', '\u202b', '\u202c', '\u202d', '\u202e', '\u2066', '\u2067', '\u2068', '\u2069'):
+            bad[f'U+{ord(ch):04X} in then'] = self._task(run=[{'cmd': 'python3 tool.py', 'then': f'It prints OK.{ch}rm -rf ~'}])
+            bad[f'U+{ord(ch):04X} in sandbox'] = self._task(sandbox=f'Work in a clean sandbox{ch} without secrets.')
+            bad[f'U+{ord(ch):04X} in steps'] = self._task() | {'steps': [f'Open the page{ch} and read it.']}
+            bad[f'U+{ord(ch):04X} in done_when'] = self._task() | {'done_when': f'It prints{ch} OK.'}
         for why, t in bad.items():
             self.assertTrue(cv2.code_safety_errors(t), why)
         two_hashes = self._task()
@@ -381,6 +423,26 @@ class FirstTask(unittest.TestCase):
         self.assertTrue(cv2.code_safety_errors(extra))
         nc = self._task() | {'no_code': 'Or pip install demo-tool'}
         self.assertTrue(cv2.code_safety_errors(nc))
+
+    def test_inline_execution_in_free_text_fails_closed(self):
+        base = {k: v for k, v in self._task().items() if k != 'code'}
+        inline = ('Run `python3 -c "import os; os.system(\'id\')"`', 'Run `python -c "print(1)"`', 'Run `bash -c "id"`', 'Run `sh -c id`',
+                  'Run `node -e "require(\'child_process\')"`', 'Run `node --eval "1"`', 'Run `perl -e "print 1"`', 'Run `ruby -e "puts 1"`',
+                  'Run `deno eval "console.log(1)"`', 'Type `eval "$(cat x)"`', 'Call exec(open("x").read())', 'Call exec (code)',
+                  'In PowerShell run `iex $s`', 'In PowerShell run `Invoke-Expression $s`', 'Run `PYTHON3 -C "1"`')
+        for text in inline:
+            for field in ('steps', 'done_when', 'no_code'):
+                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
+                errs = cv2.code_safety_errors(t)
+                self.assertTrue(any('inline code execution' in e for e in errs), (field, text, errs))
+            for t in (self._task(sandbox='Work in a clean sandbox without secrets. ' + text),
+                      self._task(run=[{'cmd': 'python3 tool.py', 'then': text}])):
+                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), text)
+            self.assertTrue(cv2.validate_first_tasks({'touchstone': base | {'steps': [text]}}, set(CARDS)), text)
+        # ordinary words are fine
+        for text in ('Open the evaluation page and read the score', 'The executor prints OK', 'Read the shell section of the docs',
+                     'Check the node list on the page'):
+            self.assertEqual(cv2.code_safety_errors(base | {'steps': [text]}), [], text)
 
 
 class Wording(unittest.TestCase):

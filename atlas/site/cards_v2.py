@@ -50,19 +50,24 @@ LEVELS = {
     2: ('public_dashboard', 'public dashboard', 'A public stats page, dashboard or API that anyone can open.'),
     3: ('public_transactions', 'public transactions', 'On-chain or other public records that anyone can open and check independently.'),
 }
-# Public block explorers: their pages are views of public chain records (a host matches itself and its subdomains).
+# Public block explorers: their pages are views of public chain records. An EXACT allowlist: the host (after a leading `www.`)
+# must equal one entry; subdomains are not included (list each one, such as optimistic.etherscan.io), and a host that merely
+# contains "scan" or "explorer" is no explorer. Level 3 (and a custody contract_url) also needs https. Documented in CURATION.md.
 EXPLORER_HOSTS = (
-    'etherscan.io', 'basescan.org', 'arbiscan.io', 'polygonscan.com', 'bscscan.com', 'celoscan.io', 'lineascan.build', 'scrollscan.com',
-    'snowtrace.io', 'ftmscan.com', 'solscan.io', 'explorer.solana.com', 'solana.fm', 'blockscout.com', 'mempool.space', 'blockstream.info',
-    'blockchair.com', 'explorer.hiro.so', 'tronscan.org', 'tonviewer.com', 'tonscan.org', 'suiscan.xyz', 'explorer.aptoslabs.com',
-    'oklink.com', 'kitescan.ai',  # kitescan.ai: the Blockscout explorer of the Kite chain
+    'etherscan.io', 'optimistic.etherscan.io', 'sepolia.etherscan.io', 'basescan.org', 'sepolia.basescan.org', 'arbiscan.io',
+    'nova.arbiscan.io', 'polygonscan.com', 'zkevm.polygonscan.com', 'bscscan.com', 'celoscan.io', 'lineascan.build', 'scrollscan.com',
+    'snowtrace.io', 'ftmscan.com', 'gnosisscan.io', 'era.zksync.network', 'blastscan.io', 'solscan.io', 'explorer.solana.com',
+    'solana.fm', 'blockscout.com', 'eth.blockscout.com', 'base.blockscout.com', 'optimism.blockscout.com', 'gnosis.blockscout.com', 'mempool.space',
+    'blockstream.info', 'blockchair.com', 'explorer.hiro.so', 'tronscan.org', 'tonviewer.com', 'tonscan.org', 'suiscan.xyz',
+    'explorer.aptoslabs.com', 'oklink.com',
+    'kitescan.ai',  # kitescan.ai: the Blockscout explorer of the Kite chain (used by the Kite AI card)
 )
-# Concrete public record pages (on an explorer host, or a host that calls itself a scanner or explorer): a transaction hash, an
-# address or account, a token contract or a block, each with its identifier in the path (/tx/<hash>, /address/<addr>,
-# /api/v2/addresses/<addr>, /block/<number>). Explorer pages without such an identifier (home, /stats, /charts, /api/v2/stats)
-# are aggregate views: level 2.
+# Concrete public record pages on an explorer host: a transaction hash, an address or account, a token contract or a block, each
+# with its identifier in the path (/tx/<hash>, /address/<addr>, /api/v2/addresses/<addr>, /block/<number>). Path segment names are
+# matched case-sensitively in lowercase (/ADDRESS/ is no record page). Explorer pages without such an identifier (home, /stats,
+# /charts, /api/v2/stats) are aggregate views: level 2.
 TX_PATH = re.compile(r'/(tx|txs|transactions?|address(?:es)?|accounts?|tokens?|blocks?)/'
-                     r'(0x[0-9a-fA-F]{8,}|[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{32,}|\d+)(/|$)', re.I)
+                     r'(0x[0-9a-fA-F]{8,}|[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{32,}|\d+)(/|$)')
 # Public dashboards run by independent trackers (whole site is a dashboard).
 DASHBOARD_HOSTS = ('dune.com', 'chainward.ai', 'defillama.com', 'tokenterminal.com', 'x402scan.com')
 # Path segments of stats pages, dashboards and APIs.
@@ -75,19 +80,27 @@ def _host_in(host, hosts):
     return any(host == h or host.endswith('.' + h) for h in hosts)
 
 
+def _bare_host(u):
+    host = (u.hostname or '').lower()
+    return host[4:] if host.startswith('www.') else host
+
+
+def explorer_host(url):
+    """True when the URL's host (after a leading `www.`) is exactly one of EXPLORER_HOSTS."""
+    return isinstance(url, str) and _bare_host(urlparse(url)) in EXPLORER_HOSTS
+
+
 def source_level(url):
     """Ladder level (1, 2 or 3) of one source URL, or None when there is no URL. Deterministic; ties go to the lower level."""
     if not url or not isinstance(url, str) or not url.startswith(('http://', 'https://')):
         return None
     u = urlparse(url)
-    host = (u.hostname or '').lower()
-    if host.startswith('www.'):
-        host = host[4:]
+    host = _bare_host(u)
     path = u.path or '/'
     if _host_in(host, TEXT_ONLY_HOSTS):
         return 1
-    explorer = _host_in(host, EXPLORER_HOSTS)
-    if (explorer or 'scan' in host.split('.')[0] or 'explorer' in host) and TX_PATH.search(path):
+    explorer = host in EXPLORER_HOSTS  # exact allowlist, no subdomains, no "scan"/"explorer" guess
+    if explorer and u.scheme == 'https' and TX_PATH.search(path):
         return 3
     if explorer:  # explorer stats, charts and other aggregate views
         return 2
@@ -253,16 +266,17 @@ def org_name_ok(names, orgs):
 # A smart contract's page on a public explorer: the WHOLE path is one address or token, `/<kind>/<id>` with at most one trailing
 # slash, nothing before or after it. Transactions and blocks are records too (ladder level 3), but they do not name the contract
 # that holds the funds; `/tx/<hash>/address/<addr>` or a query/fragment is rejected so the page shown is exactly that contract.
-CONTRACT_PATH = re.compile(r'^/(address|addresses|account|token)/(0x[0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})/?$', re.I)
+# Segment names are lowercase and matched case-sensitively (/ADDRESS/ is rejected).
+CONTRACT_PATH = re.compile(r'^/(address|addresses|account|token)/(0x[0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})/?$')
 
 
 def contract_url_ok(url):
-    """contract_url is a level-3 explorer page of a specific address or token (not /tx/, /block/ or a stats page), with no query
-    or fragment."""
-    if not isinstance(url, str) or CONTROL.search(url):
+    """contract_url is a level-3 explorer page of a specific address or token (not /tx/, /block/ or a stats page): printable
+    ASCII only, https, host exactly in EXPLORER_HOSTS, no query or fragment."""
+    if not isinstance(url, str) or not ASCII_PRINTABLE.match(url):
         return False
     u = urlparse(url)
-    return source_level(url) == 3 and not u.query and not u.fragment and '?' not in url and '#' not in url \
+    return u.scheme == 'https' and url.startswith('https://') and explorer_host(url) and source_level(url) == 3 and not u.query and not u.fragment and '?' not in url and '#' not in url \
         and bool(CONTRACT_PATH.match(u.path or ''))
 
 
@@ -376,6 +390,12 @@ HEX64 = re.compile(r'(?<![0-9a-fA-F])[0-9a-fA-F]{64}(?![0-9a-fA-F])')
 CODE_FIELDS = ('sandbox', 'url', 'filename', 'sha256', 'run')
 # Control characters (newline, carriage return, tab, NUL, any other below 0x20, and DEL) could hide a second command or a second line.
 CONTROL = re.compile(r'[\x00-\x1f\x7f]')
+# run.cmd, code.filename, code.url (and a custody contract_url): printable ASCII only (0x20-0x7e), so no Unicode line or
+# paragraph separator (U+2028/U+2029), NEL (U+0085), fullwidth punctuation (U+FF1B ；) or zero-width character can hide in them.
+ASCII_PRINTABLE = re.compile(r'^[\x20-\x7e]*$')
+# Free text (steps, sandbox, then, done_when, no_code): no Unicode line breaks (U+2028, U+2029, U+0085), zero-width characters
+# (U+200B-U+200D, U+2060, U+FEFF) or bidi controls (U+202A-U+202E, U+2066-U+2069): they can hide or reorder text.
+HIDDEN_UNICODE = re.compile('[\u2028\u2029\u0085\u200b-\u200d\u2060\ufeff\u202a-\u202e\u2066-\u2069]')
 # Shell syntax a run command may not contain: links, chaining, pipes, redirects, command substitution, variables.
 RUN_FORBIDDEN = re.compile(r'https?://|[`|;&$<>]|\$\(|&&|\|\|')
 FILENAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$')
@@ -396,6 +416,9 @@ DOWNLOAD_PATTERNS = (
         r'\b(pip3?\s+install|python3?\s+-m\s+pip\s+install|pipx\s+(install|run)|uvx|uv\s+(pip\s+install|tool\s+(install|run)|run|add)|'
         r'npm\s+(install|i|exec)|npx|pnpm\s+(add|install|dlx)|yarn\s+(add|dlx)|bunx|bun\s+(add|install|x)|gem\s+install|'
         r'cargo\s+install|go\s+(install|run)\s+\S*(@|\.go\b|/)|brew\s+install|apt(-get)?\s+install)\b', re.I)),
+    ('inline code execution', re.compile(
+        r'\b(python3?|bash|sh|zsh|dash)\s+-c\b|\bnode\s+(-e|-p|--eval|--print)\b|\b(perl|ruby)\s+-e\b|\bdeno\s+eval\b|'
+        r'\beval\s|\bexec\s*\(|\biex\b|\binvoke-expression\b', re.I)),
 )
 
 
@@ -439,6 +462,8 @@ def code_block_errors(code, verification=''):
             errs.append(f'code.{k} must be a string, not {type(code[k]).__name__}')
         elif CONTROL.search(code[k]):
             errs.append(f'code.{k} must not contain control characters (newline, tab, NUL)')
+        elif k in ('url', 'filename') and not ASCII_PRINTABLE.match(code[k]):
+            errs.append(f'code.{k} must be printable ASCII only (no Unicode separators, zero-width or fullwidth characters)')
     if not isinstance(verification, str):
         errs.append('verification must be a string')
         verification = ''
@@ -468,6 +493,9 @@ def code_block_errors(code, verification=''):
         if CONTROL.search(r['cmd']):
             errs.append(f'code.run {i}: {r["cmd"]!r} must be one line without control characters (newline, tab, NUL)')
             continue
+        if not ASCII_PRINTABLE.match(r['cmd']):
+            errs.append(f'code.run {i}: {r["cmd"]!r} must be printable ASCII only (no Unicode separators, zero-width or fullwidth characters)')
+            continue
         cmd = r['cmd'].strip()
         target = next(((cmd[len(p):] if p != './' else cmd).split(' ')[0] for p in RUN_PREFIXES if cmd.startswith(p)), None)
         if not isinstance(fn, str) or target not in (fn, './' + fn):
@@ -479,7 +507,8 @@ def code_block_errors(code, verification=''):
 
 def code_safety_errors(t):
     """Fail closed: a task that downloads code carries a structured `code` block (validated by code_block_errors), and none of its
-    free-text parts (steps, sandbox, the text after each run command, done_when, no_code) downloads, installs or pipes code."""
+    free-text parts (steps, sandbox, the text after each run command, done_when, no_code) downloads, installs, pipes or runs inline
+    code (`python3 -c`, `node -e`, `eval`, `iex` ...) or hides text with Unicode separators, zero-width or bidi characters."""
     errs = []
     code = t.get('code')
     if code is not None:
@@ -495,6 +524,8 @@ def code_safety_errors(t):
             continue  # a wrong type is reported by the type checks (code_block_errors / validate_first_tasks)
         if CONTROL.search(text) and where != 'step':
             errs.append(f'{where} {text[:60]!r} must not contain control characters (newline, tab, NUL)')
+        if HIDDEN_UNICODE.search(text):
+            errs.append(f'{where} {text[:60]!r} must not contain Unicode line separators, zero-width characters or bidi controls')
         for why in download_hits(text):
             errs.append(f'{where} {text[:60]!r} has {why}: code is allowed only through the structured `code` block '
                         f'(url, filename, sha256, run), with steps generated from it')
