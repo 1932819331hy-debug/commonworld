@@ -1,0 +1,74 @@
+name: Atlas weekly screenshots
+# Re-captures the homepage screenshot of every live Atlas card (atlas/tools/screens.py, capture rules in its docstring)
+# into the orphan branch atlas-screens and opens a PR against that branch when an image was added or replaced.
+# Never auto-merges: every new image is compared with the stored one (old|new previews in the run artifact) before merging.
+on:
+  schedule:
+    - cron: '0 4 * * 0'   # Sundays 04:00 UTC, after the weekly data refresh
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'comma-separated slugs (empty = every live card)'
+        required: false
+        default: ''
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write            # create the atlas-screens label
+concurrency:
+  group: atlas-screens
+  cancel-in-progress: false
+jobs:
+  screens:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install -r requirements.txt playwright
+          python -m playwright install --with-deps chromium
+          sudo apt-get install -y -qq fonts-noto-color-emoji >/dev/null || true
+      - name: Check out atlas-screens
+        run: |
+          git fetch --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens
+          git worktree add "$RUNNER_TEMP/shots" origin/atlas-screens
+      - name: Capture (live cards only)
+        timeout-minutes: 35
+        env:
+          ONLY: ${{ github.event.inputs.only }}
+        run: |
+          if ! [[ "$ONLY" =~ ^[a-z0-9,-]*$ ]]; then echo "::error::only: slugs and commas only"; exit 1; fi
+          python atlas/tools/screens.py --screens-dir "$RUNNER_TEMP/shots/atlas/screens" --only "$ONLY" \
+            --summary "$RUNNER_TEMP/screens.md" --report "$RUNNER_TEMP/screens.json" --review-dir "$RUNNER_TEMP/review"
+          cat "$RUNNER_TEMP/screens.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Review previews (artifact)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: screens-review
+          path: ${{ runner.temp }}/review/
+          if-no-files-found: ignore
+      - name: Open PR against atlas-screens
+        run: |
+          cd "$RUNNER_TEMP/shots"
+          if [ -z "$(git status --porcelain -- atlas/screens)" ]; then echo "No image added or replaced: no PR." | tee -a "$GITHUB_STEP_SUMMARY"; exit 0; fi
+          gh label create atlas-screens --color 5b6670 --description "Automated weekly Atlas screenshots" --force || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="screens/$(date -u +%F)"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then branch="$branch-$(date -u +%H%M)"; fi
+          git switch -c "$branch"
+          git add atlas/screens
+          git commit -m "Atlas screenshots $(date -u +%F)" -m "Automated by .github/workflows/screens.yml (atlas/tools/screens.py). Compare every new image with the stored one before merging."
+          git push origin "$branch"
+          { cat "$RUNNER_TEMP/screens.md"; echo; echo "Old|new previews: artifact **screens-review** of run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"; } > "$RUNNER_TEMP/body.md"
+          url=$(gh pr create --base atlas-screens --head "$branch" --title "Atlas screenshots $(date -u +%F)" \
+                --body-file "$RUNNER_TEMP/body.md" --label atlas-screens)
+          echo "Opened $url (never merged automatically)" | tee -a "$GITHUB_STEP_SUMMARY"

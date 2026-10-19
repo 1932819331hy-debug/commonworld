@@ -1,0 +1,63 @@
+{
+ "_doc": "Per-card capture settings for atlas/tools/screens.py. shot_url: the operator's public human page when the card's own URL is not one (raw JSON/markdown, wallet wall); it is recorded as shot_url in the manifest. wait: extra ms before the shot. keys: keys pressed after load (splash gates). click_text: exact button texts to click (welcome/consent modals). gl: software WebGL for canvas/3D pages.",
+ "overrides": {
+  "agentsy": {
+   "shot_url": "https://agentsy.live/releases/28e406dd0c184e1117499de9/index.html",
+   "why": "root is a raw markdown file; this is the human HTML edition it links to"
+  },
+  "ax1-console": {
+   "shot_url": "https://console.ax1.vc/",
+   "wait": 4000,
+   "why": "the console runs on its own host"
+  },
+  "wenrwa-agent-marketplace": {
+   "shot_url": "https://marketplace.wenrwa.com/bounties",
+   "why": "root redirects to a wallet-connect gate; /bounties is the public page"
+  },
+  "three-ws": {
+   "keys": [
+    "Enter"
+   ],
+   "wait": 4000,
+   "gl": true,
+   "why": "splash gate asks for a key press; 3D scene needs WebGL",
+   "hold": "2026-10-19: after the splash gate the 3D scene renders blank in headless Chromium; stored splash shot kept"
+  },
+  "grift-san-verano": {
+   "wait": 6000,
+   "gl": true,
+   "why": "canvas game assets load late",
+   "hold": "2026-10-17 and 2026-10-19: character tiles stay empty placeholders in headless Chromium"
+  },
+  "moltlaunch": {
+   "wait": 6000,
+   "hold": "2026-10-17 and 2026-10-19: agent counter shows a dash and service cards stay empty (site API not answering)"
+  },
+  "gittensor": {
+   "wait": 6000,
+   "hold": "2026-10-17 and 2026-10-19: page shows \"No tracked repositories returned\" (site data not loading)"
+  },
+  "openclawcity": {
+   "wait": 5000
+  },
+  "molttok": {
+   "click_text": [
+    "Just Show Me the Art!"
+   ]
+  },
+  "virtuals-agent-commerce-protocol": {
+   "wait": 4000,
+   "click_text": [
+    "Opt-out"
+   ]
+  },
+  "x402-foundation": {
+   "click_text": [
+    "Accept all"
+   ]
+  },
+  "superteam-earn": {
+   "wait": 5000
+  }
+ }
+}
