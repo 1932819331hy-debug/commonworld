@@ -14,7 +14,8 @@ Official channels: every page's footer shows X + GitHub (icon + label, rel="me n
 "Official channels" line; landing and /about/ Organization JSON-LD sameAs = [X, GitHub org]. Share bars: every platform page (and the
 index) has one; every share link carries the page's canonical URL; the copy button copies the canonical URL.
 Legal + navigation: the site-wide Commonworld legal pages (site.privacy_url /privacy/, site.terms_url /terms/) exist (WebPage JSON-LD,
-Last updated, draft note only while legal_draft=true and never after, indexable, scope line, required privacy items); no page loads a third-party
+Last updated, draft note only while legal_draft=true and never after, indexable, scope line, launch sections: account recovery, link checks,
+"Not available yet", no pre-launch "no accounts" text; required privacy items incl. the link-check sources and the AI-bot log); no page loads a third-party
 script, image or stylesheet (Google's gtag.js is injected by JS only after Accept); the old /atlas/privacy/ and /atlas/terms/ are noindex redirect stubs
 (meta refresh + canonical to the new URL) and dist/_redirects carries their 301s; every page's footer links Privacy and Terms, the
 cookie banner links site.privacy_url, the sidebar "Commonworld" item sits above
@@ -1256,12 +1257,16 @@ def main():
         if not CFG.get('legal_draft') and has_draft: fails.append(f'{lp}: draft note present but legal_draft is false (final text)')
         if 'noindex' in (lpp.meta.get('robots') or ''): fails.append(f'{lp}: legal page is noindex')
         if 'Applies to Commonworld and all its sections, including the Atlas.' not in txt: fails.append(f'{lp}: scope line missing')
-        if 'accounts, posts and API keys' not in txt: fails.append(f'{lp}: planned-features note missing')
+        if 'id="planned">Not available yet</h2>' not in txt: fails.append(f'{lp}: "Not available yet" section missing')
+        if 'id="recovery"' not in txt or 'id="links-check"' not in txt: fails.append(f'{lp}: account recovery / link check section missing')
+        if 'No accounts' in txt or 'no accounts' in txt or 'None of these exist yet' in txt: fails.append(f'{lp}: still has the pre-launch "no accounts" text')
         want_h1 = '<h1>Commonworld Privacy Policy</h1>' if lp == PRIV_URL else '<h1>Commonworld Terms of Use</h1>'
         if want_h1 not in txt: fails.append(f'{lp}: lacks {want_h1}')
         if lp == PRIV_URL:
             for need in (CFG['contact']['privacy'], 'data protection authority in your country of residence', 'Data Privacy Framework', 'cw-consent', 'cw-theme', 'cw-ann-dismissed', '_ga',
-                         'Cloudflare, Inc.', 'Zoho', 'Standard Contractual Clauses', 'Art. 6(1)(a)', 'Art. 6(1)(f)', 'withdraw it at any time', 'Share buttons'):
+                         'Cloudflare, Inc.', 'Zoho', 'Standard Contractual Clauses', 'Art. 6(1)(a)', 'Art. 6(1)(f)', 'withdraw it at any time', 'Share buttons',
+                         'cw_session', 'Google Safe Browsing', 'MetaMask eth-phishing-detect', 'ScamSniffer scam-database', 'CERT Polska Warning List',
+                         'FxTwitter', 'recovery code', 'id="ai-bots"', '400 days', '90 days', '30 days'):
                 if need not in txt: fails.append(f'privacy page lacks {need!r}')
     for u, p in parsed.items():
         for tag, href, rel in p.links:
