@@ -68,11 +68,11 @@
    "quote": null
   },
   "books": {
-   "state": "not_recorded",
-   "value": null,
-   "label": "not recorded yet",
-   "source_url": null,
-   "quote": null
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "Coinbase ... $122.4k $618.6k"
   },
   "people": {
    "state": "not_recorded",
@@ -160,8 +160,9 @@
     ],
     "finding": "At 2026-10-15T20:35:25Z the x402-list facilitator table showed Coinbase $122.4k for 7 UTC days and $618.6k for 30 days, versus the pinned $121.3k/$617.5k. These are rolling gross settlements to any recipient, not seller revenue."
    },
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public dashboard: x402-list measures each facilitator's on-chain USDC settlement, with 7-day and 30-day volume updated daily."
   },
   {
    "kind": "economic_flow",
@@ -177,8 +178,9 @@
     "curl https://x402stats.io/llms-full.txt"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public data file of the x402stats dashboard (CC BY 4.0), updated daily with 30-day volume per facilitator."
   },
   {
    "kind": "recent_activity",

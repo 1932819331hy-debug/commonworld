@@ -28,8 +28,12 @@ CHANGELOG = [
         '`keys_and_books` {keys, books, people}, each {state, value, label, source_url, quote} with state recorded (from a sourced claim on the card) '
         'or not_recorded; `first_task`, a verified first step for newcomers with credit, or null; `md_url`, the card page as Markdown.',
         'New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: '
-        '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md.',
-        'New Markdown twin of every card page at /atlas/platforms/{id}/index.md.']},
+        '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md; '
+        'where a curator opened the source and the rule read it wrongly, the curator\'s level applies and the claim also carries `evidence_note` '
+        '(a short reason, from atlas/data/evidence-levels.json).',
+        'New Markdown twin of every card page at /atlas/platforms/{id}/index.md.',
+        'New related file outside /api/: /atlas/events.json (and /atlas/events.md), the public log of card changes, one event each with date, '
+        'slug, type (added, closed, reopened, corrected, relabelled), reason and source; newest first. Linked as `events` from atlas/index.json.']},
     {'schema_version': '1.3.0', 'date': '2026-10-19', 'changes': [
         'New optional field `verify` on a claim (platforms/{id}.json `claims[]`): {url, note}, a smaller cross-check an agent can fetch '
         'within normal response limits (same site as the source), for figures whose full source list is too large to read in one fetch. '
@@ -101,9 +105,11 @@ def schemas(origin, categories):
                             'verify': {'type': 'object', 'description': 'Smaller cross-check for this figure: a URL an agent can fetch within '
                                        'normal limits and a note on what it gives. Added in schema_version 1.3.0.',
                                        'required': ['url', 'note'], 'properties': {'url': uri, 'note': {'type': 'string', 'minLength': 1}}},
-                            'evidence_level': {'enum': [1, 2, 3], 'description': 'Evidence-ladder level of this money or activity claim, from its source URL: '
+                            'evidence_level': {'enum': [1, 2, 3], 'description': 'Evidence-ladder level of this money or activity claim, from its source URL (or a curator review, see evidence_note): '
                                                '1 operator says, 2 public dashboard, 3 public transactions. Added in schema_version 1.4.0.'},
-                            'evidence_label': {'enum': [LEVELS[k][1] for k in (1, 2, 3)]}}}
+                            'evidence_label': {'enum': [LEVELS[k][1] for k in (1, 2, 3)]},
+                            'evidence_note': {'type': 'string', 'minLength': 1, 'description': 'Present when a curator opened the source and set the '
+                                              'level by hand (atlas/data/evidence-levels.json): the short reason. Added in schema_version 1.4.0.'}}}
     summary_props = {
         'id': {'type': 'string', 'pattern': ID_PATTERN, 'description': 'Permanent ID (URL slug). Never construct one: take it from platforms.json.'},
         'name': {'type': 'string'}, 'url': uri, 'json_url': uri, 'website': uri_n,
@@ -197,7 +203,9 @@ def openapi(origin, categories, example_ids, docs_url, licence):
                                  'generated_at: ' + GENERATED_AT_DESC + ' newest_observation: ' + NEWEST_OBSERVATION_DESC + ' '
                                  'No key, no rate limit beyond fair use; '
                                  'CORS is open (Access-Control-Allow-Origin: *). Responses may be cached by Cloudflare and browsers for up to a few hours. '
-                                 + VERSIONING + f' Human documentation: {docs_url}'),
+                                 + VERSIONING + ' Related file outside /api/: ' + origin + '/atlas/events.json, the public log of card changes '
+                                 '(also as /atlas/events.md). '
+                                 + f'Human documentation: {docs_url}'),
                  'license': {'name': f'Data: {licence}', 'url': 'https://creativecommons.org/licenses/by/4.0/'}},
         'servers': [{'url': f'{origin}{API_BASE}', 'description': 'Commonworld (canonical)'}],
         'externalDocs': {'url': docs_url, 'description': 'Commonworld API documentation'},

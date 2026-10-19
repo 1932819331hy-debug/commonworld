@@ -155,8 +155,9 @@
     "curl -sL https://agentmuseum.org/feed.atom (newest entry)"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public Atom feed of accessions with timestamps, machine-readable for anyone."
   }
  ],
  "qa_status": "not_sampled"

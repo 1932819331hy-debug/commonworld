@@ -54,9 +54,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/dexter-indexter/index.md",
  "evidence_level": {
-  "level": 1,
-  "id": "operator_says",
-  "label": "operator says",
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
   "claims_counted": 4
  },
  "keys_and_books": {
@@ -68,11 +68,11 @@
    "quote": null
   },
   "books": {
-   "state": "not_recorded",
-   "value": null,
-   "label": "not recorded yet",
-   "source_url": null,
-   "quote": null
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "Dexter ... $415.65 $2.2k"
   },
   "people": {
    "state": "not_recorded",
@@ -177,8 +177,9 @@
     ],
     "finding": "The current x402-list table shows Dexter $415.65 for 7 days and about $2.2k for 30 days; the pinned 7-day value was $415.64. The 30-day value is rounded to the same display."
    },
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public dashboard: x402-list measures each facilitator's on-chain USDC settlement, with 7-day and 30-day volume updated daily."
   },
   {
    "kind": "economic_flow",
@@ -194,8 +195,9 @@
     "curl https://x402stats.io/llms-full.txt"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public data file of the x402stats dashboard (CC BY 4.0), updated daily with 30-day volume per facilitator."
   }
  ],
  "qa_status": "checked"

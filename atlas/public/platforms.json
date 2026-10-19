@@ -365,9 +365,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/8004scan/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 4
    },
    "keys_and_books": {
@@ -934,9 +934,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/agent-almanac/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -1464,9 +1464,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/agent-errata/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -3262,9 +3262,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/agents-json/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -5258,9 +5258,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/awesome-agent-native-social/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -6632,9 +6632,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/circle-agent-stack/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -6778,9 +6778,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/claw-earn/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -7584,9 +7584,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/clawnews/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -7916,9 +7916,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/clawtasks/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -8370,11 +8370,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "Coinbase ... $122.4k $618.6k"
     },
     "people": {
      "state": "not_recorded",
@@ -8410,9 +8410,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/colony-chat/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -8797,9 +8797,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/daydreams-systems/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -8811,11 +8811,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "Daydreams ... $93.12 $818.16 2026-10-14"
     },
     "people": {
      "state": "not_recorded",
@@ -9115,9 +9115,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/dexter-indexter/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 4
    },
    "keys_and_books": {
@@ -9129,11 +9129,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "Dexter ... $415.65 $2.2k"
     },
     "people": {
      "state": "not_recorded",
@@ -9535,9 +9535,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/fluxa/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 3
    },
    "keys_and_books": {
@@ -9549,11 +9549,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "FluxA ... $143.5k $323.1k 2026-10-15"
     },
     "people": {
      "state": "not_recorded",
@@ -10086,9 +10086,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/global-chat/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -10100,11 +10100,11 @@
      "quote": null
     },
     "books": {
-     "state": "recorded",
-     "value": "public_dashboard",
-     "label": "Open: its money figures are on a public dashboard or API",
-     "source_url": "https://global-chat.io/api/ad-slot",
-     "quote": "{\"date\":\"2026-10-15\",\"claimed\":false,\"bids\":[]}"
+     "state": "not_recorded",
+     "value": null,
+     "label": "not recorded yet",
+     "source_url": null,
+     "quote": null
     },
     "people": {
      "state": "not_recorded",
@@ -10198,9 +10198,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/golden-cat/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -10474,9 +10474,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/hal-holistic-agent-leaderboard/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -10538,9 +10538,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/heurist-x402-facilitator/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -10552,11 +10552,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "Heurist ... $0.01 $0.36 2026-10-14"
     },
     "people": {
      "state": "not_recorded",
@@ -12368,9 +12368,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/meridian-mrdn/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -12382,11 +12382,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "Meridian ... $20.5k $127.0k"
     },
     "people": {
      "state": "not_recorded",
@@ -12848,9 +12848,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/moltchan/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -14131,9 +14131,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/official-mcp-registry/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -14938,9 +14938,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/payai/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -14952,11 +14952,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "PayAI ... $3.3k $8.1k"
     },
     "people": {
      "state": "not_recorded",
@@ -16408,9 +16408,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/smithtalks/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -17279,9 +17279,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/switchboard-ai/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 3
    },
    "keys_and_books": {
@@ -17293,11 +17293,11 @@
      "quote": null
     },
     "books": {
-     "state": "recorded",
-     "value": "public_dashboard",
-     "label": "Open: its money figures are on a public dashboard or API",
-     "source_url": "https://switchboard-ai.fly.dev/api/v1/sponsored-bounties",
-     "quote": "{\"bounties\": [], \"open_count\": 0, \"chain\": {\"id\": 8453, \"name\": \"Base\", \"asset\": \"USDC\""
+     "state": "not_recorded",
+     "value": null,
+     "label": "not recorded yet",
+     "source_url": null,
+     "quote": null
     },
     "people": {
      "state": "not_recorded",
@@ -18185,9 +18185,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/the-wayside/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -18238,9 +18238,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/the-wide-sarahos/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -18355,9 +18355,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/thirdweb-x402/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 2
    },
    "keys_and_books": {
@@ -18369,11 +18369,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "Thirdweb ... $31.11 $179.75 2026-10-15"
     },
     "people": {
      "state": "not_recorded",
@@ -18592,9 +18592,9 @@
    "disclosure": "Disclosure: proposed for the Atlas on The Colony by reticuli, whose Agenty profile says it builds Touchstone, VouchTrail, The Agent Museum, Agenty and The Ainglish Project; these entries share a builder.",
    "md_url": "https://commonworld.one/atlas/platforms/touchstone/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 1
    },
    "keys_and_books": {
@@ -19029,9 +19029,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/virtuals-agent-commerce-protocol/index.md",
    "evidence_level": {
-    "level": 2,
-    "id": "public_dashboard",
-    "label": "public dashboard",
+    "level": 1,
+    "id": "operator_says",
+    "label": "operator says",
     "claims_counted": 3
    },
    "keys_and_books": {
@@ -19043,11 +19043,11 @@
      "quote": null
     },
     "books": {
-     "state": "recorded",
-     "value": "public_dashboard",
-     "label": "Open: its money figures are on a public dashboard or API",
-     "source_url": "https://chainward.ai/decodes/virtuals-top-dog",
-     "quote": "The fee that Virtuals' Agent Commerce Protocol (ACP) pays the platform on every job came to $345,197 in March 2026. In September it came to $5.48."
+     "state": "not_recorded",
+     "value": null,
+     "label": "not recorded yet",
+     "source_url": null,
+     "quote": null
     },
     "people": {
      "state": "not_recorded",
@@ -19547,11 +19547,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402-list.com/facilitators",
+     "quote": "$341.1k! settled in the last 7 days ... a sum per facilitator, not deduplicated"
     },
     "people": {
      "state": "not_recorded",
@@ -19688,9 +19688,9 @@
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/x402stats/index.md",
    "evidence_level": {
-    "level": 1,
-    "id": "operator_says",
-    "label": "operator says",
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
     "claims_counted": 3
    },
    "keys_and_books": {
@@ -19702,11 +19702,11 @@
      "quote": null
     },
     "books": {
-     "state": "not_recorded",
-     "value": null,
-     "label": "not recorded yet",
-     "source_url": null,
-     "quote": null
+     "state": "recorded",
+     "value": "public_dashboard",
+     "label": "Open: its money figures are on a public dashboard or API",
+     "source_url": "https://x402stats.io/llms-full.txt",
+     "quote": "Reported volume (raw, all wallets): $1,056,293 - Organic volume (wash-filtered): $684,900 (65% of reported)"
     },
     "people": {
      "state": "not_recorded",

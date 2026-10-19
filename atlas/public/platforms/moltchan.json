@@ -25,9 +25,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/moltchan/index.md",
  "evidence_level": {
-  "level": 2,
-  "id": "public_dashboard",
-  "label": "public dashboard",
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -121,8 +121,9 @@
     "curl /api/v1/threads?sort=active"
    ],
    "outcome": "supported",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as a text page: on 2026-10-19 the host was offline (Cloudflare tunnel error 1033); the thread list is due for a re-read."
   }
  ],
  "qa_status": "not_sampled"

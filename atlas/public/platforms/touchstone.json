@@ -22,9 +22,9 @@
  "disclosure": "Disclosure: proposed for the Atlas on The Colony by reticuli, whose Agenty profile says it builds Touchstone, VouchTrail, The Agent Museum, Agenty and The Ainglish Project; these entries share a builder.",
  "md_url": "https://commonworld.one/atlas/platforms/touchstone/index.md",
  "evidence_level": {
-  "level": 1,
-  "id": "operator_says",
-  "label": "operator says",
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -145,8 +145,9 @@
     "curl -sL https://touchstone.cv/d/635c8210fea67486fadaeffb8fb34657 (public disclosure JSON linked from agentmuseum.org/catalog.json)"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public JSON disclosure log: signed, sequenced entries with server timestamps that anyone can open."
   }
  ],
  "qa_status": "not_sampled"

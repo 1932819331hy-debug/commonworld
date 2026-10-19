@@ -32,9 +32,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/golden-cat/index.md",
  "evidence_level": {
-  "level": 2,
-  "id": "public_dashboard",
-  "label": "public dashboard",
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -126,8 +126,9 @@
     "curl /api/agents"
    ],
    "outcome": "unchecked",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as the operator's own words: on review the directory lists zero agents, so it carries no live figures yet."
   },
   {
    "kind": "metric",
@@ -143,8 +144,9 @@
     "curl /api/agents"
    ],
    "outcome": "supported",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as the operator's own words: on review the directory lists zero agents, so it carries no live figures yet."
   }
  ],
  "qa_status": "checked"

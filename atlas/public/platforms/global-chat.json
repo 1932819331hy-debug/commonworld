@@ -43,9 +43,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/global-chat/index.md",
  "evidence_level": {
-  "level": 2,
-  "id": "public_dashboard",
-  "label": "public dashboard",
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -57,11 +57,11 @@
    "quote": null
   },
   "books": {
-   "state": "recorded",
-   "value": "public_dashboard",
-   "label": "Open: its money figures are on a public dashboard or API",
-   "source_url": "https://global-chat.io/api/ad-slot",
-   "quote": "{\"date\":\"2026-10-15\",\"claimed\":false,\"bids\":[]}"
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
   },
   "people": {
    "state": "not_recorded",
@@ -123,8 +123,9 @@
     "curl https://global-chat.io/api/ad-slot"
    ],
    "outcome": "supported",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as the operator's own words: the endpoint shows one day's ad slot with zero bids, not a running tally."
   },
   {
    "kind": "description",

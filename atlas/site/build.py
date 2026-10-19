@@ -191,8 +191,10 @@ def enrich(site, tags):
         key = next((x for x in claims if x.get('kind') == 'economic_flow' and x.get('basis') == 'direct_observation' and x.get('recheck') and isnum(x)), None) \
             or next((x for k in ('metric', 'economic_flow') for x in claims if x.get('kind') == k and isnum(x)), None)
         c['_key'] = key
-        c['_ev'] = cv2.card_evidence(c)
-        c['_kb'] = cv2.keys_and_books(c, getattr(site, 'keys_books', {}))
+        evo = getattr(site, 'ev_overrides', {})
+        c['_evo'] = cv2.card_overrides(c, evo)  # curator-reviewed evidence levels (atlas/data/evidence-levels.json)
+        c['_ev'] = cv2.card_evidence(c, evo)
+        c['_kb'] = cv2.keys_and_books(c, getattr(site, 'keys_books', {}), evo)
         c['_task'] = cv2.first_task(c, getattr(site, 'first_tasks', {}))
 
 
@@ -645,7 +647,7 @@ def build_platform(site, c):
         wide = ' wide' if labs else ''
         lis.append(f'<li class="claim o-{e(o)}{wide}"><div class="claim-head"><span class="kind">{e(KIND_LABEL.get(k, (k or "claim").replace("_", " ").capitalize()))}</span>'
                    f'<span class="tag t-{OUTCOME_TONE.get(o, "warn")}">{e(OUTCOME_LABEL.get(o, o))}</span>'
-                   f'<span class="tag t-basis">{e(BASIS_LABEL.get(x.get("basis"), x.get("basis") or "basis unknown"))}</span>{evidence_tag(site, x)}</div>'
+                   f'<span class="tag t-basis">{e(BASIS_LABEL.get(x.get("basis"), x.get("basis") or "basis unknown"))}</span>{evidence_tag(site, x, c["_evo"])}</div>'
                    f'{lab}{val}<p class="stmt">{e(x.get("statement"))}</p>{quote}'
                    f'<p class="claim-meta">Observed {time_tag(dt)} · {src}</p>{verify_html(x)}{history_html(x)}</li>')
     qa_rows = []
@@ -733,11 +735,14 @@ def build_platform(site, c):
 LADDER_HREF = '/about/#evidence-ladder'
 
 
-def evidence_tag(site, x):
-    lv = cv2.claim_level(x)
+def evidence_tag(site, x, ov=None):
+    lv = cv2.claim_level(x, ov)
     if lv is None:
         return ''
-    return f'<a class="tag t-ev ev-{lv}" href="{site.base}{LADDER_HREF}" title="{e(cv2.LEVELS[lv][2])}">Evidence {lv} · {e(cv2.LEVELS[lv][1])}</a>'
+    note = cv2.claim_note(x, ov)
+    tip = cv2.LEVELS[lv][2] + (f' Curator review: {note}' if note else '')
+    return (f'<a class="tag t-ev ev-{lv}" href="{site.base}{LADDER_HREF}" title="{e(tip)}">Evidence {lv} · {e(cv2.LEVELS[lv][1])}</a>'
+            + (f'<span class="ev-review">{e(note)}</span>' if note else ''))
 
 
 def ladder_html(site, ev):
@@ -819,12 +824,13 @@ def build_platform_md(site, c):
              ['', f"Done when: {t['done_when']}", '', f"{t['credit']} via {t['contributed_via']}: {t['source_url']}. Verified by {t['verified_by']} on {t['verified_on']}: {t['verification']}"]
     L += ['', '## Verified facts', '', '| What | Statement | Value | Basis | Outcome | Evidence | Observed | Source |', '|---|---|---|---|---|---|---|---|']
     for x in claims:
-        lv = cv2.claim_level(x)
+        lv = cv2.claim_level(x, c['_evo'])
+        note = cv2.claim_note(x, c['_evo'])
         dt = parse_time(x.get('observed_at'))
         val = '' if x.get('value') in (None, '') else f"{x['value']}{(' ' + x['unit']) if x.get('unit') else ''}{(' (' + fmt_window(x['window']) + ')') if x.get('window') else ''}"
         L.append('| ' + ' | '.join(md_cell(v) for v in [KIND_LABEL.get(x.get('kind'), (x.get('kind') or 'claim').replace('_', ' ').capitalize()), x.get('statement'), val,
                  BASIS_LABEL.get(x.get('basis'), x.get('basis')), OUTCOME_LABEL.get(x.get('outcome'), x.get('outcome')),
-                 f'{lv} · {cv2.LEVELS[lv][1]}' if lv else '', dt.strftime('%Y-%m-%d %H:%M UTC') if dt else '', x.get('source_url') or '']) + ' |')
+                 (f'{lv} · {cv2.LEVELS[lv][1]}' + (f' (curator review: {note})' if note else '')) if lv else '', dt.strftime('%Y-%m-%d %H:%M UTC') if dt else '', x.get('source_url') or '']) + ' |')
     L += ['', f"Data licence: {site.cfg.get('data_licence') or 'see the site'}; please credit \"Commonworld Atlas\" with a link to {A(c['_url'])}.", '']
     return '\n'.join(L)
 
@@ -1179,7 +1185,7 @@ def build_about(site):
 <ol><li><b>Operator says</b>: the platform’s own words, such as site text, docs or posts (and other text pages, such as articles).</li>
 <li><b>Public dashboard</b>: a public stats page, dashboard or API that anyone can open.</li>
 <li><b>Public transactions</b>: on-chain or other public records that anyone can open and check independently, such as a block explorer page.</li></ol>
-<p>A card shows the highest level reached by its supported money and activity claims. The level comes from a fixed rule on the source address (explorer hosts are level 3; stats, dashboard and API addresses are level 2; every other page is level 1); where an address could be read two ways, the lower level is used. A card whose ladder reads “not recorded yet” is waiting for its first sourced money or activity claim. The rule is published in <a href="{REPO_URL}/blob/main/atlas/CURATION.md#cards-v2" rel="nofollow noopener">CURATION.md</a>.</p>
+<p>A card shows the highest level reached by its supported money and activity claims. The level comes from a fixed rule on the source address (explorer hosts are level 3; stats, dashboard and API addresses are level 2; every other page is level 1); where an address could be read two ways, the lower level is used. When a curator opens a source and finds the rule read it wrongly (for example a public JSON log on a plain address, or a dated report on a dashboard site), the curator sets the level by hand and the claim shows a short review note; when unsure, the lower level is used. A card whose ladder reads “not recorded yet” is waiting for its first sourced money or activity claim. The rule is published in <a href="{REPO_URL}/blob/main/atlas/CURATION.md#cards-v2" rel="nofollow noopener">CURATION.md</a>.</p>
 <h2 id="keys-and-books">Keys and books</h2>
 <p>Three short answers on every card, an idea from The Caretaker, an agent on The Colony: <b>who holds the keys</b> (the operator, users’ own wallets or keys, or a smart contract), <b>whether the books are open</b> (its money figures, such as payouts, balances or volume, are on public transactions or a public dashboard or API that anyone can open), and <b>who is behind it</b> (people or a company named in a source). An answer is filled only from a sourced fact already on the card and links to that source; every other answer reads “not recorded yet”.</p>
 <h2 id="first-task">First task</h2>
@@ -2279,7 +2285,11 @@ def write_github_mirror(out, b):
                  'The `preview` field (homepage screenshot URLs on commonworld.one) is left out here: the screenshots live on the '
                  'orphan branch `atlas-screens`, not on main. Read it from the site\'s JSON files.\n\n'
                  'The `link_safety` field and the link safety report (https://commonworld.one/atlas/safety.json) are left out here too: '
-                 'they change with every daily check. Read them from the site.\n')
+                 'they change with every daily check. Read them from the site.\n\n'
+                 'The public events log of card changes is not mirrored here: read https://commonworld.one/atlas/events.json (newest first) '
+                 'or https://commonworld.one/atlas/events.md; its source is `atlas/data/events.jsonl` on main.\n\n'
+                 'Homepage screenshots are re-captured weekly by the workflow `Atlas weekly screenshots` (`.github/workflows/screens.yml`), '
+                 'which opens a pull request to the `atlas-screens` branch; it is never auto-merged.\n')
 
 
 def build_agent_files(site, write):
@@ -2308,7 +2318,7 @@ def build_agent_files(site, write):
         bu = badge_urls(site, c)
         one = {'licence': lic, 'source': REPO_URL, 'generated_at': iso(gen)} | r | {
             'badge_status': badges.status_of(c)[1], 'badge_svg': bu['svg'], 'badge_svg_dark': bu['svg_dark'], 'badge_page': bu['page'],
-            'claims': rfc3339([cv2.annotate_claim(x) for x in c.get('claims', [])]), 'qa_status': c.get('qa_status')}
+            'claims': rfc3339([cv2.annotate_claim(x, c['_evo']) for x in c.get('claims', [])]), 'qa_status': c.get('qa_status')}
         write(f"{b}/platforms/{c['slug']}.json", json.dumps(one, ensure_ascii=False, indent=1) + '\n')
         site.api_docs.append((f"/atlas/platforms/{c['slug']}.json", one, 'platform.schema.json', True))
 
@@ -2356,7 +2366,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
 - Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt), plus badge_svg, badge_svg_dark and badge_page
 - Per entry as Markdown: {A(f'{b}/platforms/')}<id>/index.md, the card page as plain Markdown (take the URL from md_url)
-- Cards v2 fields on every record (schema_version 1.4.0): evidence_level {{level 1-3 or null, id, label, claims_counted}}, the highest evidence-ladder level of the card's supported money and activity claims (1 operator says = the platform's own words; 2 public dashboard = a public stats page, dashboard or API; 3 public transactions = on-chain or other public records anyone can check); keys_and_books {{keys, books, people}}, each {{state recorded or not_recorded, value, label, source_url, quote}}; first_task (a verified first step for newcomers with credit, or null). Money and activity claims in <id>.json carry evidence_level and evidence_label. Rule: {A(f'{b}/about/#evidence-ladder')}
+- Cards v2 fields on every record (schema_version 1.4.0): evidence_level {{level 1-3 or null, id, label, claims_counted}}, the highest evidence-ladder level of the card's supported money and activity claims (1 operator says = the platform's own words; 2 public dashboard = a public stats page, dashboard or API; 3 public transactions = on-chain or other public records anyone can check); keys_and_books {{keys, books, people}}, each {{state recorded or not_recorded, value, label, source_url, quote}}; first_task (a verified first step for newcomers with credit, or null). Money and activity claims in <id>.json carry evidence_level and evidence_label, plus evidence_note where a curator opened the source and set the level by hand. Rule: {A(f'{b}/about/#evidence-ladder')}
 - Closed entries: closed by human review (official statement or at least two independent signals; never reopened automatically) or by the automated weekly check (unreachable in 2 consecutive weekly checks; reopens automatically if the site answers again). A single failed load is never proof.
 - IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
 {ex_lines}
@@ -2411,7 +2421,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - One line per entry: {A('/llms-full.txt')}
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
 - Per entry: take json_url from platforms.json; never construct an ID. Each card page also has a Markdown twin (md_url)
-- Cards v2: every record has evidence_level (1 operator says, 2 public dashboard, 3 public transactions, or null = not recorded yet), keys_and_books (keys, books, people; filled only from sourced claims on the card) and first_task (verified, with credit, or null). How it works: {A(f'{b}/about/#evidence-ladder')}
+- Cards v2: every record has evidence_level (1 operator says, 2 public dashboard, 3 public transactions, or null = not recorded yet), keys_and_books (keys, books, people; filled only from sourced claims on the card) and first_task (verified, with credit, or null). A claim level set by curator review carries evidence_note. How it works: {A(f'{b}/about/#evidence-ladder')}
 
 ## Categories (JSON)
 
@@ -2466,7 +2476,8 @@ def build_api(site, write):
                              'url': A(f'{b}/categories/{k}/'), 'json_url': A(f'{V}/atlas/categories/{k}.json')} for k in site.cats],
              'links': {'platforms': A(f'{V}/atlas/platforms.json'), 'platform': A(f'{V}/atlas/platforms/') + '{id}.json',
                        'category': A(f'{V}/atlas/categories/') + '{category}.json', 'earn': A(f'{V}/atlas/earn.json'),
-                       'html': A(f'{b}/'), 'method': A(f'{b}/about/'), 'docs': A(API_DOCS), 'openapi': A(f'{V}/openapi.json')},
+                       'html': A(f'{b}/'), 'method': A(f'{b}/about/'), 'docs': A(API_DOCS), 'openapi': A(f'{V}/openapi.json'),
+                       'events': A(atlas_events.JSON_PATH)},
              'id_rule': 'IDs are permanent readable slugs. Never construct or guess an ID: take it from platforms.json or a category file.'}
     write(f'{V}/atlas/index.json', api_json(atlas))
     root = {'name': 'Commonworld API', 'description': 'Static, read-only JSON API of Commonworld, a shared world for humans and agents.',
@@ -2514,7 +2525,7 @@ def build_api_docs(site):
 <p>Categories: {cats}. Every data document carries <code>schema_version</code> and a link to its JSON Schema.</p>
 <h2 id="cards-v2">Card fields: evidence, keys and books, first task</h2>
 <p>Since <code>schema_version</code> 1.4.0 every entry record (list, category and per-entry files) carries:</p>
-<ul><li><code>evidence_level</code>: <code>{{level, id, label, claims_counted}}</code>, the highest <a href="{b}/about/#evidence-ladder">evidence-ladder</a> level reached by the sources of the card’s supported money and activity claims: 1 <code>operator_says</code>, 2 <code>public_dashboard</code>, 3 <code>public_transactions</code>; <code>level</code> is <code>null</code> with the label “not recorded yet” when there is none. Money and activity claims in <code>platforms/&lt;id&gt;.json</code> carry <code>evidence_level</code> and <code>evidence_label</code>.</li>
+<ul><li><code>evidence_level</code>: <code>{{level, id, label, claims_counted}}</code>, the highest <a href="{b}/about/#evidence-ladder">evidence-ladder</a> level reached by the sources of the card’s supported money and activity claims: 1 <code>operator_says</code>, 2 <code>public_dashboard</code>, 3 <code>public_transactions</code>; <code>level</code> is <code>null</code> with the label “not recorded yet” when there is none. Money and activity claims in <code>platforms/&lt;id&gt;.json</code> carry <code>evidence_level</code> and <code>evidence_label</code>, plus <code>evidence_note</code> (a short reason) where a curator opened the source and set the level by hand.</li>
 <li><code>keys_and_books</code>: <code>keys</code> (<code>operator</code>, <code>user_wallet</code>, <code>smart_contract</code>), <code>books</code> (<code>public_transactions</code>, <code>public_dashboard</code>) and <code>people</code> (<code>named</code>), each <code>{{state, value, label, source_url, quote}}</code>; <code>state</code> is <code>recorded</code> with a source or <code>not_recorded</code>.</li>
 <li><code>first_task</code>: a verified first step for newcomers (title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_at, verification, credit), or <code>null</code>.</li>
 <li><code>md_url</code>: the card page as Markdown.</li></ul>
@@ -2629,6 +2640,7 @@ def main():
     site.claim_labels = {k: v for k, v in json.load(open(lab_path)).items() if not k.startswith('_')} if os.path.exists(lab_path) else {}
     tags = json.load(open(a.tags))['tags'] if a.tags and os.path.exists(a.tags) else {}
     site.keys_books = cv2.load_keys_books()
+    site.ev_overrides = cv2.load_evidence_overrides()
     site.first_tasks = cv2.load_first_tasks()
     enrich(site, tags)
     site.shot_dir, shots, site.shot_src = screens.load()

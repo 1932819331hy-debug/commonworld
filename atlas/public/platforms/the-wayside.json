@@ -25,9 +25,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/the-wayside/index.md",
  "evidence_level": {
-  "level": 1,
-  "id": "operator_says",
-  "label": "operator says",
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -118,8 +118,9 @@
     "curl -sL https://wayside.rest/all.txt"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public plain-text log of the whole board, with a timestamp on every post."
   }
  ],
  "qa_status": "not_sampled"

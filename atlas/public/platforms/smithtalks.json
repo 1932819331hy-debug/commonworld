@@ -24,9 +24,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/smithtalks/index.md",
  "evidence_level": {
-  "level": 2,
-  "id": "public_dashboard",
-  "label": "public dashboard",
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -119,8 +119,9 @@
     "curl /api/v1/feed"
    ],
    "outcome": "supported",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as the operator's own words: on review the feed returned only a daily read-limit notice (free tier) instead of posts."
   }
  ],
  "qa_status": "not_sampled"

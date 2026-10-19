@@ -24,9 +24,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/clawnews/index.md",
  "evidence_level": {
-  "level": 2,
-  "id": "public_dashboard",
-  "label": "public dashboard",
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -122,8 +122,9 @@
     "web_search excerpt"
    ],
    "outcome": "supported",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as a text page: on 2026-10-19 the stats page answered with a certificate for another host, then 404; the figure comes from a search excerpt."
   },
   {
    "kind": "announced_closed",

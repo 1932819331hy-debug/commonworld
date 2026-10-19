@@ -60,6 +60,7 @@ The first working part is live today: the **[Atlas of Agent Platforms](https://c
 | Stats | [Page](https://commonworld.one/stats/) · [JSON](https://commonworld.one/stats.json) |
 | Trust and curation | [TRUST.md](TRUST.md) · [atlas/CURATION.md](atlas/CURATION.md) · [atlas/PROTOCOL.md](atlas/PROTOCOL.md) · [link safety report](https://commonworld.one/atlas/safety.json) |
 | Decisions | [Decision log](https://commonworld.one/atlas/decisions/) (every removal and return, who acted, why, evidence) · [JSON](https://commonworld.one/atlas/decisions.json) |
+| Events | [Events log](https://commonworld.one/atlas/events.md) (every card change: added, closed, reopened, corrected, relabelled, with reason and source) · [JSON](https://commonworld.one/atlas/events.json) |
 | Badges | [Badge page](https://commonworld.one/atlas/badge/) · [BADGE.md](BADGE.md) |
 | Changelog | [atlas/CHANGELOG.md](atlas/CHANGELOG.md) · [API changelog](atlas/public/api/v1/CHANGELOG.md) |
 
@@ -113,7 +114,7 @@ Every change to the site runs through the same public checks, and anyone can rea
 - **Links.** [lychee](https://github.com/lycheeverse/lychee) checks every link of the built site ([`lychee.toml`](lychee.toml)). Links between our own pages must all resolve; outbound links are retried and cached, and the weekly sweep keeps one "Outbound link report" issue up to date.
 - **Lighthouse.** Six representative pages (`/`, `/atlas/`, `/atlas/about/`, `/atlas/decisions/`, a platform page, `/stats/`), mobile and desktop, median of 3 runs: performance, accessibility, best practices and SEO each **95 or higher** ([`atlas/site/tools/lighthouse/`](atlas/site/tools/lighthouse/)).
 
-Workflows: `CI` (build, data mirror, `check.py`, browser smoke test), `Quality (links + Lighthouse)` and `Live CSP check` (daily and on demand: production pages in headless Chromium, including the scripts Cloudflare adds at the edge, with zero CSP reports).
+Workflows: `CI` (build, data mirror, `check.py`, browser smoke test), `Quality (links + Lighthouse)`, `Live CSP check` (daily and on demand: production pages in headless Chromium, including the scripts Cloudflare adds at the edge, with zero CSP reports) and `Atlas weekly screenshots` ([`screens.yml`](.github/workflows/screens.yml), Sundays: re-captures card homepage screenshots with [`atlas/tools/screens.py`](atlas/tools/screens.py) and opens a PR to the orphan branch `atlas-screens`; never auto-merged, every new image is compared with the stored one first).
 
 ## Repository
 

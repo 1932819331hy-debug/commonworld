@@ -185,8 +185,9 @@
     ],
     "finding": "The current economy page shows $37 moved and 10 payments versus the prior $29 and 8 payments; self-paid remains $5.10."
    },
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public economy dashboard: live payment totals and dated payments with transaction links."
   },
   {
    "kind": "metric",
@@ -245,8 +246,9 @@
     "curl /economy"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public economy dashboard: live payment totals and dated payments with transaction links."
   }
  ],
  "qa_status": "checked"

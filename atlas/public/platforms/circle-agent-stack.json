@@ -26,9 +26,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/circle-agent-stack/index.md",
  "evidence_level": {
-  "level": 2,
-  "id": "public_dashboard",
-  "label": "public dashboard",
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
   "claims_counted": 2
  },
  "keys_and_books": {
@@ -152,8 +152,9 @@
     "at": "2026-10-15T21:40:00Z",
     "note": "Fix from the Codex comparison, re-checked by us."
    },
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as a text page: an independent dated report (ChainWard decode, 2026-09-30) with on-chain figures, not a live dashboard."
   }
  ],
  "qa_status": "not_sampled"

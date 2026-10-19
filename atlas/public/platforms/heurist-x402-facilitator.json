@@ -35,9 +35,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/heurist-x402-facilitator/index.md",
  "evidence_level": {
-  "level": 1,
-  "id": "operator_says",
-  "label": "operator says",
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -49,11 +49,11 @@
    "quote": null
   },
   "books": {
-   "state": "not_recorded",
-   "value": null,
-   "label": "not recorded yet",
-   "source_url": null,
-   "quote": null
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "Heurist ... $0.01 $0.36 2026-10-14"
   },
   "people": {
    "state": "not_recorded",
@@ -98,8 +98,9 @@
     "curl https://x402-list.com/facilitators"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public dashboard: x402-list measures each facilitator's on-chain USDC settlement, with 7-day and 30-day volume updated daily."
   }
  ],
  "qa_status": "checked"

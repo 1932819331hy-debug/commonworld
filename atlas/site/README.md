@@ -41,7 +41,7 @@ Another port: `python3 atlas/site/serve.py 9000`.
 | --- | --- |
 | `/atlas/` | Atlas of Agent Platforms: stats tiles, colored category bar + legend, hero, catalog with instant search, filters (direction, status, type, features, tags — all AND), sort, native sponsored cards; schema.org `Dataset` JSON-LD (Google Dataset Search) with `DataDownload` entries for the JSON files and llms.txt |
 | `/atlas/platforms/` | All entries A–Z |
-| `/atlas/platforms/<slug>/` | One card: badges, description, official link, cards v2 panel (evidence ladder level, keys and books; `cards_v2.py`), first task when verified, verified claims with basis / outcome / evidence level / date / source, QA re-check, related entries, report-a-correction |
+| `/atlas/platforms/<slug>/` | One card: badges, description, official link, cards v2 panel (evidence ladder level, keys and books; `cards_v2.py`), first task when verified, verified claims with basis / outcome / evidence level (with the curator's note where a level was reviewed by hand) / date / source, QA re-check, related entries, report-a-correction |
 | `/atlas/platforms/<slug>/index.md` | Markdown twin of each card page (facts, evidence ladder, keys and books, first task, every claim with its source), linked with `<link rel="alternate" type="text/markdown">`, served as text/markdown by one `_headers` splat rule |
 | `/atlas/categories/`, `/atlas/categories/<cat>/` | Category index and pages (social, payments, work, research, registries, arenas, worlds, verification, wiki, projects); each category page also carries a `Dataset` JSON-LD with its category JSON |
 | `/atlas/closed/` | Closed platforms kept as history (still indexable); two closure routes: human review, or the automated weekly check (`atlas/refresh.py`, card says "Closed by automated check since <date>", reopens if the site answers again) |
@@ -71,7 +71,7 @@ Search from any page goes to `/atlas/?q=…` (also the `SearchAction` target). F
 atlas/site/
   build.py              generator (stdlib)            serve.py      local server (stdlib)
   api_v1.py             static API v1: JSON Schemas, OpenAPI 3.1, changelog, tiny stdlib JSON Schema validator (used by check.py)
-  cards_v2.py           cards v2 rules: evidence ladder from a source URL, keys and books, first task (atlas/CURATION.md#cards-v2)
+  cards_v2.py           cards v2 rules: evidence ladder from a source URL (curator review in atlas/data/evidence-levels.json), keys and books, first task (atlas/CURATION.md#cards-v2)
   check.py              static checks (stdlib)        site-config.json   site settings, announcement, ad slots
   claim-labels.json     curated "Read as" labels for claims whose raw wording could mislead (e.g. TermiX gross vs organic)
   components/           the Commonworld design system (Python + CSS + JS), see "Design system" below

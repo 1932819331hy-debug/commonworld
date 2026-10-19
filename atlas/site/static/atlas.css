@@ -221,6 +221,7 @@
 .tag.t-ev { color:var(--muted); text-decoration:none; }
 .tag.t-ev.ev-2 { color:var(--warn); } .tag.t-ev.ev-3 { color:var(--ok); }
 .tag.t-ev:hover { color:var(--ink); }
+.ev-review { flex-basis:100%; font-size:.8rem; color:var(--muted); }
 .v2-panel { margin-bottom:18px; }
 .v2-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 .v2-grid h3 { margin:0 0 6px; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }

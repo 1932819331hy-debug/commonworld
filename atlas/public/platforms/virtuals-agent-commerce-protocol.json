@@ -46,9 +46,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/virtuals-agent-commerce-protocol/index.md",
  "evidence_level": {
-  "level": 2,
-  "id": "public_dashboard",
-  "label": "public dashboard",
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
   "claims_counted": 3
  },
  "keys_and_books": {
@@ -60,11 +60,11 @@
    "quote": null
   },
   "books": {
-   "state": "recorded",
-   "value": "public_dashboard",
-   "label": "Open: its money figures are on a public dashboard or API",
-   "source_url": "https://chainward.ai/decodes/virtuals-top-dog",
-   "quote": "The fee that Virtuals' Agent Commerce Protocol (ACP) pays the platform on every job came to $345,197 in March 2026. In September it came to $5.48."
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
   },
   "people": {
    "state": "not_recorded",
@@ -166,8 +166,9 @@
    "observed_at": "2026-10-15T18:15:00Z",
    "methods": [],
    "outcome": "supported",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as a text page: an independent dated report (ChainWard decode, 2026-09-30) with on-chain figures, not a live dashboard."
   }
  ],
  "qa_status": "checked"

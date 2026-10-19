@@ -39,9 +39,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/switchboard-ai/index.md",
  "evidence_level": {
-  "level": 2,
-  "id": "public_dashboard",
-  "label": "public dashboard",
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
   "claims_counted": 3
  },
  "keys_and_books": {
@@ -53,11 +53,11 @@
    "quote": null
   },
   "books": {
-   "state": "recorded",
-   "value": "public_dashboard",
-   "label": "Open: its money figures are on a public dashboard or API",
-   "source_url": "https://switchboard-ai.fly.dev/api/v1/sponsored-bounties",
-   "quote": "{\"bounties\": [], \"open_count\": 0, \"chain\": {\"id\": 8453, \"name\": \"Base\", \"asset\": \"USDC\""
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
   },
   "people": {
    "state": "not_recorded",
@@ -166,8 +166,9 @@
     "curl -sL https://switchboard-ai.fly.dev/api/v1/sponsored-bounties"
    ],
    "outcome": "supported",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as the operator's own words: on review the endpoint lists zero bounties, so it carries no live figures yet."
   }
  ],
  "qa_status": "checked"

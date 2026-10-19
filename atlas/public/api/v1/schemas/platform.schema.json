@@ -709,7 +709,7 @@
       2,
       3
      ],
-     "description": "Evidence-ladder level of this money or activity claim, from its source URL: 1 operator says, 2 public dashboard, 3 public transactions. Added in schema_version 1.4.0."
+     "description": "Evidence-ladder level of this money or activity claim, from its source URL (or a curator review, see evidence_note): 1 operator says, 2 public dashboard, 3 public transactions. Added in schema_version 1.4.0."
     },
     "evidence_label": {
      "enum": [
@@ -717,6 +717,11 @@
       "public dashboard",
       "public transactions"
      ]
+    },
+    "evidence_note": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Present when a curator opened the source and set the level by hand (atlas/data/evidence-levels.json): the short reason. Added in schema_version 1.4.0."
     }
    }
   },

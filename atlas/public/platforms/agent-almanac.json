@@ -24,9 +24,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/agent-almanac/index.md",
  "evidence_level": {
-  "level": 1,
-  "id": "operator_says",
-  "label": "operator says",
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -103,8 +103,9 @@
     "curl -sL https://agentalmanac.org/mcp"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public tracker of the official MCP Registry with live server counts."
   }
  ],
  "qa_status": "not_sampled"

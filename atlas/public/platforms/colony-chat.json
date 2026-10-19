@@ -25,9 +25,9 @@
  "disclosure": null,
  "md_url": "https://commonworld.one/atlas/platforms/colony-chat/index.md",
  "evidence_level": {
-  "level": 1,
-  "id": "operator_says",
-  "label": "operator says",
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
   "claims_counted": 1
  },
  "keys_and_books": {
@@ -103,8 +103,9 @@
     "PyPI JSON API"
    ],
    "outcome": "supported",
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "PyPI JSON API: the public release history with upload times, run by PyPI."
   }
  ],
  "qa_status": "not_sampled"

@@ -62,6 +62,64 @@ class EvidenceLadder(unittest.TestCase):
         self.assertNotIn('evidence_level', cv2.annotate_claim(claim('https://a.example/', kind='description')))
 
 
+class CuratorReview(unittest.TestCase):
+    """atlas/data/evidence-levels.json: a curator sets the level of a card's claims with one source URL after opening it."""
+    LOG = 'https://demo.example/d/log'
+    CARD = {'slug': 'demo', 'claims': [claim(LOG, kind='recent_activity'), claim('https://api.demo.example/v1/feed', kind='metric'),
+                                       claim('https://demo.example/d/log', kind='description')]}
+    OV = {'demo': [{'source_url': LOG, 'evidence_level': 2, 'evidence_note': 'Public JSON log with timestamps.', 'reviewed_on': '2026-10-19'},
+                   {'source_url': 'https://api.demo.example/v1/feed', 'evidence_level': 1, 'evidence_note': 'Read as text: the feed lists zero items.',
+                    'reviewed_on': '2026-10-19'}]}
+
+    def test_override_sets_level_and_note(self):
+        ov = cv2.card_overrides(self.CARD, self.OV)
+        a, b, c = self.CARD['claims']
+        self.assertEqual((cv2.claim_level(a, ov), cv2.claim_level(b, ov), cv2.claim_level(c, ov)), (2, 1, None))
+        self.assertEqual((cv2.claim_level(a), cv2.claim_level(b)), (1, 2))  # without the file: the URL rule
+        x = cv2.annotate_claim(a, ov)
+        self.assertEqual((x['evidence_level'], x['evidence_label'], x['evidence_note']), (2, 'public dashboard', 'Public JSON log with timestamps.'))
+        self.assertNotIn('evidence_note', cv2.annotate_claim(claim('https://other.example/'), ov))
+        self.assertNotIn('evidence_note', cv2.annotate_claim(c, ov))  # only money/activity claims
+        self.assertEqual(cv2.card_evidence(self.CARD, self.OV)['level'], 2)
+        self.assertEqual(cv2.card_evidence({'slug': 'other', 'claims': self.CARD['claims']}, self.OV)['level'], 2)  # other slug: URL rule
+
+    def test_lowered_money_flow_no_longer_opens_the_books(self):
+        card = {'slug': 'demo', 'claims': [claim('https://api.demo.example/v1/feed', kind='economic_flow')]}
+        self.assertEqual(cv2.keys_and_books(card, {})['books']['value'], 'public_dashboard')
+        self.assertEqual(cv2.keys_and_books(card, {}, self.OV)['books']['state'], 'not_recorded')
+
+    def test_validation(self):
+        cards = {'demo': self.CARD}
+        self.assertEqual(cv2.validate_evidence_overrides(self.OV, cards), [])
+        base = self.OV['demo'][0]
+        bad = {
+            'unknown card': {'nope': [base]},
+            'source is not on the card': {'demo': [base | {'source_url': 'https://demo.example/elsewhere'}]},
+            'level outside 1-3': {'demo': [base | {'evidence_level': 4}]},
+            'same as the URL rule': {'demo': [base | {'evidence_level': 1}]},
+            'empty note': {'demo': [base | {'evidence_note': ' '}]},
+            'long note': {'demo': [base | {'evidence_note': 'x' * 201}]},
+            'negative note': {'demo': [base | {'evidence_note': 'This source is unverified'}]},
+            'bad date': {'demo': [base | {'reviewed_on': '19.10.2026'}]},
+            'extra key': {'demo': [base | {'level': 2}]},
+            'twice': {'demo': [base, base]},
+            'empty list': {'demo': []},
+        }
+        for why, ov in bad.items():
+            self.assertTrue(cv2.validate_evidence_overrides(ov, cards), why)
+
+    def test_repo_file_is_valid(self):
+        ov = cv2.load_evidence_overrides()
+        self.assertEqual(cv2.validate_evidence_overrides(ov, CARDS), [])
+        # reviewed on 2026-10-19: Touchstone's public JSON disclosure log is a public log (level 2); a dated report on a
+        # dashboard host is read as text (level 1)
+        t = cv2.card_overrides(CARDS['touchstone'], ov)
+        x = next(c for c in CARDS['touchstone']['claims'] if c['kind'] == 'recent_activity')
+        self.assertEqual(cv2.claim_level(x, t), 2)
+        self.assertEqual(cv2.card_evidence(CARDS['touchstone'], ov)['level'], 2)
+        self.assertEqual(cv2.card_evidence(CARDS['virtuals-agent-commerce-protocol'], ov)['level'], 1)
+
+
 class KeysAndBooks(unittest.TestCase):
     CARD = {'slug': 'demo', 'claims': [
         claim('https://demo.example/', kind='description', quote='Funds sit in an on-chain escrow contract.'),

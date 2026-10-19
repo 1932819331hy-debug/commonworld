@@ -1144,8 +1144,9 @@ def cards_v2_checks(pages):
     for fn in sorted(os.listdir(pdir)):
         if fn.endswith('.json'):
             recs[fn[:-5]] = json.load(open(os.path.join(pdir, fn), encoding='utf-8'))
-    curated, tasks = cv2.load_keys_books(), cv2.load_first_tasks()
+    curated, tasks, evo = cv2.load_keys_books(), cv2.load_first_tasks(), cv2.load_evidence_overrides()
     fails += cv2.validate_keys_books(curated, recs)
+    fails += cv2.validate_evidence_overrides(evo, recs)
     fails += cv2.validate_first_tasks(tasks, set(recs))
     for lv, (lid, label, desc) in cv2.LEVELS.items():
         for w in cv2.negative_hits(label + ' ' + desc): fails.append(f'cards v2: ladder level {lv} wording uses {w!r}')
@@ -1155,13 +1156,15 @@ def cards_v2_checks(pages):
     for slug, r in recs.items():
         w = f'cards v2: {slug}'
         claims = r.get('claims') or []
-        ev = cv2.card_evidence(r)
+        ov = cv2.card_overrides(r, evo)
+        ev = cv2.card_evidence(r, evo)
         if r.get('evidence_level') != ev: fails.append(f'{w}: evidence_level {r.get("evidence_level")} != rule {ev}')
         levels[ev['level']] += 1
         for i, x in enumerate(claims):
-            lv = cv2.claim_level(x)
+            lv = cv2.claim_level(x, ov)
             if x.get('evidence_level') != lv: fails.append(f'{w}: claim {i} evidence_level {x.get("evidence_level")} != rule {lv}')
-        if r.get('keys_and_books') != cv2.keys_and_books(r, curated): fails.append(f'{w}: keys_and_books differs from the rule')
+            if x.get('evidence_note') != cv2.claim_note(x, ov): fails.append(f'{w}: claim {i} evidence_note differs from evidence-levels.json')
+        if r.get('keys_and_books') != cv2.keys_and_books(r, curated, evo): fails.append(f'{w}: keys_and_books differs from the rule')
         if r.get('first_task') != cv2.first_task(r, tasks): fails.append(f'{w}: first_task differs from first-tasks.json')
         for it in (r.get('keys_and_books') or {}).values():
             if it.get('state') == 'recorded' and not str(it.get('source_url') or '').startswith('http'): fails.append(f'{w}: recorded keys/books value without a source')
@@ -1179,6 +1182,9 @@ def cards_v2_checks(pages):
         for need in ('## Evidence ladder', '## Keys and books', '## Verified facts'):
             if need not in md: fails.append(f'{w}: Markdown twin lacks {need!r}')
         if ('## First task' in md) != bool(r.get('first_task')): fails.append(f'{w}: Markdown twin first task out of step')
+        for x in claims:
+            if x.get('evidence_note') and (html.escape(x['evidence_note']) not in h or x['evidence_note'] not in md):
+                fails.append(f'{w}: curator evidence note missing from the card page or its Markdown twin')
         if r.get('md_url') != ORIGIN + u + 'index.md': fails.append(f'{w}: md_url {r.get("md_url")}')
     pl = json.load(open(os.path.join(DIST, 'atlas', 'platforms.json'), encoding='utf-8'))
     for r in pl.get('platforms') or []:

@@ -43,7 +43,26 @@ Every money or activity claim (kind `economic_flow`, `metric` or `recent_activit
 - Where a URL could be read two ways, the rule takes the **lower** level. A claim without a source URL has no level.
 - The **card level** is the highest level reached by its *supported* money and activity claims (`evidence_level` {level, id, label, claims_counted}). A card without one shows "not recorded yet".
 - In the per-entry JSON every money and activity claim carries `evidence_level` (1, 2 or 3) and `evidence_label`.
-- To move a card up the ladder, add a claim whose source is a public dashboard or public transactions; never edit a level by hand.
+- To move a card up the ladder, add a claim whose source is a public dashboard or public transactions.
+
+#### Curator review of a level
+
+The URL rule is a first reading. A curator may set the level of a card's claims with one source URL by hand in
+[`data/evidence-levels.json`](data/evidence-levels.json), **only after opening that source**:
+
+```json
+"touchstone": [{"source_url": "https://touchstone.cv/d/…", "evidence_level": 2,
+                "evidence_note": "Public JSON disclosure log: signed, sequenced entries with server timestamps that anyone can open.",
+                "reviewed_on": "2026-10-19"}]
+```
+
+- Raise a level only when the content shows it: a public JSON log, feed or data file on a plain path, or a live dashboard page
+  whose figures are in the page (level 2).
+- Lower a level when the source carries no live figures: a dated report on a dashboard host, an endpoint that lists zero items or
+  a placeholder, an error, or a host that was offline at review. When unsure, take the lower level.
+- An entry must change the level (check.py fails on an entry equal to the URL rule), the note is required, at most 200 characters,
+  in positive wording, and is published on the claim as `evidence_note` (card page tooltip and line, Markdown twin, JSON, API).
+- Every review that changes a card gets a `relabelled` line in [`data/events.jsonl`](data/events.jsonl).
 
 ### Keys and books
 

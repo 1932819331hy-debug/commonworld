@@ -11,6 +11,10 @@ tests/test_cards_v2.py pins the rules with examples.
    1 operator says        any other page: the platform's own words (site text, docs, posts) and other text pages.
    Where a URL could be read two ways, the rule takes the lower level. A card's level is the highest level reached by its
    supported money/activity claims; a card without one shows "not recorded yet".
+   Curator review: atlas/data/evidence-levels.json sets the level of a card's claims with one source URL by hand after a curator
+   opened that source (evidence_level + a short evidence_note + reviewed_on). It is used only where the URL rule reads the source
+   wrongly (a JSON log on a plain path, a dated report on a dashboard host, an endpoint that showed no figures); an entry must
+   change the level, and the note is published on the claim.
 2. Keys and books. Three questions per card: who holds the keys (custody of funds or accounts), whether the books are open (its money
    figures, such as payouts, balances or volume, publicly checkable), whether the people behind it are named. A value is filled only from a supported claim already on
    the card (curated in atlas/data/keys-and-books.json with the claim's source URL and a quote from that claim; open books are also
@@ -27,6 +31,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.normpath(os.path.join(HERE, '..', 'data'))
 KEYS_BOOKS_FILE = os.path.join(DATA_DIR, 'keys-and-books.json')
 FIRST_TASKS_FILE = os.path.join(DATA_DIR, 'first-tasks.json')
+EVIDENCE_FILE = os.path.join(DATA_DIR, 'evidence-levels.json')
 
 NOT_RECORDED = 'not recorded yet'
 
@@ -79,11 +84,82 @@ def source_level(url):
     return 1
 
 
-def claim_level(x):
-    """Level of a money/activity claim (from its source URL), None for other kinds or a claim without a source."""
+def load_evidence_overrides(path=EVIDENCE_FILE):
+    """{slug: [{source_url, evidence_level, evidence_note, reviewed_on}]} from the curated review file ({} when absent)."""
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding='utf-8') as fh:
+        return json.load(fh).get('overrides') or {}
+
+
+def _override(x, ov):
+    """The curator entry for this claim (same source URL, money/activity kind) from a card's override list, or None."""
+    if not ov or x.get('kind') not in EVIDENCE_KINDS:
+        return None
+    return next((o for o in ov if o.get('source_url') == x.get('source_url')), None)
+
+
+def card_overrides(card, overrides):
+    return (overrides or {}).get(card.get('slug') or card.get('id')) or []
+
+
+def claim_level(x, ov=None):
+    """Level of a money/activity claim: the curator's level when the card's override list `ov` has its source URL, otherwise the
+    URL rule. None for other kinds or a claim without a source."""
     if x.get('kind') not in EVIDENCE_KINDS:
         return None
+    o = _override(x, ov)
+    if o:
+        return o['evidence_level']
     return source_level(x.get('source_url'))
+
+
+def claim_note(x, ov=None):
+    """The curator's evidence_note for this claim, or None when its level comes from the URL rule."""
+    o = _override(x, ov)
+    return o.get('evidence_note') if o else None
+
+
+NOTE_MAX = 200
+
+
+def validate_evidence_overrides(overrides, cards_by_slug):
+    """Errors in the curated evidence-levels file: unknown slug, a source URL that is no money/activity claim on the card, a level
+    outside 1-3 or equal to the URL rule (an entry must change something), a note that is empty, long or negative, a bad date,
+    or the same source twice on one card."""
+    errs = []
+    for slug, ov in overrides.items():
+        w = f'evidence-levels: {slug}'
+        c = cards_by_slug.get(slug)
+        if c is None:
+            errs.append(f'{w} is not a published card'); continue
+        if not isinstance(ov, list) or not ov:
+            errs.append(f'{w}: needs a non-empty list'); continue
+        seen = set()
+        for o in ov:
+            u = o.get('source_url')
+            extra = set(o) - {'source_url', 'evidence_level', 'evidence_note', 'reviewed_on'}
+            if extra:
+                errs.append(f'{w}: unexpected keys {sorted(extra)}')
+            if u in seen:
+                errs.append(f'{w}: {u} listed twice')
+            seen.add(u)
+            claims = [x for x in c.get('claims', []) if x.get('kind') in EVIDENCE_KINDS and x.get('source_url') == u]
+            if not claims:
+                errs.append(f'{w}: {u} is not the source of a money/activity claim on the card'); continue
+            lv = o.get('evidence_level')
+            if lv not in LEVELS or isinstance(lv, bool):
+                errs.append(f'{w}: {u} evidence_level {lv!r} not in 1, 2, 3')
+            elif lv == source_level(u):
+                errs.append(f'{w}: {u} evidence_level {lv} equals the URL rule (drop the entry)')
+            note = (o.get('evidence_note') or '').strip()
+            if not note or len(note) > NOTE_MAX:
+                errs.append(f'{w}: {u} evidence_note must be 1-{NOTE_MAX} characters')
+            for word in negative_hits(note):
+                errs.append(f'{w}: {u} evidence_note uses negative wording {word!r}')
+            if not DATE.match(str(o.get('reviewed_on') or '')):
+                errs.append(f'{w}: {u} reviewed_on must be YYYY-MM-DD')
+    return errs
 
 
 def level_record(level):
@@ -93,21 +169,27 @@ def level_record(level):
     return {'level': level, 'id': lid, 'label': label}
 
 
-def card_evidence(card):
-    """Card-level summary: the highest level of its supported money/activity claims."""
-    levels = [claim_level(x) for x in card.get('claims', []) if x.get('outcome') == 'supported']
+def card_evidence(card, overrides=None):
+    """Card-level summary: the highest level of its supported money/activity claims (curator levels applied)."""
+    ov = card_overrides(card, overrides)
+    levels = [claim_level(x, ov) for x in card.get('claims', []) if x.get('outcome') == 'supported']
     levels = [lv for lv in levels if lv]
     rec = level_record(max(levels) if levels else None)
     rec['claims_counted'] = len(levels)
     return rec
 
 
-def annotate_claim(x):
-    """Copy of a claim with evidence_level / evidence_label on money/activity claims (others unchanged)."""
-    lv = claim_level(x)
+def annotate_claim(x, ov=None):
+    """Copy of a claim with evidence_level / evidence_label on money/activity claims, plus evidence_note where a curator set the
+    level (others unchanged)."""
+    lv = claim_level(x, ov)
     if lv is None:
         return dict(x)
-    return dict(x) | {'evidence_level': lv, 'evidence_label': LEVELS[lv][1]}
+    out = dict(x) | {'evidence_level': lv, 'evidence_label': LEVELS[lv][1]}
+    note = claim_note(x, ov)
+    if note:
+        out['evidence_note'] = note
+    return out
 
 
 # ---------------------------------------------------------------- 2. keys and books
@@ -181,10 +263,11 @@ def _empty():
     return {'state': 'not_recorded', 'value': None, 'label': NOT_RECORDED, 'source_url': None, 'quote': None}
 
 
-def keys_and_books(card, curated):
+def keys_and_books(card, curated, overrides=None):
     """{keys, books, people} for one card. Curated values first; open books otherwise derived from the highest-level supported
-    money-flow claim at ladder level 2 or 3. Everything else: not recorded yet."""
+    money-flow claim at ladder level 2 or 3 (curator levels applied). Everything else: not recorded yet."""
     ent = curated.get(card.get('slug') or card.get('id')) or {}
+    ov = card_overrides(card, overrides)
     out = {}
     for f in KB_FIELDS:
         v = ent.get(f)
@@ -195,7 +278,7 @@ def keys_and_books(card, curated):
     if out['books']['state'] == 'not_recorded':
         best = None
         for x in card.get('claims', []):
-            lv = claim_level(x)
+            lv = claim_level(x, ov)
             if x.get('kind') == 'economic_flow' and x.get('outcome') == 'supported' and lv in BOOKS_BY_LEVEL and (best is None or lv > best[0]):
                 best = (lv, x)
         if best:

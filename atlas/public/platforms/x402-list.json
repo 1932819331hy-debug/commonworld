@@ -70,11 +70,11 @@
    "quote": null
   },
   "books": {
-   "state": "not_recorded",
-   "value": null,
-   "label": "not recorded yet",
-   "source_url": null,
-   "quote": null
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "$341.1k! settled in the last 7 days ... a sum per facilitator, not deduplicated"
   },
   "people": {
    "state": "not_recorded",
@@ -233,8 +233,9 @@
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:x402-list:economic_flow:3"
    },
-   "evidence_level": 1,
-   "evidence_label": "operator says"
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public dashboard: x402-list measures each facilitator's on-chain USDC settlement, with 7-day and 30-day volume updated daily."
   }
  ],
  "qa_status": "checked"
