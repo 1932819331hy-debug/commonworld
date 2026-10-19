@@ -1342,6 +1342,13 @@ def main():
             if need not in ah: fails.append(f'/about/: lacks {need!r}')
         for bad in re.findall(r'sign up|signup|join now|log in|register now|available now|download the app', main_, re.I):
             fails.append(f'/about/: claims a feature that does not exist yet ({bad!r})')
+    # accounts exist since v1: the pre-launch "no accounts" wording must not come back on any About page or in TRUST.md
+    for pg_ in ('/about/', '/atlas/about/'):
+        if pg_ in pages and re.search(r'\bno accounts\b', open(pages[pg_], encoding='utf-8').read(), re.I):
+            fails.append(f'{pg_}: still has the pre-launch "no accounts" text')
+    _trust = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'TRUST.md')
+    if os.path.exists(_trust) and re.search(r'planned, with writing from the app|\bno accounts\b', open(_trust, encoding='utf-8').read(), re.I):
+        fails.append('TRUST.md: link checks in posts are live in v1, but the text still says planned / no accounts')
         lds = [json.loads(x) for x in ap_.ld]
         abt = next((x for x in lds if x.get('@type') == 'AboutPage'), None)
         if not abt: fails.append('/about/: no AboutPage JSON-LD')
