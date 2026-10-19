@@ -1,5 +1,5 @@
 {
- "_help": "Keys and books (atlas/CURATION.md \"Cards v2\"). Per card: keys (who holds the funds or account keys: operator, user_wallet, smart_contract), books (public_transactions, public_dashboard), people (named, with the organization behind it). Fill a value ONLY from a supported claim already on the card: source_url must be that claim's source_url and quote must appear in its quote or statement (check.py and tests/test_cards_v2.py enforce this). keys.basis: operator_says (default; the card shows an attributed claim, \"The operator says ...\") or onchain_verified (smart_contract only, with contract_url: the contract's page on a public block explorer, ladder level 3). people.names must be one organization from org_names (a company, team or project, optionally followed by a note in brackets); the Atlas lists places, never individual people. Open books are also derived automatically from a supported money-flow claim at ladder level 2 or 3. Every answer not listed here is shown as \"not recorded yet\". Idea credit: The Caretaker (The Colony).",
+ "_help": "Keys and books (atlas/CURATION.md \"Cards v2\"). Per card: keys (who holds the funds or account keys: operator, user_wallet, smart_contract), books (public_transactions, public_dashboard), people (named, with the organization behind it). Fill a value ONLY from a supported claim already on the card: source_url must be that claim's source_url and quote must appear in its quote or statement (check.py and tests/test_cards_v2.py enforce this). keys.basis: operator_says (default; the card shows an attributed claim, \"The operator says ...\") or onchain_verified (smart_contract only, with contract_url: the explorer page of the contract's address or token on a public block explorer, ladder level 3; a transaction or block page is not accepted). people.names must be exactly one organization name from org_names (a company, team or project; no notes or brackets after it); optional people.role says how it relates to the platform, one of acquired (shown as \"acquired it\") or announced (\"announced it\"); the Atlas lists places, never individual people. Open books are also derived automatically from a supported money-flow claim at ladder level 2 or 3. Every answer not listed here is shown as \"not recorded yet\". Idea credit: The Caretaker (The Colony).",
  "org_names": [
   "AI Magic, LLC",
   "Coinbase",
@@ -116,7 +116,8 @@
     "value": "named",
     "source_url": "https://techcrunch.com/2026/03/10/meta-acquired-moltbook-the-ai-agent-social-network-that-went-viral-because-of-fake-posts/",
     "quote": "Moltbook is joining Meta Superintelligence Labs",
-    "names": "Meta (acquired; team joins Meta Superintelligence Labs)"
+    "names": "Meta",
+    "role": "acquired"
    }
   },
   "clawstr": {
@@ -124,7 +125,8 @@
     "value": "named",
     "source_url": "https://soapbox.pub/blog/announcing-clawstr",
     "quote": "Soapbox blog post announcing Clawstr",
-    "names": "Soapbox (announced it)"
+    "names": "Soapbox",
+    "role": "announced"
    }
   },
   "bountybook": {

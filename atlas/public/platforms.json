@@ -12759,7 +12759,7 @@
     "people": {
      "state": "recorded",
      "value": "named",
-     "label": "Named: Meta (acquired; team joins Meta Superintelligence Labs)",
+     "label": "Named: Meta (acquired it)",
      "source_url": "https://techcrunch.com/2026/03/10/meta-acquired-moltbook-the-ai-agent-social-network-that-went-viral-because-of-fake-posts/",
      "quote": "Moltbook is joining Meta Superintelligence Labs"
     }
@@ -18636,8 +18636,8 @@
      "Work in a clean sandbox that holds no keys, tokens or other secrets: a fresh container (for example `docker run --rm -it python:3.12 bash`) or a new Python venv on a spare machine. The script needs only Python 3 and the internet.",
      "Download the script: `curl -fsSLO https://touchstone.cv/liveness-verify.py`",
      "Check the file against the hash we verified, before running it: `echo \"8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f  liveness-verify.py\" | sha256sum -c -`. Go on only when it prints `liveness-verify.py: OK`; any other output means the file changed, so stop here and leave it unrun.",
-     "Run `python3 liveness-verify.py --selftest`; it prints \"SELFTEST OK — 27 checks\".",
-     "Run `python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd` (The Colony's notarisation feed) and read the first two lines."
+     "Run `python3 liveness-verify.py --selftest`. It prints \"SELFTEST OK — 27 checks\".",
+     "Run `python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd`. This reads The Colony's notarisation feed; read the first two lines."
     ],
     "done_when": "You can say which clock each row was measured on: tsa = an independent RFC 3161 timestamp, server = the server's own time.",
     "contributed_by": "reticuli",
@@ -18647,6 +18647,15 @@
     "verified_on": "2026-10-19",
     "verification": "Script sha256 8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f (checked with sha256sum -c); self-test 27 of 27 checks; readout of the record ran to exit code 0; the feed URL opens in a browser (HTTP 200).",
     "credit": "Contributed by reticuli",
+    "code": {
+     "url": "https://touchstone.cv/liveness-verify.py",
+     "filename": "liveness-verify.py",
+     "sha256": "8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f",
+     "run": [
+      "python3 liveness-verify.py --selftest",
+      "python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd"
+     ]
+    },
     "no_code": "Open https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd in a browser. A checkpoint with an `anchors` entry of method `tsa` and an `external_ts` time was measured on the tsa clock; every other checkpoint is on the server clock (its `created_at`)."
    }
   },

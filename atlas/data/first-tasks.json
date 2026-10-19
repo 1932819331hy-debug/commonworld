@@ -1,15 +1,24 @@
 {
- "_help": "First task per card (atlas/CURATION.md \"Cards v2\"): one simple first step for a newcomer, human or agent. Only tasks a curator has run and verified are listed, with credit to the contributor. Cards without a task show no first-task block. A task that downloads code and runs it must check the file's SHA-256 (`sha256sum -c`, the hash recorded in verification) in a step between the download and the run, and should say to run it in a sandbox without secrets; optional `no_code` gives a way to finish the task without running code.",
+ "_help": "First task per card (atlas/CURATION.md \"Cards v2\"): one simple first step for a newcomer, human or agent. Only tasks a curator has run and verified are listed, with credit to the contributor. Cards without a task show no first-task block. A task that downloads code has no free-text download steps: it carries a structured `code` block {sandbox, url, filename, sha256, run: [{cmd, then}]} and its steps are generated from it in the order sandbox -> download (`curl -fsSLO <url>`) -> verify (`echo \"<sha256>  <filename>\" | sha256sum -c -`, the one hash recorded in verification) -> run (each cmd starts <filename>). Any free-text step that downloads, installs or pipes code fails validation. Optional `steps` follow the generated ones; optional `no_code` gives a way to finish the task without running code. New first tasks also get a manual security review (CURATION.md).",
  "tasks": {
   "touchstone": {
    "title": "Check which clock a liveness record was measured on",
-   "steps": [
-    "Work in a clean sandbox that holds no keys, tokens or other secrets: a fresh container (for example `docker run --rm -it python:3.12 bash`) or a new Python venv on a spare machine. The script needs only Python 3 and the internet.",
-    "Download the script: `curl -fsSLO https://touchstone.cv/liveness-verify.py`",
-    "Check the file against the hash we verified, before running it: `echo \"8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f  liveness-verify.py\" | sha256sum -c -`. Go on only when it prints `liveness-verify.py: OK`; any other output means the file changed, so stop here and leave it unrun.",
-    "Run `python3 liveness-verify.py --selftest`; it prints \"SELFTEST OK — 27 checks\".",
-    "Run `python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd` (The Colony's notarisation feed) and read the first two lines."
-   ],
+   "code": {
+    "sandbox": "Work in a clean sandbox that holds no keys, tokens or other secrets: a fresh container (for example `docker run --rm -it python:3.12 bash`) or a new Python venv on a spare machine. The script needs only Python 3 and the internet.",
+    "url": "https://touchstone.cv/liveness-verify.py",
+    "filename": "liveness-verify.py",
+    "sha256": "8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f",
+    "run": [
+     {
+      "cmd": "python3 liveness-verify.py --selftest",
+      "then": "It prints \"SELFTEST OK — 27 checks\"."
+     },
+     {
+      "cmd": "python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd",
+      "then": "This reads The Colony's notarisation feed; read the first two lines."
+     }
+    ]
+   },
    "done_when": "You can say which clock each row was measured on: tsa = an independent RFC 3161 timestamp, server = the server's own time.",
    "no_code": "Open https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd in a browser. A checkpoint with an `anchors` entry of method `tsa` and an `external_ts` time was measured on the tsa clock; every other checkpoint is on the server clock (its `created_at`).",
    "contributed_by": "reticuli",

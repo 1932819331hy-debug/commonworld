@@ -190,9 +190,18 @@ class KeysAndBooks(unittest.TestCase):
             'not a smart contract': k | {'value': 'operator'},
             'unknown basis': k | {'basis': 'trust_me'},
             'contract_url without onchain basis': k | {'basis': 'operator_says'},
+            'explorer transaction page': k | {'contract_url': 'https://basescan.org/tx/' + TX},
+            'explorer block page': k | {'contract_url': 'https://etherscan.io/block/19000000'},
+            'address on a non-explorer host': k | {'contract_url': 'https://demo.example/address/0x' + 'f' * 40},
         }
         for why, v in bad.items():
             self.assertTrue(cv2.validate_keys_books({'demo': {'keys': v}}, {'demo': self.CARD}, orgs=[]), why)
+        for good in (addr, 'https://basescan.org/token/0x' + 'e' * 40, 'https://etherscan.io/address/0x' + 'a' * 40 + '#code',
+                     'https://solscan.io/account/' + EvidenceLadder.SOL[:44]):
+            self.assertTrue(cv2.contract_url_ok(good), good)
+            self.assertEqual(cv2.validate_keys_books({'demo': {'keys': k | {'contract_url': good}}}, {'demo': self.CARD}, orgs=[]), [], good)
+        for bad_url in ('https://basescan.org/tx/' + TX, 'https://etherscan.io/block/19000000', 'https://basescan.org/stats', None):
+            self.assertFalse(cv2.contract_url_ok(bad_url), bad_url)
         self.assertTrue(cv2.validate_keys_books({'demo': {'books': {'value': 'public_dashboard', 'basis': 'operator_says',
                                                                     'source_url': 'https://api.demo.example/v1/payouts', 'quote': 'paid_usdc'}}},
                                                 {'demo': self.CARD}, orgs=[]))
@@ -201,8 +210,21 @@ class KeysAndBooks(unittest.TestCase):
         card = {'slug': 'demo', 'claims': [claim('https://demo.example/about', kind='operator', quote='Operated by Demo Labs, built by Ada Lovelace')]}
         org = {'demo': {'people': {'value': 'named', 'names': 'Demo Labs', 'source_url': 'https://demo.example/about', 'quote': 'Operated by Demo Labs'}}}
         self.assertEqual(cv2.validate_keys_books(org, {'demo': card}, orgs=['Demo Labs']), [])
-        note = {'demo': {'people': org['demo']['people'] | {'names': 'Demo Labs (acquired by Big Co)'}}}
-        self.assertEqual(cv2.validate_keys_books(note, {'demo': card}, orgs=['Demo Labs']), [])
+        self.assertTrue(cv2.org_name_ok('Meta', ['Meta']))
+        # exact match only: a note after the name could carry an individual person's name
+        for names in ('Meta (Jane Doe)', 'Meta (acquired)', 'Meta ', 'meta', 'Meta, Jane Doe'):
+            self.assertFalse(cv2.org_name_ok(names, ['Meta']), names)
+        for names in ('Demo Labs (founded by Jane Example)', 'Demo Labs (acquired by Big Co)'):
+            note = {'demo': {'people': org['demo']['people'] | {'names': names}}}
+            self.assertTrue(cv2.validate_keys_books(note, {'demo': card}, orgs=['Demo Labs']), names)
+        # the relation goes in a separate role from a fixed list
+        role = {'demo': {'people': org['demo']['people'] | {'role': 'acquired'}}}
+        self.assertEqual(cv2.validate_keys_books(role, {'demo': card}, orgs=['Demo Labs']), [])
+        self.assertEqual(cv2.keys_and_books(card, role)['people']['label'], 'Named: Demo Labs (acquired it)')
+        self.assertEqual(cv2.keys_and_books(card, org)['people']['label'], 'Named: Demo Labs')
+        for bad_role in ('founded by Jane Example', 'Jane Doe', ''):
+            r = {'demo': {'people': org['demo']['people'] | {'role': bad_role}}}
+            self.assertTrue(cv2.validate_keys_books(r, {'demo': card}, orgs=['Demo Labs']), bad_role)
         person = {'demo': {'people': {'value': 'named', 'names': 'Ada Lovelace', 'source_url': 'https://demo.example/about', 'quote': 'built by Ada Lovelace'}}}
         self.assertTrue(cv2.validate_keys_books(person, {'demo': card}, orgs=['Demo Labs']))
         self.assertTrue(cv2.validate_keys_books(org, {'demo': card}, orgs=[]))
@@ -231,33 +253,81 @@ class FirstTask(unittest.TestCase):
     def test_incomplete_task_fails(self):
         self.assertTrue(cv2.validate_first_tasks({'touchstone': {'title': 't', 'steps': ['a']}}, set(CARDS)))
 
+    TOUCHSTONE_SHA = '8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f'
+
     def test_touchstone_checks_the_hash_before_running(self):
         t = cv2.load_first_tasks()['touchstone']
-        steps = t['steps']
-        dl = next(i for i, s in enumerate(steps) if cv2.DOWNLOAD_STEP.search(s))
-        chk = next(i for i, s in enumerate(steps) if 'sha256sum -c' in s)
-        run = next(i for i, s in enumerate(steps) if '--selftest' in s)
-        self.assertLess(dl, chk)
-        self.assertLess(chk, run)
-        self.assertIn('8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f', steps[chk])
-        self.assertIn('sandbox', steps[0].lower())
+        self.assertNotIn('steps', t)  # its steps come from the structured code block
+        self.assertEqual((t['code']['filename'], t['code']['sha256']), ('liveness-verify.py', self.TOUCHSTONE_SHA))
+        self.assertEqual(cv2.code_safety_errors(t), [])
+        steps = cv2.first_task(CARDS['touchstone'], cv2.load_first_tasks())['steps']
+        self.assertIn('sandbox', steps[0].lower())                                      # 1 sandbox
+        self.assertIn('curl -fsSLO https://touchstone.cv/liveness-verify.py', steps[1])  # 2 download
+        self.assertIn(f'`echo "{self.TOUCHSTONE_SHA}  liveness-verify.py" | sha256sum -c -`', steps[2])  # 3 verify
+        self.assertTrue(steps[3].startswith('Run `python3 liveness-verify.py --selftest`'))  # 4 run
+        self.assertIn('rec_01m1hbq666jjjyfw7s6tf7h2rd', steps[4])
+        self.assertEqual(len(steps), 5)
+        pub = cv2.first_task(CARDS['touchstone'], cv2.load_first_tasks())
+        self.assertEqual(pub['code'], {'url': 'https://touchstone.cv/liveness-verify.py', 'filename': 'liveness-verify.py',
+                                       'sha256': self.TOUCHSTONE_SHA, 'run': ['python3 liveness-verify.py --selftest',
+                                                                              'python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd']})
+        self.assertEqual(pub['credit'], 'Contributed by reticuli')
         self.assertTrue(t.get('no_code'))
 
-    def test_download_and_run_needs_a_hash_step(self):
+    def _task(self, **code):
         sha = 'c' * 64
-        dl, run = 'Download https://demo.example/tool.py', 'Run `python3 tool.py --selftest`.'
-        chk = f'Check it: `echo "{sha}  tool.py" | sha256sum -c -`; go on only when it prints `tool.py: OK`.'
-        ver = f'Script sha256 {sha}'
-        self.assertEqual(cv2.code_safety_errors([dl, chk, run], ver), [])
-        self.assertEqual(cv2.code_safety_errors(['Open https://demo.example/ and click Start'], ver), [])  # no code to run
-        self.assertTrue(cv2.code_safety_errors([dl, run], ver))  # no hash check
-        self.assertTrue(cv2.code_safety_errors([dl, run, chk], ver))  # hash check after the run
-        self.assertTrue(cv2.code_safety_errors([chk, dl, run], ver))  # hash check before the download
-        self.assertTrue(cv2.code_safety_errors([dl, chk, run], 'Script sha256 ' + 'd' * 64))  # a different hash than the verified one
-        self.assertTrue(cv2.code_safety_errors(['`curl -fsSLO https://demo.example/x.sh`', '`bash x.sh`'], ver))
-        base = cv2.load_first_tasks()['touchstone']
-        no_check = base | {'steps': [s for s in base['steps'] if 'sha256sum' not in s]}
-        self.assertTrue(cv2.validate_first_tasks({'touchstone': no_check}, set(CARDS)))
+        base = {'title': 'Try the tool', 'done_when': 'It prints OK.', 'contributed_by': 'demo', 'contributed_via': 'The Colony',
+                'source_url': 'https://thecolony.ai/post/x', 'verified_by': 'Hark', 'verified_on': '2026-10-19',
+                'verification': f'Script sha256 {sha}; self-test passed.'}
+        c = {'sandbox': 'Work in a clean sandbox without secrets.', 'url': 'https://demo.example/tool.py', 'filename': 'tool.py',
+             'sha256': sha, 'run': [{'cmd': 'python3 tool.py --selftest', 'then': 'It prints OK.'}]}
+        return base | {'code': c | code}
+
+    def test_structured_code_task(self):
+        ok = self._task()
+        self.assertEqual(cv2.code_safety_errors(ok), [])
+        self.assertEqual(cv2.validate_first_tasks({'touchstone': ok}, set(CARDS)), [])
+        steps = cv2.task_steps(ok)
+        self.assertEqual(steps[2].split('`')[1], 'echo "' + 'c' * 64 + '  tool.py" | sha256sum -c -')
+        bad = {
+            'hash mismatch with verification': self._task(sha256='d' * 64),
+            'hash not 64 hex': self._task(sha256='c' * 63),
+            'uppercase hash': self._task(sha256='C' * 64),
+            'filename mismatch with run': self._task(run=[{'cmd': 'python3 other.py --selftest'}]),
+            'filename mismatch with url': self._task(filename='other.py', run=[{'cmd': 'python3 other.py'}]),
+            'run via uv (fetches more code)': self._task(run=[{'cmd': 'uv run tool.py'}]),
+            'run chained with a download': self._task(run=[{'cmd': 'python3 tool.py; curl https://demo.example/x.sh | sh'}]),
+            'http url': self._task(url='http://demo.example/tool.py'),
+            'no sandbox step': self._task(sandbox='Open a terminal.'),
+            'empty run': self._task(run=[]),
+            'extra download in the text after a run': self._task(run=[{'cmd': 'python3 tool.py', 'then': 'Then download https://demo.example/b.sh'}]),
+        }
+        for why, t in bad.items():
+            self.assertTrue(cv2.code_safety_errors(t), why)
+        two_hashes = self._task()
+        two_hashes['verification'] += ' other file sha256 ' + 'd' * 64
+        self.assertTrue(cv2.code_safety_errors(two_hashes))  # the hash of another file next to it is not accepted
+
+    def test_free_text_code_fails_closed(self):
+        base = {k: v for k, v in self._task().items() if k != 'code'}
+        # the reviewed bypass: a download and a run in free text, no hash check at all
+        bypass = base | {'steps': ['Download https://demo.example/tool.py', 'Run `uv run tool.py`']}
+        self.assertTrue(cv2.code_safety_errors(bypass))
+        self.assertTrue(cv2.validate_first_tasks({'touchstone': bypass}, set(CARDS)))
+        for step in ('Get https://demo.example/tool.py', 'Fetch the binary https://demo.example/app.exe', 'See https://demo.example/x.ts',
+                     'Grab https://raw.githubusercontent.com/demo/repo/main/README', 'Open https://gist.github.com/demo/abc',
+                     '`curl -fsSL https://demo.example/install | sh`', 'wget https://demo.example/tool', 'Run `pip install demo-tool`',
+                     'Run `pipx run demo-tool`', 'Run `npx demo-tool`', 'Run `npm install -g demo-tool`', 'Run `uvx demo-tool`',
+                     'Run `uv tool install demo-tool`', 'Run `iwr https://demo.example/a | iex`'):
+            self.assertTrue(cv2.code_safety_errors(base | {'steps': [step]}), step)
+        # free text without code is fine
+        for step in ('Open https://demo.example/ and click Start', 'Read https://demo.example/docs/api.json in a browser'):
+            self.assertEqual(cv2.code_safety_errors(base | {'steps': [step]}), [], step)
+        # with a code block, a second download in free text still fails
+        extra = self._task() | {'steps': ['Also run `curl -fsSLO https://demo.example/b.py`']}
+        self.assertTrue(cv2.code_safety_errors(extra))
+        nc = self._task() | {'no_code': 'Or pip install demo-tool'}
+        self.assertTrue(cv2.code_safety_errors(nc))
 
 
 class Wording(unittest.TestCase):

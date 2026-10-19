@@ -27,8 +27,8 @@ CHANGELOG = [
         'money and activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions; level null with label "not recorded yet" when there is none); '
         '`keys_and_books` {keys, books, people}, each {state, value, label, source_url, quote} with state recorded (from a sourced claim on the card) '
         'or not_recorded; on `keys` also `basis` (operator_says: the label is the operator\'s claim, "The operator says ..."; onchain_verified: '
-        'a smart contract recorded on a public block explorer, with `contract_url`); `people` names an organization, never an individual person; '
-        '`first_task`, a verified first step for newcomers with credit (optional `no_code`), or null; `md_url`, the card page as Markdown.',
+        'a smart contract recorded on a public block explorer, with `contract_url`, the explorer page of its address or token); `people` names an organization, never an individual person; '
+        '`first_task`, a verified first step for newcomers with credit (optional `no_code`; optional `code` {url, filename, sha256, run} on a task that downloads code), or null; `md_url`, the card page as Markdown.',
         'New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: '
         '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md '
         '(level 3 only for a block-explorer page of one concrete record: a transaction, an address or account, a block; explorer stats are level 2); '
@@ -95,7 +95,8 @@ def schemas(origin, categories):
                 'basis': {'enum': list(KEYS_BASES), 'description': 'On a recorded value: operator_says = custody rests on the operator\'s own '
                           'words and the label is an attributed claim ("The operator says ..."); onchain_verified = a smart contract recorded '
                           'on a public block explorer (contract_url).'},
-                'contract_url': uri | {'description': 'The contract\'s page on a public block explorer (basis onchain_verified only).'}}
+                'contract_url': uri | {'description': 'The explorer page of the contract\'s address or token on a public block explorer, not a transaction '
+                                 'or block page (basis onchain_verified only).'}}
         return it
     money_flow = {'type': 'object', 'description': 'A supported money-flow claim as shown on the card.',
                   'required': ['statement', 'value', 'unit', 'window', 'basis', 'observed_at', 'source_url'],
@@ -149,7 +150,15 @@ def schemas(origin, categories):
                                       'done_when': {'type': 'string'}, 'contributed_by': {'type': 'string'}, 'contributed_via': {'type': 'string'},
                                       'source_url': uri, 'verified_by': {'type': 'string'}, 'verified_on': {'type': 'string', 'pattern': r'^\d{4}-\d{2}-\d{2}$'},
                                       'verification': {'type': 'string'}, 'credit': {'type': 'string', 'pattern': '^Contributed by '},
-                                      'no_code': {'type': 'string', 'minLength': 1, 'description': 'Optional: a way to finish the task without running code.'}}}}
+                                      'no_code': {'type': 'string', 'minLength': 1, 'description': 'Optional: a way to finish the task without running code.'},
+                                      'code': {'type': 'object', 'description': 'Optional, on a task that downloads code: the file it downloads and runs. '
+                                               'steps are generated from it in the order sandbox, download (url), SHA-256 check '
+                                               '(echo "<sha256>  <filename>" | sha256sum -c -), run; each run command starts filename.',
+                                               'required': ['url', 'filename', 'sha256', 'run'], 'additionalProperties': False,
+                                               'properties': {'url': {'type': 'string', 'format': 'uri', 'pattern': '^https://'},
+                                                              'filename': {'type': 'string', 'pattern': r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$'},
+                                                              'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+                                                              'run': {'type': 'array', 'minItems': 1, 'items': {'type': 'string', 'minLength': 1}}}}}}}
     optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task'}  # added in 1.1.0 / 1.2.0 / 1.4.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
                'required': [k for k in summary_props if k not in optional], 'properties': summary_props}

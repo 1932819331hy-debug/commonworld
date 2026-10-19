@@ -18,13 +18,17 @@ tests/test_cards_v2.py pins the rules with examples.
    change the level, and the note is published on the claim.
 2. Keys and books. Three questions per card: who holds the keys (custody of funds or accounts), whether the books are open (its money
    figures, such as payouts, balances or volume, publicly checkable), which organization is behind it (a company, team or project
-   from ORG_NAMES in keys-and-books.json; never an individual person). Custody resting on the operator's own words is shown as an
+   from org_names in keys-and-books.json, matched exactly; never an individual person; an optional `role` from ORG_ROLES says how
+   the organization relates to it, such as "acquired it"). Custody resting on the operator's own words is shown as an
    attributed claim ("The operator says ..."); only a smart contract recorded with a public explorer link (basis onchain_verified,
-   contract_url at ladder level 3) is stated plainly. A value is filled only from a supported claim already on
+   contract_url = an explorer page of one address or token, ladder level 3) is stated plainly. A value is filled only from a supported claim already on
    the card (curated in atlas/data/keys-and-books.json with the claim's source URL and a quote from that claim; open books are also
    derived from a supported money-flow claim at ladder level 2 or 3). Every other answer is "not recorded yet".
 3. First task. One simple first step for a newcomer, from atlas/data/first-tasks.json. Only tasks a curator ran and verified are
-   published, with credit to the contributor. Cards without one show no first-task block.
+   published, with credit to the contributor. Cards without one show no first-task block. A task that downloads code carries a
+   structured `code` block (sandbox, url, filename, sha256, run); its steps are generated from it in the order sandbox ->
+   download -> verify (`echo "<sha256>  <filename>" | sha256sum -c -`) -> run. Any free-text step that downloads or installs
+   code outside that block fails validation (fail closed).
 """
 import json
 import os
@@ -214,7 +218,9 @@ KEYS_SAID = {'operator': 'The operator says it holds the funds',
 KEYS_ONCHAIN = {'smart_contract': 'A smart contract holds the funds (contract on a public block explorer)'}
 BOOKS_VALUES = {'public_transactions': 'Open: its money figures are on public transactions',
                 'public_dashboard': 'Open: its money figures are on a public dashboard or API'}
-PEOPLE_VALUES = {'named': 'Named'}  # an organization (company, team, project), never an individual person: ORG_NAMES
+PEOPLE_VALUES = {'named': 'Named'}  # an organization (company, team, project), never an individual person: org_names
+# Optional people.role: how the named organization relates to the platform. A fixed list, so no free text sits next to the name.
+ORG_ROLES = {'acquired': 'acquired it', 'announced': 'announced it'}
 KB_FIELDS = {'keys': ('Who holds the keys', KEYS_VALUES), 'books': ('Open books', BOOKS_VALUES), 'people': ('People behind it', PEOPLE_VALUES)}
 BOOKS_BY_LEVEL = {3: 'public_transactions', 2: 'public_dashboard'}
 
@@ -239,9 +245,19 @@ def load_org_names(path=KEYS_BOOKS_FILE):
 
 
 def org_name_ok(names, orgs):
-    """people.names is one allowlisted organization, optionally followed by a short note in brackets: 'Meta (acquired ...)'."""
-    n = (names or '').strip()
-    return any(n == o or n.startswith(o + ' (') for o in orgs or [])
+    """people.names is exactly one allowlisted organization name (no notes or brackets after it: free text next to a name could
+    carry an individual person's name). How the organization relates to the platform goes in people.role (ORG_ROLES)."""
+    return isinstance(names, str) and names in (orgs or [])
+
+
+# A smart contract's page on a public explorer: one address or token, with its identifier in the path. Transactions and blocks are
+# records too (ladder level 3), but they do not name the contract that holds the funds.
+CONTRACT_PATH = re.compile(r'/(address(?:es)?|accounts?|tokens?)/(0x[0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})(/|$)', re.I)
+
+
+def contract_url_ok(url):
+    """contract_url is a level-3 explorer page of a specific address or token (not /tx/, /block/ or a stats page)."""
+    return source_level(url) == 3 and bool(CONTRACT_PATH.search(urlparse(url).path or ''))
 
 
 def load_first_tasks(path=FIRST_TASKS_FILE):
@@ -263,8 +279,9 @@ def _supporting_claim(card, source_url, quote):
 
 def validate_keys_books(entries, cards_by_slug, orgs=None):
     """Errors in the curated keys-and-books file: unknown slug or field, value outside its list, a source/quote that is not a
-    supported claim already on the card, a people.names that is no allowlisted organization (the Atlas lists places, never
-    individual people), or a custody basis onchain_verified without a public explorer record (contract_url at ladder level 3)."""
+    supported claim already on the card, a people.names that is not exactly one allowlisted organization (the Atlas lists places,
+    never individual people) or a people.role outside ORG_ROLES, or a custody basis onchain_verified without a public explorer
+    page of the contract's address or token (contract_url_ok)."""
     orgs = load_org_names() if orgs is None else orgs
     errs = []
     for slug, ent in entries.items():
@@ -280,15 +297,20 @@ def validate_keys_books(entries, cards_by_slug, orgs=None):
             if f == 'people' and not (v.get('names') or '').strip():
                 errs.append(f'keys-and-books: {slug}.people needs names')
             elif f == 'people' and not org_name_ok(v.get('names'), orgs):
-                errs.append(f'keys-and-books: {slug}.people names {v.get("names")!r} is no organization in org_names (no individual people)')
+                errs.append(f'keys-and-books: {slug}.people names {v.get("names")!r} is not exactly one organization in org_names (no individual people, no notes)')
+            if f == 'people' and 'role' in v and v['role'] not in ORG_ROLES:
+                errs.append(f'keys-and-books: {slug}.people role {v["role"]!r} not in {sorted(ORG_ROLES)}')
+            if f != 'people' and ({'names', 'role'} & set(v)):
+                errs.append(f'keys-and-books: {slug}.{f}: names/role belong to people only')
             if f != 'keys' and ({'basis', 'contract_url'} & set(v)):
                 errs.append(f'keys-and-books: {slug}.{f}: basis/contract_url belong to keys only')
             if f == 'keys':
                 basis = v.get('basis', 'operator_says')
                 if basis not in KEYS_BASES:
                     errs.append(f'keys-and-books: {slug}.keys basis {basis!r} not in {KEYS_BASES}')
-                elif basis == 'onchain_verified' and (v.get('value') not in KEYS_ONCHAIN or source_level(v.get('contract_url')) != 3):
-                    errs.append(f'keys-and-books: {slug}.keys onchain_verified needs value smart_contract and a contract_url on a public explorer (level 3)')
+                elif basis == 'onchain_verified' and (v.get('value') not in KEYS_ONCHAIN or not contract_url_ok(v.get('contract_url'))):
+                    errs.append(f'keys-and-books: {slug}.keys onchain_verified needs value smart_contract and a contract_url that is a public '
+                                f'explorer page of one address or token (level 3; not a transaction or block)')
                 elif basis == 'operator_says' and v.get('contract_url'):
                     errs.append(f'keys-and-books: {slug}.keys has a contract_url: set basis onchain_verified')
             if not _supporting_claim(c, v.get('source_url'), v.get('quote')):
@@ -296,10 +318,10 @@ def validate_keys_books(entries, cards_by_slug, orgs=None):
     return errs
 
 
-def _item(field, value, source_url, quote, names=None):
+def _item(field, value, source_url, quote, names=None, role=None):
     label = KB_FIELDS[field][1][value]
     if names:
-        label = f'{label}: {names}'
+        label = f'{label}: {names}' + (f' ({ORG_ROLES[role]})' if role in ORG_ROLES else '')
     return {'state': 'recorded', 'value': value, 'label': label, 'source_url': source_url, 'quote': quote}
 
 
@@ -325,7 +347,7 @@ def keys_and_books(card, curated, overrides=None):
     for f in KB_FIELDS:
         v = ent.get(f)
         if v and _supporting_claim(card, v.get('source_url'), v.get('quote')):
-            out[f] = _keys_item(v) if f == 'keys' else _item(f, v['value'], v['source_url'], v['quote'], v.get('names'))
+            out[f] = _keys_item(v) if f == 'keys' else _item(f, v['value'], v['source_url'], v['quote'], v.get('names'), v.get('role'))
         else:
             out[f] = _empty()
     if out['books']['state'] == 'not_recorded':
@@ -343,31 +365,109 @@ def keys_and_books(card, curated, overrides=None):
 # ---------------------------------------------------------------- 3. first task
 TASK_FIELDS = ('title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification')
 DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+SHA256 = re.compile(r'^[0-9a-f]{64}$')
+HEX64 = re.compile(r'(?<![0-9a-fA-F])[0-9a-fA-F]{64}(?![0-9a-fA-F])')
+CODE_FIELDS = ('sandbox', 'url', 'filename', 'sha256', 'run')
+FILENAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$')
+# A run command starts the downloaded file by name: `python3 tool.py ...`, `bash tool.sh`, `node tool.js`, `./tool`. Runners that fetch
+# more code on their own (uv run, deno run, npx) are left out: what they fetch is not covered by the hash check.
+RUN_PREFIXES = ('python3 ', 'python ', 'bash ', 'sh ', 'node ', 'ruby ', 'perl ', './')
+
+# Fail closed: free text in a first task may not fetch, install or pipe code. Code reaches a newcomer only through the structured
+# `code` block, whose download, hash check and run steps are generated below.
+DOWNLOAD_PATTERNS = (
+    ('a link to a script or binary', re.compile(
+        r'https?://[^\s`"\'<>)]+\.(py|pyz|sh|bash|zsh|ps1|bat|cmd|js|mjs|cjs|ts|exe|msi|dmg|pkg|deb|rpm|apk|appimage|jar|whl|bin|run)'
+        r'(?=$|[\s`"\'<>)?#.,;:])', re.I)),
+    ('a raw GitHub or gist link', re.compile(r'\b(raw\.githubusercontent\.com|gist\.github(usercontent)?\.com)\b', re.I)),
+    ('a download command with a link', re.compile(r'\b(download|curl|wget|iwr|invoke-webrequest|invoke-restmethod)\b[^\n]*https?://', re.I)),
+    ('a pipe into a shell', re.compile(r'\|\s*(sudo\s+)?(sh|bash|zsh|python3?|node|iex|invoke-expression)\b', re.I)),
+    ('a package install or remote run', re.compile(
+        r'\b(pip3?\s+install|python3?\s+-m\s+pip\s+install|pipx\s+(install|run)|uvx|uv\s+(pip\s+install|tool\s+(install|run)|run|add)|'
+        r'npm\s+(install|i|exec)|npx|pnpm\s+(add|install|dlx)|yarn\s+(add|dlx)|bunx|bun\s+(add|install|x)|gem\s+install|'
+        r'cargo\s+install|go\s+(install|run)\s+\S*(@|\.go\b|/)|brew\s+install|apt(-get)?\s+install)\b', re.I)),
+)
 
 
-# A step that fetches a file from the web, a step that runs code, and the hash check that must sit between them.
-DOWNLOAD_STEP = re.compile(r'\b(download|curl|wget|fetch)\b.*https?://', re.I)
-RUN_STEP = re.compile(r'`\s*(python3?|bash|sh|node|deno|bun|ruby|perl|php|\./)[^`]*`', re.I)
-HASH_STEP = re.compile(r'\b([0-9a-f]{64})\b.*\bsha256sum -c\b|\bsha256sum -c\b.*\b([0-9a-f]{64})\b', re.I)
+def download_hits(text):
+    """Why a free-text step looks like it downloads, installs or pipes code ([] when it does not)."""
+    return [why for why, rx in DOWNLOAD_PATTERNS if rx.search(text or '')]
 
 
-def code_safety_errors(steps, verification=''):
-    """A task that downloads code and runs it needs a SHA-256 check step (`echo "<sha256>  <file>" | sha256sum -c -`) after the
-    download and before the first run, with the hash the curator recorded in `verification`."""
-    steps = [s for s in steps if isinstance(s, str)]
-    dl = next((i for i, s in enumerate(steps) if DOWNLOAD_STEP.search(s)), None)
-    if dl is None:
-        return []
-    run = next((i for i, s in enumerate(steps) if i >= dl and RUN_STEP.search(s) and not HASH_STEP.search(s)), None)
-    if run is None:
-        return []
-    chk = [(i, m) for i, s in enumerate(steps) if (m := HASH_STEP.search(s)) and dl <= i < run]
-    if not chk:
-        return [f'step {run + 1} runs downloaded code: add a SHA-256 check step (sha256sum -c) between the download and the run']
-    sha = (chk[0][1].group(1) or chk[0][1].group(2)).lower()
-    if sha not in (verification or '').lower():
-        return [f'the SHA-256 in the check step is not the hash recorded in verification']
-    return []
+def code_steps(code):
+    """Steps generated from a structured `code` block, in the fixed order sandbox -> download -> verify -> run."""
+    fn, sha = code['filename'], code['sha256']
+    steps = [code['sandbox'].strip(),
+             f"Download the script: `curl -fsSLO {code['url']}`",
+             f'Check the file against the hash we verified, before running it: `echo "{sha}  {fn}" | sha256sum -c -`. Go on only when it '
+             f'prints `{fn}: OK`; any other output means the file changed, so stop here and leave it unrun.']
+    for r in code['run']:
+        steps.append(f"Run `{r['cmd']}`." + (f" {r['then'].strip()}" if (r.get('then') or '').strip() else ''))
+    return steps
+
+
+def task_steps(t):
+    """The published steps of a task: the generated code steps first (when it downloads code), then its own free-text steps."""
+    own = [s for s in (t.get('steps') or []) if isinstance(s, str)]
+    return (code_steps(t['code']) if isinstance(t.get('code'), dict) else []) + own
+
+
+def code_block_errors(code, verification=''):
+    """Errors in a structured `code` block: url (https, its file name = filename), filename, sha256 (64 lowercase hex, the one and
+    only hash in `verification`), a sandbox step, and run commands that each start `filename` by name and fetch nothing."""
+    if not isinstance(code, dict):
+        return ['code must be an object with ' + ', '.join(CODE_FIELDS)]
+    errs = []
+    extra, miss = set(code) - set(CODE_FIELDS), [k for k in CODE_FIELDS if not code.get(k)]
+    if extra:
+        errs.append(f'code: unexpected keys {sorted(extra)}')
+    if miss:
+        return errs + [f'code missing {", ".join(miss)}']
+    url, fn, sha = code['url'], code['filename'], code['sha256']
+    if not (isinstance(fn, str) and FILENAME.match(fn)):
+        errs.append(f'code.filename {fn!r} must be a plain file name')
+    if not (isinstance(url, str) and url.startswith('https://') and not re.search(r'[\s`"\'|;&$<>]', url)):
+        errs.append('code.url must be one https URL')
+    elif os.path.basename(urlparse(url).path) != fn:
+        errs.append(f'code.url saves as {os.path.basename(urlparse(url).path)!r} (curl -O), not code.filename {fn!r}')
+    if not (isinstance(sha, str) and SHA256.match(sha)):
+        errs.append('code.sha256 must be 64 lowercase hex characters')
+    elif {h.lower() for h in HEX64.findall(verification or '')} != {sha}:
+        errs.append('code.sha256 is not the one hash recorded in verification')
+    if not isinstance(code['sandbox'], str) or 'sandbox' not in code['sandbox'].lower():
+        errs.append('code.sandbox must be a step that says to work in a sandbox without secrets')
+    runs = code['run']
+    if not isinstance(runs, list) or not runs or not all(isinstance(r, dict) and isinstance(r.get('cmd'), str) for r in runs):
+        return errs + ['code.run must be a non-empty list of {cmd, then}']
+    for i, r in enumerate(runs, 1):
+        cmd = r['cmd'].strip()
+        if set(r) - {'cmd', 'then'}:
+            errs.append(f'code.run {i}: unexpected keys {sorted(set(r) - {"cmd", "then"})}')
+        target = next(((cmd[len(p):] if p != './' else cmd).split(' ')[0] for p in RUN_PREFIXES if cmd.startswith(p)), None)
+        if target not in (fn, './' + fn):
+            errs.append(f'code.run {i}: `{cmd}` must start the downloaded file {fn!r} (for example `python3 {fn}`)')
+        if re.search(r'https?://|[`|;&$<>]', cmd):
+            errs.append(f'code.run {i}: `{cmd}` must be one plain command without links, pipes or chaining')
+    return errs
+
+
+def code_safety_errors(t):
+    """Fail closed: a task that downloads code carries a structured `code` block (validated by code_block_errors), and none of its
+    free-text parts (steps, sandbox, the text after each run command, done_when, no_code) downloads, installs or pipes code."""
+    errs = []
+    code = t.get('code')
+    if code is not None:
+        errs += code_block_errors(code, t.get('verification'))
+    texts = [('step', s) for s in (t.get('steps') or []) if isinstance(s, str)]
+    if isinstance(code, dict):
+        texts += [('code.sandbox', code.get('sandbox') or '')] + \
+                 [('code.run then', r.get('then') or '') for r in (code.get('run') or []) if isinstance(r, dict)]
+    texts += [('done_when', t.get('done_when') or ''), ('no_code', t.get('no_code') or '')]
+    for where, text in texts:
+        for why in download_hits(text):
+            errs.append(f'{where} {text[:60]!r} has {why}: code is allowed only through the structured `code` block '
+                        f'(url, filename, sha256, run), with steps generated from it')
+    return errs
 
 
 def validate_first_tasks(tasks, slugs):
@@ -376,21 +476,22 @@ def validate_first_tasks(tasks, slugs):
         w = f'first-tasks: {slug}'
         if slug not in slugs:
             errs.append(f'{w} is not a published card'); continue
-        extra = set(t) - set(TASK_FIELDS) - {'no_code'}
+        extra = set(t) - set(TASK_FIELDS) - {'no_code', 'code'}
         if extra:
             errs.append(f'{w}: unexpected keys {sorted(extra)}')
         if 'no_code' in t and not (isinstance(t['no_code'], str) and t['no_code'].strip()):
             errs.append(f'{w}: no_code must be a non-empty string')
-        miss = [k for k in TASK_FIELDS if not t.get(k)]
+        # A task with a code block may leave `steps` out: its steps are generated from the block.
+        miss = [k for k in TASK_FIELDS if not t.get(k) and not (k == 'steps' and 'code' in t)]
         if miss:
             errs.append(f'{w} missing {", ".join(miss)}')
-        if not isinstance(t.get('steps'), list) or not all(isinstance(s, str) and s.strip() for s in t.get('steps') or []):
+        if not isinstance(t.get('steps', []), list) or not all(isinstance(s, str) and s.strip() for s in t.get('steps') or []):
             errs.append(f'{w}: steps must be a list of non-empty strings')
         if not str(t.get('source_url') or '').startswith('https://'):
             errs.append(f'{w}: source_url must be https')
         if not DATE.match(str(t.get('verified_on') or '')):
             errs.append(f'{w}: verified_on must be YYYY-MM-DD')
-        errs += [f'{w}: {x}' for x in code_safety_errors(t.get('steps') or [], t.get('verification'))]
+        errs += [f'{w}: {x}' for x in code_safety_errors(t)]
     return errs
 
 
@@ -398,7 +499,11 @@ def first_task(card, tasks):
     t = tasks.get(card.get('slug') or card.get('id'))
     if not t:
         return None
-    out = {k: t[k] for k in TASK_FIELDS} | {'credit': f"Contributed by {t['contributed_by']}"}
+    out = {k: t[k] for k in TASK_FIELDS if k != 'steps'} | {'steps': task_steps(t), 'credit': f"Contributed by {t['contributed_by']}"}
+    out = {k: out[k] for k in TASK_FIELDS} | {'credit': out['credit']}  # same key order as before
+    if isinstance(t.get('code'), dict):
+        c = t['code']
+        out['code'] = {'url': c['url'], 'filename': c['filename'], 'sha256': c['sha256'], 'run': [r['cmd'] for r in c['run']]}
     if t.get('no_code'):
         out['no_code'] = t['no_code']  # optional: a way to finish the task without running code
     return out
