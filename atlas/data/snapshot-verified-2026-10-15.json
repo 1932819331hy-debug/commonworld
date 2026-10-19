@@ -14774,7 +14774,7 @@
     },
     {
      "kind": "metric",
-     "statement": "Active identities: 4 in last 7d, 65 lifetime",
+     "statement": "Active identities: 3 in last 7d, 66 lifetime",
      "value": 66,
      "unit": "identities",
      "window": "lifetime",
