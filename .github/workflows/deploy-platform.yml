@@ -12,8 +12,9 @@ name: Deploy platform (production)
 # What gets released is fixed by the sha alone: platform code and Atlas data come from that commit, the homepage
 # screenshots from the atlas-screens commit named in atlas/screens.lock at that commit. A release manifest (all three
 # shas, sha256 of the built Atlas assets, wrangler version) is printed in the job summary and kept as an artifact.
-# Pending D1 migrations with destructive SQL stop the run (scripts/check-migrations.py, expand -> deploy -> contract);
-# allow_destructive_migration = the same sha typed again lets one such release through.
+# Pending D1 migrations with destructive, review-required or unreadable SQL stop the run (scripts/check-migrations.py,
+# expand -> deploy -> contract); allow_destructive_migration = the same sha typed again lets one such release through.
+# The production version live before the deploy is printed in the summary with the exact rollback command.
 on:
   workflow_dispatch:
     inputs:
@@ -192,6 +193,53 @@ jobs:
           path: ${{ runner.temp }}/release/manifest.json
           retention-days: 90
           if-no-files-found: error
+      - name: Production version before this deploy (for rollback)
+        # Printed BEFORE migrations and deploy, so a rollback has the version id at hand (docs/DEPLOY.md, Rollback).
+        # Syntax checked against wrangler 4.151.1: `deployments status --json` prints the current deployment
+        # ({"versions": [{"version_id", "percentage"}], ...}); `rollback [version-id] --env production -m ... -y`.
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          json="$RUNNER_TEMP/deployment-before.json"; err="$RUNNER_TEMP/deployment-before.err"
+          if npx wrangler deployments status --env production --json > "$json" 2> "$err"; then
+            versions=$(python - "$json" <<'PY'
+          import json, re, sys
+          raw = open(sys.argv[1], encoding='utf-8').read()
+          d = json.loads(raw[raw.index('{'):])
+          vs = d.get('versions') or []
+          if not vs or not all(re.fullmatch(r'[0-9a-f-]{36}', v.get('version_id', '')) for v in vs):
+              sys.exit('deployments status: no readable version ids')
+          for v in vs:
+              print(f"{v['version_id']} {v.get('percentage')}%")
+          PY
+            )
+            prev=$(echo "$versions" | sort -k2 -t' ' -rn | head -n1 | cut -d' ' -f1)
+            echo "production before this deploy:"; echo "$versions"
+            {
+              echo "## Production version before this deploy"
+              echo
+              echo '```'
+              echo "$versions"
+              echo '```'
+              echo "Roll the Worker back to it (in platform/, production token):"
+              echo
+              echo '```sh'
+              echo "npx wrangler rollback $prev --env production -m \"rollback from $SHA\" -y"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          elif grep -qE 'has no deployments|\[code: 10007\]' "$err"; then
+            # first production deploy: the Worker has no deployment yet (10007 = Worker not found)
+            cat "$err"
+            echo "::notice::no earlier production version: first deploy, rollback = launch runbook"
+            printf '## Production version before this deploy\n\nNone (first production deploy). Rollback follows the launch runbook.\n' >> "$GITHUB_STEP_SUMMARY"
+          else
+            cat "$err"
+            echo "::error::could not read the current production version (needed for rollback)"; exit 1
+          fi
       - name: Migration gate (expand -> deploy -> contract)
         # Migrations run while the OLD Worker is still live: pending ones must not drop, rename or wipe what it uses.
         if: hashFiles('platform/wrangler.toml') != ''

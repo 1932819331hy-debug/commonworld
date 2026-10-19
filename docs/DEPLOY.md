@@ -82,12 +82,22 @@ database is used by the code that is running now. Rules:
   stops reading/writing the column or table (expand + deploy), a following release drops or renames it (contract).
 - **The gate.** Before any migration runs, the workflow lists the migrations not yet applied in production
   (`wrangler d1 migrations list commonworld-prod --remote --env production`) and runs
-  `scripts/check-migrations.py` on them. It stops the run if one contains `DROP TABLE`, `ALTER TABLE … DROP`,
-  `ALTER TABLE … RENAME`, `DELETE FROM` without `WHERE` or `UPDATE … SET` without `WHERE` (comments and strings are
-  ignored), or if the list cannot be read. It is a safety net, not a replacement for reading the migration.
-- **Override, one release only:** start the run with *allow_destructive_migration* = the same 40-character sha
-  typed a second time. Anything else (empty, `yes`, a short sha) keeps the gate closed. Only for a contract step
-  whose code side is already live.
+  `scripts/check-migrations.py` on them. The script reads the SQL with a small tokenizer (comments, string literals
+  and quoted names are handled, statements split on top-level `;`) and stops the run on:
+  - **destructive:** `DROP TABLE`, `ALTER TABLE … DROP`, `ALTER TABLE … RENAME`, and `DELETE` / `UPDATE` without a
+    `WHERE` of their own. A `WHERE` inside a subquery, a `SET` value or `RETURNING` does not count, and an always-true
+    one (`WHERE 1`, `TRUE`, `1=1`, `'a'='a'`, `NOT 0`, `id=id`, `(SELECT 1)` …) counts as none. Also inside
+    `WITH … DELETE/UPDATE` and inside trigger bodies;
+  - **review-required:** `DROP INDEX`, `DROP TRIGGER`, `DROP VIEW`, `INSERT OR REPLACE` / `REPLACE INTO` (can
+    overwrite rows);
+  - **unknown:** SQL it cannot read or a statement kind not on its known-safe list (fail closed).
+
+  It also stops the run if the wrangler list cannot be read exactly: an error line, a table line it cannot parse, a
+  listed name that is not a local file, a `*.sql` name outside the table, or pending names that are not the newest
+  local migration files in order. It is a safety net, not a replacement for reading the migration.
+- **Override, one release only** (any finding, all three classes): start the run with
+  *allow_destructive_migration* = the same 40-character sha typed a second time. Anything else (empty, `yes`, a short sha) keeps the gate closed.
+  Only for a contract step whose code side is already live.
 - **Restore = D1 Time Travel** to the bookmark the run printed (step *Time Travel bookmark before migrations*, also
   in the run summary). In `platform/`, with the production token:
 
@@ -109,10 +119,25 @@ The scanner runs in CI too (report only), and its unit tests are `tests/test_che
 
 ## Rollback
 
-- **Code:** `npx wrangler rollback --env production` (run in `platform/` with the production token) switches the
-  Worker back to the previous version in seconds. To go forward again:
-  `npx wrangler versions deploy <version-id>@100% --env production`. Or run the workflow again with an older sha
-  from `main`.
+- **Code:** every run prints the production version that was live **before** it (step *Production version before
+  this deploy (for rollback)*, also in the run summary, with the ready-made command). In `platform/`, with the
+  production token:
+
+  ```sh
+  # the version id from the run summary; -m is the reason, -y skips the confirmation prompt
+  npx wrangler rollback <VERSION_ID> --env production -m "reason" -y
+  # without an id wrangler picks the previous version itself and asks to confirm
+  npx wrangler rollback --env production -m "reason"
+  # if the summary is lost: what is live now, and the 10 most recent versions with their ids
+  npx wrangler deployments status --env production
+  npx wrangler versions list --env production
+  # forward again to a newer version
+  npx wrangler versions deploy <VERSION_ID>@100% --env production -m "reason" -y
+  ```
+
+  Syntax checked with the pinned wrangler 4.151.1 (`--help`): the version id is an optional positional argument,
+  `--env` is accepted (it selects the Worker name of `[env.production]`; `--name <worker>` also works). Or run the
+  workflow again with an older sha from `main`.
 - **Database:** a Worker rollback does **not** undo migrations, which is why every migration must stay compatible
   with the previous Worker version (see above). If data must be restored, use D1 Time Travel with the bookmark
   printed by the deploy run (commands above). This overwrites the live database, so only on the owner's decision.
