@@ -13,10 +13,12 @@ depth, statements split on top-level ';', CREATE TRIGGER ... BEGIN ... END kept 
                    DELETE / UPDATE without a top-level WHERE of their own (a WHERE inside a subquery, a SET value or
                    RETURNING does not count) or with a trivially true one (1, TRUE, 1=1, 'a'='a', NOT 0, x=x, a
                    constant subquery such as (SELECT 1) ...), also inside WITH ... and inside trigger bodies
-  review-required  DROP INDEX, DROP TRIGGER, DROP VIEW, INSERT OR REPLACE / REPLACE INTO (can overwrite rows)
+  review-required  DROP INDEX, DROP TRIGGER, DROP VIEW, INSERT OR REPLACE / REPLACE INTO (can overwrite rows),
+                   ALTER TABLE ... ADD of a column SQLite refuses at apply time: NOT NULL without a non-NULL DEFAULT,
+                   PRIMARY KEY, UNIQUE, a STORED generated column, DEFAULT CURRENT_TIME/DATE/TIMESTAMP
   unknown          anything the tokenizer cannot read or a statement kind not on the known-safe list (fail closed)
 
-Known safe: CREATE TABLE / INDEX / VIEW / TRIGGER / VIRTUAL TABLE, ALTER TABLE ... ADD, INSERT (plain, OR IGNORE /
+Known safe: CREATE TABLE / INDEX / VIEW / TRIGGER / VIRTUAL TABLE, ALTER TABLE ... ADD (other column definitions), INSERT (plain, OR IGNORE /
 ABORT / FAIL / ROLLBACK, ON CONFLICT DO ...), SELECT, VALUES, BEGIN / COMMIT / END / SAVEPOINT / RELEASE, ANALYZE,
 REINDEX, PRAGMA foreign_keys / defer_foreign_keys / optimize. Every finding of any class blocks the deploy unless the
 override is given. It is a safety net, not a SQL engine: a reviewer still reads every migration.
@@ -355,7 +357,7 @@ def classify(st):
         if action == 'RENAME':
             return [(DESTRUCTIVE, 'ALTER TABLE ... RENAME')]
         if action == 'ADD':
-            return []
+            return _add_column(st[j + 2:])
         return [(UNKNOWN, f'ALTER TABLE ... {action}')]
     if first == 'CREATE':
         rest = [x for x in w[1:] if x not in ('TEMP', 'TEMPORARY', 'UNIQUE', 'VIRTUAL')]
@@ -375,6 +377,43 @@ def classify(st):
             return []
         return [(UNKNOWN, f'PRAGMA {name}')]
     return [(UNKNOWN, f'unknown statement {first or st[0].text}')]
+
+
+_CONSTRAINT_START = {'CONSTRAINT', 'PRIMARY', 'NOT', 'NULL', 'UNIQUE', 'CHECK', 'DEFAULT', 'COLLATE', 'REFERENCES',
+                     'GENERATED', 'AS'}
+
+
+def _add_column(toks):
+    """ALTER TABLE ... ADD [COLUMN] <column-def>: SQLite refuses some column definitions only when the statement runs
+    (some only on a table that already has rows), which would stop `wrangler d1 migrations apply` half way through
+    the pending list. Those are flagged review-required so the gate stops them before anything is applied."""
+    if toks and toks[0].up == 'COLUMN':
+        toks = toks[1:]
+    top = [t for t in toks[1:] if t.depth == 0]   # constraints of the column; (...) contents are not constraints
+    ups = [t.up for t in top] + [None]
+    generated = 'GENERATED' in ups or 'AS' in ups
+    res, default = [], None
+    for i, u in enumerate(ups[:-1]):
+        if u == 'PRIMARY' and ups[i + 1] == 'KEY':
+            res.append((REVIEW, 'ADD COLUMN ... PRIMARY KEY (SQLite cannot add a PRIMARY KEY column)'))
+        elif u == 'UNIQUE':
+            res.append((REVIEW, 'ADD COLUMN ... UNIQUE (SQLite cannot add a UNIQUE column)'))
+        elif u == 'STORED' and generated:
+            res.append((REVIEW, 'ADD COLUMN ... STORED (SQLite cannot add a STORED generated column)'))
+        elif u == 'DEFAULT' and i + 1 < len(top):
+            nxt = top[i + 1]
+            if nxt.kind == 'op' and nxt.text == '(':
+                inner = [t for t in toks[toks.index(nxt) + 1:] if t.depth > 0]
+                default = 'null' if [t.up for t in inner] == ['NULL'] else 'expr'
+            else:
+                default = 'null' if nxt.up == 'NULL' else 'value'
+            if nxt.up in ('CURRENT_TIME', 'CURRENT_DATE', 'CURRENT_TIMESTAMP'):
+                res.append((REVIEW, f'ADD COLUMN ... DEFAULT {nxt.up} (SQLite needs a constant default here)'))
+    not_null = any(u == 'NOT' and ups[i + 1] == 'NULL' for i, u in enumerate(ups[:-1]))
+    if not_null and not generated and default in (None, 'null'):
+        res.append((REVIEW, 'ADD COLUMN ... NOT NULL without a non-NULL DEFAULT '
+                            '(SQLite rejects it on a table that has rows)'))
+    return res
 
 
 def _trigger_body(st):

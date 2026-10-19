@@ -80,11 +80,13 @@ jobs:
         env:
           CW_PRIVATE_TERMS: ${{ secrets.CW_PRIVATE_TERMS }}
           CW_SCREENS_REQUIRED: '1'
-          # secrets are not given to pull requests from forks: only there may the forbidden-text check be skipped
-          FORK_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+          # Actions secrets are not given to pull requests from forks, nor to runs triggered by Dependabot (its weekly
+          # update PRs, .github/dependabot.yml): only there may the forbidden-text check be skipped. github.actor is the
+          # account that triggered this run, so a person pushing to a Dependabot branch gets the secret and the check.
+          SECRETLESS_PR: ${{ github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]') }}
         run: |
           if [ -z "$CW_PRIVATE_TERMS" ]; then
-            if [ "$FORK_PR" = true ]; then echo "::warning::fork pull request: secret CW_PRIVATE_TERMS unavailable, forbidden-text check skipped"
+            if [ "$SECRETLESS_PR" = true ]; then echo "::warning::fork or Dependabot pull request: secret CW_PRIVATE_TERMS unavailable, forbidden-text check skipped"
             else echo "::error::secret CW_PRIVATE_TERMS not set: the forbidden-text check cannot be skipped here"; exit 1; fi
           fi
           python atlas/site/check.py

@@ -113,6 +113,43 @@ class Findings(unittest.TestCase):
 
     def test_add_column_is_not_destructive(self):
         self.assertEqual(cm.findings('ALTER TABLE x ADD COLUMN y TEXT;'), [])
+        self.assertEqual(cm.findings("ALTER TABLE x ADD COLUMN y TEXT NOT NULL DEFAULT '';"
+                                     'ALTER TABLE x ADD y INTEGER NOT NULL DEFAULT 0 CHECK (y IS NOT NULL);'
+                                     'ALTER TABLE x ADD COLUMN y INT NOT NULL DEFAULT -1;'
+                                     'ALTER TABLE x ADD COLUMN y INT NOT NULL DEFAULT (2);'
+                                     'ALTER TABLE x ADD COLUMN y TEXT CHECK (y NOT NULL);'
+                                     'ALTER TABLE x ADD COLUMN g INT GENERATED ALWAYS AS (a + 1) VIRTUAL NOT NULL;'
+                                     'ALTER TABLE main.x ADD COLUMN y TEXT DEFAULT NULL;'), [])
+
+    def test_add_column_that_sqlite_refuses_is_flagged(self):
+        nn = 'review-required: ADD COLUMN ... NOT NULL without a non-NULL DEFAULT (SQLite rejects it on a table that has rows)'
+        for sql in ('ALTER TABLE x ADD COLUMN y TEXT NOT NULL;', 'ALTER TABLE x ADD y TEXT NOT NULL DEFAULT NULL;',
+                    'alter table main.x add column y text constraint c not null;',
+                    'ALTER TABLE x ADD COLUMN y TEXT NOT NULL DEFAULT (NULL);'):
+            self.assertEqual(rules(sql), [nn], sql)
+        self.assertTrue(rules('ALTER TABLE x ADD COLUMN y INTEGER PRIMARY KEY;')[0].startswith('review-required: ADD COLUMN ... PRIMARY KEY'))
+        self.assertTrue(rules('ALTER TABLE x ADD COLUMN y TEXT UNIQUE;')[0].startswith('review-required: ADD COLUMN ... UNIQUE'))
+        self.assertTrue(rules('ALTER TABLE x ADD COLUMN g INT AS (a + 1) STORED;')[0].startswith('review-required: ADD COLUMN ... STORED'))
+        self.assertTrue(rules('ALTER TABLE x ADD COLUMN t TEXT DEFAULT CURRENT_TIMESTAMP;')[0].startswith(
+            'review-required: ADD COLUMN ... DEFAULT CURRENT_TIMESTAMP'))
+
+    def test_add_column_rules_match_sqlite(self):
+        """Every flagged definition really fails in SQLite on a table with a row; every passing one really works."""
+        import sqlite3
+        for col, flagged in (('y TEXT NOT NULL', True), ('y TEXT NOT NULL DEFAULT NULL', True),
+                             ('y INTEGER PRIMARY KEY', True), ('y TEXT UNIQUE', True),
+                             ('g INT AS (a + 1) STORED', True), ('t TEXT DEFAULT CURRENT_TIMESTAMP', True),
+                             ("y TEXT NOT NULL DEFAULT ''", False), ('y INT NOT NULL DEFAULT -1', False),
+                             ('y TEXT', False)):
+            sql = f'ALTER TABLE x ADD COLUMN {col};'
+            self.assertEqual(bool(rules(sql)), flagged, sql)
+            db = sqlite3.connect(':memory:')
+            db.execute('CREATE TABLE x (a INT)'); db.execute('INSERT INTO x VALUES (1)')
+            try:
+                db.execute(sql); ok = True
+            except sqlite3.OperationalError:
+                ok = False
+            self.assertEqual(ok, not flagged, sql)
 
 
 class Pending(unittest.TestCase):

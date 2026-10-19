@@ -25,7 +25,7 @@ Staging is where every change is tried first. Production is only ever deployed f
 |---|---|---|---|
 | `CLOUDFLARE_API_TOKEN` | GitHub → Settings → Environments → `production` → Environment secrets | owner | Production-only Cloudflare token. Scopes: Account → Workers Scripts: Edit, Account → D1: Edit, Zone `commonworld.one` → Workers Routes: Edit. Nothing else. Separate from the staging token. |
 | `CLOUDFLARE_ACCOUNT_ID` | same place | owner | Which Cloudflare account to deploy to. Not secret on its own, kept next to the token. |
-| `CW_PRIVATE_TERMS` | GitHub → repository secrets (already used by CI) | owner | Forbidden-text check of the Atlas build. Required: CI on `main` and on same-repo PRs, and the production deploy, stop without it; only PRs from forks (which get no secrets) skip the check with a warning. |
+| `CW_PRIVATE_TERMS` | GitHub → repository secrets (already used by CI) | owner | Forbidden-text check of the Atlas build. Required: CI on `main` and on same-repo PRs, and the production deploy, stop without it; only PRs from forks and Dependabot update PRs (GitHub gives neither Actions secrets) skip the check with a warning. |
 | `KEY_PEPPER` | **only in Cloudflare**, as a secret of the Worker `commonworld-api` | owner | Hashes API keys, login links, sessions and IPs. **Never in GitHub**, never in a commit, issue, log or chat. The workflow neither needs nor sees it. |
 
 Because the Cloudflare token is an *environment* secret, GitHub hands it to the job only after the approval. A
@@ -77,7 +77,9 @@ Migrations are applied **before** the new Worker goes live, so while they run (a
 database is used by the code that is running now. Rules:
 
 - **Every migration must be backward compatible with the currently running Worker.** Allowed in a normal release:
-  new tables, new columns that are nullable or have a default, new indexes, backfills with a `WHERE`.
+  new tables, new columns that are nullable or have a constant non-NULL default (a `NOT NULL` column without
+  one, `PRIMARY KEY`, `UNIQUE` or `STORED` columns are refused by SQLite and stop the gate), new indexes, backfills
+  with a `WHERE`.
 - **Destructive changes ship in a later release**, after the code no longer uses what they remove: first release
   stops reading/writing the column or table (expand + deploy), a following release drops or renames it (contract).
 - **The gate.** Before any migration runs, the workflow lists the migrations not yet applied in production
