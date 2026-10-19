@@ -444,6 +444,54 @@ class FirstTask(unittest.TestCase):
                      'Check the node list on the page'):
             self.assertEqual(cv2.code_safety_errors(base | {'steps': [text]}), [], text)
 
+    def test_inline_execution_is_one_structural_rule(self):
+        """Round 5: interpreter or shell (path, env, version, .exe) + whitespace + inline-code flag, in every human-text field."""
+        base = {k: v for k, v in self._task().items() if k != 'code'}
+        inline = ('Run `python3.12 -c "1"`', 'Run `pwsh -c "1"`', 'Run `powershell -Command "1"`', 'Run `/usr/bin/env python3 -c "1"`',
+                  'Run `zsh -c id`', 'Run `python3\t-c "1"`', 'Run `bash  -c id`', 'Run `/usr/bin/python3 -c 1`',
+                  'Run `C:\\Python312\\python.exe -c 1`', 'Run `cmd /c dir`', 'Run `cmd.exe /K dir`', 'Run `php -r "echo 1;"`',
+                  'Run `osascript -e "beep"`', 'Run `Rscript -e 1`', 'Run `lua5.4 -e "print(1)"`', 'Run `bun -e 1`', 'Run `deno eval 1`',
+                  'Run `pwsh -NoProfile -EncodedCommand ZQBjAGgAbwA=`', 'Run `powershell -enc ZQBjAGgAbwA=`', 'Run `nodejs --eval 1`',
+                  'Run `pypy3 -c 1`', 'Run `py -c 1`', 'Run `ksh -c id`', 'Run `fish -c id`', 'Run `dash -c id`', 'Run `tclsh -c 1`',
+                  'Run `perl -E "say 1"`', 'Run `PwSh -COMMAND 1`', 'Run `python3 -u -c 1`', 'Call exec(code)')
+        fields = ('title', 'verification', 'steps', 'done_when', 'no_code', 'contributed_by', 'contributed_via', 'verified_by')
+        for text in inline:
+            for field in fields:
+                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
+                errs = cv2.code_safety_errors(t)
+                self.assertTrue(any('inline code execution' in e for e in errs), (field, text, errs))
+                self.assertTrue(cv2.validate_first_tasks({'touchstone': t}, set(CARDS)), (field, text))
+            for t in (self._task(sandbox='Work in a clean sandbox without secrets. ' + text),
+                      self._task(run=[{'cmd': 'python3 tool.py', 'then': text}])):
+                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), text)
+        # prose that names a tool, a flag or a word alone is fine
+        for text in ('The executor prints OK', 'Calling exec() is not needed here', 'An exec( ) call is not needed', 'Evaluate the result',
+                     'Python is used for the check', 'The -c flag of the checker is optional', 'Open the evaluation page',
+                     'Check it with sha256sum -c and read the output', 'A bash script is not needed', 'Use the node list',
+                     'Run `python3 tool.py --selftest`', 'Read the cmd output', 'The php page shows -c as an option'):
+            for field in fields:
+                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
+                self.assertEqual(cv2.code_safety_errors(t), [], (field, text))
+
+    def test_hidden_unicode_in_title_and_verification(self):
+        base = {k: v for k, v in self._task().items() if k != 'code'}
+        for field in ('title', 'verification'):
+            for ch in ('\u2028', '\u2029', '\u0085', '\u200b', '\u200d', '\u2060', '\ufeff', '\u202e', '\u2066'):
+                errs = cv2.code_safety_errors(base | {field: 'Check the clock' + ch + 'now'})
+                self.assertTrue(any('Unicode line separators' in e for e in errs), (field, repr(ch)))
+        self.assertEqual(cv2.code_safety_errors(base | {'title': 'Check the clock', 'verification': 'Ran to exit code 0'}), [])
+
+    def test_explorer_urls_without_userinfo_or_port(self):
+        addr = '/address/0x' + 'f' * 40
+        for bad in ('https://evil.com@basescan.org' + addr, 'https://user:pass@basescan.org' + addr, 'https://@basescan.org' + addr,
+                    'https://basescan.org:444' + addr, 'https://basescan.org:443' + addr, 'https://basescan.org:' + addr):
+            self.assertFalse(cv2.contract_url_ok(bad), bad)
+            self.assertFalse(cv2.explorer_host(bad), bad)
+            self.assertNotEqual(cv2.source_level(bad), 3, bad)
+            self.assertNotEqual(cv2.source_level(bad.replace(addr, '/tx/' + TX)), 3, bad)
+        self.assertTrue(cv2.contract_url_ok('https://basescan.org' + addr))
+        self.assertEqual(cv2.source_level('https://basescan.org/tx/' + TX), 3)
+
 
 class Wording(unittest.TestCase):
     def test_v2_vocabulary_is_positive(self):

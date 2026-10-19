@@ -85,9 +85,19 @@ def _bare_host(u):
     return host[4:] if host.startswith('www.') else host
 
 
+def _plain_netloc(u):
+    """The network location is a bare host name: no userinfo (`user:pass@`, so `https://evil.com@basescan.org/` is not an
+    explorer page) and no explicit port (`:443` included)."""
+    netloc = u.netloc or ''
+    return bool(netloc) and '@' not in netloc and ':' not in netloc and u.username is None and u.password is None
+
+
 def explorer_host(url):
-    """True when the URL's host (after a leading `www.`) is exactly one of EXPLORER_HOSTS."""
-    return isinstance(url, str) and _bare_host(urlparse(url)) in EXPLORER_HOSTS
+    """True when the URL's host (after a leading `www.`) is exactly one of EXPLORER_HOSTS, with no userinfo and no port."""
+    if not isinstance(url, str):
+        return False
+    u = urlparse(url)
+    return _plain_netloc(u) and _bare_host(u) in EXPLORER_HOSTS
 
 
 def source_level(url):
@@ -99,7 +109,7 @@ def source_level(url):
     path = u.path or '/'
     if _host_in(host, TEXT_ONLY_HOSTS):
         return 1
-    explorer = host in EXPLORER_HOSTS  # exact allowlist, no subdomains, no "scan"/"explorer" guess
+    explorer = host in EXPLORER_HOSTS and _plain_netloc(u)  # exact allowlist, no subdomains, no userinfo or port, no "scan" guess
     if explorer and u.scheme == 'https' and TX_PATH.search(path):
         return 3
     if explorer:  # explorer stats, charts and other aggregate views
@@ -272,11 +282,11 @@ CONTRACT_PATH = re.compile(r'^/(address|addresses|account|token)/(0x[0-9a-fA-F]{
 
 def contract_url_ok(url):
     """contract_url is a level-3 explorer page of a specific address or token (not /tx/, /block/ or a stats page): printable
-    ASCII only, https, host exactly in EXPLORER_HOSTS, no query or fragment."""
+    ASCII only, https, host exactly in EXPLORER_HOSTS, no userinfo, no port (not even :443), no query or fragment."""
     if not isinstance(url, str) or not ASCII_PRINTABLE.match(url):
         return False
     u = urlparse(url)
-    return u.scheme == 'https' and url.startswith('https://') and explorer_host(url) and source_level(url) == 3 and not u.query and not u.fragment and '?' not in url and '#' not in url \
+    return u.scheme == 'https' and url.startswith('https://') and _plain_netloc(u) and explorer_host(url) and source_level(url) == 3 and not u.query and not u.fragment and '?' not in url and '#' not in url \
         and bool(CONTRACT_PATH.match(u.path or ''))
 
 
@@ -393,7 +403,8 @@ CONTROL = re.compile(r'[\x00-\x1f\x7f]')
 # run.cmd, code.filename, code.url (and a custody contract_url): printable ASCII only (0x20-0x7e), so no Unicode line or
 # paragraph separator (U+2028/U+2029), NEL (U+0085), fullwidth punctuation (U+FF1B ；) or zero-width character can hide in them.
 ASCII_PRINTABLE = re.compile(r'^[\x20-\x7e]*$')
-# Free text (steps, sandbox, then, done_when, no_code): no Unicode line breaks (U+2028, U+2029, U+0085), zero-width characters
+# Free text (title, steps, sandbox, then, done_when, no_code, verification, contributor and verifier fields): no Unicode line
+# breaks (U+2028, U+2029, U+0085), zero-width characters
 # (U+200B-U+200D, U+2060, U+FEFF) or bidi controls (U+202A-U+202E, U+2066-U+2069): they can hide or reorder text.
 HIDDEN_UNICODE = re.compile('[\u2028\u2029\u0085\u200b-\u200d\u2060\ufeff\u202a-\u202e\u2066-\u2069]')
 # Shell syntax a run command may not contain: links, chaining, pipes, redirects, command substitution, variables.
@@ -402,6 +413,20 @@ FILENAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$')
 # A run command starts the downloaded file by name: `python3 tool.py ...`, `bash tool.sh`, `node tool.js`, `./tool`. Runners that fetch
 # more code on their own (uv run, deno run, npx) are left out: what they fetch is not covered by the hash check.
 RUN_PREFIXES = ('python3 ', 'python ', 'bash ', 'sh ', 'node ', 'ruby ', 'perl ', './')
+
+# Inline code execution, as one structural rule instead of a list of spellings: an interpreter or shell token followed by
+# whitespace and an inline-code flag. The token may carry a path (`/usr/bin/python3`, `C:\Python312\python.exe`), sit behind
+# `env` (`/usr/bin/env python3 -c`, matched at the interpreter itself), have a version suffix (`python3.12`, `php8.2`) and `.exe`;
+# other options may come between it and the flag (`pwsh -NoProfile -Command`). Interpreter and flag are case-insensitive.
+INTERPRETERS = ('python', 'py', 'pypy', 'bash', 'sh', 'zsh', 'dash', 'ksh', 'fish', 'pwsh', 'powershell', 'cmd', 'node', 'nodejs',
+                'deno', 'bun', 'perl', 'ruby', 'php', 'lua', 'osascript', 'rscript', 'tclsh')
+INLINE_FLAGS = ('-c', '-e', '--eval', '-p', '--print', '--command', '-command', '-encodedcommand', '-enc', '-ec', '/c', '/k', '-r', 'eval')
+INLINE_EXEC = re.compile(
+    r'(?<![\w.-])(?:' + '|'.join(INTERPRETERS) + r')(?:\d+(?:\.\d+)*)?(?:\.exe)?'   # the interpreter token
+    r'(?:\s+--?[a-z][\w-]*)*?'                                                      # other options before the flag
+    r'\s+(?:' + '|'.join(re.escape(f) for f in INLINE_FLAGS) + r')(?![\w-])'          # whitespace, then an inline-code flag
+    r'|\beval\s|\bexec\s*\(\s*[^\s)]|\biex\b|\binvoke-expression\b',                 # eval / exec(<code>) / PowerShell
+    re.I)
 
 # Fail closed: free text in a first task may not fetch, install or pipe code. Code reaches a newcomer only through the structured
 # `code` block, whose download, hash check and run steps are generated below.
@@ -416,9 +441,7 @@ DOWNLOAD_PATTERNS = (
         r'\b(pip3?\s+install|python3?\s+-m\s+pip\s+install|pipx\s+(install|run)|uvx|uv\s+(pip\s+install|tool\s+(install|run)|run|add)|'
         r'npm\s+(install|i|exec)|npx|pnpm\s+(add|install|dlx)|yarn\s+(add|dlx)|bunx|bun\s+(add|install|x)|gem\s+install|'
         r'cargo\s+install|go\s+(install|run)\s+\S*(@|\.go\b|/)|brew\s+install|apt(-get)?\s+install)\b', re.I)),
-    ('inline code execution', re.compile(
-        r'\b(python3?|bash|sh|zsh|dash)\s+-c\b|\bnode\s+(-e|-p|--eval|--print)\b|\b(perl|ruby)\s+-e\b|\bdeno\s+eval\b|'
-        r'\beval\s|\bexec\s*\(|\biex\b|\binvoke-expression\b', re.I)),
+    ('inline code execution', INLINE_EXEC),
 )
 
 
@@ -505,10 +528,19 @@ def code_block_errors(code, verification=''):
     return errs
 
 
+# Every human-text field of a task (all others are links, dates or a hash): the step texts, code.sandbox and each run's `then`
+# (collected in code_safety_errors), plus these. All of them reject hidden Unicode and inline code execution; the record fields
+# (who contributed and verified it, and how) may name a link or a download as provenance, so the download/install patterns skip them.
+TEXT_FIELDS = ('title', 'done_when', 'no_code', 'verification', 'contributed_by', 'contributed_via', 'verified_by')
+RECORD_FIELDS = ('verification', 'contributed_by', 'contributed_via', 'verified_by')
+
+
 def code_safety_errors(t):
     """Fail closed: a task that downloads code carries a structured `code` block (validated by code_block_errors), and none of its
-    free-text parts (steps, sandbox, the text after each run command, done_when, no_code) downloads, installs, pipes or runs inline
-    code (`python3 -c`, `node -e`, `eval`, `iex` ...) or hides text with Unicode separators, zero-width or bidi characters."""
+    human-text parts (title, steps, sandbox, the text after each run command, done_when, no_code, verification and the contributor
+    and verifier fields) runs inline code (INLINE_EXEC: an interpreter or shell followed by an inline-code flag, `eval`, `exec(...)`,
+    `iex` ...) or hides text with Unicode separators, zero-width or bidi characters; the task texts also may not download, install
+    or pipe code."""
     errs = []
     code = t.get('code')
     if code is not None:
@@ -518,7 +550,7 @@ def code_safety_errors(t):
     if isinstance(code, dict):
         runs = code.get('run') if isinstance(code.get('run'), list) else []
         texts += [('code.sandbox', code.get('sandbox'))] + [('code.run then', r.get('then')) for r in runs if isinstance(r, dict)]
-    texts += [('done_when', t.get('done_when')), ('no_code', t.get('no_code'))]
+    texts += [(k, t.get(k)) for k in TEXT_FIELDS]
     for where, text in texts:
         if not isinstance(text, str):
             continue  # a wrong type is reported by the type checks (code_block_errors / validate_first_tasks)
@@ -526,7 +558,8 @@ def code_safety_errors(t):
             errs.append(f'{where} {text[:60]!r} must not contain control characters (newline, tab, NUL)')
         if HIDDEN_UNICODE.search(text):
             errs.append(f'{where} {text[:60]!r} must not contain Unicode line separators, zero-width characters or bidi controls')
-        for why in download_hits(text):
+        hits = download_hits(text) if where not in RECORD_FIELDS else (['inline code execution'] if INLINE_EXEC.search(text) else [])
+        for why in hits:
             errs.append(f'{where} {text[:60]!r} has {why}: code is allowed only through the structured `code` block '
                         f'(url, filename, sha256, run), with steps generated from it')
     return errs
