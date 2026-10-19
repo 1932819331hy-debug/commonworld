@@ -1,0 +1,90 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-19T08:29:00Z",
+ "id": "agent402-tools",
+ "name": "Agent402",
+ "url": "https://commonworld.one/atlas/platforms/agent402-tools/",
+ "json_url": "https://commonworld.one/atlas/platforms/agent402-tools.json",
+ "website": "https://agent402.tools/",
+ "category": "payments",
+ "category_label": "Payments & x402",
+ "type": "platform",
+ "status": "live",
+ "summary": "Pay-per-call tool hub for AI agents: 500+ metered tools, models and reports paid per request over x402 or MPP without signup or API keys, plus an open directory of indexed x402 sellers with their tools and settlement networks.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-19T11:14:00Z",
+ "last_checked": "2026-10-19T11:14:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "badge_status": "Verified · 2026-10-19",
+ "badge_svg": "https://commonworld.one/atlas/badge/agent402-tools.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/agent402-tools-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "https://agent402.tools/ is the official site (page title \"Agent402: 500+ pay-per-call tools for AI agents over x402 and MPP\").",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agent402.tools/",
+   "quote": "Agent402: 500+ pay-per-call tools for AI agents over x402 and MPP",
+   "observed_at": "2026-10-19T11:14:46Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://agent402.tools/ (HTTP 200, final URL https://agent402.tools/, 18450 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Home page serves real content (HTTP 200).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://agent402.tools/",
+   "quote": "OUR 500+ TOOLS",
+   "observed_at": "2026-10-19T11:14:46Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://agent402.tools/ (HTTP 200, final URL https://agent402.tools/, 18450 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Operator's own description of Agent402.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://agent402.tools/",
+   "quote": "Agentic Finance for AI agents: 500+ pay-per-call tools, metered models and finished reports over x402 and MPP, or by card. No signup, no API keys.",
+   "observed_at": "2026-10-19T11:14:46Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://agent402.tools/ (HTTP 200, final URL https://agent402.tools/, 18450 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "The operator also publishes a directory of x402 sellers it crawls.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://agent402.tools/marketplace",
+   "quote": "The open directory of every x402 seller we can crawl: advertised tools, settlement networks, crawl health and routability.",
+   "observed_at": "2026-10-19T11:14:47Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://agent402.tools/marketplace (HTTP 200, final URL https://agent402.tools/marketplace, 20782 chars of page text)"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

@@ -1,0 +1,90 @@
+{
+ "licence": "CC BY 4.0",
+ "source": "https://github.com/commonworld-one/commonworld",
+ "generated_at": "2026-10-19T08:29:00Z",
+ "id": "agentsports",
+ "name": "AgentSports",
+ "url": "https://commonworld.one/atlas/platforms/agentsports/",
+ "json_url": "https://commonworld.one/atlas/platforms/agentsports.json",
+ "website": "https://www.agentsports.io/",
+ "category": "arenas",
+ "category_label": "Arenas & benchmarks",
+ "type": "platform",
+ "status": "live",
+ "summary": "Sports prediction competition where AI agents and human forecasters compete head-to-head on football, basketball and hockey challenges; launch tables use virtual ASP points, and agents connect through a published skill.",
+ "tags": [],
+ "has_money_flow": false,
+ "money_flow": [],
+ "key_number": null,
+ "verified_at": "2026-10-19T11:14:00Z",
+ "last_checked": "2026-10-19T11:14:00Z",
+ "claims_count": 4,
+ "disclosure": null,
+ "badge_status": "Verified · 2026-10-19",
+ "badge_svg": "https://commonworld.one/atlas/badge/agentsports.svg",
+ "badge_svg_dark": "https://commonworld.one/atlas/badge/agentsports-dark.svg",
+ "badge_page": "https://commonworld.one/atlas/badge/",
+ "claims": [
+  {
+   "kind": "canonical_url",
+   "statement": "https://www.agentsports.io/ is the official site (page title \"AgentSports - AI vs Human Prediction Competition\").",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.agentsports.io/",
+   "quote": "AgentSports - AI vs Human Prediction Competition",
+   "observed_at": "2026-10-19T11:14:42Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://www.agentsports.io/ (HTTP 200, final URL https://www.agentsports.io/, 5755 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "site_reachable",
+   "statement": "Home page serves real content (HTTP 200).",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "direct_observation",
+   "source_url": "https://www.agentsports.io/",
+   "quote": "Build agents. Compete with other players. Win hackathons.",
+   "observed_at": "2026-10-19T11:14:42Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://www.agentsports.io/ (HTTP 200, final URL https://www.agentsports.io/, 5755 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Operator's own description of AgentSports.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.agentsports.io/en/faq",
+   "quote": "AgentSports is a prediction competition platform where AI agents and human forecasters compete head-to-head in sports prediction challenges.",
+   "observed_at": "2026-10-19T11:14:43Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://www.agentsports.io/en/faq (HTTP 200, final URL https://www.agentsports.io/en/faq, 5646 chars of page text)"
+   ],
+   "outcome": "supported"
+  },
+  {
+   "kind": "description",
+   "statement": "Launch tables use virtual ASP points; new participants start with 100 ASP.",
+   "value": null,
+   "unit": null,
+   "window": null,
+   "basis": "operator_claim",
+   "source_url": "https://www.agentsports.io/en/faq",
+   "quote": "Start with 100 virtual ASP after registration.",
+   "observed_at": "2026-10-19T11:14:43Z",
+   "methods": [
+    "curl -sL -A \"<Chrome UA>\" https://www.agentsports.io/en/faq (HTTP 200, final URL https://www.agentsports.io/en/faq, 5646 chars of page text)"
+   ],
+   "outcome": "supported"
+  }
+ ],
+ "qa_status": "not_sampled"
+}

@@ -27,6 +27,7 @@ https://commonworld.one/atlas/platforms/4claw/
 https://commonworld.one/atlas/platforms/8004agents/
 https://commonworld.one/atlas/platforms/8004scan/
 https://commonworld.one/atlas/platforms/a2a-directory/
+https://commonworld.one/atlas/platforms/a2a-list/
 https://commonworld.one/atlas/platforms/a2a-protocol/
 https://commonworld.one/atlas/platforms/a2a-registry-a2aregistry-org/
 https://commonworld.one/atlas/platforms/a2a-registry-org/
@@ -48,6 +49,7 @@ https://commonworld.one/atlas/platforms/agent-memory-wiki/
 https://commonworld.one/atlas/platforms/agent-tavern/
 https://commonworld.one/atlas/platforms/agent-wikis/
 https://commonworld.one/atlas/platforms/agent-x-ossoonline/
+https://commonworld.one/atlas/platforms/agent402-tools/
 https://commonworld.one/atlas/platforms/agent4science/
 https://commonworld.one/atlas/platforms/agentagon/
 https://commonworld.one/atlas/platforms/agentarxiv-agxiv/
@@ -65,6 +67,7 @@ https://commonworld.one/atlas/platforms/agenthansa/
 https://commonworld.one/atlas/platforms/agentic-commerce-protocol-openai-stripe/
 https://commonworld.one/atlas/platforms/agentic-market/
 https://commonworld.one/atlas/platforms/agenticmarket/
+https://commonworld.one/atlas/platforms/agentindex-x402looker/
 https://commonworld.one/atlas/platforms/agentleague/
 https://commonworld.one/atlas/platforms/agentlux/
 https://commonworld.one/atlas/platforms/agentndx/
@@ -76,6 +79,7 @@ https://commonworld.one/atlas/platforms/agents-gather/
 https://commonworld.one/atlas/platforms/agents-json/
 https://commonworld.one/atlas/platforms/agents4science-2025/
 https://commonworld.one/atlas/platforms/agentscan/
+https://commonworld.one/atlas/platforms/agentsports/
 https://commonworld.one/atlas/platforms/agentstore-agentpay/
 https://commonworld.one/atlas/platforms/agentsy/
 https://commonworld.one/atlas/platforms/agentworld/
@@ -103,6 +107,7 @@ https://commonworld.one/atlas/platforms/amazon-alexa-for-shopping/
 https://commonworld.one/atlas/platforms/anthropic-claude-commerce-agents-blueprint/
 https://commonworld.one/atlas/platforms/apify-store/
 https://commonworld.one/atlas/platforms/arena42-agent-arena/
+https://commonworld.one/atlas/platforms/arenabot/
 https://commonworld.one/atlas/platforms/artifact-council/
 https://commonworld.one/atlas/platforms/artificiety/
 https://commonworld.one/atlas/platforms/awesome-agent-native-social/
@@ -155,6 +160,7 @@ https://commonworld.one/atlas/platforms/clawtavista/
 https://commonworld.one/atlas/platforms/clawxiv/
 https://commonworld.one/atlas/platforms/cloudflare-monetization-gateway/
 https://commonworld.one/atlas/platforms/cluster-protocol/
+https://commonworld.one/atlas/platforms/coarena/
 https://commonworld.one/atlas/platforms/coinbase-agentic-wallet/
 https://commonworld.one/atlas/platforms/coinbase-cdp-x402-bazaar/
 https://commonworld.one/atlas/platforms/colony-chat/
@@ -218,6 +224,7 @@ https://commonworld.one/atlas/platforms/matrix-agent-net/
 https://commonworld.one/atlas/platforms/mcp-marketplace/
 https://commonworld.one/atlas/platforms/mcpay-frames/
 https://commonworld.one/atlas/platforms/mcpize/
+https://commonworld.one/atlas/platforms/meatlayer/
 https://commonworld.one/atlas/platforms/memecorp/
 https://commonworld.one/atlas/platforms/meridian-mrdn/
 https://commonworld.one/atlas/platforms/meta-muse/

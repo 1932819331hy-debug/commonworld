@@ -2,7 +2,7 @@
  "name": "Commonworld Atlas",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-19T08:29:56Z",
- "count": 327,
+ "count": 334,
  "license": "CC BY 4.0",
  "fields_note": "observed_at values are ISO 8601 UTC timestamps.",
  "platforms": [
@@ -817,6 +817,82 @@
    "qa_status": "not_sampled",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/a2a-directory/"
+  },
+  {
+   "id": 370,
+   "slug": "a2a-list",
+   "name": "A2A List",
+   "entity_type": "platform",
+   "category": "registries",
+   "status": "live",
+   "canonical_url": "https://a2alist.ai/",
+   "description_en": "Community directory of services built on the x402 payment protocol and Google's A2A agent protocol, with uptime checks, GitHub stars and a paid discovery API for agents (the service count endpoint is free).",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://a2alist.ai/ is the official site (page title \"A2A Agent Directory — 101 x402 & A2A Protocol Agents | a2alist.ai\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://a2alist.ai/",
+     "quote": "A2A Agent Directory — 101 x402 & A2A Protocol Agents | a2alist.ai",
+     "observed_at": "2026-10-19T11:14:50Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://a2alist.ai/ (HTTP 200, final URL https://a2alist.ai/, 11611 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://a2alist.ai/",
+     "quote": "x402 & A2A protocol, every agent, one index.",
+     "observed_at": "2026-10-19T11:14:50Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://a2alist.ai/ (HTTP 200, final URL https://a2alist.ai/, 11611 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of A2A List.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://a2alist.ai/about",
+     "quote": "a2alist.ai is a community-maintained directory of services implementing x402 (HTTP payments) and A2A (Agent-to-Agent) protocols.",
+     "observed_at": "2026-10-19T11:14:50Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://a2alist.ai/about (HTTP 200, final URL https://a2alist.ai/about, 3567 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "metric",
+     "statement": "Free count endpoint: 101 listed services (66 x402, 35 A2A).",
+     "value": 101,
+     "unit": "listed services",
+     "window": "now",
+     "basis": "operator_claim",
+     "source_url": "https://a2alist.ai/api/v1/services/count",
+     "quote": "\"total_services\":101,\"by_protocol\":{\"a2a\":35,\"x402\":66}",
+     "observed_at": "2026-10-19T11:14:52Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://a2alist.ai/api/v1/services/count (HTTP 200, final URL https://a2alist.ai/api/v1/services/count, 584 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/a2a-list/"
   },
   {
    "id": 188,
@@ -2691,6 +2767,82 @@
    "url": "https://commonworld.one/atlas/platforms/agent-x-ossoonline/"
   },
   {
+   "id": 369,
+   "slug": "agent402-tools",
+   "name": "Agent402",
+   "entity_type": "platform",
+   "category": "payments",
+   "status": "live",
+   "canonical_url": "https://agent402.tools/",
+   "description_en": "Pay-per-call tool hub for AI agents: 500+ metered tools, models and reports paid per request over x402 or MPP without signup or API keys, plus an open directory of indexed x402 sellers with their tools and settlement networks.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://agent402.tools/ is the official site (page title \"Agent402: 500+ pay-per-call tools for AI agents over x402 and MPP\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agent402.tools/",
+     "quote": "Agent402: 500+ pay-per-call tools for AI agents over x402 and MPP",
+     "observed_at": "2026-10-19T11:14:46Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agent402.tools/ (HTTP 200, final URL https://agent402.tools/, 18450 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://agent402.tools/",
+     "quote": "OUR 500+ TOOLS",
+     "observed_at": "2026-10-19T11:14:46Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agent402.tools/ (HTTP 200, final URL https://agent402.tools/, 18450 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Agent402.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agent402.tools/",
+     "quote": "Agentic Finance for AI agents: 500+ pay-per-call tools, metered models and finished reports over x402 and MPP, or by card. No signup, no API keys.",
+     "observed_at": "2026-10-19T11:14:46Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agent402.tools/ (HTTP 200, final URL https://agent402.tools/, 18450 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "The operator also publishes a directory of x402 sellers it crawls.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://agent402.tools/marketplace",
+     "quote": "The open directory of every x402 seller we can crawl: advertised tools, settlement networks, crawl health and routability.",
+     "observed_at": "2026-10-19T11:14:47Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://agent402.tools/marketplace (HTTP 200, final URL https://agent402.tools/marketplace, 20782 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/agent402-tools/"
+  },
+  {
    "id": 193,
    "slug": "agent4science",
    "name": "Agent4Science",
@@ -4026,6 +4178,82 @@
    "url": "https://commonworld.one/atlas/platforms/agenticmarket/"
   },
   {
+   "id": 371,
+   "slug": "agentindex-x402looker",
+   "name": "AgentIndex",
+   "entity_type": "platform",
+   "category": "registries",
+   "status": "live",
+   "canonical_url": "https://x402looker.com/",
+   "description_en": "Static directory of x402-enabled agent services (APIs, tools, paywalls and infrastructure that agents can pay per request), built from a published dataset, with a form to submit new services.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://x402looker.com/ is the official site (page title \"AgentIndex — x402-Enabled Agent Services Directory\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://x402looker.com/",
+     "quote": "AgentIndex — x402-Enabled Agent Services Directory",
+     "observed_at": "2026-10-19T11:14:53Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://x402looker.com/ (HTTP 200, final URL https://x402looker.com/, 3934 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://x402looker.com/",
+     "quote": "A static directory of x402-enabled agent services.",
+     "observed_at": "2026-10-19T11:14:53Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://x402looker.com/ (HTTP 200, final URL https://x402looker.com/, 3934 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentIndex.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://x402looker.com/",
+     "quote": "AgentIndex catalogs APIs, tools, paywalls, and infrastructure that speak the x402 payment protocol, so builders can find paid endpoints without accounts, API keys, or subscriptions.",
+     "observed_at": "2026-10-19T11:14:53Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://x402looker.com/ (HTTP 200, final URL https://x402looker.com/, 3934 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "metric",
+     "statement": "Directory count computed by the operator at build time: 500 services listed.",
+     "value": 500,
+     "unit": "listed services",
+     "window": "now",
+     "basis": "operator_claim",
+     "source_url": "https://x402looker.com/",
+     "quote": "Services listed 500",
+     "observed_at": "2026-10-19T11:14:53Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://x402looker.com/ (HTTP 200, final URL https://x402looker.com/, 3934 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/agentindex-x402looker/"
+  },
+  {
    "id": 218,
    "slug": "agentleague",
    "name": "AgentLeague",
@@ -4815,6 +5043,82 @@
    "qa_status": "not_sampled",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/agentscan/"
+  },
+  {
+   "id": 366,
+   "slug": "agentsports",
+   "name": "AgentSports",
+   "entity_type": "platform",
+   "category": "arenas",
+   "status": "live",
+   "canonical_url": "https://www.agentsports.io/",
+   "description_en": "Sports prediction competition where AI agents and human forecasters compete head-to-head on football, basketball and hockey challenges; launch tables use virtual ASP points, and agents connect through a published skill.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://www.agentsports.io/ is the official site (page title \"AgentSports - AI vs Human Prediction Competition\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.agentsports.io/",
+     "quote": "AgentSports - AI vs Human Prediction Competition",
+     "observed_at": "2026-10-19T11:14:42Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://www.agentsports.io/ (HTTP 200, final URL https://www.agentsports.io/, 5755 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://www.agentsports.io/",
+     "quote": "Build agents. Compete with other players. Win hackathons.",
+     "observed_at": "2026-10-19T11:14:42Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://www.agentsports.io/ (HTTP 200, final URL https://www.agentsports.io/, 5755 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of AgentSports.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://www.agentsports.io/en/faq",
+     "quote": "AgentSports is a prediction competition platform where AI agents and human forecasters compete head-to-head in sports prediction challenges.",
+     "observed_at": "2026-10-19T11:14:43Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://www.agentsports.io/en/faq (HTTP 200, final URL https://www.agentsports.io/en/faq, 5646 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Launch tables use virtual ASP points; new participants start with 100 ASP.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://www.agentsports.io/en/faq",
+     "quote": "Start with 100 virtual ASP after registration.",
+     "observed_at": "2026-10-19T11:14:43Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://www.agentsports.io/en/faq (HTTP 200, final URL https://www.agentsports.io/en/faq, 5646 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/agentsports/"
   },
   {
    "id": 353,
@@ -7316,6 +7620,82 @@
    "qa_status": "checked",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/arena42-agent-arena/"
+  },
+  {
+   "id": 367,
+   "slug": "arenabot",
+   "name": "ArenaBot",
+   "entity_type": "platform",
+   "category": "arenas",
+   "status": "live",
+   "canonical_url": "https://arenabot.io/",
+   "description_en": "Competition platform where AI agents register over an API, are matched automatically and play adversarial and strategic games such as Prisoner's Dilemma, 20 Questions and Code Golf, with a rating and leaderboard per game.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://arenabot.io/ is the official site (page title \"ArenaBot — Where AI Agents Battle for Glory\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://arenabot.io/",
+     "quote": "ArenaBot — Where AI Agents Battle for Glory",
+     "observed_at": "2026-10-19T11:14:43Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://arenabot.io/ (HTTP 200, final URL https://arenabot.io/, 1682 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://arenabot.io/",
+     "quote": "The multi-domain AI agent competition platform.",
+     "observed_at": "2026-10-19T11:14:43Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://arenabot.io/ (HTTP 200, final URL https://arenabot.io/, 1682 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of ArenaBot.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://arenabot.io/",
+     "quote": "Register your agent, compete across 7 adversarial and strategic game modes, and climb the leaderboard.",
+     "observed_at": "2026-10-19T11:14:43Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://arenabot.io/ (HTTP 200, final URL https://arenabot.io/, 1682 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Agents register, queue and play matches through the public API documented by the operator.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://arenabot.io/docs",
+     "quote": "Everything you need to build, register, and compete with an AI agent on ArenaBot.",
+     "observed_at": "2026-10-19T11:14:44Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://arenabot.io/docs (HTTP 200, final URL https://arenabot.io/docs, 5832 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/arenabot/"
   },
   {
    "id": 287,
@@ -12241,6 +12621,82 @@
    "qa_status": "checked",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/cluster-protocol/"
+  },
+  {
+   "id": 368,
+   "slug": "coarena",
+   "name": "Coarena",
+   "entity_type": "platform",
+   "category": "arenas",
+   "status": "live",
+   "canonical_url": "https://coarena.ai/",
+   "description_en": "Arena and leaderboard for computer-use AI agents by Coasty: two agents work on the same live task side by side, people judge the result blind, and rankings publish human preference, completion, speed, recovery and cost.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://coarena.ai/ is the official site (page title \"Computer-use AI benchmark & model leaderboard — Coarena\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://coarena.ai/",
+     "quote": "Computer-use AI benchmark & model leaderboard — Coarena",
+     "observed_at": "2026-10-19T11:14:45Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://coarena.ai/ (HTTP 200, final URL https://coarena.ai/, 854 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://coarena.ai/",
+     "quote": "Real-world evals for computer-use agents.",
+     "observed_at": "2026-10-19T11:14:45Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://coarena.ai/ (HTTP 200, final URL https://coarena.ai/, 854 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of Coarena.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://coarena.ai/",
+     "quote": "Live tasks, blind human judgment, and every number published with the rule that produced it.",
+     "observed_at": "2026-10-19T11:14:45Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://coarena.ai/ (HTTP 200, final URL https://coarena.ai/, 854 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Page description names the ranking dimensions.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://coarena.ai/",
+     "quote": "Compare computer-use AI agents by human preference, completion, speed, recovery and cost.",
+     "observed_at": "2026-10-19T11:14:45Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://coarena.ai/ (HTTP 200, final URL https://coarena.ai/, 854 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/coarena/"
   },
   {
    "id": 258,
@@ -18732,6 +19188,82 @@
    "qa_status": "checked",
    "verdict": "include_verified",
    "url": "https://commonworld.one/atlas/platforms/mcpize/"
+  },
+  {
+   "id": 365,
+   "slug": "meatlayer",
+   "name": "MeatLayer",
+   "entity_type": "platform",
+   "category": "work",
+   "status": "live",
+   "canonical_url": "https://meatlayer.ai/",
+   "description_en": "Marketplace where AI agents post paid tasks, digital or in the physical world, that humans claim and complete; the agent approves the proof and payment is released from escrow. Agents connect through an API or MCP tools.",
+   "claims": [
+    {
+     "kind": "canonical_url",
+     "statement": "https://meatlayer.ai/ is the official site (page title \"MeatLayer | The AI-to-Human Hiring Marketplace\").",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://meatlayer.ai/",
+     "quote": "MeatLayer | The AI-to-Human Hiring Marketplace",
+     "observed_at": "2026-10-19T11:14:39Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://meatlayer.ai/ (HTTP 200, final URL https://meatlayer.ai/, 9364 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "site_reachable",
+     "statement": "Home page serves real content (HTTP 200).",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "direct_observation",
+     "source_url": "https://meatlayer.ai/",
+     "quote": "AI agents post tasks. Humans complete them.",
+     "observed_at": "2026-10-19T11:14:39Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://meatlayer.ai/ (HTTP 200, final URL https://meatlayer.ai/, 9364 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Operator's own description of how agents use MeatLayer.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://meatlayer.ai/integrate.html",
+     "quote": "Your AI posts a task. A human completes it. You approve the proof. Payment released automatically.",
+     "observed_at": "2026-10-19T11:14:39Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://meatlayer.ai/integrate.html (HTTP 200, final URL https://meatlayer.ai/integrate.html, 10388 chars of page text)"
+     ],
+     "outcome": "supported"
+    },
+    {
+     "kind": "description",
+     "statement": "Funds go to escrow when the task is posted and are released after proof; payments are processed via Stripe.",
+     "value": null,
+     "unit": null,
+     "window": null,
+     "basis": "operator_claim",
+     "source_url": "https://meatlayer.ai/",
+     "quote": "Submit your proof (a photo, GPS ping, or QR scan) and escrow releases within 48 hours straight to your bank. Payments are processed via Stripe.",
+     "observed_at": "2026-10-19T11:14:39Z",
+     "methods": [
+      "curl -sL -A \"<Chrome UA>\" https://meatlayer.ai/ (HTTP 200, final URL https://meatlayer.ai/, 9364 chars of page text)"
+     ],
+     "outcome": "supported"
+    }
+   ],
+   "qa": [],
+   "qa_status": "not_sampled",
+   "verdict": "include_verified",
+   "url": "https://commonworld.one/atlas/platforms/meatlayer/"
   },
   {
    "id": 364,

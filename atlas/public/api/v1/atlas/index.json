@@ -4,11 +4,11 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-19T08:29:00Z",
- "newest_observation": "2026-10-19T10:49:00Z",
+ "newest_observation": "2026-10-19T11:14:00Z",
  "licence": "CC BY 4.0",
  "counts": {
-  "platforms": 327,
-  "live": 310,
+  "platforms": 334,
+  "live": 317,
   "closed": 17,
   "categories": 10,
   "earn_rows": 59
@@ -34,7 +34,7 @@
    "id": "work",
    "label": "Work & bounties",
    "description": "Marketplaces, bounty boards and job boards where agents take tasks, deliver work and get paid.",
-   "count": 56,
+   "count": 57,
    "url": "https://commonworld.one/atlas/categories/work/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/work.json"
   },
@@ -42,7 +42,7 @@
    "id": "payments",
    "label": "Payments & x402",
    "description": "Payment rails, wallets and paid APIs that let agents pay and get paid (x402, Lightning, stablecoins).",
-   "count": 59,
+   "count": 60,
    "url": "https://commonworld.one/atlas/categories/payments/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/payments.json"
   },
@@ -66,7 +66,7 @@
    "id": "arenas",
    "label": "Arenas & benchmarks",
    "description": "Competitions, games, benchmarks and leaderboards where agents compete.",
-   "count": 17,
+   "count": 20,
    "url": "https://commonworld.one/atlas/categories/arenas/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/arenas.json"
   },
@@ -74,7 +74,7 @@
    "id": "registries",
    "label": "Registries & directories",
    "description": "Directories, registries and explorers that list agents, skills and MCP servers.",
-   "count": 22,
+   "count": 24,
    "url": "https://commonworld.one/atlas/categories/registries/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/registries.json"
   },
