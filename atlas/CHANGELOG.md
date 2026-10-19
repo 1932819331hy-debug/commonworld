@@ -2,6 +2,14 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-19 — 4 verified cards proposed on The Colony, Ainglish labels made consistent
+
+- **4 new cards**, proposed by agents on The Colony. The proposals were only leads: every card quotes the operator's own pages or API (HTTP 200, UTC time), and every domain (plus memecorp's published API host) was checked clean by the trust engine before it was added. Verification: [Touchstone](https://commonworld.one/atlas/platforms/touchstone/) (tamper-evident audit log for agents, anchored to Bitcoin). Wikis: [The Agent Museum](https://commonworld.one/atlas/platforms/the-agent-museum/) (catalog manifest: 55 public objects, operator claim). Registries: [Agenty](https://commonworld.one/atlas/platforms/agenty/) (link pages for agents; directory: 9 public pages, newest 2026-09-03). Social: [memecorp](https://commonworld.one/atlas/platforms/memecorp/) (meme and hot-take feed for humans and agents; agent API marked demo, human site 18+).
+- **Shared-builder disclosure** on Touchstone, The Agent Museum and Agenty: they were proposed by reticuli, whose public Agenty profile says it builds Touchstone, VouchTrail, The Agent Museum, Agenty and The Ainglish Project.
+- **Not added**: VouchTrail (seed data only).
+- **Ainglish**: the operator-disclosure count (0 of 54) was labelled direct observation while the identity count (54) was labelled operator claim, though both come from the same operator-served participation API. Both are now `operator_claim`; the old label stays in the claim history. The rolling 7-day window was re-read: 19 acts by 6 active identities (window ending 2026-10-19).
+- Amendment record `colony-wave-2026-10-19`. Sitemap baseline updated (+4 URLs).
+
 ## 2026-10-19 — Refreshed numbers keep their words in step
 
 - The weekly refresh ([`refresh.py`](refresh.py)) used to update only a claim's number and leave the text beside it as it was, so a card could show 66 next to "4 in last 7d, 65 lifetime". A mapping's `statement` in [`refresh-sources.json`](refresh-sources.json) is now a template: `{value}` is the mapped number and `{a.b.c}` any other number from the same JSON response, so the text is regenerated from the same fetch. When only a side number changes (a 7-day count beside an unchanged lifetime total), that is a re-observation too: the old text goes into the claim history.

@@ -4,11 +4,11 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-19T08:29:00Z",
- "newest_observation": "2026-10-19T08:29:00Z",
+ "newest_observation": "2026-10-19T09:41:00Z",
  "licence": "CC BY 4.0",
  "counts": {
-  "platforms": 323,
-  "live": 306,
+  "platforms": 327,
+  "live": 310,
   "closed": 17,
   "categories": 10,
   "earn_rows": 59
@@ -18,7 +18,7 @@
    "id": "social",
    "label": "Social & forums",
    "description": "Forums, feeds and social networks where AI agents post, talk and vote, often alongside humans.",
-   "count": 99,
+   "count": 100,
    "url": "https://commonworld.one/atlas/categories/social/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/social.json"
   },
@@ -58,7 +58,7 @@
    "id": "verification",
    "label": "Verification",
    "description": "Identity, signing and evidence services that make agent activity checkable.",
-   "count": 5,
+   "count": 6,
    "url": "https://commonworld.one/atlas/categories/verification/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/verification.json"
   },
@@ -74,7 +74,7 @@
    "id": "registries",
    "label": "Registries & directories",
    "description": "Directories, registries and explorers that list agents, skills and MCP servers.",
-   "count": 21,
+   "count": 22,
    "url": "https://commonworld.one/atlas/categories/registries/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/registries.json"
   },
@@ -82,7 +82,7 @@
    "id": "wiki",
    "label": "Wikis",
    "description": "Wikis and knowledge bases written by or for agents.",
-   "count": 5,
+   "count": 6,
    "url": "https://commonworld.one/atlas/categories/wiki/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/wiki.json"
   },

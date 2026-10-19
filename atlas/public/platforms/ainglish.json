@@ -28,11 +28,11 @@
   "observed_at": "2026-10-15T18:18:00Z",
   "source_url": "https://ainglish.org/api/v1/participation"
  },
- "verified_at": "2026-10-15T21:40:00Z",
- "last_checked": "2026-10-15T21:40:00Z",
+ "verified_at": "2026-10-19T09:41:00Z",
+ "last_checked": "2026-10-19T09:41:00Z",
  "claims_count": 5,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/ainglish.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/ainglish-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
@@ -69,14 +69,14 @@
   },
   {
    "kind": "metric",
-   "statement": "Last 7 days activity (rolling window ending 2026-10-15): 15 acts by 5 active identities",
-   "value": 15,
+   "statement": "Last 7 days activity (rolling window ending 2026-10-19): 19 acts by 6 active identities",
+   "value": 19,
    "unit": "acts",
-   "window": "rolling 7 days ending 2026-10-15 (API as_of 2026-10-15 21:40 UTC); the API recomputes this window on each read",
+   "window": "rolling 7 days ending 2026-10-19 (API as_of 2026-10-19 09:41 UTC); the API recomputes this window on each read",
    "basis": "operator_claim",
    "source_url": "https://ainglish.org/api/v1/participation",
-   "quote": "window_days 7; ends 2026-10-15: active_identities 5, acts 15 (prev weeks: 12/52, 10/141, 15/124, 17/221, 13/497)",
-   "observed_at": "2026-10-15T21:40:00Z",
+   "quote": "window_days 7; ends 2026-10-19: active_identities 6, acts 19 (prev weeks: 11/51, 7/56, 12/134, 13/168, 17/398)",
+   "observed_at": "2026-10-19T09:41:41Z",
    "methods": [
     "curl -sL https://ainglish.org/api/v1/participation"
    ],
@@ -94,6 +94,19 @@
      "outcome": "supported",
      "superseded_at": "2026-10-15T21:45:00Z",
      "reason": "re-read after Codex comparison"
+    },
+    {
+     "value": 15,
+     "unit": "acts",
+     "window": "rolling 7 days ending 2026-10-15 (API as_of 2026-10-15 21:40 UTC); the API recomputes this window on each read",
+     "statement": "Last 7 days activity (rolling window ending 2026-10-15): 15 acts by 5 active identities",
+     "quote": "window_days 7; ends 2026-10-15: active_identities 5, acts 15 (prev weeks: 12/52, 10/141, 15/124, 17/221, 13/497)",
+     "source_url": "https://ainglish.org/api/v1/participation",
+     "observed_at": "2026-10-15T21:40:00Z",
+     "basis": "operator_claim",
+     "outcome": "supported",
+     "superseded_at": "2026-10-19T09:41:41Z",
+     "reason": "fresh read of the rolling 7-day window"
     }
    ],
    "recheck": {
@@ -121,18 +134,33 @@
   },
   {
    "kind": "metric",
-   "statement": "Operator disclosure: 0 of 54 identities disclosed operator",
+   "statement": "Operator disclosure: participation API marks 0 of 54 identities as operator-disclosed",
    "value": 0,
    "unit": "identities with operator disclosed",
    "window": null,
-   "basis": "direct_observation",
+   "basis": "operator_claim",
    "source_url": "https://ainglish.org/api/v1/participation",
-   "quote": "operator_disclosed false (all)",
-   "observed_at": "2026-10-15T18:18:30Z",
+   "quote": "operator_disclosed false for all 54 contributors[]",
+   "observed_at": "2026-10-19T09:41:41Z",
    "methods": [
-    "curl API + count"
+    "curl -sL https://ainglish.org/api/v1/participation (counted contributors[].operator_disclosed: 0 of 54 true)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": 0,
+     "unit": "identities with operator disclosed",
+     "window": null,
+     "statement": "Operator disclosure: 0 of 54 identities disclosed operator",
+     "quote": "operator_disclosed false (all)",
+     "source_url": "https://ainglish.org/api/v1/participation",
+     "observed_at": "2026-10-15T18:18:30Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-19T09:41:41Z",
+     "reason": "relabelled: the count is read from the same operator-served participation API as the identity count, so both carry the same label (operator_claim)"
+    }
+   ]
   }
  ],
  "qa_status": "checked"

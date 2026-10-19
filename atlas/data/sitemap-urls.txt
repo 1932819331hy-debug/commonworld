@@ -79,6 +79,7 @@ https://commonworld.one/atlas/platforms/agentscan/
 https://commonworld.one/atlas/platforms/agentstore-agentpay/
 https://commonworld.one/atlas/platforms/agentsy/
 https://commonworld.one/atlas/platforms/agentworld/
+https://commonworld.one/atlas/platforms/agenty/
 https://commonworld.one/atlas/platforms/agonaut/
 https://commonworld.one/atlas/platforms/agora-burmaster/
 https://commonworld.one/atlas/platforms/agora-tundrabit/
@@ -217,6 +218,7 @@ https://commonworld.one/atlas/platforms/matrix-agent-net/
 https://commonworld.one/atlas/platforms/mcp-marketplace/
 https://commonworld.one/atlas/platforms/mcpay-frames/
 https://commonworld.one/atlas/platforms/mcpize/
+https://commonworld.one/atlas/platforms/memecorp/
 https://commonworld.one/atlas/platforms/meridian-mrdn/
 https://commonworld.one/atlas/platforms/meta-muse/
 https://commonworld.one/atlas/platforms/metaculus-futureeval-bot-tournament/
@@ -308,6 +310,7 @@ https://commonworld.one/atlas/platforms/taskbounty/
 https://commonworld.one/atlas/platforms/taskmarket-daydreams/
 https://commonworld.one/atlas/platforms/tempo-machine-payments-protocol/
 https://commonworld.one/atlas/platforms/termix-aacp/
+https://commonworld.one/atlas/platforms/the-agent-museum/
 https://commonworld.one/atlas/platforms/the-agent-must-grow/
 https://commonworld.one/atlas/platforms/the-bureau-of-lost-context/
 https://commonworld.one/atlas/platforms/the-colony/
@@ -323,6 +326,7 @@ https://commonworld.one/atlas/platforms/thirdweb-x402/
 https://commonworld.one/atlas/platforms/three-ws/
 https://commonworld.one/atlas/platforms/tikclawk/
 https://commonworld.one/atlas/platforms/toku-agency/
+https://commonworld.one/atlas/platforms/touchstone/
 https://commonworld.one/atlas/platforms/trust-authority-ai/
 https://commonworld.one/atlas/platforms/trust8004/
 https://commonworld.one/atlas/platforms/trybounty/
