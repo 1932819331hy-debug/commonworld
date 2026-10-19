@@ -196,11 +196,18 @@ class KeysAndBooks(unittest.TestCase):
         }
         for why, v in bad.items():
             self.assertTrue(cv2.validate_keys_books({'demo': {'keys': v}}, {'demo': self.CARD}, orgs=[]), why)
-        for good in (addr, 'https://basescan.org/token/0x' + 'e' * 40, 'https://etherscan.io/address/0x' + 'a' * 40 + '#code',
+        for good in (addr, 'https://basescan.org/token/0x' + 'e' * 40, 'https://etherscan.io/address/0x' + 'a' * 40 + '/',
                      'https://solscan.io/account/' + EvidenceLadder.SOL[:44]):
             self.assertTrue(cv2.contract_url_ok(good), good)
             self.assertEqual(cv2.validate_keys_books({'demo': {'keys': k | {'contract_url': good}}}, {'demo': self.CARD}, orgs=[]), [], good)
-        for bad_url in ('https://basescan.org/tx/' + TX, 'https://etherscan.io/block/19000000', 'https://basescan.org/stats', None):
+        for bad_url in ('https://basescan.org/tx/' + TX, 'https://etherscan.io/block/19000000', 'https://basescan.org/stats', None,
+                        # the whole path must be /<address|addresses|account|token>/<id>[/]: no other segments, query or fragment
+                        'https://basescan.org/tx/' + TX + '/address/0x' + 'a' * 40,
+                        'https://etherscan.io/address/0x' + 'a' * 40 + '?a=1',
+                        'https://etherscan.io/address/0x' + 'a' * 40 + '#code',
+                        'https://etherscan.io/address/0x' + 'a' * 40 + '//',
+                        'https://etherscan.io/address/0x' + 'a' * 40 + '/tokens',
+                        'https://etherscan.io/en/address/0x' + 'a' * 40):
             self.assertFalse(cv2.contract_url_ok(bad_url), bad_url)
         self.assertTrue(cv2.validate_keys_books({'demo': {'books': {'value': 'public_dashboard', 'basis': 'operator_says',
                                                                     'source_url': 'https://api.demo.example/v1/payouts', 'quote': 'paid_usdc'}}},
@@ -301,12 +308,58 @@ class FirstTask(unittest.TestCase):
             'no sandbox step': self._task(sandbox='Open a terminal.'),
             'empty run': self._task(run=[]),
             'extra download in the text after a run': self._task(run=[{'cmd': 'python3 tool.py', 'then': 'Then download https://demo.example/b.sh'}]),
+            'newline then a second command': self._task(run=[{'cmd': 'python3 tool.py \n echo second-command'}]),
+            'newline then reading a secret': self._task(run=[{'cmd': 'python3 tool.py \ncat ~/.ssh/id_rsa'}]),
+            'carriage return in run': self._task(run=[{'cmd': 'python3 tool.py\rid'}]),
+            'tab in run': self._task(run=[{'cmd': 'python3 tool.py\t--x'}]),
+            'NUL in run': self._task(run=[{'cmd': 'python3 tool.py\x00'}]),
+            'DEL in run': self._task(run=[{'cmd': 'python3 tool.py\x7f'}]),
+            'trailing newline in run': self._task(run=[{'cmd': 'python3 tool.py\n'}]),
+            'backtick in run': self._task(run=[{'cmd': 'python3 tool.py `id`'}]),
+            'command substitution in run': self._task(run=[{'cmd': 'python3 tool.py $(id)'}]),
+            'redirect out in run': self._task(run=[{'cmd': 'python3 tool.py > /tmp/x'}]),
+            'redirect in in run': self._task(run=[{'cmd': 'python3 tool.py < /etc/passwd'}]),
+            'newline in filename': self._task(filename='tool.py\n'),
+            'newline in url': self._task(url='https://demo.example/tool.py\nx'),
+            'newline in sandbox': self._task(sandbox='Work in a clean sandbox without secrets.\ncurl x'),
+            'newline in then': self._task(run=[{'cmd': 'python3 tool.py', 'then': 'It prints OK.\nrm -rf ~'}]),
         }
         for why, t in bad.items():
             self.assertTrue(cv2.code_safety_errors(t), why)
         two_hashes = self._task()
         two_hashes['verification'] += ' other file sha256 ' + 'd' * 64
         self.assertTrue(cv2.code_safety_errors(two_hashes))  # the hash of another file next to it is not accepted
+
+    def test_wrong_types_are_errors_not_exceptions(self):
+        cases = {
+            'then is a list': self._task(run=[{'cmd': 'python3 tool.py', 'then': ['unexpected']}]),
+            'then is a number': self._task(run=[{'cmd': 'python3 tool.py', 'then': 1}]),
+            'cmd is a list': self._task(run=[{'cmd': ['python3', 'tool.py']}]),
+            'run is a dict': self._task(run={'cmd': 'python3 tool.py'}),
+            'run item is a string': self._task(run=['python3 tool.py']),
+            'sandbox is a list': self._task(sandbox=['sandbox']),
+            'url is a dict': self._task(url={'u': 'https://demo.example/tool.py'}),
+            'filename is a number': self._task(filename=7),
+            'sha256 is a list': self._task(sha256=['c' * 64]),
+        }
+        base = self._task()
+        cases |= {
+            'code is a list': base | {'code': ['x']},
+            'code is a string': base | {'code': 'curl x'},
+            'verification is a list': base | {'verification': ['c' * 64]},
+            'done_when is a list': base | {'done_when': ['x']},
+            'no_code is a list': base | {'no_code': ['x']},
+            'title is a dict': base | {'title': {'t': 1}},
+            'steps is a string': base | {'steps': 'one step'},
+            'steps holds a list': base | {'steps': [['x']]},
+            'source_url is a number': base | {'source_url': 5},
+            'task is a list': ['x'],
+        }
+        for why, t in cases.items():
+            errs = cv2.validate_first_tasks({'touchstone': t}, set(CARDS))  # must not raise
+            self.assertTrue(errs, why)
+        errs = cv2.validate_first_tasks({'touchstone': self._task(run=[{'cmd': 'python3 tool.py', 'then': ['unexpected']}])}, set(CARDS))
+        self.assertTrue(any('then must be a string' in e for e in errs), errs)
 
     def test_free_text_code_fails_closed(self):
         base = {k: v for k, v in self._task().items() if k != 'code'}

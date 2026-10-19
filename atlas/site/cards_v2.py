@@ -250,14 +250,20 @@ def org_name_ok(names, orgs):
     return isinstance(names, str) and names in (orgs or [])
 
 
-# A smart contract's page on a public explorer: one address or token, with its identifier in the path. Transactions and blocks are
-# records too (ladder level 3), but they do not name the contract that holds the funds.
-CONTRACT_PATH = re.compile(r'/(address(?:es)?|accounts?|tokens?)/(0x[0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})(/|$)', re.I)
+# A smart contract's page on a public explorer: the WHOLE path is one address or token, `/<kind>/<id>` with at most one trailing
+# slash, nothing before or after it. Transactions and blocks are records too (ladder level 3), but they do not name the contract
+# that holds the funds; `/tx/<hash>/address/<addr>` or a query/fragment is rejected so the page shown is exactly that contract.
+CONTRACT_PATH = re.compile(r'^/(address|addresses|account|token)/(0x[0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})/?$', re.I)
 
 
 def contract_url_ok(url):
-    """contract_url is a level-3 explorer page of a specific address or token (not /tx/, /block/ or a stats page)."""
-    return source_level(url) == 3 and bool(CONTRACT_PATH.search(urlparse(url).path or ''))
+    """contract_url is a level-3 explorer page of a specific address or token (not /tx/, /block/ or a stats page), with no query
+    or fragment."""
+    if not isinstance(url, str) or CONTROL.search(url):
+        return False
+    u = urlparse(url)
+    return source_level(url) == 3 and not u.query and not u.fragment and '?' not in url and '#' not in url \
+        and bool(CONTRACT_PATH.match(u.path or ''))
 
 
 def load_first_tasks(path=FIRST_TASKS_FILE):
@@ -368,6 +374,10 @@ DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 SHA256 = re.compile(r'^[0-9a-f]{64}$')
 HEX64 = re.compile(r'(?<![0-9a-fA-F])[0-9a-fA-F]{64}(?![0-9a-fA-F])')
 CODE_FIELDS = ('sandbox', 'url', 'filename', 'sha256', 'run')
+# Control characters (newline, carriage return, tab, NUL, any other below 0x20, and DEL) could hide a second command or a second line.
+CONTROL = re.compile(r'[\x00-\x1f\x7f]')
+# Shell syntax a run command may not contain: links, chaining, pipes, redirects, command substitution, variables.
+RUN_FORBIDDEN = re.compile(r'https?://|[`|;&$<>]|\$\(|&&|\|\|')
 FILENAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$')
 # A run command starts the downloaded file by name: `python3 tool.py ...`, `bash tool.sh`, `node tool.js`, `./tool`. Runners that fetch
 # more code on their own (uv run, deno run, npx) are left out: what they fetch is not covered by the hash check.
@@ -402,7 +412,8 @@ def code_steps(code):
              f'Check the file against the hash we verified, before running it: `echo "{sha}  {fn}" | sha256sum -c -`. Go on only when it '
              f'prints `{fn}: OK`; any other output means the file changed, so stop here and leave it unrun.']
     for r in code['run']:
-        steps.append(f"Run `{r['cmd']}`." + (f" {r['then'].strip()}" if (r.get('then') or '').strip() else ''))
+        then = r.get('then') if isinstance(r.get('then'), str) else ''
+        steps.append(f"Run `{r['cmd']}`." + (f" {then.strip()}" if then.strip() else ''))
     return steps
 
 
@@ -423,6 +434,14 @@ def code_block_errors(code, verification=''):
         errs.append(f'code: unexpected keys {sorted(extra)}')
     if miss:
         return errs + [f'code missing {", ".join(miss)}']
+    for k in ('sandbox', 'url', 'filename', 'sha256'):
+        if not isinstance(code[k], str):
+            errs.append(f'code.{k} must be a string, not {type(code[k]).__name__}')
+        elif CONTROL.search(code[k]):
+            errs.append(f'code.{k} must not contain control characters (newline, tab, NUL)')
+    if not isinstance(verification, str):
+        errs.append('verification must be a string')
+        verification = ''
     url, fn, sha = code['url'], code['filename'], code['sha256']
     if not (isinstance(fn, str) and FILENAME.match(fn)):
         errs.append(f'code.filename {fn!r} must be a plain file name')
@@ -440,13 +459,20 @@ def code_block_errors(code, verification=''):
     if not isinstance(runs, list) or not runs or not all(isinstance(r, dict) and isinstance(r.get('cmd'), str) for r in runs):
         return errs + ['code.run must be a non-empty list of {cmd, then}']
     for i, r in enumerate(runs, 1):
-        cmd = r['cmd'].strip()
         if set(r) - {'cmd', 'then'}:
             errs.append(f'code.run {i}: unexpected keys {sorted(set(r) - {"cmd", "then"})}')
+        if 'then' in r and not isinstance(r['then'], str):
+            errs.append(f'code.run {i}: then must be a string, not {type(r["then"]).__name__}')
+        elif CONTROL.search(r.get('then') or ''):
+            errs.append(f'code.run {i}: then must not contain control characters (newline, tab, NUL)')
+        if CONTROL.search(r['cmd']):
+            errs.append(f'code.run {i}: {r["cmd"]!r} must be one line without control characters (newline, tab, NUL)')
+            continue
+        cmd = r['cmd'].strip()
         target = next(((cmd[len(p):] if p != './' else cmd).split(' ')[0] for p in RUN_PREFIXES if cmd.startswith(p)), None)
-        if target not in (fn, './' + fn):
+        if not isinstance(fn, str) or target not in (fn, './' + fn):
             errs.append(f'code.run {i}: `{cmd}` must start the downloaded file {fn!r} (for example `python3 {fn}`)')
-        if re.search(r'https?://|[`|;&$<>]', cmd):
+        if RUN_FORBIDDEN.search(cmd):
             errs.append(f'code.run {i}: `{cmd}` must be one plain command without links, pipes or chaining')
     return errs
 
@@ -458,12 +484,17 @@ def code_safety_errors(t):
     code = t.get('code')
     if code is not None:
         errs += code_block_errors(code, t.get('verification'))
-    texts = [('step', s) for s in (t.get('steps') or []) if isinstance(s, str)]
+    steps = t.get('steps') if isinstance(t.get('steps'), list) else []
+    texts = [('step', s) for s in steps if isinstance(s, str)]
     if isinstance(code, dict):
-        texts += [('code.sandbox', code.get('sandbox') or '')] + \
-                 [('code.run then', r.get('then') or '') for r in (code.get('run') or []) if isinstance(r, dict)]
-    texts += [('done_when', t.get('done_when') or ''), ('no_code', t.get('no_code') or '')]
+        runs = code.get('run') if isinstance(code.get('run'), list) else []
+        texts += [('code.sandbox', code.get('sandbox'))] + [('code.run then', r.get('then')) for r in runs if isinstance(r, dict)]
+    texts += [('done_when', t.get('done_when')), ('no_code', t.get('no_code'))]
     for where, text in texts:
+        if not isinstance(text, str):
+            continue  # a wrong type is reported by the type checks (code_block_errors / validate_first_tasks)
+        if CONTROL.search(text) and where != 'step':
+            errs.append(f'{where} {text[:60]!r} must not contain control characters (newline, tab, NUL)')
         for why in download_hits(text):
             errs.append(f'{where} {text[:60]!r} has {why}: code is allowed only through the structured `code` block '
                         f'(url, filename, sha256, run), with steps generated from it')
@@ -476,6 +507,13 @@ def validate_first_tasks(tasks, slugs):
         w = f'first-tasks: {slug}'
         if slug not in slugs:
             errs.append(f'{w} is not a published card'); continue
+        if not isinstance(t, dict):
+            errs.append(f'{w} must be an object'); continue
+        for k in TASK_FIELDS:
+            if k != 'steps' and k in t and not isinstance(t[k], str):
+                errs.append(f'{w}: {k} must be a string, not {type(t[k]).__name__}')
+        if 'code' in t and not isinstance(t['code'], dict):
+            errs.append(f'{w}: code must be an object, not {type(t["code"]).__name__}')
         extra = set(t) - set(TASK_FIELDS) - {'no_code', 'code'}
         if extra:
             errs.append(f'{w}: unexpected keys {sorted(extra)}')
@@ -497,7 +535,7 @@ def validate_first_tasks(tasks, slugs):
 
 def first_task(card, tasks):
     t = tasks.get(card.get('slug') or card.get('id'))
-    if not t:
+    if not t or not isinstance(t, dict):
         return None
     out = {k: t[k] for k in TASK_FIELDS if k != 'steps'} | {'steps': task_steps(t), 'credit': f"Contributed by {t['contributed_by']}"}
     out = {k: out[k] for k in TASK_FIELDS} | {'credit': out['credit']}  # same key order as before
