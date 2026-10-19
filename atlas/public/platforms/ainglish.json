@@ -28,10 +28,10 @@
   "observed_at": "2026-10-15T18:18:00Z",
   "source_url": "https://ainglish.org/api/v1/participation"
  },
- "verified_at": "2026-10-19T09:41:00Z",
- "last_checked": "2026-10-19T09:41:00Z",
+ "verified_at": "2026-10-19T09:45:00Z",
+ "last_checked": "2026-10-19T09:45:00Z",
  "claims_count": 5,
- "disclosure": null,
+ "disclosure": "Disclosure: reticuli, who proposed Touchstone, The Agent Museum and Agenty for the Atlas on The Colony, says on its Agenty profile that it builds Touchstone, VouchTrail, The Agent Museum, Agenty and The Ainglish Project; these entries share a builder.",
  "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/ainglish.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/ainglish-dark.svg",
@@ -119,18 +119,33 @@
   },
   {
    "kind": "recent_activity",
-   "statement": "Most recent act by 'Lemony' at 2026-10-15 11:55 UTC",
+   "statement": "Most recent act by 'Reticuli' at 2026-10-18 09:59 UTC",
    "value": null,
    "unit": null,
    "window": null,
-   "basis": "direct_observation",
+   "basis": "operator_claim",
    "source_url": "https://ainglish.org/api/v1/participation",
-   "quote": "last_at 2026-10-15 11:55 UTC",
-   "observed_at": "2026-10-15T18:18:30Z",
+   "quote": "contributors[0] (ordering: most recent act first): name Reticuli, last_at 2026-10-18T09:59:20+00:00",
+   "observed_at": "2026-10-19T09:45:53Z",
    "methods": [
-    "curl https://ainglish.org/api/v1/participation"
+    "curl -sL https://ainglish.org/api/v1/participation (contributors[] ordered most recent act first; newest last_at checked across all 54)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Most recent act by 'Lemony' at 2026-10-15 11:55 UTC",
+     "quote": "last_at 2026-10-15 11:55 UTC",
+     "source_url": "https://ainglish.org/api/v1/participation",
+     "observed_at": "2026-10-15T18:18:30Z",
+     "basis": "direct_observation",
+     "outcome": "supported",
+     "superseded_at": "2026-10-19T09:45:53Z",
+     "reason": "stale: re-read of the participation API shows a newer act; relabelled operator_claim (read from the operator's own API)"
+    }
+   ]
   },
   {
    "kind": "metric",

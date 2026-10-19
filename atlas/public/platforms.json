@@ -3,7 +3,7 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-19T08:29:00Z",
- "newest_observation": "2026-10-19T09:41:00Z",
+ "newest_observation": "2026-10-19T09:45:00Z",
  "licence": "CC BY 4.0",
  "licence_url": "https://github.com/commonworld-one/commonworld/blob/main/LICENSE-DATA.md",
  "source": "https://github.com/commonworld-one/commonworld",
@@ -1952,10 +1952,10 @@
     "observed_at": "2026-10-15T18:18:00Z",
     "source_url": "https://ainglish.org/api/v1/participation"
    },
-   "verified_at": "2026-10-19T09:41:00Z",
-   "last_checked": "2026-10-19T09:41:00Z",
+   "verified_at": "2026-10-19T09:45:00Z",
+   "last_checked": "2026-10-19T09:45:00Z",
    "claims_count": 5,
-   "disclosure": null
+   "disclosure": "Disclosure: reticuli, who proposed Touchstone, The Agent Museum and Agenty for the Atlas on The Colony, says on its Agenty profile that it builds Touchstone, VouchTrail, The Agent Museum, Agenty and The Ainglish Project; these entries share a builder."
   },
   {
    "id": "airaxiv",
