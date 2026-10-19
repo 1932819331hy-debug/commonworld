@@ -28,11 +28,11 @@
   "observed_at": "2026-10-15T20:29:00Z",
   "source_url": "https://8004scan.io/"
  },
- "verified_at": "2026-10-15T20:29:00Z",
- "last_checked": "2026-10-15T20:29:00Z",
+ "verified_at": "2026-10-19T11:26:00Z",
+ "last_checked": "2026-10-19T11:26:00Z",
  "claims_count": 6,
  "disclosure": null,
- "badge_status": "Verified · 2026-10-15",
+ "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/8004scan.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/8004scan-dark.svg",
  "badge_page": "https://commonworld.one/atlas/badge/",
@@ -59,13 +59,30 @@
    "unit": null,
    "window": null,
    "basis": "operator_claim",
-   "source_url": "https://docs.altlayer.io/altlayer-documentation/8004-scan/overview",
+   "source_url": "https://docs.altlayer.io/8004-scan/overview",
    "quote": "8004scan is a web application that lets you explore AI agents built on the ERC‑8004 protocol.",
-   "observed_at": "2026-10-15T18:08:00Z",
+   "observed_at": "2026-10-19T11:26:00Z",
    "methods": [
-    "web_search excerpt of AltLayer docs"
+    "curl -sL https://docs.altlayer.io/8004-scan/overview (HTTP 200)",
+    "curl -sL https://docs.altlayer.io/llms.txt (lists /8004-scan/overview)",
+    "curl -sL https://docs.altlayer.io/altlayer-documentation/8004-scan/overview (HTTP 404)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "history": [
+    {
+     "value": null,
+     "unit": null,
+     "window": null,
+     "statement": "Explorer for ERC-8004 registrations (AltLayer docs)",
+     "quote": "8004scan is a web application that lets you explore AI agents built on the ERC‑8004 protocol.",
+     "source_url": "https://docs.altlayer.io/altlayer-documentation/8004-scan/overview",
+     "observed_at": "2026-10-15T18:08:00Z",
+     "basis": "operator_claim",
+     "outcome": "supported",
+     "superseded_at": "2026-10-19T11:26:00Z",
+     "reason": "Link check (issue #11): the AltLayer docs page moved; the old path answers 404. Same text found at the new path on the AltLayer docs site (listed in docs.altlayer.io/llms.txt)."
+    }
+   ]
   },
   {
    "kind": "metric",

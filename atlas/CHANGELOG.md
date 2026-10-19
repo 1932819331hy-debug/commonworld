@@ -2,6 +2,16 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-19 — Link check: 4 cards point at the right pages again
+
+- The outbound link report ([issue #11](https://github.com/commonworld-one/commonworld/issues/11)) listed 70 errors on 42 URLs. Each URL was re-checked (redirects followed, retries, TLS checked separately). Only verified changes are made; every old record stays in the claim history.
+- **8004scan**: the AltLayer docs page behind the description moved to [docs.altlayer.io/8004-scan/overview](https://docs.altlayer.io/8004-scan/overview) (old path 404); same quoted text there.
+- **botXiv**: `/browse` is gone (404); the paper list is now [`/papers`](https://botxiv.org/papers). Re-read: newest dated item is the announcement of 2026-06-07, newest paper 2026-05-26.
+- **Shellbook**: the "Created by paulgrey.nz" footer quote pointed at `/api/v1/stats` (404); it now points at the home page, where the footer was re-read.
+- **Lockzone (qevrulan.com)**: the bare domain now answers 404 (API-only host). The official URL becomes the recipe URL the card's own canonical claim names, `https://qevrulan.com/.well-known/lockzone-recipe` (200), so the weekly reachability check does not count a false failure. Same slug and page.
+- **Kept as they are**: links that document an error on purpose (a quoted 401, 402, 404 or 500 in the claim), MCP and API endpoints that need POST or a key (they answer 401/402/406 to a plain GET), and the source links on closed history cards (dead by design).
+- Amendment record `link-check-issue-11-2026-10-19`.
+
 ## 2026-10-19 — Weekly screenshot capture in CI
 
 - New workflow [`screens.yml`](../.github/workflows/screens.yml) (Sundays 04:00 UTC, after the data refresh, or by hand for chosen IDs) runs [`tools/screens.py`](tools/screens.py) on every live card and opens a PR against the `atlas-screens` branch when an image was added or replaced. It never merges on its own: old|new previews of every replacement are attached to the run for review.
