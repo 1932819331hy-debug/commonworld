@@ -8,12 +8,23 @@ name: Deploy platform (production)
 # sha to release. That commit must already be on main. The deploy job uses the GitHub environment `production`:
 # it waits for a required reviewer's approval, and only then receives CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID
 # (environment secrets). Never runs on pull_request, push or schedule.
+#
+# What gets released is fixed by the sha alone: platform code and Atlas data come from that commit, the homepage
+# screenshots from the atlas-screens commit named in atlas/screens.lock at that commit. A release manifest (all three
+# shas, sha256 of the built Atlas assets, wrangler version) is printed in the job summary and kept as an artifact.
+# Pending D1 migrations with destructive SQL stop the run (scripts/check-migrations.py, expand -> deploy -> contract);
+# allow_destructive_migration = the same sha typed again lets one such release through.
 on:
   workflow_dispatch:
     inputs:
       sha:
         description: Commit on main to deploy (full 40-character sha)
         required: true
+        type: string
+      allow_destructive_migration:
+        description: Leave empty. Only to let a destructive migration through, type the same sha again
+        required: false
+        default: ''
         type: string
 permissions:
   contents: read
@@ -66,6 +77,7 @@ jobs:
       url: https://commonworld.one/
     env:
       SHA: ${{ inputs.sha }}
+      ALLOW_DESTRUCTIVE: ${{ inputs.allow_destructive_migration }}
     steps:
       - name: Sha is still a full commit on main
         env:
@@ -106,24 +118,122 @@ jobs:
         if: hashFiles('platform/wrangler.toml') != ''
         working-directory: platform
         run: npm test
+      - name: Screenshots commit from atlas/screens.lock
+        id: screens
+        if: hashFiles('platform/wrangler.toml') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [ -f atlas/screens.lock ] || { echo "::error::atlas/screens.lock missing at $SHA"; exit 1; }
+          screens_sha=$(tr -d ' \t\r' < atlas/screens.lock)
+          [ "$(wc -l < atlas/screens.lock)" -le 1 ] || { echo "::error::atlas/screens.lock must be one line"; exit 1; }
+          case "$screens_sha" in *[!0-9a-f]*|'') echo "::error::atlas/screens.lock is not lowercase hex"; exit 1 ;; esac
+          [ "${#screens_sha}" -eq 40 ] || { echo "::error::atlas/screens.lock must hold a full 40-character sha"; exit 1; }
+          # the pinned commit must be part of the reviewed atlas-screens history (identical/ahead = branch contains it)
+          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$screens_sha...atlas-screens" -q .status)
+          case "$status" in identical|ahead) ;; *) echo "::error::$screens_sha is not on atlas-screens ($status)"; exit 1 ;; esac
+          git fetch --depth=1 --no-tags origin "$screens_sha"
+          git cat-file -e "$screens_sha^{commit}"
+          echo "screens_sha=$screens_sha" >> "$GITHUB_OUTPUT"
+          echo "screenshots: atlas-screens @ $screens_sha ($status)"
       - name: Build the Atlas into the Worker's Static Assets
         # The Worker ships the Atlas from platform/.atlas-dist (one deploy = platform + Atlas). Never deploy without it.
         if: hashFiles('platform/wrangler.toml') != ''
         env:
           CW_SCREENS_REQUIRED: '1'
+          CW_SCREENS_SHA: ${{ steps.screens.outputs.screens_sha }}
           CW_PRIVATE_TERMS: ${{ secrets.CW_PRIVATE_TERMS }}
         run: |
           set -euo pipefail
+          [ -n "$CW_PRIVATE_TERMS" ] || { echo "::error::secret CW_PRIVATE_TERMS not set: no release without the forbidden-text check"; exit 1; }
           python -m pip install -r requirements.txt
-          git fetch --depth=1 --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens
           node platform/scripts/build-atlas-assets.mjs --src "$GITHUB_WORKSPACE" --build
+      - name: Release manifest
+        if: hashFiles('platform/wrangler.toml') != ''
+        env:
+          SCREENS_SHA: ${{ steps.screens.outputs.screens_sha }}
+        run: |
+          set -euo pipefail
+          [ -d platform/.atlas-dist ] || { echo "::error::platform/.atlas-dist was not built"; exit 1; }
+          out="$RUNNER_TEMP/release"; mkdir -p "$out"
+          # byte-reproducible tarball of the built assets: sorted names, fixed mtime/owner, gzip without timestamp
+          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -C platform/.atlas-dist -cf - . | gzip -n > "$out/atlas-dist.tar.gz"
+          dist_sha256=$(sha256sum "$out/atlas-dist.tar.gz" | cut -d' ' -f1)
+          wrangler_version=$(cd platform && npx --no-install wrangler --version | tail -n1 | tr -d '\r')
+          python - "$out/manifest.json" "$dist_sha256" "$wrangler_version" <<'PY'
+          import json, os, sys
+          path, dist, wrangler = sys.argv[1:4]
+          m = {
+              'platform_sha': os.environ['SHA'],
+              'atlas_data_sha': os.environ['SHA'],
+              'screens_sha': os.environ['SCREENS_SHA'],
+              'atlas_dist_tar_gz_sha256': dist,
+              'atlas_dist_tar_format': 'tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -C platform/.atlas-dist -cf - . | gzip -n',
+              'wrangler_version': wrangler,
+              'run': f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
+          }
+          json.dump(m, open(path, 'w'), indent=2)
+          print(json.dumps(m, indent=2))
+          PY
+          {
+            echo "## Release manifest"
+            echo
+            echo '```json'
+            cat "$out/manifest.json"
+            echo
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Release manifest (artifact)
+        if: hashFiles('platform/wrangler.toml') != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-manifest-${{ inputs.sha }}
+          path: ${{ runner.temp }}/release/manifest.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Migration gate (expand -> deploy -> contract)
+        # Migrations run while the OLD Worker is still live: pending ones must not drop, rename or wipe what it uses.
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          # migrations_dir of the commonworld-prod binding in [env.production] (wrangler default: migrations)
+          dir=$(python - <<'PY'
+          import tomllib
+          cfg = tomllib.load(open('wrangler.toml', 'rb'))
+          dbs = (cfg.get('env', {}).get('production', {}) or {}).get('d1_databases') or cfg.get('d1_databases') or []
+          print(next((d.get('migrations_dir') for d in dbs if d.get('database_name') == 'commonworld-prod' and d.get('migrations_dir')), 'migrations'))
+          PY
+          )
+          if [ ! -d "$dir" ]; then echo "::notice::no migrations directory platform/$dir: nothing to check"; exit 0; fi
+          npx wrangler d1 migrations list commonworld-prod --remote --env production 2>&1 | tee "$RUNNER_TEMP/migrations-pending.txt"
+          cd "$GITHUB_WORKSPACE"
+          python scripts/check-migrations.py --dir "platform/$dir" --pending-from "$RUNNER_TEMP/migrations-pending.txt" \
+            --sha "$SHA" --allow "$ALLOW_DESTRUCTIVE"
       - name: Time Travel bookmark before migrations (for a database restore)
         if: hashFiles('platform/wrangler.toml') != ''
         working-directory: platform
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler d1 time-travel info commonworld-prod --env production
+        run: |
+          set -euo pipefail
+          npx wrangler d1 time-travel info commonworld-prod --env production 2>&1 | tee "$RUNNER_TEMP/bookmark.txt"
+          {
+            echo "## D1 Time Travel before migrations"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/bookmark.txt"
+            echo '```'
+            cat <<'MD'
+          Restore (owner decision only, overwrites the live database), in platform/ with the production token:
+          `npx wrangler d1 time-travel restore commonworld-prod --env production --bookmark=<bookmark above>`
+          MD
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Apply database migrations
         if: hashFiles('platform/wrangler.toml') != ''
         working-directory: platform
@@ -143,11 +253,13 @@ jobs:
         run: |
           set -u
           host=https://commonworld.one
+          body=$(mktemp)
           check() {  # path, expected text in the body ('' = any); up to 6 tries, 10 s apart
+            local code=000
             for _ in 1 2 3 4 5 6; do
-              body=$(curl -sS --max-time 15 -w '\n%{http_code}' "$host$1") || body=$'\n000'
-              code=${body##*$'\n'}
-              if [ "$code" = 200 ] && { [ -z "$2" ] || printf '%s' "$body" | grep -q "$2"; }; then echo "ok   $1"; return 0; fi
+              # status code alone on stdout, body in a file (no newline splitting); 000 = no HTTP answer
+              code=$(curl -sS --max-time 15 -o "$body" -w '%{http_code}' "$host$1") || code=000
+              if [ "$code" = 200 ] && { [ -z "$2" ] || grep -qF -- "$2" "$body"; }; then echo "ok   $1"; return 0; fi
               sleep 10
             done
             echo "::error::smoke failed on $1 (last status $code)"; return 1

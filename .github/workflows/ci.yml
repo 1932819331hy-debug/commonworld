@@ -36,8 +36,13 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
-      - name: Unit tests (refresh security, link safety)
+      - name: Unit tests (refresh security, link safety, migration gate, screens lock)
         run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Migration scan (report only; the production deploy blocks pending destructive ones)
+        if: hashFiles('platform/wrangler.toml') != ''
+        run: |
+          if [ -d platform/migrations ]; then python scripts/check-migrations.py --dir platform/migrations --all --warn-only
+          else echo "no platform/migrations"; fi
       - name: Install
         run: |
           python -m pip install -r requirements.txt playwright
@@ -45,9 +50,22 @@ jobs:
       - name: Install CI-only tools (standard JSON Schema validator)
         run: |
           python -m pip install --only-binary=:all: -r requirements-ci.txt
-      - name: Fetch homepage screenshots (orphan branch atlas-screens)
-        # images live only on that branch; build.py would fetch it too (and falls back to the public tarball)
-        run: git fetch --depth=1 --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens
+      - name: Fetch homepage screenshots (atlas-screens commit pinned in atlas/screens.lock)
+        # images live only on the orphan branch atlas-screens; the build uses exactly the commit in the lock
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          screens_sha=$(tr -d ' \t\r' < atlas/screens.lock)
+          [ "$(wc -l < atlas/screens.lock)" -le 1 ] || { echo "::error::atlas/screens.lock must be one line"; exit 1; }
+          case "$screens_sha" in *[!0-9a-f]*|'') echo "::error::atlas/screens.lock is not lowercase hex"; exit 1 ;; esac
+          [ "${#screens_sha}" -eq 40 ] || { echo "::error::atlas/screens.lock must hold a full 40-character sha"; exit 1; }
+          git fetch --depth=1 --no-tags origin "$screens_sha" || { echo "::error::atlas-screens commit $screens_sha not found"; exit 1; }
+          git cat-file -e "$screens_sha^{commit}"
+          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$screens_sha...atlas-screens" -q .status)
+          case "$status" in identical) echo "screens lock = atlas-screens head" ;;
+            ahead) echo "::notice::atlas-screens has newer commits than atlas/screens.lock; bump the lock in a PR to publish them" ;;
+            *) echo "::error::$screens_sha is not on atlas-screens ($status)"; exit 1 ;; esac
       - name: Build
         env:
           CW_SCREENS_REQUIRED: '1'   # CI must publish the previews; a local build without the branch shows placeholders
@@ -62,8 +80,13 @@ jobs:
         env:
           CW_PRIVATE_TERMS: ${{ secrets.CW_PRIVATE_TERMS }}
           CW_SCREENS_REQUIRED: '1'
+          # secrets are not given to pull requests from forks: only there may the forbidden-text check be skipped
+          FORK_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
-          if [ -z "$CW_PRIVATE_TERMS" ]; then echo "::warning::secret CW_PRIVATE_TERMS not set, forbidden-text check skipped"; fi
+          if [ -z "$CW_PRIVATE_TERMS" ]; then
+            if [ "$FORK_PR" = true ]; then echo "::warning::fork pull request: secret CW_PRIVATE_TERMS unavailable, forbidden-text check skipped"
+            else echo "::error::secret CW_PRIVATE_TERMS not set: the forbidden-text check cannot be skipped here"; exit 1; fi
+          fi
           python atlas/site/check.py
       - name: API v1 files match their JSON Schemas (jsonschema, Draft 2020-12 + formats)
         run: python atlas/site/tools/validate_jsonschema.py atlas/site/dist/api/v1

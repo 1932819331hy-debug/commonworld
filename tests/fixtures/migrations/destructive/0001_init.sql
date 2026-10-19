@@ -1,0 +1,2 @@
+CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL, name TEXT);
+CREATE TABLE old_sessions (id TEXT PRIMARY KEY);
