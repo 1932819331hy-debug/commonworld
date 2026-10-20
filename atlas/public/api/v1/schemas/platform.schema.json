@@ -430,10 +430,11 @@
       "object",
       "null"
      ],
-     "description": "A verified first step for newcomers, with credit to its contributor, or null. It has nothing to download or run (first_task.code and first_task.no_code were removed in schema_version 1.5.0). Added in schema_version 1.4.0.",
+     "description": "A verified, read-only first step for newcomers, with credit to its contributor, or null. `steps` are typed objects from a closed list of actions (open_page, find_field, check_field; atlas/CURATION.md#first-task-contract), never free text; `steps_text` holds the sentence the site renders for each step, in the same order. It has nothing to download or run (first_task.code and first_task.no_code were removed in schema_version 1.5.0, when steps became typed objects). Added in schema_version 1.4.0.",
      "required": [
       "title",
       "steps",
+      "steps_text",
       "done_when",
       "contributed_by",
       "contributed_via",
@@ -448,6 +449,85 @@
        "type": "string"
       },
       "steps": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "action"
+        ],
+        "description": "One typed first-task step (closed action list; the build check rejects an unknown action or key, a missing key and a wrong type). open_page: url (a plain https page), optional label. find_field: field, optional each_has (field names each item has). check_field: each (the list), field (the list inside each item), match {key, equals, has} (an entry whose `key` equals `equals` and that has `has`), then_label, else_field, else_label.",
+        "properties": {
+         "action": {
+          "enum": [
+           "open_page",
+           "find_field",
+           "check_field"
+          ]
+         },
+         "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+         },
+         "label": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?$"
+         },
+         "field": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$"
+         },
+         "each_has": {
+          "type": "array",
+          "items": {
+           "type": "string",
+           "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$"
+          }
+         },
+         "each": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$"
+         },
+         "match": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+           "key",
+           "equals",
+           "has"
+          ],
+          "properties": {
+           "key": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$"
+           },
+           "equals": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+           },
+           "has": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$"
+           }
+          }
+         },
+         "then_label": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?$"
+         },
+         "else_field": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$"
+         },
+         "else_label": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?$"
+         }
+        }
+       }
+      },
+      "steps_text": {
        "type": "array",
        "items": {
         "type": "string",
@@ -466,7 +546,7 @@
       "source_url": {
        "type": "string",
        "format": "uri",
-       "pattern": "^https?://"
+       "pattern": "^https://"
       },
       "verified_by": {
        "type": "string"

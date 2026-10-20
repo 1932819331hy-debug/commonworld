@@ -25,11 +25,13 @@ tests/test_cards_v2.py pins the rules with examples.
    Open books are never curated: they come ONLY from the evidence ladder, a supported money-flow claim (economic_flow) at level 2
    or 3, where level 3 comes only from a curator (a `books` field in keys-and-books.json is an error). Every other answer is
    "not recorded yet".
-3. First task. One simple first step for a newcomer, from atlas/data/first-tasks.json. Only tasks a curator ran and verified are
-   published, with credit to the contributor. Cards without one show no first-task block. A first task has nothing to download
-   or run (fail closed): every step starts with one verb from STEP_VERBS (Open, Find, Read, Look, Check, Compare, Count); no
-   `code` field, no backticks, no control characters or hidden Unicode in any field, no link to a script, binary, raw GitHub
-   or gist file in any text; its source_url is a plain https page (source_url_ok).
+3. First task. One simple, read-only first step for a newcomer, from atlas/data/first-tasks.json (contract: atlas/CURATION.md
+   "First task contract"). Only tasks a curator did and verified are published, with credit to the contributor. Cards without one
+   show no first-task block. Steps are typed objects from a CLOSED set of actions (STEP_ACTIONS: open_page, find_field,
+   check_field), never free text; the sentence shown for a step is rendered from a fixed template (render_step). Fail closed: an
+   unknown action, an unknown or missing key or a wrong type is an error; every URL passes the one strict https validator
+   (https_url_ok); no control, format or separator character (bad_chars) anywhere; no `code` field; the editorial metadata prose
+   also fails on download, install or run wording (run_hits).
 """
 import json
 import os
@@ -96,7 +98,7 @@ _EVM_HOSTS = ('etherscan.io', 'optimistic.etherscan.io', 'sepolia.etherscan.io',
 RECORD_ROUTES = {**{h: 'evm' for h in _EVM_HOSTS}, 'solscan.io': 'solscan', 'explorer.solana.com': 'solana', 'solana.fm': 'solana',
                  'mempool.space': 'bitcoin', 'blockstream.info': 'bitcoin', 'tonviewer.com': 'tonviewer', 'tonscan.org': 'tonscan',
                  'suiscan.xyz': 'sui', 'explorer.aptoslabs.com': 'aptos'}
-_ROUTE_RX = {net: {kind: re.compile('^(?:' + '|'.join(f'{re.escape(pre)}(?:{ident})' for pre, ident in rs) + ')/?$')
+_ROUTE_RX = {net: {kind: re.compile('(?:' + '|'.join(f'{re.escape(pre)}(?:{ident})' for pre, ident in rs) + r')/?\Z')
                    for kind, rs in kinds.items()} for net, kinds in NETWORK_ROUTES.items()}
 # Public dashboards run by independent trackers (whole site is a dashboard).
 DASHBOARD_HOSTS = ('dune.com', 'chainward.ai', 'defillama.com', 'tokenterminal.com', 'x402scan.com')
@@ -134,13 +136,13 @@ def record_kind(url):
     """'tx', 'address', 'token' or 'block' when the URL is a concrete record page under RECORD_ROUTES: https, a host in the
     explorer -> network map (after a leading `www.`), no userinfo or port, no query or fragment, and the whole path is one of that
     network's routes with an identifier in its format. None otherwise."""
-    if not isinstance(url, str) or not url.startswith('https://') or '?' in url or '#' in url:
+    if not https_url_ok(url) or '?' in url or '#' in url:  # https_url_ok: urlparse would silently drop a newline or tab
         return None
     u = urlparse(url)
     net = RECORD_ROUTES.get(_bare_host(u)) if _plain_netloc(u) else None
     if not net:
         return None
-    return next((kind for kind, rx in _ROUTE_RX[net].items() if rx.match(u.path or '')), None)
+    return next((kind for kind, rx in _ROUTE_RX[net].items() if rx.fullmatch(u.path or '')), None)
 
 
 def source_level(url):
@@ -163,10 +165,10 @@ def source_level(url):
 
 
 def record_url_ok(url):
-    """FORMAT check of a curator's level-3 source (and a custody contract_url): printable ASCII, https, a host exactly in the
+    """FORMAT check of a curator's level-3 source (and a custody contract_url): the strict https_url_ok, a host exactly in the
     explorer -> network map, no userinfo or port, no query or fragment, and the whole path one record with a well-formed
     identifier (record_kind). It says nothing about the content: the curator opened the record."""
-    return isinstance(url, str) and bool(ASCII_PRINTABLE.match(url)) and record_kind(url) is not None
+    return https_url_ok(url) and record_kind(url) is not None
 
 
 def load_evidence_overrides(path=EVIDENCE_FILE):
@@ -245,7 +247,7 @@ def validate_evidence_overrides(overrides, cards_by_slug):
                 errs.append(f'{w}: {u} evidence_note must be 1-{NOTE_MAX} characters')
             for word in negative_hits(note):
                 errs.append(f'{w}: {u} evidence_note uses negative wording {word!r}')
-            if not DATE.match(str(o.get('reviewed_on') or '')):
+            if not date_ok(o.get('reviewed_on')):
                 errs.append(f'{w}: {u} reviewed_on must be YYYY-MM-DD')
     return errs
 
@@ -446,71 +448,220 @@ def keys_and_books(card, curated, overrides=None):
 
 # ---------------------------------------------------------------- 3. first task
 TASK_FIELDS = ('title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification')
-TEXT_FIELDS = ('title', 'done_when', 'verification', 'contributed_by', 'contributed_via', 'verified_by')  # + each step
-DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
-# Control characters (newline, carriage return, tab, NUL, any other below 0x20, and DEL) could hide a second command or line.
-# Not allowed in ANY text field, steps included.
-CONTROL = re.compile(r'[\x00-\x1f\x7f]')
-# A custody contract_url, a curator's level-3 source and a first task's source_url: printable ASCII only (0x20-0x7e).
-ASCII_PRINTABLE = re.compile(r'^[\x20-\x7e]*$')
-# Hidden text: Unicode line breaks (U+2028, U+2029, U+0085), zero-width characters (U+200B-U+200D, U+2060, U+FEFF) and bidi
-# controls (U+202A-U+202E, U+2066-U+2069) can hide or reorder text.
-HIDDEN_UNICODE = re.compile('[\u2028\u2029\u0085\u200b-\u200d\u2060\ufeff\u202a-\u202e\u2066-\u2069]')
-# A first task has NOTHING to download or run (owner decision, 2026-10-20). The main rule is a positive allowlist: every step
-# starts with one of these verbs, capitalized, followed by a space. Reading public pages needs no other verb.
-STEP_VERBS = ('Open', 'Find', 'Read', 'Look', 'Check', 'Compare', 'Count')
-STEP_START = re.compile(r'^(?:' + '|'.join(STEP_VERBS) + r') ')
-# Script and binary file extensions: a link to one of these (in any text field, or as source_url) is no plain page.
+TEXT_FIELDS = ('title', 'done_when', 'verification', 'contributed_by', 'contributed_via', 'verified_by')  # editorial metadata prose
+DATE = re.compile(r'\d{4}-\d{2}-\d{2}')  # always used with fullmatch (no trailing newline)
+
+
+def date_ok(v):
+    return isinstance(v, str) and DATE.fullmatch(v) is not None
+
+
+# Printable ASCII (0x20-0x7e), always used with fullmatch.
+ASCII_PRINTABLE = re.compile(r'[\x20-\x7e]*')
+TEXT_MAX = 400
+
+
+def bad_chars(text):
+    """Characters that could hide, reorder or break text: every Unicode category C (Cc = C0 controls, DEL and C1 controls such
+    as U+0085; Cf = format characters such as zero-width characters, U+200E/U+200F marks, bidi embeddings and isolates, U+FEFF;
+    Cs, Co, Cn) plus line and paragraph separators (Zl U+2028, Zp U+2029). -> sorted list of 'U+XXXX'."""
+    import unicodedata
+    return sorted({f'U+{ord(ch):04X}' for ch in text if unicodedata.category(ch)[0] == 'C' or unicodedata.category(ch) in ('Zl', 'Zp')})
+
+
+# ---- one strict https URL validator (first-task open_page url and source_url, curator level-3 source, custody contract_url)
+DNS_HOST = re.compile(r'(?=.{1,253}\Z)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?')  # fullmatch
+URL_MAX = 2048
+# Script and binary file extensions: a URL whose decoded path segment ends in one of these is no plain page.
 RUN_EXTENSIONS = ('py', 'pyz', 'sh', 'bash', 'zsh', 'ps1', 'bat', 'cmd', 'js', 'mjs', 'cjs', 'ts', 'exe', 'msi', 'dmg', 'pkg',
                   'deb', 'rpm', 'apk', 'appimage', 'jar', 'whl', 'bin', 'run')
-RAW_HOSTS = re.compile(r'raw\.githubusercontent\.com|gist\.github(usercontent)?\.com', re.I)
-# Defense in depth on every text field, steps included (the verb allowlist is the main rule). Prose that trips it is reworded.
+RAW_HOST_NAMES = ('raw.githubusercontent.com', 'gist.github.com', 'gist.githubusercontent.com')
+RAW_HOSTS = re.compile(r'raw\.githubusercontent\.com|gist\.github(usercontent)?\.com', re.I)  # in prose (NO_RUN)
+_EXT_IN_QUERY = re.compile(r'\.(?:' + '|'.join(RUN_EXTENSIONS) + r')(?![a-z0-9])')
+
+
+def https_url_ok(url):
+    """The one strict check of an https link (fail closed). Accepted only when ALL hold:
+    a str of at most URL_MAX printable ASCII characters (fullmatch: no trailing newline), no whitespace and no backslash;
+    starts with https://; no userinfo and no port; the host is a plain lowercase DNS name (letters, digits, hyphens, dots; an
+    IDN only as punycode xn--; no '%'); the path, query and fragment decoded ONCE contain no '%' (so no double encoding), no
+    whitespace, backslash or non-printable character; the decoded, lowercased host is not raw.githubusercontent.com, gist.github.com
+    or gist.githubusercontent.com (nor a subdomain); no decoded path segment ends in a script or binary extension (RUN_EXTENSIONS;
+    the whole segment and each `;` piece, trailing dots ignored), and no such extension sits in the decoded query or fragment."""
+    from urllib.parse import unquote, urlsplit
+    if not isinstance(url, str) or not 0 < len(url) <= URL_MAX or ASCII_PRINTABLE.fullmatch(url) is None:
+        return False
+    if ' ' in url or '\\' in url or not url.startswith('https://'):
+        return False
+    try:
+        u = urlsplit(url)
+    except ValueError:
+        return False
+    host = u.netloc
+    if u.scheme != 'https' or not host or DNS_HOST.fullmatch(host) is None:  # also rules out '@', ':', '%' and upper case
+        return False
+    if any(host == h or host.endswith('.' + h) for h in RAW_HOST_NAMES):
+        return False
+    rest = url[len('https://') + len(host):]
+    try:
+        dec = unquote(rest, errors='strict') if '%' in rest else rest
+    except UnicodeDecodeError:
+        return False
+    if '%' in dec or '\\' in dec or ASCII_PRINTABLE.fullmatch(dec) is None or ' ' in dec:
+        return False
+    du = urlsplit('https://x.invalid' + (dec if dec.startswith(('/', '?', '#')) else '/' + dec))
+    for seg in du.path.lower().split('/'):
+        for part in [seg] + seg.split(';'):  # the whole segment and each `;` piece
+            part = part.rstrip('.')
+            if '.' in part and part.rsplit('.', 1)[-1] in RUN_EXTENSIONS:
+                return False
+    return _EXT_IN_QUERY.search((du.query + '#' + du.fragment).lower()) is None
+
+
+def source_url_ok(url):
+    """A first task's source_url: https_url_ok (the same strict validator as open_page)."""
+    return https_url_ok(url)
+
+
+# ---- typed steps: a CLOSED set of actions (owner decision 2026-10-20). No free text: the sentence shown for a step is rendered
+# by render_step() from a fixed template per action. Unknown action, unknown key, missing key or wrong type is an error.
+IDENT = re.compile(r'[A-Za-z_][A-Za-z0-9_.]{0,63}')          # a JSON field name (fullmatch)
+TOKEN = re.compile(r'[A-Za-z0-9_.-]{1,64}')                  # a JSON value to compare with (fullmatch)
+LABEL = re.compile(r'[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?')  # a short label: letters, digits, spaces, hyphens (fullmatch)
+EACH_HAS_MAX = 8
+STEPS_MAX = 8
+# action -> {key: kind}; every key is required unless listed in STEP_OPTIONAL
+STEP_ACTIONS = {
+    'open_page': {'url': 'url', 'label': 'label'},
+    'find_field': {'field': 'ident', 'each_has': 'idents'},
+    'check_field': {'each': 'ident', 'field': 'ident', 'match': 'match', 'then_label': 'label', 'else_field': 'ident', 'else_label': 'label'},
+}
+STEP_OPTIONAL = {'open_page': {'label'}, 'find_field': {'each_has'}, 'check_field': set()}
+MATCH_KEYS = {'key': 'ident', 'equals': 'token', 'has': 'ident'}  # all three required
+
+
+def _q(name):
+    return f'"{name}"'
+
+
+def render_step(s):
+    """The sentence shown for one validated step (fixed template per action)."""
+    a = s['action']
+    if a == 'open_page':
+        return f"Open {s['label']} in a browser: {s['url']}" if s.get('label') else f"Open {s['url']} in a browser."
+    if a == 'find_field':
+        txt = f"Find the list {_q(s['field'])}."
+        if s.get('each_has'):
+            txt += ' Each item has ' + ' and '.join(_q(x) for x in s['each_has']) + '.'
+        return txt
+    m = s['match']
+    return (f"Check {_q(s['field'])} of each item in {_q(s['each'])}: an entry whose {_q(m['key'])} is {_q(m['equals'])} and that "
+            f"has a value in {_q(m['has'])} means the item is on the {s['then_label']}; an item without such an entry is on the "
+            f"{s['else_label']} (its {_q(s['else_field'])}).")
+
+
+def _kind_ok(kind, v):
+    if kind == 'url':
+        return https_url_ok(v)
+    if kind == 'ident':
+        return isinstance(v, str) and IDENT.fullmatch(v) is not None
+    if kind == 'token':
+        return isinstance(v, str) and TOKEN.fullmatch(v) is not None
+    if kind == 'label':
+        return isinstance(v, str) and LABEL.fullmatch(v) is not None and not run_hits(v)
+    if kind == 'idents':
+        return isinstance(v, list) and 0 < len(v) <= EACH_HAS_MAX and all(_kind_ok('ident', x) for x in v) and len(set(v)) == len(v)
+    return False
+
+
+KIND_HELP = {'url': 'a plain https URL (https_url_ok)', 'ident': 'a field name (letters, digits, _ and ., starting with a letter or _, '
+             'at most 64)', 'token': 'a value of letters, digits, _, . or - (at most 64)', 'label': 'a short label (letters, digits, '
+             'spaces, hyphens; at most 40; no run words)', 'idents': f'a list of 1-{EACH_HAS_MAX} distinct field names'}
+
+
+def step_errors(s, i):
+    """Errors of one step (fail closed)."""
+    w = f'step {i}'
+    if not isinstance(s, dict):
+        return [f'{w} must be an object with an "action" from {sorted(STEP_ACTIONS)}, not {type(s).__name__}']
+    a = s.get('action')
+    if not isinstance(a, str) or a not in STEP_ACTIONS:
+        return [f'{w}: action {a!r} is not one of {sorted(STEP_ACTIONS)}']
+    spec, errs = STEP_ACTIONS[a], []
+    extra = set(s) - set(spec) - {'action'}
+    if extra:
+        errs.append(f'{w} ({a}): unexpected keys {sorted(map(str, extra))}')
+    for k, kind in spec.items():
+        if k not in s:
+            if k not in STEP_OPTIONAL[a]:
+                errs.append(f'{w} ({a}): missing {k}')
+            continue
+        if kind == 'match':
+            m = s[k]
+            if not isinstance(m, dict) or set(m) != set(MATCH_KEYS):
+                errs.append(f'{w} ({a}): match must be an object with exactly the keys {sorted(MATCH_KEYS)}'); continue
+            for mk, mkind in MATCH_KEYS.items():
+                if not _kind_ok(mkind, m[mk]):
+                    errs.append(f'{w} ({a}): match.{mk} must be {KIND_HELP[mkind]}')
+        elif not _kind_ok(kind, s[k]):
+            errs.append(f'{w} ({a}): {k} must be {KIND_HELP[kind]}')
+    return errs
+
+
+# Defense in depth on the editorial metadata prose (title, done_when, verification, contributor and verifier fields) and on step
+# labels. Prose that trips it is reworded.
 NO_RUN = (
     ('backticked text (a command)', re.compile(r'`')),
     ('a shell command or a download, install or run instruction', re.compile(
         r'(?<![\w.-])(curl|wget|iwr|iex|invoke-\w+|pip\d*|pipx|uvx?|npm|npx|pnpm|yarn|bunx?|deno|gem|cargo|brew|apt(-get)?|sudo|'
         r'chmod|docker|git\s+clone|go\s+(install|run|get)|bash|zsh|sh|pwsh|powershell|cmd|python[\d.]*|py|node(js)?|perl|ruby|php|'
-        r'download(s|ed|ing)?|install(s|ed|ing)?|terminal|command line|shell|script)(?![\w-])|^\s*[$>#]\s|\|\s*\w', re.I)),
+        r'download(s|ed|ing)?|install(s|ed|ing)?|terminal|command line|shell|script|'
+        r'run(s|ning)?|ran|execut(e|es|ed|ing|able|ables)|launch(es|ed|ing)?)(?![\w-])|^\s*[$>#]\s|\|\s*\w', re.I)),
     ('a link to a script or binary', re.compile(
         r'https?://[^\s"\'<>)]+\.(' + '|'.join(RUN_EXTENSIONS) + r')(?=$|[\s"\'<>)?#.,;:])', re.I)),
     ('a raw GitHub or gist link', RAW_HOSTS),
 )
+URL_IN_TEXT = re.compile(r'https?://[^\s"\'<>()\[\]`]+', re.I)
 
 
 def run_hits(text):
-    """Why a text field looks like it downloads, installs or runs something ([] when it does not)."""
+    """Why a text looks like it downloads, installs or runs something ([] when it does not)."""
     return [why for why, rx in NO_RUN if rx.search(text or '')]
 
 
-def source_url_ok(url):
-    """A first task's source_url is a plain https page: printable ASCII, https, a host with no userinfo or port, no raw GitHub
-    or gist host, and a path that does not end in a script or binary extension (RUN_EXTENSIONS)."""
-    if not (isinstance(url, str) and ASCII_PRINTABLE.match(url) and url.startswith('https://')) or ' ' in url:
-        return False
-    u = urlparse(url)
-    if not _plain_netloc(u) or not u.hostname or RAW_HOSTS.search(u.hostname):
-        return False
-    last = (u.path or '').rstrip('/').rsplit('/', 1)[-1].lower()
-    return not ('.' in last and last.rsplit('.', 1)[-1] in RUN_EXTENSIONS)
+def _strings(obj):
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for k, v in obj.items():
+            yield from _strings(k)
+            yield from _strings(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _strings(v)
 
 
 def task_text_errors(t):
-    """Fail closed: no `code` field; every step starts with an allowed verb (STEP_VERBS); no text field (title, steps, done_when,
-    verification, contributor and verifier fields) with a control character, hidden Unicode or a download/install/run hint
-    (run_hits)."""
+    """Fail closed on text: no `code` field; no string ANYWHERE in the task (keys and step values included) with a character from
+    bad_chars(); every metadata prose field (TEXT_FIELDS) at most TEXT_MAX characters, with no download/install/run hint
+    (run_hits) and every link in it a plain https URL (https_url_ok)."""
     errs = ['a first task has nothing to download or run: remove the `code` field'] if 'code' in t else []
-    steps = t.get('steps') if isinstance(t.get('steps'), list) else []
-    for where, text in [('step', s) for s in steps] + [(k, t.get(k)) for k in TEXT_FIELDS]:
+    for text in _strings(t):
+        bad = bad_chars(text)
+        if bad:
+            errs.append(f'{text[:60]!r} must not contain control, format or separator characters ({", ".join(bad[:5])})')
+    for k in TEXT_FIELDS:
+        text = t.get(k)
         if not isinstance(text, str):
             continue  # a wrong type is reported by validate_first_tasks
-        if where == 'step' and not STEP_START.match(text):
-            errs.append(f'step {text[:60]!r} must start with one of {", ".join(STEP_VERBS)} and a space: a first task has nothing to download or run')
-        if CONTROL.search(text):
-            errs.append(f'{where} {text[:60]!r} must not contain control characters (newline, tab, NUL)')
-        if HIDDEN_UNICODE.search(text):
-            errs.append(f'{where} {text[:60]!r} must not contain Unicode line separators, zero-width characters or bidi controls')
+        if len(text) > TEXT_MAX:
+            errs.append(f'{k} is longer than {TEXT_MAX} characters')
         for why in run_hits(text):
-            errs.append(f'{where} {text[:60]!r} has {why}: a first task has nothing to download or run')
+            errs.append(f'{k} {text[:60]!r} has {why}: a first task has nothing to download or run')
+        for u in URL_IN_TEXT.findall(text):
+            u = u.rstrip('.,;:!?')
+            if not https_url_ok(u):
+                errs.append(f'{k}: link {u[:60]!r} is no plain https URL (https_url_ok)')
     return errs
 
 
@@ -527,16 +678,20 @@ def validate_first_tasks(tasks, slugs):
                 errs.append(f'{w}: {k} must be a string, not {type(t[k]).__name__}')
         extra = set(t) - set(TASK_FIELDS) - {'code'}  # `code` is reported by task_text_errors
         if extra:
-            errs.append(f'{w}: unexpected keys {sorted(extra)}')
+            errs.append(f'{w}: unexpected keys {sorted(map(str, extra))}')
         miss = [k for k in TASK_FIELDS if not t.get(k)]
         if miss:
             errs.append(f'{w} missing {", ".join(miss)}')
-        if not isinstance(t.get('steps', []), list) or not all(isinstance(s, str) and s.strip() for s in t.get('steps') or []):
-            errs.append(f'{w}: steps must be a list of non-empty strings')
+        steps = t.get('steps')
+        if 'steps' in t and (not isinstance(steps, list) or not 0 < len(steps) <= STEPS_MAX):
+            errs.append(f'{w}: steps must be a list of 1-{STEPS_MAX} step objects')
+        elif isinstance(steps, list):
+            for i, s in enumerate(steps, 1):
+                errs += [f'{w}: {x}' for x in step_errors(s, i)]
         if not source_url_ok(t.get('source_url')):
-            errs.append(f'{w}: source_url must be a plain https page (printable ASCII, no userinfo or port, no script or binary '
-                        f'file, no raw GitHub or gist link)')
-        if not DATE.match(str(t.get('verified_on') or '')):
+            errs.append(f'{w}: source_url must be a plain https URL (https_url_ok: printable ASCII, no userinfo or port, a plain '
+                        f'DNS host, no encoded characters left after one decode, no script or binary file, no raw GitHub or gist host)')
+        if not date_ok(t.get('verified_on')):
             errs.append(f'{w}: verified_on must be YYYY-MM-DD')
         errs += [f'{w}: {x}' for x in task_text_errors(t)]
     return errs
@@ -552,7 +707,7 @@ def curation_event_gaps(overrides, curated, tasks, events, start):
     gaps = []
 
     def need(date, slug, typ, what):
-        if not DATE.match(str(date or '')):
+        if not date_ok(date):
             gaps.append(f'{what}: needs a YYYY-MM-DD date'); return
         if date >= start and (date, slug, typ) not in have:
             gaps.append(f'{what} ({date}) has no "{typ}" event for {slug} on {date} in atlas/data/events.jsonl')
@@ -572,10 +727,13 @@ def curation_event_gaps(overrides, curated, tasks, events, start):
 
 
 def first_task(card, tasks):
+    """The published first task: the stored fields (steps as typed step objects), steps_text (the sentence for each step,
+    rendered by render_step) and credit. Only called on a validated file (check.py and build run validate_first_tasks)."""
     t = tasks.get(card.get('slug') or card.get('id'))
     if not t or not isinstance(t, dict):
         return None
-    return {k: t[k] for k in TASK_FIELDS} | {'credit': f"Contributed by {t['contributed_by']}"}
+    return {k: t[k] for k in TASK_FIELDS} | {'steps_text': [render_step(s) for s in t['steps']],
+                                              'credit': f"Contributed by {t['contributed_by']}"}
 
 
 # ---------------------------------------------------------------- public wording guard

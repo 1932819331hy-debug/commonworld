@@ -7,6 +7,7 @@
    "date": "2026-10-20",
    "changes": [
     "Cards v2 simplification (owner decision). `first_task.code` and the optional `first_task.no_code` are removed: a first task now has nothing to download or run, so no record carries them. They existed only in 1.4.0, released together with this version and never published on its own, so no v1 client could rely on it; this is noted here instead of a /api/v2/.",
+    "`first_task.steps` are typed objects from a closed list of actions instead of free-text strings: open_page {url, label?}, find_field {field, each_has?}, check_field {each, field, match {key, equals, has}, then_label, else_field, else_label} (atlas/CURATION.md#first-task-contract). New required `first_task.steps_text`: the sentence the site renders for each step, in the same order. Like the removals above, this changes a 1.4.0 field that was never published on its own, so it ships in 1.5.0 rather than /api/v2/.",
     "Evidence level 3 (public_transactions) on a money or activity claim is now set only by a curator who opened the record (atlas/data/evidence-levels.json, so such a claim always carries `evidence_note`); the automatic URL rule gives at most level 2, and a block-explorer page of one record is level 2 unless a curator reviewed it. Field shapes are unchanged.",
     "`keys_and_books.books` is no longer curated: it comes only from a supported money-flow claim at evidence level 2 or 3 (public_dashboard or public_transactions), otherwise not_recorded. The field shape is unchanged."
    ]

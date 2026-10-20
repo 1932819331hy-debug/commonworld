@@ -7,7 +7,7 @@ and ships as /api/v2/ while /api/v1/ keeps working.
 """
 import re
 
-from cards_v2 import BOOKS_VALUES, KEYS_BASES, KEYS_VALUES, LEVELS, NOT_RECORDED, PEOPLE_VALUES  # cards v2 vocabulary (one source)
+from cards_v2 import BOOKS_VALUES, KEYS_BASES, KEYS_VALUES, LEVELS, NOT_RECORDED, PEOPLE_VALUES, STEP_ACTIONS  # cards v2 vocabulary (one source)
 
 API_VERSION = 'v1'
 SCHEMA_VERSION = '1.5.0'
@@ -25,6 +25,10 @@ CHANGELOG = [
         'Cards v2 simplification (owner decision). `first_task.code` and the optional `first_task.no_code` are removed: a first task now '
         'has nothing to download or run, so no record carries them. They existed only in 1.4.0, released together with this version and never published on its own, so no v1 '
         'client could rely on it; this is noted here instead of a /api/v2/.',
+        '`first_task.steps` are typed objects from a closed list of actions instead of free-text strings: open_page {url, label?}, '
+        'find_field {field, each_has?}, check_field {each, field, match {key, equals, has}, then_label, else_field, else_label} '
+        '(atlas/CURATION.md#first-task-contract). New required `first_task.steps_text`: the sentence the site renders for each step, in the same order. '
+        'Like the removals above, this changes a 1.4.0 field that was never published on its own, so it ships in 1.5.0 rather than /api/v2/.',
         'Evidence level 3 (public_transactions) on a money or activity claim is now set only by a curator who opened the record '
         '(atlas/data/evidence-levels.json, so such a claim always carries `evidence_note`); the automatic URL rule gives at most level 2, '
         'and a block-explorer page of one record is level 2 unless a curator reviewed it. Field shapes are unchanged.',
@@ -93,6 +97,19 @@ def schemas(origin, categories):
     gen_at = utc_n | {'description': GENERATED_AT_DESC}
     newest_obs = utc_n | {'description': NEWEST_OBSERVATION_DESC}
     uri = {'type': 'string', 'format': 'uri', 'pattern': '^https?://'}
+    https_uri = {'type': 'string', 'format': 'uri', 'pattern': '^https://'}
+    ident = {'type': 'string', 'pattern': r'^[A-Za-z_][A-Za-z0-9_.]{0,63}$'}
+    label = {'type': 'string', 'pattern': r'^[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?$'}
+    step = {'type': 'object', 'additionalProperties': False, 'required': ['action'],
+            'description': 'One typed first-task step (closed action list; the build check rejects an unknown action or key, a missing key and a wrong type). '
+                           'open_page: url (a plain https page), optional label. find_field: field, optional each_has (field names each item has). '
+                           'check_field: each (the list), field (the list inside each item), match {key, equals, has} (an entry whose `key` equals `equals` '
+                           'and that has `has`), then_label, else_field, else_label.',
+            'properties': {'action': {'enum': list(STEP_ACTIONS)}, 'url': https_uri, 'label': label, 'field': ident,
+                           'each_has': {'type': 'array', 'items': ident}, 'each': ident,
+                           'match': {'type': 'object', 'additionalProperties': False, 'required': ['key', 'equals', 'has'],
+                                     'properties': {'key': ident, 'equals': {'type': 'string', 'pattern': r'^[A-Za-z0-9_.-]{1,64}$'}, 'has': ident}},
+                           'then_label': label, 'else_field': ident, 'else_label': label}}
     uri_n = {'type': ['string', 'null'], 'format': 'uri'}
     scalar = {'type': ['number', 'string', 'null']}
 
@@ -154,12 +171,15 @@ def schemas(origin, categories):
                            'required': ['keys', 'books', 'people'],
                            'properties': {f: kb_item(vals) for f, vals in (('keys', KEYS_VALUES), ('books', BOOKS_VALUES), ('people', PEOPLE_VALUES))}
                            | {'keys': kb_item(KEYS_VALUES, keys=True)}},
-        'first_task': {'type': ['object', 'null'], 'description': 'A verified first step for newcomers, with credit to its contributor, or null. It has nothing to download or run '
-                       '(first_task.code and first_task.no_code were removed in schema_version 1.5.0). Added in schema_version 1.4.0.',
-                       'required': ['title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification', 'credit'],
-                       'properties': {'title': {'type': 'string'}, 'steps': {'type': 'array', 'items': {'type': 'string', 'minLength': 1}},
+        'first_task': {'type': ['object', 'null'], 'description': 'A verified, read-only first step for newcomers, with credit to its contributor, or null. '
+                       '`steps` are typed objects from a closed list of actions (open_page, find_field, check_field; atlas/CURATION.md#first-task-contract), '
+                       'never free text; `steps_text` holds the sentence the site renders for each step, in the same order. It has nothing to download or run '
+                       '(first_task.code and first_task.no_code were removed in schema_version 1.5.0, when steps became typed objects). Added in schema_version 1.4.0.',
+                       'required': ['title', 'steps', 'steps_text', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification', 'credit'],
+                       'properties': {'title': {'type': 'string'}, 'steps': {'type': 'array', 'items': step},
+                                      'steps_text': {'type': 'array', 'items': {'type': 'string', 'minLength': 1}},
                                       'done_when': {'type': 'string'}, 'contributed_by': {'type': 'string'}, 'contributed_via': {'type': 'string'},
-                                      'source_url': uri, 'verified_by': {'type': 'string'}, 'verified_on': {'type': 'string', 'pattern': r'^\d{4}-\d{2}-\d{2}$'},
+                                      'source_url': https_uri, 'verified_by': {'type': 'string'}, 'verified_on': {'type': 'string', 'pattern': r'^\d{4}-\d{2}-\d{2}$'},
                                       'verification': {'type': 'string'}, 'credit': {'type': 'string', 'pattern': '^Contributed by '}}}}
     optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task'}  # added in 1.1.0 / 1.2.0 / 1.4.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
@@ -298,7 +318,7 @@ def _resolve(ref, base_name, registry):
 
 def validate(inst, schema, registry, base_name, path='$', errs=None, limit=20):
     """Validate inst against schema; registry maps schema file name -> schema. Supports $ref (local and file#/$defs/x),
-    allOf, type, enum, required, properties, items, pattern, minimum. Returns a list of 'path: message' strings."""
+    allOf, type, enum, required, properties, additionalProperties: false, items, pattern, minimum. Returns a list of 'path: message' strings."""
     errs = [] if errs is None else errs
     if len(errs) >= limit:
         return errs
@@ -326,6 +346,9 @@ def validate(inst, schema, registry, base_name, path='$', errs=None, limit=20):
         for k, sub in (schema.get('properties') or {}).items():
             if k in inst:
                 validate(inst[k], sub, registry, base_name, f'{path}.{k}', errs, limit)
+        if schema.get('additionalProperties') is False:
+            for k in sorted(set(inst) - set(schema.get('properties') or {})):
+                errs.append(f'{path}: unexpected key {k!r}')
     if isinstance(inst, list) and 'items' in schema:
         for i, v in enumerate(inst):
             validate(v, schema['items'], registry, base_name, f'{path}[{i}]', errs, limit)

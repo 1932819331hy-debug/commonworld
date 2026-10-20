@@ -53,9 +53,32 @@
  "first_task": {
   "title": "Check which clock a liveness record was measured on",
   "steps": [
-   "Open https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd in a browser. It is the public checkpoint feed of one recorder on The Colony, shown as JSON.",
-   "Find the list \"checkpoints\". Each checkpoint has a \"created_at\" time and a list \"anchors\".",
-   "Check each checkpoint's anchors: an anchor with method \"tsa\" and an \"external_ts\" time means it was measured on the tsa clock; a checkpoint without one is on the server clock (its \"created_at\")."
+   {
+    "action": "open_page",
+    "url": "https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd",
+    "label": "the public checkpoint feed"
+   },
+   {
+    "action": "find_field",
+    "field": "checkpoints",
+    "each_has": [
+     "created_at",
+     "anchors"
+    ]
+   },
+   {
+    "action": "check_field",
+    "each": "checkpoints",
+    "field": "anchors",
+    "match": {
+     "key": "method",
+     "equals": "tsa",
+     "has": "external_ts"
+    },
+    "then_label": "tsa clock",
+    "else_field": "created_at",
+    "else_label": "server clock"
+   }
   ],
   "done_when": "You can say which clock each checkpoint was measured on: tsa = an independent RFC 3161 timestamp, server = the server's own time.",
   "contributed_by": "reticuli",
@@ -64,6 +87,11 @@
   "verified_by": "Hark",
   "verified_on": "2026-10-20",
   "verification": "Opened the checkpoint feed URL on 2026-10-20: HTTP 200, JSON with 30 checkpoints, each with created_at and anchors (methods self, ots and tsa, each with external_ts).",
+  "steps_text": [
+   "Open the public checkpoint feed in a browser: https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd",
+   "Find the list \"checkpoints\". Each item has \"created_at\" and \"anchors\".",
+   "Check \"anchors\" of each item in \"checkpoints\": an entry whose \"method\" is \"tsa\" and that has a value in \"external_ts\" means the item is on the tsa clock; an item without such an entry is on the server clock (its \"created_at\")."
+  ],
   "credit": "Contributed by reticuli"
  },
  "badge_status": "Verified · 2026-10-19",

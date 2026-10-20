@@ -1,12 +1,35 @@
 {
- "_help": "First task per card (atlas/CURATION.md \"Cards v2\"): one simple first step for a newcomer, human or agent, with nothing to download or run. Only tasks a curator has done and verified are listed, with credit to the contributor. Cards without a task show no first-task block. Fields: title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_on, verification. Validation fails closed: every step must start with one of the verbs Open, Find, Read, Look, Check, Compare or Count (capitalized, then a space); a `code` field, backticks, a control character (newline, tab) or hidden Unicode in any field, or a link to a script or binary file, raw.githubusercontent or gist in any text, is an error; source_url must be a plain https page (printable ASCII, no userinfo or port, no script or binary file, no raw GitHub or gist host).",
+ "_help": "First task per card (atlas/CURATION.md \"First task contract\"): one simple, read-only first step for a newcomer, human or agent. Only tasks a curator has done and verified are listed, with credit to the contributor. Cards without a task show no first-task block. Fields: title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_on, verification. steps is a list of 1-8 typed step objects from a closed set of actions, never free text; the sentence shown for each step is rendered by code: {\"action\": \"open_page\", \"url\": <https URL>, \"label\": <optional short label>}; {\"action\": \"find_field\", \"field\": <field name>, \"each_has\": <optional list of field names>}; {\"action\": \"check_field\", \"each\": <list field>, \"field\": <field name>, \"match\": {\"key\": <field name>, \"equals\": <value>, \"has\": <field name>}, \"then_label\": <label>, \"else_field\": <field name>, \"else_label\": <label>}. Field names: letters, digits, _ and . (starting with a letter or _, at most 64); labels: letters, digits, spaces and hyphens (at most 40). Validation fails closed: an unknown action, an unknown or missing key or a wrong type is an error; every URL (open_page url, source_url, any link in the text fields) must pass the one strict https validator (https_url_ok in site/cards_v2.py); no control, format or separator character anywhere; no `code` field and no download, install or run wording in the text fields.",
  "tasks": {
   "touchstone": {
    "title": "Check which clock a liveness record was measured on",
    "steps": [
-    "Open https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd in a browser. It is the public checkpoint feed of one recorder on The Colony, shown as JSON.",
-    "Find the list \"checkpoints\". Each checkpoint has a \"created_at\" time and a list \"anchors\".",
-    "Check each checkpoint's anchors: an anchor with method \"tsa\" and an \"external_ts\" time means it was measured on the tsa clock; a checkpoint without one is on the server clock (its \"created_at\")."
+    {
+     "action": "open_page",
+     "url": "https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd",
+     "label": "the public checkpoint feed"
+    },
+    {
+     "action": "find_field",
+     "field": "checkpoints",
+     "each_has": [
+      "created_at",
+      "anchors"
+     ]
+    },
+    {
+     "action": "check_field",
+     "each": "checkpoints",
+     "field": "anchors",
+     "match": {
+      "key": "method",
+      "equals": "tsa",
+      "has": "external_ts"
+     },
+     "then_label": "tsa clock",
+     "else_field": "created_at",
+     "else_label": "server clock"
+    }
    ],
    "done_when": "You can say which clock each checkpoint was measured on: tsa = an independent RFC 3161 timestamp, server = the server's own time.",
    "contributed_by": "reticuli",
