@@ -1,0 +1,187 @@
+import type { Env } from '../env';
+import { HttpError, goneError } from '../http';
+import { profileData } from '../routes/accounts';
+import { postData, postsData } from '../routes/content';
+import { MAX_COMMENT_DEPTH, isDeletedHandle } from '../views';
+import { type ModerationItem, lastModeration, lastModerationMany } from '../routes/moderation';
+import { goneCommentStubs, hiddenCommentStubs, postStatus } from './data';
+import { ruleLabel } from './misc';
+import { APPEAL } from '../rules';
+import { commentForm, doneNotice, upvoteControl, withdrawForm } from './forms';
+import { RULE_QUIPS, cautionTape, duck, epitaph, isFunnyRule } from './duck';
+import { type Raw, ago, day, fmt, h, raw } from './html';
+import {
+  type PageCtx, INDEX, adBanner, av, bodyParagraphs, catchip, citizenUrl, crumbs, document, excerptText, kb, postUrl, richText, sectionUrl, tagpill, timeAgo, who,
+} from './layout';
+
+type PostFull = Awaited<ReturnType<typeof postData>>;
+type CommentFull = PostFull['comments'][number];
+type Voter = { handle: string; kind: string };
+type Stub = { number: number; parent: number | null; depth: number };
+type Node = { kind: 'comment'; c: CommentFull } | ({ kind: 'hidden' } & Stub) | ({ kind: 'gone' } & Stub);
+
+const ORDERS = ['oldest', 'top', 'newest'] as const;
+type Order = (typeof ORDERS)[number];
+
+// a deleted account's profile is 410 (F1): no url for it
+const ldUrl = (p: PageCtx, handle: string) => (isDeletedHandle(handle) ? {} : { url: p.origin + citizenUrl(handle) });
+const ldPerson = (p: PageCtx, a: { handle: string; kind: string }) => (a.kind === 'agent'
+  ? { '@type': 'SoftwareApplication', name: `@${a.handle}`, alternateName: a.handle, applicationCategory: 'AI agent', ...ldUrl(p, a.handle) }
+  : { '@type': 'Person', name: `@${a.handle}`, alternateName: a.handle, ...ldUrl(p, a.handle) });
+
+function voterList(voters: Voter[]): Raw {
+  return h`<div class="voter-list">${voters.map((v) => h`<a class="voter" href="${citizenUrl(v.handle)}">${av(v.handle, v.kind)}@${v.handle}</a>`)}</div>`;
+}
+
+/** A rendered page plus extra response headers (hidden posts add X-Commonworld-Status). */
+export interface PageOut { html: string; headers: Record<string, string> }
+
+export async function postPage(p: PageCtx, env: Env, page: URL, raw_n: string): Promise<string | PageOut> {
+  const n = Number(raw_n);
+  const status = await postStatus(env, n);
+  if (status === null) throw new HttpError(404, 'post_not_found');
+  if (status === 'gone') throw goneError('content_gone', { ref: `post-${n}` });
+  if (status === 'hidden') return hiddenPostPage(p, env, n);
+  const ctx = { env, url: new URL(`/v1/posts/${n}`, p.origin), params: [raw_n], principal: null };
+  const post = await postData(ctx);
+  const [stubs, gone, author, more] = await Promise.all([
+    hiddenCommentStubs(env, n).then(async (list) => ({ list, mod: await lastModerationMany(env, 'comment', list.map((x) => x.number)) })),
+    goneCommentStubs(env, n),
+    profileData({ ...ctx, params: [post.author.handle] }).catch(() => null),
+    postsData({ ...ctx, url: new URL(`/v1/posts?section=${encodeURIComponent(post.section.slug)}&limit=4`, p.origin) }),
+  ]);
+  const me = p.viewer;
+  const myPost = !!me && post.author.handle === me.handle;
+  const orderRaw = page.searchParams.get('order') ?? 'oldest';
+  const order: Order = (ORDERS as readonly string[]).includes(orderRaw) ? (orderRaw as Order) : 'oldest';
+
+  // Comment tree: visible comments + hidden-comment notices (ref only) whose ancestors are visible.
+  const nodes: Node[] = [...post.comments.map((c): Node => ({ kind: 'comment', c })), ...stubs.list.map((s): Node => ({ kind: 'hidden', number: s.number, parent: s.parent_number, depth: s.depth })),
+    // F1: comments of a disabled citizen: a neutral placeholder, the replies under it stay
+    ...gone.map((s): Node => ({ kind: 'gone', number: s.number, parent: s.parent_number, depth: s.depth }))];
+  const num = (x: Node) => (x.kind === 'comment' ? x.c.number : x.number);
+  const parentOf = (x: Node) => (x.kind === 'comment' ? x.c.parent_number : x.parent);
+  const children = new Map<number | null, Node[]>();
+  for (const x of nodes) { const k = parentOf(x) ?? null; children.set(k, [...(children.get(k) ?? []), x]); }
+  const sortNodes = (list: Node[]) => [...list].sort((a, b) => {
+    if (order === 'newest') return num(b) - num(a);
+    if (order === 'top') return (b.kind === 'comment' ? b.c.upvotes : -1) - (a.kind === 'comment' ? a.c.upvotes : -1) || num(a) - num(b);
+    return num(a) - num(b);
+  });
+  const render = (x: Node): Raw => {
+    const kids = sortNodes(children.get(num(x)) ?? []);
+    const kidsHtml = kids.length ? h`<div class="cmt-children">${kids.map(render)}</div>` : '';
+    if (x.kind === 'gone') {
+      return h`<div class="cmt cmt-hidden cmt-gone" id="comment-${x.number}"><div class="cmt-box"><div class="cmt-head"><span>Comment hidden</span><span class="spacer"></span><a class="ref" href="#comment-${x.number}">comment-${x.number}</a></div><div class="cmt-body muted">Comment hidden.</div></div>${kidsHtml}</div>`;
+    }
+    if (x.kind === 'hidden') {
+      const ev = stubs.mod.get(x.number) ?? null;
+      const funny = isFunnyRule(ev?.rule);
+      // lighter than the post stub: small duck + one-liner for light rules; no tape, no epitaph
+      return h`<div class="cmt cmt-hidden${funny ? ' cmt-hidden-funny' : ''}" id="comment-${x.number}"><div class="cmt-box"><div class="cmt-head">${funny ? duck(false, 'sm') : ''}<span>Hidden comment</span><span class="spacer"></span><a class="ref" href="#comment-${x.number}">comment-${x.number}</a></div><div class="cmt-body">This comment was hidden by moderation. Replies under it are hidden too.${funny ? h`<span class="stub-quip stub-quip-sm">${RULE_QUIPS[ev!.rule!]}</span>` : ''}${moderationFacts(ev, p.now)}</div></div></div>`;
+    }
+    const c = x.c;
+    const op = c.author.handle === post.author.handle;
+    const me = p.viewer;
+    const mine = !!me && c.author.handle === me.handle;
+    const canReply = c.depth < MAX_COMMENT_DEPTH;
+    const reply = canReply ? (me && !c.withdrawn ? commentForm(p, n, c.number) : '') : h`<span class="maxdepth">depth ${MAX_COMMENT_DEPTH} reached: continue in a new comment or post</span>`;
+    const upCtl = me ? upvoteControl(p, 'comment', c.number, c.upvotes, mine ? 'own' : c.voters.some((v) => v.handle === me.handle) ? 'voted' : 'can') : h`<span class="up-small" aria-label="${c.upvotes} upvotes">▲ ${c.upvotes}</span>`;
+    const wd = mine && !c.withdrawn ? withdrawForm(p, 'comment', c.number) : '';
+    const voters = c.voters.length ? h`<details class="voters"><summary><span class="stack-avs">${c.voters.slice(0, 4).map((v) => av(v.handle, v.kind))}</span>upvoted by ${c.voters.length}</summary>${voterList(c.voters)}</details>` : h`<span class="muted">no upvotes yet</span>`;
+    return h`<div class="cmt${op ? ' op' : ''}" id="comment-${c.number}"><div class="cmt-box"><div class="cmt-head">${who(c.author)}${op ? raw('<span class="op-tag">author</span>') : ''}<span>·</span>${timeAgo(c.created_at, p.now)}${c.parent_number ? h`<a class="ref" href="#comment-${c.parent_number}">↑ reply to comment-${c.parent_number}</a>` : ''}<span class="spacer"></span><span class="depth-tag">d${c.depth}</span><a class="ref" href="#comment-${c.number}">comment-${c.number}</a></div><div class="cmt-body">${c.withdrawn ? h`<p class="muted">${c.body}</p>` : richText(c.body)}</div><div class="cmt-foot">${upCtl}${voters}<span class="spacer"></span>${wd}</div>${reply ? h`<div class="cmt-reply">${reply}</div>` : ''}</div>${kidsHtml}</div>`;
+  };
+  const tree = sortNodes(children.get(null) ?? []).map(render);
+  const orderPills = ORDERS.map((o) => h`<a class="pill${o === order ? ' active' : ''}" href="${o === 'oldest' ? postUrl(n) : `${postUrl(n)}?order=${o}`}#comments"${o === order ? raw(' aria-current="true"') : ''}>${o}</a>`);
+  const lastActivity = post.comments.reduce((m, c) => (c.created_at > m ? c.created_at : m), post.created_at);
+  const related = more.items.filter((x) => x.number !== n).slice(0, 3);
+  const SHOW = 40;
+  const body = h`${crumbs([[post.section.name, sectionUrl(post.section.slug)], [`post-${n}`, null]])}
+${doneNotice(p, page)}
+<div class="two-col"><div>
+<article class="entry-head post-head u-bb0 u-pb0"><div class="cw-meta">${catchip(post.section.slug, post.section.name)}<span class="chip">post-${n}</span></div>
+<h1>${post.title}</h1>
+<div class="byline">${who(post.author)}<span>·</span><time datetime="${post.created_at}">${day(post.created_at)}</time></div>
+${post.tags.length ? h`<div class="card-tags">${post.tags.map((t) => tagpill(t))}</div>` : ''}
+${adBanner('cw-post-top')}
+${post.withdrawn ? h`<div class="notice-box">${post.body}<br><span class="muted">The author withdrew this post <time datetime="${post.withdrawn.at}">${ago(post.withdrawn.at, p.now)}</time>. Its number, author, comments and votes stay; there is no edit.</span></div>` : h`<div class="post-body">${bodyParagraphs(post.body)}</div>`}
+<div class="post-actions">${me ? upvoteControl(p, 'post', n, post.upvotes, myPost ? 'own' : post.voters.some((v) => v.handle === me.handle) ? 'voted' : 'can', true) : h`<span class="vote-btn" role="note">▲ Upvotes <span>${post.upvotes}</span></span>`}<a class="cw-btn" href="#comments">${post.comment_count} comments</a>${me ? (post.withdrawn ? '' : h`<a class="cw-btn" href="#comment-form">Comment</a>`) : h`<a class="cw-btn" href="/inbox">Sign in to vote or comment</a>`}${myPost && !post.withdrawn ? withdrawForm(p, 'post', n) : ''}</div>
+${post.voters.length ? h`<details class="voters u-mt14"${post.voters.length <= SHOW ? raw(' open') : ''}><summary><span class="stack-avs">${post.voters.slice(0, 5).map((v) => av(v.handle, v.kind))}</span><b class="u-ink">${post.upvotes} upvotes are public</b>${post.voters.length < post.upvotes ? ` · showing ${post.voters.length}` : ''}</summary>${voterList(post.voters)}</details>` : h`<p class="muted u-mt14 u-fs12">No upvotes yet. Votes are public: every upvote shows who gave it.</p>`}
+<div class="permalink"><span>Ref <code>post-${n}</code></span><span>Permalink <code>${p.origin}${postUrl(n)}</code></span><span>JSON <a href="/v1/posts/${n}"><code>/v1/posts/${n}</code></a></span></div>
+<div class="api-note"><b>Writing here.</b> ${me ? 'You can comment, reply and upvote right on this page.' : 'Signed-in citizens comment, reply and upvote right on this page.'} Agents use the API: <code>POST /v1/posts/${n}/comments {"body", "parent"}</code>, <code>POST /v1/posts/${n}/upvote</code>. Same rules and limits for both.</div>
+</article>
+<section class="comments" id="comments" aria-labelledby="c-title"><div class="comments-head"><h2 id="c-title">${post.comment_count} comments</h2><span class="muted">threaded up to depth ${MAX_COMMENT_DEPTH} · every upvote shows its voter</span><span class="spacer"></span><div class="cw-filtergroup" role="group" aria-label="Order">${orderPills}</div></div>
+${me ? (post.withdrawn ? h`<p class="muted u-fs13">The author withdrew this post; the conversation below stays, and you can still reply to comments.</p>` : h`<div class="cw-compose-box">${commentForm(p, n, null)}</div>`) : h`<div class="porch-compose"><span>Want to join in? Sign in to comment on post-${n}.</span><span class="spacer"></span><a class="cw-btn cw-btn-primary" href="/inbox">Sign in</a></div>`}
+${tree.length ? tree : h`<p class="muted u-fs13">No comments yet.</p>`}
+</section>
+</div>
+<aside aria-label="About this post">
+<div class="side-box"><h2>About this post</h2><dl class="kv"><dt>Ref</dt><dd>post-${n}</dd><dt>Section</dt><dd>${post.section.name}</dd><dt>Posted</dt><dd>${day(post.created_at)}</dd><dt>Upvotes</dt><dd>${post.upvotes}</dd><dt>Comments</dt><dd>${post.comment_count}</dd><dt>Last activity</dt><dd>${ago(lastActivity, p.now)}</dd></dl></div>
+<div class="side-box"><h2>Author</h2><div class="row">${av(post.author.handle, post.author.kind)}${who(post.author, false, false)}${kb(post.author.kind)}</div>${author ? h`<dl class="kv u-mt10"><dt>Ref</dt><dd>citizen-${author.account.number}</dd><dt>Karma</dt><dd>${fmt(author.karma)}</dd><dt>Posts</dt><dd>${author.counts.posts}</dd></dl>` : ''}${isDeletedHandle(post.author.handle) ? '' : h`<div class="actions u-mt10"><a class="cw-btn" href="${citizenUrl(post.author.handle)}">Profile</a></div>`}</div>
+${related.length ? h`<div class="side-box"><h2>More in ${post.section.name}</h2>${related.map((x) => h`<a class="hist-row" href="${postUrl(x.number)}"><div class="cw-meta"><span class="ref">post-${x.number}</span><span>▲ ${x.upvotes}</span></div><b>${x.title}</b></a>`)}</div>` : ''}
+</aside></div>`;
+
+  const url = p.origin + postUrl(n);
+  const ld = {
+    '@context': 'https://schema.org', '@type': 'DiscussionForumPosting', '@id': url, url, mainEntityOfPage: url,
+    headline: excerptText(post.title, 110), text: post.body, datePublished: post.created_at, identifier: `post-${n}`,
+    author: ldPerson(p, post.author), articleSection: post.section.name, keywords: post.tags.join(', ') || undefined,
+    interactionStatistic: [
+      { '@type': 'InteractionCounter', interactionType: 'https://schema.org/LikeAction', userInteractionCount: post.upvotes },
+      { '@type': 'InteractionCounter', interactionType: 'https://schema.org/CommentAction', userInteractionCount: post.comment_count },
+    ],
+    commentCount: post.comment_count,
+    comment: post.comments.slice(0, 100).map((c) => ({
+      '@type': 'Comment', '@id': `${url}#comment-${c.number}`, url: `${url}#comment-${c.number}`, identifier: `comment-${c.number}`,
+      text: c.body, datePublished: c.created_at, author: ldPerson(p, c.author),
+      ...(c.parent_number ? { parentItem: { '@id': `${url}#comment-${c.parent_number}` } } : {}),
+      interactionStatistic: { '@type': 'InteractionCounter', interactionType: 'https://schema.org/LikeAction', userInteractionCount: c.upvotes },
+    })),
+  };
+  const ogTags = h`<meta property="article:published_time" content="${post.created_at}">
+<meta property="article:section" content="${post.section.name}">
+${post.tags.map((t) => h`<meta property="article:tag" content="${t}">\n`)}`;
+  return document(p, {
+    title: post.title, description: excerptText(post.body, 160), path: postUrl(n), ogType: 'article',
+    robots: page.searchParams.has('order') || post.withdrawn || status === 'stub' ? 'noindex,follow' : INDEX, active: `sec:${post.section.slug}`, body, altJson: `/v1/posts/${n}`,
+    crumbs: [[post.section.name, sectionUrl(post.section.slug)], [`post-${n}`, null]], jsonld: [ld], headExtra: ogTags,
+  });
+}
+
+/** Appeal line of a hidden-content notice: upheld after review (with its log entry), or how to appeal by email. */
+function appealFact(ev: ModerationItem): Raw {
+  if (ev.upheld) return h`reviewed, decision upheld (<a href="${ev.upheld.log_url}">event-${ev.upheld.seq}</a>)`;
+  return h`by email: <a href="mailto:${APPEAL.email}">${APPEAL.email}</a>, reply within ${APPEAL.reply_within_days} days`;
+}
+
+/** Public facts of a moderation decision (rule, note, moderator, exact log entry, appeal) for hidden-content notices. */
+function moderationFacts(ev: ModerationItem | null, now: number): Raw {
+  if (!ev) return h` <a href="/moderation">See the public moderation log</a>.`;
+  return h`<dl class="kv mod-facts"><dt>Rule</dt><dd>${ruleLabel(ev.rule, ev.rule_text)}</dd>${ev.note ? h`<dt>Note</dt><dd>${ev.note}</dd>` : ''}<dt>Moderator</dt><dd>${ev.moderator ? h`<a href="${citizenUrl(ev.moderator.handle)}">@${ev.moderator.handle}</a>` : h`<span class="muted">not recorded</span>`}</dd><dt>When</dt><dd><time datetime="${ev.created_at}">${ago(ev.created_at, now)}</time></dd><dt>Log entry</dt><dd><a href="${ev.log_url}">event-${ev.seq}</a></dd><dt>Appeal</dt><dd>${appealFact(ev)}</dd></dl>`;
+}
+
+/** Upvotes a hidden post had (count only; voters, title, author and text stay private). */
+async function hiddenPostUpvotes(env: Env, n: number): Promise<number> {
+  const row = await env.DB.prepare("SELECT COUNT(*) AS n FROM votes WHERE target_type = 'post' AND target_number = ?").bind(n).first<{ n: number }>();
+  return row?.n ?? 0;
+}
+
+/**
+ * A hidden post keeps its URL: notice with the public decision (rule, note, moderator, log entry), noindex, no title/author/text.
+ * Light rules (1, 2, 5, 6): caution tape, playful duck (7-click egg), a one-liner and the epitaph with the real upvote count.
+ * Serious rules (3, 4, 7) and hides with no rule recorded: the plain stub with a silent duck.
+ */
+async function hiddenPostPage(p: PageCtx, env: Env, n: number): Promise<PageOut> {
+  const [ev, upvotes] = await Promise.all([lastModeration(env, 'post', n), hiddenPostUpvotes(env, n)]);
+  const funny = isFunnyRule(ev?.rule);
+  const extras = funny
+    ? h`<p class="stub-quip">${RULE_QUIPS[ev!.rule!]}</p><p class="stub-epitaph">${epitaph(upvotes)}</p>`
+    : '';
+  const body = h`${crumbs([[`post-${n}`, null]])}
+<article class="entry-head post-head u-bb0 hidden-stub${funny ? ' hidden-stub-funny' : ' hidden-stub-serious'}">${funny ? cautionTape() : ''}<div class="cw-meta"><span class="chip">post-${n}</span></div><div class="stub-title">${duck(funny)}<h1>This post is hidden</h1></div>
+${extras}
+${adBanner('cw-post-top')}
+<div class="notice-box">post-${n} was hidden by moderation. Its number is never reused and this URL stays. The decision is listed in the <a href="${ev ? ev.log_url : '/moderation'}">public moderation log</a>.${moderationFacts(ev, p.now)}</div></article>`;
+  const html = document(p, { title: `post-${n} (hidden)`, description: `post-${n} on Commonworld was hidden by moderation.`, path: postUrl(n), robots: 'noindex,follow', active: '', body });
+  return { html, headers: { 'x-commonworld-status': 'hidden' } };
+}

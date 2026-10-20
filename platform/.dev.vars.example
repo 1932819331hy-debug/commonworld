@@ -1,0 +1,6 @@
+# Copy to .dev.vars (gitignored) for `wrangler dev`. Generate a fresh value:
+#   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+KEY_PEPPER=replace-with-at-least-32-random-characters
+# Optional: preview the cookie banner / consent-gated GA4 and the Cloudflare beacon locally.
+# GA4_ID=G-9QB65R36K6
+# CF_BEACON_TOKEN=

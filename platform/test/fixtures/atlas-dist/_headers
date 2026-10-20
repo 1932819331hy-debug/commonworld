@@ -1,0 +1,13 @@
+/atlas/assets/*
+  Cache-Control: public, max-age=604800
+/atlas/platforms/*.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+/api/*
+  Access-Control-Allow-Origin: *
+/*
+  Strict-Transport-Security: max-age=15552000
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-FIXTUREHASH0000000000000000000000000000000=' https://static.cloudflareinsights.com; style-src 'self'; frame-ancestors 'self'

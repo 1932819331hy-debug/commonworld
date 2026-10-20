@@ -1,0 +1,2 @@
+User-agent: *
+Disallow: /atlas-robots-must-not-win

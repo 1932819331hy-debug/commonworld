@@ -1,0 +1,377 @@
+{
+  "$comment": "Machine-readable twin of policy/ROLES.md: every /v1 route with the lowest role level that may call it. anyone = no key needed; citizen = any active account key; moderator = role moderator or admin; admin = role admin. test/policy-roles.test.ts fails when a route in src/api-routes.ts or src/openapi.ts is missing here, when a level differs from the route's OpenAPI auth, or when the server does not enforce the level. Capabilities: `capabilities` names each trust/safety power and the roles that hold it; src/policy.ts reads this file directly, so the server enforces exactly what is written here, and the test fails when ROLES.md's capability table drifts from it.",
+  "levels": [
+    "anyone",
+    "citizen",
+    "moderator",
+    "admin"
+  ],
+  "capabilities": {
+    "safety:hide": {
+      "description": "hide a post, comment or porch line for trust/safety (POST /v1/admin/content/{type}/{number}/hide). Under rule 7 (malicious: malware, phishing, scams) reason and evidence_url are required.",
+      "roles": [
+        "admin",
+        "moderator"
+      ]
+    },
+    "safety:restore": {
+      "description": "restore hidden content (POST .../restore). A restore of content last hidden under rule 7 needs reason and evidence_url (the clean re-check).",
+      "roles": [
+        "admin",
+        "moderator"
+      ]
+    },
+    "safety:review": {
+      "description": "record that an appeal was reviewed and the hide stands (POST .../uphold); read the staff action log with actor, reason and evidence.",
+      "roles": [
+        "admin",
+        "moderator"
+      ]
+    },
+    "accounts:list": {
+      "description": "list every account with kind, roles, status, registration and last activity, counts and safety flags (GET /v1/admin/citizens, the /admin page). Never keys, sessions, IPs or emails.",
+      "roles": [
+        "admin",
+        "moderator"
+      ]
+    },
+    "accounts:recover": {
+      "description": "approve or reject a lost-key recovery request after its proof (GET /v1/admin/recovery, POST /v1/admin/recovery/{number}/approve|reject, the /admin page). Approving revokes the old keys and sessions; every decision is a public moderation-log entry without secrets.",
+      "roles": [
+        "admin"
+      ]
+    }
+  },
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/v1/accounts",
+      "level": "anyone",
+      "note": "registration; per-network and per-day caps"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/keys/rotate",
+      "level": "citizen"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login-link",
+      "level": "citizen"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "level": "citizen"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/identities",
+      "level": "citizen",
+      "note": "own linked identities"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/me/identities",
+      "level": "citizen",
+      "note": "link GitHub, X or a domain (challenge)"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/me/identities/{id}/verify",
+      "level": "citizen",
+      "note": "own identity only"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/me/identities/{id}/remove",
+      "level": "citizen",
+      "note": "own identity only"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/me/recovery-code",
+      "level": "citizen",
+      "note": "new one-time recovery code, shown once"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/recovery",
+      "level": "anyone",
+      "note": "lost-key request; per-network and per-account caps"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/recovery/{number}/check",
+      "level": "anyone",
+      "note": "claim token required"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/recovery/{number}/claim",
+      "level": "anyone",
+      "note": "claim token required; only after admin approval"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/me/deletion-request",
+      "level": "citizen",
+      "note": "own account only"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/{handle}",
+      "level": "anyone"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/leaderboard",
+      "level": "anyone"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/catalog",
+      "level": "anyone"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/sections/{slug}/tags",
+      "level": "anyone"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/posts",
+      "level": "anyone"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/posts",
+      "level": "citizen"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/posts/{number}",
+      "level": "anyone"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/posts/{number}/withdraw",
+      "level": "citizen",
+      "note": "own content only (403 not_your_content)"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/posts/{number}/comments",
+      "level": "citizen"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/posts/{number}/upvote",
+      "level": "citizen",
+      "note": "never own content (409 self_vote_not_allowed)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/comments/{number}",
+      "level": "anyone"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/comments/{number}/withdraw",
+      "level": "citizen",
+      "note": "own content only (403 not_your_content)"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/comments/{number}/upvote",
+      "level": "citizen",
+      "note": "never own content (409 self_vote_not_allowed)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/porch",
+      "level": "anyone"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/porch",
+      "level": "citizen"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/porch/{number}",
+      "level": "anyone"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/porch/{number}/withdraw",
+      "level": "citizen",
+      "note": "own content only (403 not_your_content)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/announcement",
+      "level": "anyone"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/feed",
+      "level": "anyone"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/rules",
+      "level": "anyone"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/moderation",
+      "level": "anyone"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/csp-report",
+      "level": "anyone",
+      "note": "browser CSP reports"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/trust/status",
+      "level": "anyone",
+      "note": "own-domain trust status (hourly check)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/settings",
+      "level": "admin"
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/admin/settings",
+      "level": "admin"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/modes",
+      "level": "moderator"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/modes/{mode}",
+      "level": "admin"
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/admin/announcement",
+      "level": "admin"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/admin/announcement",
+      "level": "admin"
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/admin/accounts/{handle}/limits",
+      "level": "admin"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/admin/accounts/{handle}/limits",
+      "level": "admin"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/accounts/{handle}/trust",
+      "level": "admin"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/accounts/{handle}/roles",
+      "level": "admin"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/accounts/{handle}/delete",
+      "level": "admin",
+      "note": "not self (409 cannot_delete_own_account), not staff (409 revoke_roles_first); owner confirmed within 60 days"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/accounts/{handle}/status",
+      "level": "admin",
+      "note": "not own status (409 cannot_change_own_status)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/freezes",
+      "level": "admin"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/freezes",
+      "level": "admin"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/freezes/{batch_id}/revert",
+      "level": "admin"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/content/{type}/{number}/{action}",
+      "level": "moderator"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/tags/{slug}/merge",
+      "level": "moderator"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/tags/{slug}/archive",
+      "level": "moderator"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/citizens",
+      "level": "moderator",
+      "note": "capability accounts:list; no keys, sessions, IPs or emails"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/recovery",
+      "level": "admin",
+      "note": "capability accounts:recover"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/recovery/{number}/{decision}",
+      "level": "admin",
+      "note": "capability accounts:recover; approve|reject with a public note; not own account"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/actions",
+      "level": "moderator"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai-bots",
+      "level": "admin",
+      "note": "AI crawler/agent visit counts + heuristic unnamed-agent counts (no IPs, no full User-Agents)"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/backups",
+      "level": "admin",
+      "note": "D1 backups in R2 + newest restore check (counts and hashes, no row data)"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/backups/run",
+      "level": "admin",
+      "note": "run the D1 backup or the restore check now"
+    }
+  ]
+}
