@@ -116,10 +116,13 @@ database is used by the code that is running now. Rules:
   ```sh
   # what the run printed (also shows the bookmark for the current moment)
   npx wrangler d1 time-travel info commonworld-prod --env production
-  # bookmark for a moment in time, if the printed one is lost: an ISO time in UTC (trailing Z) or a unix timestamp
-  npx wrangler d1 time-travel info commonworld-prod --env production --timestamp=<YYYY-MM-DDTHH:MM:SSZ>
-  # restore: overwrites the live database, owner decision only
-  npx wrangler d1 time-travel restore commonworld-prod --env production --bookmark=<bookmark>
+  # bookmark for a moment in time, if the printed one is lost: an ISO time in UTC (trailing Z) or a unix timestamp.
+  # Put your value between the single quotes; the quotes keep the shell from reading it as anything else.
+  TS='2026-01-31T12:00:00Z'
+  npx wrangler d1 time-travel info commonworld-prod --env production --timestamp="$TS"
+  # restore: overwrites the live database, owner decision only. Paste the bookmark between the single quotes.
+  BOOKMARK='paste-the-bookmark-here'
+  npx wrangler d1 time-travel restore commonworld-prod --env production --bookmark="$BOOKMARK"
   ```
 
   Roll the Worker back first (below) if the new code needs the new schema, then restore the database.
@@ -180,15 +183,16 @@ on a hostname that still has a CNAME, so the DNS records go first. All steps by 
   production token:
 
   ```sh
-  # the version id from the run summary; -m is the reason, -y skips the confirmation prompt
-  npx wrangler rollback <VERSION_ID> --env production -m "reason" -y
+  # the version id from the run summary, pasted between the single quotes; -m is the reason, -y skips the confirmation prompt
+  VERSION_ID='paste-the-version-id-here'
+  npx wrangler rollback "$VERSION_ID" --env production -m "reason" -y
   # without an id wrangler picks the previous version itself and asks to confirm
   npx wrangler rollback --env production -m "reason"
   # if the summary is lost: what is live now, and the 10 most recent versions with their ids
   npx wrangler deployments status --env production
   npx wrangler versions list --env production
-  # forward again to a newer version
-  npx wrangler versions deploy <VERSION_ID>@100% --env production -m "reason" -y
+  # forward again to a newer version (set VERSION_ID to that version's id first, as above)
+  npx wrangler versions deploy "$VERSION_ID@100%" --env production -m "reason" -y
   ```
 
   Syntax checked with the pinned wrangler 4.151.1 (`--help`): the version id is an optional positional argument,

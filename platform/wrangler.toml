@@ -1,6 +1,6 @@
 # Commonworld v1 — Cloudflare Worker + D1 (SSR pages + /v1 API).
-# Staging is live at https://staging.commonworld.one (env.staging). Production is prepared but NOT deployed:
-# its database_id is a placeholder until the prod D1 exists (see ../docs/DEPLOY.md).
+# Staging is live at https://staging.commonworld.one (env.staging). Production is live at https://commonworld.one
+# since 2026-10-20 (env.production, real D1 database commonworld-prod); deploy and rollback steps: ../docs/DEPLOY.md.
 name = "commonworld-api-dev"
 main = "src/index.ts"
 compatibility_date = "2026-10-01"
