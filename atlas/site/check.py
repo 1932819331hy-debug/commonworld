@@ -485,7 +485,7 @@ def api_checks(parsed, locs):
         if not c_old == c_idx == (docs.get(f'/atlas/categories/{k}.json') or {}).get('count'): fails.append(f'api: category {k} counts differ')
     if (ai.get('counts') or {}).get('earn_rows') != (docs.get('/atlas/earn.json') or {}).get('count'): fails.append('api: earn row counts differ')
     if root.get('schema_version') != api_v1.SCHEMA_VERSION or root.get('version') != 'v1': fails.append('api: index.json version/schema_version')
-    if not re.match(api_v1.UTC_PATTERN, str(root.get('generated_at'))): fails.append('api: index.json generated_at not ISO UTC')
+    if not api_v1.pattern_ok(api_v1.UTC_PATTERN, str(root.get('generated_at'))): fails.append('api: index.json generated_at not ISO UTC')
     for k in ('openapi', 'docs', 'llms_txt', 'license', 'github_mirror', 'changelog'):
         if not (root.get('links') or {}).get(k): fails.append(f'api: index.json links.{k} missing')
     if not os.path.isfile(os.path.join(V, 'CHANGELOG.md')): fails.append('api: CHANGELOG.md missing')

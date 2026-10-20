@@ -449,7 +449,7 @@ def keys_and_books(card, curated, overrides=None):
 # ---------------------------------------------------------------- 3. first task
 TASK_FIELDS = ('title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification')
 TEXT_FIELDS = ('title', 'done_when', 'verification', 'contributed_by', 'contributed_via', 'verified_by')  # editorial metadata prose
-DATE = re.compile(r'\d{4}-\d{2}-\d{2}')  # always used with fullmatch (no trailing newline)
+DATE = re.compile(r'[0-9]{4}-[0-9]{2}-[0-9]{2}')  # always used with fullmatch (no trailing newline); ASCII digits only, as the schema
 
 
 def date_ok(v):
@@ -477,21 +477,23 @@ RUN_EXTENSIONS = ('py', 'pyz', 'sh', 'bash', 'zsh', 'ps1', 'bat', 'cmd', 'js', '
                   'deb', 'rpm', 'apk', 'appimage', 'jar', 'whl', 'bin', 'run')
 RAW_HOST_NAMES = ('raw.githubusercontent.com', 'gist.github.com', 'gist.githubusercontent.com')
 RAW_HOSTS = re.compile(r'raw\.githubusercontent\.com|gist\.github(usercontent)?\.com', re.I)  # in prose (NO_RUN)
+URL_BAD_CHARS = ' \\<>"`'  # space, backslash and the HTML/Markdown-active characters < > " ` (raw or after one decode)
 _EXT_IN_QUERY = re.compile(r'\.(?:' + '|'.join(RUN_EXTENSIONS) + r')(?![a-z0-9])')
 
 
 def https_url_ok(url):
     """The one strict check of an https link (fail closed). Accepted only when ALL hold:
-    a str of at most URL_MAX printable ASCII characters (fullmatch: no trailing newline), no whitespace and no backslash;
+    a str of at most URL_MAX printable ASCII characters (fullmatch: no trailing newline), no whitespace, no backslash and none of
+    < > " ` (URL_BAD_CHARS, also checked after the one decode);
     starts with https://; no userinfo and no port; the host is a plain lowercase DNS name (letters, digits, hyphens, dots; an
     IDN only as punycode xn--; no '%'); the path, query and fragment decoded ONCE contain no '%' (so no double encoding), no
-    whitespace, backslash or non-printable character; the decoded, lowercased host is not raw.githubusercontent.com, gist.github.com
+    whitespace, backslash, < > " ` or non-printable character; the decoded, lowercased host is not raw.githubusercontent.com, gist.github.com
     or gist.githubusercontent.com (nor a subdomain); no decoded path segment ends in a script or binary extension (RUN_EXTENSIONS;
     the whole segment and each `;` piece, trailing dots ignored), and no such extension sits in the decoded query or fragment."""
     from urllib.parse import unquote, urlsplit
     if not isinstance(url, str) or not 0 < len(url) <= URL_MAX or ASCII_PRINTABLE.fullmatch(url) is None:
         return False
-    if ' ' in url or '\\' in url or not url.startswith('https://'):
+    if any(c in url for c in URL_BAD_CHARS) or not url.startswith('https://'):
         return False
     try:
         u = urlsplit(url)
@@ -507,7 +509,7 @@ def https_url_ok(url):
         dec = unquote(rest, errors='strict') if '%' in rest else rest
     except UnicodeDecodeError:
         return False
-    if '%' in dec or '\\' in dec or ASCII_PRINTABLE.fullmatch(dec) is None or ' ' in dec:
+    if '%' in dec or ASCII_PRINTABLE.fullmatch(dec) is None or any(c in dec for c in URL_BAD_CHARS):
         return False
     du = urlsplit('https://x.invalid' + (dec if dec.startswith(('/', '?', '#')) else '/' + dec))
     for seg in du.path.lower().split('/'):
@@ -654,15 +656,38 @@ def task_text_errors(t):
         text = t.get(k)
         if not isinstance(text, str):
             continue  # a wrong type is reported by validate_first_tasks
-        if len(text) > TEXT_MAX:
-            errs.append(f'{k} is longer than {TEXT_MAX} characters')
-        for why in run_hits(text):
-            errs.append(f'{k} {text[:60]!r} has {why}: a first task has nothing to download or run')
-        for u in URL_IN_TEXT.findall(text):
-            u = u.rstrip('.,;:!?')
-            if not https_url_ok(u):
-                errs.append(f'{k}: link {u[:60]!r} is no plain https URL (https_url_ok)')
+        errs += _prose_errors(k, text)
     return errs
+
+
+def _prose_errors(k, text):
+    """Errors of one metadata prose field (TEXT_FIELDS): at most TEXT_MAX characters, no run hint, every link https_url_ok."""
+    errs = [f'{k} is longer than {TEXT_MAX} characters'] if len(text) > TEXT_MAX else []
+    for why in run_hits(text):
+        errs.append(f'{k} {text[:60]!r} has {why}: a first task has nothing to download or run')
+    for u in URL_IN_TEXT.findall(text):
+        u = u.rstrip('.,;:!?')
+        if not https_url_ok(u):
+            errs.append(f'{k}: link {u[:60]!r} is no plain https URL (https_url_ok)')
+    return errs
+
+
+# ---- the same checks for the published JSON Schema (api_v1.py). The schema marks a value with a custom "format"; the repo's
+# schema validators (api_v1.validate and tools/validate_jsonschema.py, used by check.py and CI) call these functions for it,
+# so schema validation and validate_first_tasks agree. Other validators treat an unknown format as an annotation.
+def label_ok(v):
+    return _kind_ok('label', v)
+
+
+def task_text_ok(v):
+    """A metadata prose field as validate_first_tasks wants it: a non-empty str, no hidden character, _prose_errors() empty."""
+    return isinstance(v, str) and v != '' and not bad_chars(v) and not _prose_errors('text', v)
+
+
+SCHEMA_FORMATS = {'cw-https-url': https_url_ok, 'cw-label': label_ok, 'cw-task-text': task_text_ok}
+# The strictest https URL the schema pattern can express (https_url_ok stays authoritative): https://, a lowercase host of
+# letters, digits, dots and hyphens (no '%', '@' or ':'), then printable ASCII without space, backslash, < > " `.
+URL_PATTERN = r'^https://[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?:[/?#][\x21\x23-\x3b\x3d\x3f-\x5b\x5d-\x5f\x61-\x7e]*)?$'
 
 
 def validate_first_tasks(tasks, slugs):

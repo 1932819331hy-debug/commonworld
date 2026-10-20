@@ -426,41 +426,53 @@ class FirstTask(unittest.TestCase):
             errs = self.errs(self._task(steps=[step]))
             self.assertTrue(any('must be an object with an "action"' in e for e in errs), (step, errs))
 
+    BAD_STEPS = {
+        'unknown action': {'action': 'run', 'url': 'https://demo.example/'},
+        'no action': {'url': 'https://demo.example/'},
+        'action not a string': {'action': ['open_page'], 'url': 'https://demo.example/'},
+        'action case': {'action': 'Open_page', 'url': 'https://demo.example/'},
+        'unknown key': OPEN | {'note': 'then run it'},
+        'text key': OPEN | {'text': 'Open it'},
+        'missing url': {'action': 'open_page'},
+        'url not a string': {'action': 'open_page', 'url': ['https://demo.example/']},
+        'missing field': {'action': 'find_field'},
+        'field with a space': {'action': 'find_field', 'field': 'the jobs'},
+        'field with a dash first': {'action': 'find_field', 'field': '-x'},
+        'field too long': {'action': 'find_field', 'field': 'a' * 65},
+        'each_has empty': {'action': 'find_field', 'field': 'x', 'each_has': []},
+        'each_has a string': {'action': 'find_field', 'field': 'x', 'each_has': 'id'},
+        'each_has duplicate': {'action': 'find_field', 'field': 'x', 'each_has': ['id', 'id']},
+        'each_has too long': {'action': 'find_field', 'field': 'x', 'each_has': [f'f{i}' for i in range(9)]},
+        'label with a url': OPEN | {'label': 'see https://x.test'},
+        'label with run': OPEN | {'label': 'run it'},
+        'label with execute': OPEN | {'label': 'Execute the page'},
+        'label too long': OPEN | {'label': 'a' * 41},
+        'label with punctuation': OPEN | {'label': 'feed; then go'},
+        'check missing else_label': {k: v for k, v in CHECK.items() if k != 'else_label'},
+        'match missing has': CHECK | {'match': {'key': 'method', 'equals': 'tsa'}},
+        'match extra key': CHECK | {'match': {'key': 'method', 'equals': 'tsa', 'has': 'x', 'then': 'run'}},
+        'match not an object': CHECK | {'match': 'method=tsa'},
+        'equals with a space': CHECK | {'match': {'key': 'method', 'equals': 'ts a', 'has': 'x'}},
+        'then_label a number': CHECK | {'then_label': 5},
+        'step is a list': ['open_page', 'https://demo.example/'],
+        'step is null': None,
+        # Codex HOLD on 80d74f4: accepted by the schema but rejected at runtime
+        'find_field with an extra url key': {'action': 'find_field', 'field': 'x', 'url': 'https://example.test/'},
+        'open_page to an encoded raw host': {'action': 'open_page', 'url': 'https://raw%2egithubusercontent.com/demo/repo/main/README'},
+        'open_page with html in the url': {'action': 'open_page', 'url': 'https://example.test/<script>alert(1)</script>'},
+        'label with a trailing newline': OPEN | {'label': 'the feed\n'},
+        'field with a trailing newline': {'action': 'find_field', 'field': 'jobs\n'},
+        'equals with a trailing newline': CHECK | {'match': {'key': 'method', 'equals': 'tsa\n', 'has': 'x'}},
+        'action with a trailing newline': {'action': 'open_page\n', 'url': 'https://example.test/'},
+        'each_has item with a trailing newline': {'action': 'find_field', 'field': 'x', 'each_has': ['id\n']},
+    }
+    BAD_STEP_LISTS = {'no steps': [], 'steps a string': 'Open it', 'steps a dict': OPEN, 'too many': [OPEN] * 9}
+
     def test_unknown_action_key_missing_key_and_wrong_type(self):
-        cases = {
-            'unknown action': {'action': 'run', 'url': 'https://demo.example/'},
-            'no action': {'url': 'https://demo.example/'},
-            'action not a string': {'action': ['open_page'], 'url': 'https://demo.example/'},
-            'action case': {'action': 'Open_page', 'url': 'https://demo.example/'},
-            'unknown key': self.OPEN | {'note': 'then run it'},
-            'text key': self.OPEN | {'text': 'Open it'},
-            'missing url': {'action': 'open_page'},
-            'url not a string': {'action': 'open_page', 'url': ['https://demo.example/']},
-            'missing field': {'action': 'find_field'},
-            'field with a space': {'action': 'find_field', 'field': 'the jobs'},
-            'field with a dash first': {'action': 'find_field', 'field': '-x'},
-            'field too long': {'action': 'find_field', 'field': 'a' * 65},
-            'each_has empty': {'action': 'find_field', 'field': 'x', 'each_has': []},
-            'each_has a string': {'action': 'find_field', 'field': 'x', 'each_has': 'id'},
-            'each_has duplicate': {'action': 'find_field', 'field': 'x', 'each_has': ['id', 'id']},
-            'each_has too long': {'action': 'find_field', 'field': 'x', 'each_has': [f'f{i}' for i in range(9)]},
-            'label with a url': self.OPEN | {'label': 'see https://x.test'},
-            'label with run': self.OPEN | {'label': 'run it'},
-            'label with execute': self.OPEN | {'label': 'Execute the page'},
-            'label too long': self.OPEN | {'label': 'a' * 41},
-            'label with punctuation': self.OPEN | {'label': 'feed; then go'},
-            'check missing else_label': {k: v for k, v in self.CHECK.items() if k != 'else_label'},
-            'match missing has': self.CHECK | {'match': {'key': 'method', 'equals': 'tsa'}},
-            'match extra key': self.CHECK | {'match': {'key': 'method', 'equals': 'tsa', 'has': 'x', 'then': 'run'}},
-            'match not an object': self.CHECK | {'match': 'method=tsa'},
-            'equals with a space': self.CHECK | {'match': {'key': 'method', 'equals': 'ts a', 'has': 'x'}},
-            'then_label a number': self.CHECK | {'then_label': 5},
-            'step is a list': ['open_page', 'https://demo.example/'],
-            'step is null': None,
-        }
+        cases = self.BAD_STEPS
         for why, step in cases.items():
             self.assertTrue(self.errs(self._task(steps=[step])), why)
-        for why, steps in {'no steps': [], 'steps a string': 'Open it', 'steps a dict': self.OPEN, 'too many': [self.OPEN] * 9}.items():
+        for why, steps in self.BAD_STEP_LISTS.items():
             self.assertTrue(self.errs(self._task(steps=steps)), why)
 
     # ---- one strict URL validator
@@ -482,7 +494,10 @@ class FirstTask(unittest.TestCase):
         'https://exa%6dple.test/', 'https://Example.test/', 'https://example.test./', 'https://localhost/', 'https://1.2.3.4/', 'https://[::1]/',
         'https://ex_ample.test/', 'https://example.test/%00', 'https://example.test/%0a', 'https://example.test/%e2%80%8b', 'https://example.test/%ff',
         'https://example.test/%', 'https://example.test/%zz', 'https://example.test/%25', 'https://bücher.test/', 'ftp://example.test/', 'https:/example.test/',
-        'https://', 'https:///x', ' https://example.test/', 'https://example.test/' + 'a' * 2100, '', None, 5, b'https://example.test/')
+        'https://', 'https:///x', ' https://example.test/', 'https://example.test/' + 'a' * 2100, '', None, 5, b'https://example.test/',
+        # Codex backlog on 80d74f4: HTML/Markdown-active characters, raw or encoded once
+        'https://example.test/<script>alert(1)</script>', 'https://example.test/%3Cscript%3Ealert(1)%3C/script%3E', 'https://example.test/a"b',
+        'https://example.test/a%22b', 'https://example.test/a`b', 'https://example.test/a%60b', 'https://example.test/?q=<b>', 'https://example.test/#>')
 
     def test_url_validator_regression_corpus(self):
         for good in self.GOOD_URLS:
@@ -677,6 +692,140 @@ class FirstTaskRandomized(unittest.TestCase):
             extra = set(step) - {'action'} - set(cv2.STEP_ACTIONS.get(action, {}))
             if extra:
                 self.assertFalse(ok, step)
+
+
+class SchemaParity(unittest.TestCase):
+    """The published JSON Schema of first_task (api_v1.py) and the runtime check (validate_first_tasks) agree on the whole regression
+    corpus: every known bypass is rejected by both, the real Touchstone task passes both. Schema validation runs with the built-in
+    validator (api_v1.validate) and, when it is installed (CI), the jsonschema library through tools/validate_jsonschema.py."""
+    ORIGIN = 'https://commonworld.one'
+    FT = 'platform.schema.json#/$defs/platformSummary/properties/first_task'
+    STEP = FT + '/properties/steps/items'
+
+    @classmethod
+    def setUpClass(cls):
+        import api_v1
+        cls.api = api_v1
+        cls.reg = api_v1.schemas(cls.ORIGIN, ['tools'])
+        cls.std = None
+        try:
+            sys.path.insert(0, str(ROOT / 'atlas' / 'site' / 'tools'))
+            import validate_jsonschema as vj
+        except ImportError:
+            return
+        wrap = lambda name, ref: {'$schema': 'https://json-schema.org/draft/2020-12/schema', '$id': api_v1.schema_url(cls.ORIGIN, name), '$ref': ref}
+        cls.vj = vj
+        cls.std = vj.make_validators(cls.reg | {'t-ft.schema.json': wrap('t-ft.schema.json', cls.FT), 't-step.schema.json': wrap('t-step.schema.json', cls.STEP)})
+
+    def schema_errs(self, inst, ref):
+        """{validator: errors} for inst against the sub-schema ref."""
+        out = {'builtin': self.api.validate(inst, {'$ref': ref}, self.reg, 'platform.schema.json')}
+        if self.std:
+            out['jsonschema'] = self.vj.errors_for(self.std['t-ft.schema.json' if ref == self.FT else 't-step.schema.json'], inst, limit=50)
+        return out
+
+    @staticmethod
+    def published(t):
+        """The task as the API would publish it (first_task()), without trusting it: steps_text and credit are added as plain text."""
+        if not isinstance(t, dict):
+            return t
+        n = len(t['steps']) if isinstance(t.get('steps'), list) else 1
+        return t | {'steps_text': ['Step.'] * max(1, min(n, cv2.STEPS_MAX)), 'credit': f"Contributed by {t.get('contributed_by')}"}
+
+    def assert_both(self, t, ok, why):
+        runtime = cv2.validate_first_tasks({'touchstone': t}, set(CARDS))
+        self.assertEqual(not runtime, ok, (why, 'runtime', runtime))
+        for v, errs in self.schema_errs(self.published(t), self.FT).items():
+            self.assertEqual(not errs, ok, (why, v, errs))
+
+    def corpus(self):
+        F, task = FirstTask, FirstTask()._task
+        yield 'codex: open_page without url', task(steps=[{'action': 'open_page'}])
+        yield 'codex: encoded raw host', task(steps=[{'action': 'open_page', 'url': 'https://raw%2egithubusercontent.com/demo/repo/main/README'}])
+        yield 'codex: extra key', task(steps=[{'action': 'find_field', 'field': 'x', 'url': 'https://example.test/'}])
+        yield 'codex: date with a trailing newline', task(verified_on='2026-10-20\n')
+        yield 'codex: script in the url', task(steps=[{'action': 'open_page', 'url': 'https://example.test/<script>alert(1)</script>'}])
+        yield 'codex: script in source_url', task(source_url='https://example.test/<script>alert(1)</script>')
+        for why, step in F.BAD_STEPS.items():
+            yield f'step: {why}', task(steps=[step])
+        for why, steps in F.BAD_STEP_LISTS.items():
+            yield f'steps: {why}', task(steps=steps)
+        for bad in F.BAD_URLS:
+            yield f'source_url {bad!r}', task(source_url=bad)
+            yield f'open_page {bad!r}', task(steps=[{'action': 'open_page', 'url': bad}])
+        for bad in ('2026-10-20\n', '2026-10-20 ', ' 2026-10-20', '20.10.2026', '2026-10-2', '\uff12026-10-20', '2026-10-2\u0660', None, 20261020):
+            yield f'date {bad!r}', task(verified_on=bad)
+        for ch in F.HIDDEN:
+            for f in cv2.TEXT_FIELDS:
+                yield f'hidden {ch!r} in {f}', task(**{f: f'Check the clock{ch}now'})
+            yield f'hidden {ch!r} in a label', task(steps=[F.OPEN | {'label': f'the feed{ch}'}])
+            yield f'hidden {ch!r} in a field', task(steps=[{'action': 'find_field', 'field': f'jobs{ch}'}])
+            yield f'hidden {ch!r} in a key', task(**{f'x{ch}': 'y'})
+        for text in F.RUN_TEXTS:
+            for f in cv2.TEXT_FIELDS:
+                yield f'run text in {f}: {text}', task(**{f: text})
+        for text in ('See https://example.test/payload%2Esh.', 'Via https://raw%2egithubusercontent.com/demo/repo/main/README',
+                     'Proposed at https://user@example.test/p', 'Proposed at http://example.test/p'):
+            yield f'link in prose: {text}', task(contributed_via=text)
+        for code in ({'url': 'https://demo.example/tool.py', 'run': [{'cmd': 'python3 tool.py'}]}, {}, None, 'x'):
+            yield f'code {code!r}', task(code=code)
+        yield 'no_code', task(no_code='Or read the home page.')
+        base = task()
+        for why, t in {'done_when is a list': base | {'done_when': ['x']}, 'title is a dict': base | {'title': {'t': 1}},
+                       'steps holds a list': base | {'steps': [['x']]}, 'source_url is a number': base | {'source_url': 5},
+                       'verification is a list': base | {'verification': ['x']}, 'extra key': base | {'sandbox': 'x'},
+                       'long title': base | {'title': 'a' * 401}, 'empty title': base | {'title': ''}, 'task is a list': ['x']}.items():
+            yield why, t
+        for k in cv2.TASK_FIELDS:
+            yield f'missing {k}', {x: v for x, v in base.items() if x != k}
+
+    def test_known_bypasses_fail_both_runtime_and_schema(self):
+        n = 0
+        for why, t in self.corpus():
+            self.assert_both(t, False, why)
+            n += 1
+        self.assertGreater(n, 400)
+
+    def test_touchstone_and_good_tasks_pass_both(self):
+        pub = cv2.first_task(CARDS['touchstone'], cv2.load_first_tasks())
+        for v, errs in self.schema_errs(pub, self.FT).items():
+            self.assertEqual(errs, [], v)
+        self.assert_both(cv2.load_first_tasks()['touchstone'], True, 'touchstone')
+        F, task = FirstTask, FirstTask()._task
+        self.assert_both(task(), True, 'plain task')
+        for good in F.GOOD_URLS:
+            self.assert_both(task(source_url=good, steps=[{'action': 'open_page', 'url': good}]), True, good)
+        for steps in ([F.OPEN], [{'action': 'open_page', 'url': 'https://demo.example/', 'label': 'the stats page'}],
+                      [{'action': 'find_field', 'field': 'data.items'}], [F.FIND], [F.CHECK], [F.OPEN, F.FIND, F.CHECK]):
+            self.assert_both(task(steps=[dict(s) for s in steps]), True, steps)
+
+    def test_ecma_dollar_is_the_end_of_the_string(self):
+        for p in (r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', r'^[A-Za-z_][A-Za-z0-9_.]{0,63}$', cv2.URL_PATTERN):
+            self.assertIn(r'\Z', self.api.ecma_pattern(p).pattern)
+        self.assertTrue(self.api.pattern_ok('^https://', 'https://x\n'))  # an unanchored end keeps search semantics
+        self.assertFalse(self.api.pattern_ok(r'^a[$]$', 'a$\n'))
+        self.assertTrue(self.api.pattern_ok(r'^a[$]$', 'a$'))
+        self.assertFalse(self.api.pattern_ok(r'^\d$', '\u0663'))  # \d is ASCII, as in ECMA
+
+    def test_random_steps_agree(self):
+        """Randomized (fixed seed): a step passes the runtime check exactly when it passes the schema."""
+        import random
+        rng = random.Random(FirstTaskRandomized.SEED + 3)
+        words = ['open_page', 'find_field', 'check_field', 'run', 'Open_page', 'url', 'label', 'field', 'each_has', 'each', 'match',
+                 'then_label', 'else_field', 'else_label', 'text', '']
+        vals = ['https://example.test/', 'https://example.test/x.sh', 'https://example.test/<b>', 'jobs', 'jobs\n', 'tsa clock', 'run it',
+                ['id'], ['id', 'id'], [], {'key': 'method', 'equals': 'tsa', 'has': 'x'}, {'key': 'method', 'equals': 'ts a', 'has': 'x'},
+                5, None, True]
+        both = 0
+        for _ in range(FirstTaskRandomized.N):
+            step = {'action': rng.choice(words[:5])}
+            for _ in range(rng.randrange(0, 7)):
+                step[rng.choice(words)] = rng.choice(vals)
+            ok = not cv2.step_errors(step, 1)
+            both += ok
+            for v, errs in self.schema_errs(step, self.STEP).items():
+                self.assertEqual(not errs, ok, (step, v, errs))
+        self.assertGreater(both, 0)
 
 
 class Wording(unittest.TestCase):
