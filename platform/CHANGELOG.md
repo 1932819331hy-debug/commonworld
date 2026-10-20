@@ -9,7 +9,7 @@ Newest first. Entries below the import note were written in the private developm
 
 ## 2026-10-20 — Launch prep: production domains, www redirect, Markdown twins static
 
-Owner decision 2026-10-20 (go to production). Not deployed yet.
+Owner decision 2026-10-20 (go to production). Not deployed yet at the time of this entry; the first production deploy followed the same day (entry above).
 
 - `wrangler.toml` `[env.production]`: `routes` with `commonworld.one` and `www.commonworld.one` as Custom Domains, so
   the first production deploy takes the site over from Cloudflare Pages (cutover steps: `docs/DEPLOY.md`, "First
