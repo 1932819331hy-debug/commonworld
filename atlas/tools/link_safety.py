@@ -7,7 +7,7 @@
 
 1. Every outbound host linked from the published Atlas data (official URLs, claim and QA sources, any other URL in an
    entry, and every URL in the card's slug-keyed cards v2 curation records: first task proposal and links, keys-and-
-   books and evidence-level sources) plus the hosts of removed entries go to the engine, which asks every source (Google Safe Browsing, MetaMask
+   books and evidence-level sources, replication-count sources in replications.json) plus the hosts of removed entries go to the engine, which asks every source (Google Safe Browsing, MetaMask
    eth-phishing-detect, ScamSniffer, CERT Polska) and combines the answers: flagged when ANY one source flags the domain,
    clean when at least one source answered and none flags it, no_data when no source could answer.
 2. A source that could not answer for a host this run keeps its previous answer for that host (marked stale), so a
@@ -17,7 +17,7 @@
 4. With --apply, the rule (atlas/CURATION.md#link-safety): every entry that links to a flagged host is removed at once,
    with a decision in atlas/data/removed.json (actor hark, reason naming the source and what it said, evidence link),
    its card dropped from the snapshot, the census tags and the cards v2 curation files (first-tasks.json,
-   keys-and-books.json, evidence-levels.json in the snapshot's directory; the old records stay in git history for a
+   keys-and-books.json, evidence-levels.json, and replications.json, in the snapshot's directory; the old records stay in git history for a
    restore), so the rebuild check does not fail on curation of a card that is no longer published. The slug keeps a noindex stub page (build.py). Hosts listed in
    atlas/data/trust-hold.json `hold` are reported but not removed (a curator is looking at them).
    --actions-out writes what was removed (for the issue text).
@@ -39,8 +39,10 @@ TRUST_URL = 'https://github.com/commonworld-one/commonworld/blob/main/TRUST.md'
 GSB = 'google_safe_browsing'
 
 
-# cards v2 curation files keyed by card slug (atlas/site/cards_v2.py): file name -> top-level key holding {slug: record}
-CURATION = (('first-tasks.json', 'tasks'), ('keys-and-books.json', 'entries'), ('evidence-levels.json', 'overrides'))
+# slug-keyed card files (cards v2 curation, atlas/site/cards_v2.py; replication counts, atlas/site/replications.py):
+# file name -> top-level key holding {slug: record}
+CURATION = (('first-tasks.json', 'tasks'), ('keys-and-books.json', 'entries'), ('evidence-levels.json', 'overrides'),
+            ('replications.json', 'cards'))
 URL_IN_TEXT = re.compile(r'https?://[^\s"\'<>()\[\]`]+')
 
 

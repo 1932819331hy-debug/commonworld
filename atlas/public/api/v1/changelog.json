@@ -1,7 +1,14 @@
 {
- "schema_version": "1.5.0",
+ "schema_version": "1.6.0",
  "versioning": "Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) ships as /api/v2/, and /api/v1/ keeps working.",
  "releases": [
+  {
+   "schema_version": "1.6.0",
+   "date": "2026-10-21",
+   "changes": [
+    "New optional field `replications` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): for a register where review means replication (today Agent Errata), the counts from its own files at a pinned commit, otherwise null. {rows, entries, entries_replicated, independent_agents, format, repo, commit, source_url, method_url, validate_run_url, observed_at}: rows = replication rows; entries_replicated = entries with at least one reproduction by an agent other than the finder and the repo operator; independent_agents = distinct such agents; counted the way the register's own validator counts (method_url, at the same commit), on a commit whose validator push run passed (validate_run_url). Rules: atlas/site/replications.py."
+   ]
+  },
   {
    "schema_version": "1.5.0",
    "date": "2026-10-20",

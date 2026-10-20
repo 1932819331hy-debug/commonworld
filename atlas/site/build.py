@@ -26,6 +26,7 @@ import api_v1  # noqa: E402  (static API v1: /api/v1/, schemas, OpenAPI)
 import screens  # noqa: E402  (homepage screenshots from the orphan branch atlas-screens)
 import events as atlas_events  # noqa: E402  (public events log: atlas/data/events.jsonl)
 import cards_v2 as cv2  # noqa: E402  (cards v2: evidence ladder, keys and books, first task; atlas/CURATION.md)
+import replications as repl  # noqa: E402  (replication counts on a card: atlas/data/replications.json)
 
 e = cw.e
 DEFAULT_DATA = os.path.normpath(os.path.join(HERE, '..', 'data', 'snapshot-verified-2026-10-15.json'))
@@ -196,6 +197,7 @@ def enrich(site, tags):
         c['_ev'] = cv2.card_evidence(c, evo)
         c['_kb'] = cv2.keys_and_books(c, getattr(site, 'keys_books', {}), evo)
         c['_task'] = cv2.first_task(c, getattr(site, 'first_tasks', {}))
+        c['_repl'] = repl.published(getattr(site, 'replications', {}), c['slug'])
 
 
 def keynum_html(c):
@@ -788,10 +790,36 @@ def task_html(site, t):
             f'Verified by {e(t["verified_by"])} on {e(t["verified_on"])}: {e(t["verification"])}</p></div></section>')
 
 
+def repl_html(r):
+    """Replication counts block (atlas/site/replications.py), only on cards with a record."""
+    if not r:
+        return ''
+    dt = parse_time(r['observed_at'])
+    cells = ''.join(f'<div><dt>{e(t)}</dt><dd>{fmt_num(r[k])}</dd></div>' for k, t in (
+        ('rows', 'Replication rows'), ('entries', 'Entries'), ('entries_replicated', 'Entries independently reproduced'),
+        ('independent_agents', 'Independent agents')))
+    return (f'<section class="cw-panel cw-panel-gap replications" aria-labelledby="h-repl"><div class="cw-panel-head"><h2 id="h-repl">Replications</h2>'
+            f'<span class="muted">counted as {e(r["repo"])} validate.ts counts</span></div><div class="cw-panel-body">'
+            f'<p class="repl-line">{e(repl.sentence(r))}</p><dl class="facts repl-facts">{cells}</dl>'
+            f'<p class="claim-meta">Read from {ext_link(r["source_url"], e(r["repo"]) + " at commit <code>" + e(r["commit"][:12]) + "</code>")}, '
+            f'a commit its {ext_link(r["validate_run_url"], "validate workflow")} passed on push; counting rules: '
+            f'{ext_link(r["method_url"], "scripts/validate.ts")}. Observed {time_tag(dt) if dt else e(r["observed_at"])}.</p></div></section>')
+
+
+def repl_md(r):
+    if not r:
+        return []
+    return ['', '## Replications', '', repl.sentence(r), '',
+            f"- Replication rows: {r['rows']}", f"- Entries: {r['entries']}", f"- Entries independently reproduced: {r['entries_replicated']}",
+            f"- Independent agents: {r['independent_agents']}", '',
+            f"Read from {r['source_url']} (commit {r['commit']}), a commit whose validate workflow passed on push ({r['validate_run_url']}). "
+            f"Counting rules: {r['method_url']}. Observed {r['observed_at']}."]
+
+
 def v2_panels(site, c):
     return (f'<section class="cw-panel v2-panel" aria-labelledby="h-v2"><div class="cw-panel-head"><h2 id="h-v2">Evidence, keys and books</h2></div>'
             f'<div class="cw-panel-body v2-grid">{ladder_html(site, c["_ev"])}{kb_html(site, c["_kb"])}</div></section>'
-            f'{task_html(site, c["_task"])}')
+            f'{task_html(site, c["_task"])}{repl_html(c.get("_repl"))}')
 
 
 def md_cell(v):
@@ -824,6 +852,7 @@ def build_platform_md(site, c):
     if t:
         L += ['', '## First task', '', f"**{t['title']}**", ''] + [f'{i}. {s}' for i, s in enumerate(t['steps_text'], 1)] + \
              ['', f"Done when: {t['done_when']}", '', f"{t['credit']} via {t['contributed_via']}: {t['source_url']}. Verified by {t['verified_by']} on {t['verified_on']}: {t['verification']}"]
+    L += repl_md(c.get('_repl'))
     L += ['', '## Verified facts', '', '| What | Statement | Value | Basis | Outcome | Evidence | Observed | Source |', '|---|---|---|---|---|---|---|---|']
     for x in claims:
         lv = cv2.claim_level(x, c['_evo'])
@@ -2232,7 +2261,8 @@ def agent_record(site, c):
             'has_money_flow': c['_money'], 'money_flow': flows, 'key_number': key,
             'verified_at': iso(c['_verified']), 'last_checked': iso(c['_verified']), 'claims_count': len(claims),
             'disclosure': c.get('disclosure'), 'preview': preview_record(site, c), 'link_safety': link_safety_of(site, c),
-            'md_url': site.abs(c['_url'] + 'index.md'), 'evidence_level': c['_ev'], 'keys_and_books': c['_kb'], 'first_task': c['_task']}
+            'md_url': site.abs(c['_url'] + 'index.md'), 'evidence_level': c['_ev'], 'keys_and_books': c['_kb'], 'first_task': c['_task'],
+            'replications': c['_repl']}
 
 
 MIRROR_DIR = os.path.normpath(os.path.join(HERE, '..', 'public'))
@@ -2372,6 +2402,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 - Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt), plus badge_svg, badge_svg_dark and badge_page
 - Per entry as Markdown: {A(f'{b}/platforms/')}<id>/index.md, the card page as plain Markdown (take the URL from md_url)
 - Cards v2 fields on every record (schema_version 1.4.0; 1.5.0 removed first_task.code and first_task.no_code): evidence_level {{level 1-3 or null, id, label, claims_counted}}, the highest evidence-ladder level of the card's supported money and activity claims (1 operator says = the platform's own words; 2 public dashboard = a public stats page, dashboard or API; 3 public transactions = one block-explorer record, such as a transaction, address or block, set only by a curator who opened it; the automatic rule gives at most level 2); keys_and_books {{keys, books, people}}, each {{state recorded or not_recorded, value, label, source_url, quote}}; books comes only from a supported money-flow claim at evidence level 2 or 3 (never curated); keys also has basis (operator_says = the label is the operator's claim, "The operator says ..."; onchain_verified = smart contract recorded on a public explorer, with contract_url, the explorer page of its address or token); people names an organization, never an individual person; first_task (a verified, read-only first step for newcomers with credit, or null; steps are typed objects from a closed list of actions, open_page, find_field and check_field, with steps_text holding the sentence the site renders for each; nothing to download or run; contract: {REPO_URL}/blob/main/atlas/CURATION.md#first-task-contract). Money and activity claims in <id>.json carry evidence_level and evidence_label, plus evidence_note where a curator opened the source and set the level by hand (rules for a manual relabel: {REPO_URL}/blob/main/atlas/CURATION.md#curator-review-of-a-level). Rule: {A(f'{b}/about/#evidence-ladder')}
+- Replications (schema_version 1.6.0): replication counts for a register where review means replication, or null; {{rows, entries, entries_replicated, independent_agents, format, repo, commit, source_url, method_url, validate_run_url, observed_at}}, counted at a pinned commit of the register the way its own validator counts (rows = replication rows; entries_replicated = entries with at least one reproduction by an agent other than the finder and the repo operator; independent_agents = distinct such agents); contract: {REPO_URL}/blob/main/atlas/site/replications.py
 - Closed entries: closed by human review (official statement or at least two independent signals; never reopened automatically) or by the automated weekly check (unreachable in 2 consecutive weekly checks; reopens automatically if the site answers again). A single failed load is never proof.
 - IDs are readable slugs made from the platform name (examples: {', '.join(c['slug'] for c in exs)}). Never guess or construct an ID: take it from platforms.json or llms-full.txt. An ID that is not listed there does not exist in the Atlas.
 {ex_lines}
@@ -2428,6 +2459,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - Homepage screenshots (`preview`): re-captured weekly by the workflow `Atlas weekly screenshots` ({REPO_URL}/blob/main/.github/workflows/screens.yml), which opens a pull request into the branch `atlas-screens` and never merges on its own
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
 - Per entry: take json_url from platforms.json; never construct an ID. Each card page also has a Markdown twin (md_url)
+- Replication counts: records of registers where review means replication carry replications {{rows, entries, entries_replicated, independent_agents, commit, source_url, method_url, validate_run_url, observed_at}}, counted at a pinned commit the way the register's validator counts; null elsewhere
 - Cards v2: every record has evidence_level (1 operator says, 2 public dashboard, 3 public transactions set only by a curator who opened the record, or null = not recorded yet), keys_and_books (keys, books, people; filled only from sourced claims on the card; books only from a money-flow claim at evidence level 2 or 3) and first_task (verified, read-only, with credit, or null; typed steps from a closed action list, open_page, find_field, check_field, plus steps_text, the rendered sentences). A claim level set by curator review carries evidence_note (manual relabel rules: {REPO_URL}/blob/main/atlas/CURATION.md#curator-review-of-a-level). How it works: {A(f'{b}/about/#evidence-ladder')}
 
 ## Categories (JSON)
@@ -2447,7 +2479,9 @@ Data licence: {lic}. Please credit "Commonworld Atlas" with a link to {A(f'{b}/'
     for r in recs:
         ev = r['evidence_level']
         lines.append(f"- [{r['name']}]({r['url']}) · JSON: {r['json_url']} · Markdown: {r['md_url']} · {r['category_label']} · {r['status']} · evidence: {('level ' + str(ev['level']) + ' ' + ev['label']) if ev['level'] else ev['label']} · {trim(r['summary'], 200)}"
-                     + (f" · first task: {r['first_task']['title']} ({r['first_task']['credit']})" if r.get('first_task') else '') + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
+                     + (f" · first task: {r['first_task']['title']} ({r['first_task']['credit']})" if r.get('first_task') else '')
+                     + (f" · replications: {r['replications']['rows']} rows, {r['replications']['entries_replicated']} of {r['replications']['entries']} entries independently reproduced by {r['replications']['independent_agents']} agents (commit {r['replications']['commit'][:12]})" if r.get('replications') else '')
+                     + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
     write('/llms-full.txt', '\n'.join(lines) + '\n')
 
 
@@ -2536,6 +2570,7 @@ def build_api_docs(site):
 <li><code>keys_and_books</code>: <code>keys</code> (<code>operator</code>, <code>user_wallet</code>, <code>smart_contract</code>), <code>books</code> (<code>public_transactions</code>, <code>public_dashboard</code>; only from a supported money-flow claim at evidence level 2 or 3, never curated) and <code>people</code> (<code>named</code>), each <code>{{state, value, label, source_url, quote}}</code>; <code>state</code> is <code>recorded</code> with a source or <code>not_recorded</code>.</li>
 <li><code>first_task</code>: a verified, read-only first step for newcomers (title, steps, steps_text, done_when, contributed_by, contributed_via, source_url, verified_by, verified_on, verification, credit), or <code>null</code>. Since <code>schema_version</code> 1.5.0 <code>steps</code> is a list of typed objects from a closed list of actions (<code>open_page</code> {{url, label?}}, <code>find_field</code> {{field, each_has?}}, <code>check_field</code> {{each, field, match {{key, equals, has}}, then_label, else_field, else_label}}) and <code>steps_text</code> holds the sentence the site renders for each step; there is no <code>code</code> or <code>no_code</code> field (<a href="{REPO_URL}/blob/main/atlas/CURATION.md#first-task-contract" rel="nofollow noopener">first task contract</a>).</li>
 <li><code>md_url</code>: the card page as Markdown.</li></ul>
+<p>Since <code>schema_version</code> 1.6.0 every entry record also carries <code>replications</code>: for a register where review means replication (today Agent Errata), the counts from its own files at a pinned commit, or <code>null</code>. Fields: <code>rows</code> (replication rows), <code>entries</code>, <code>entries_replicated</code> (entries with at least one reproduction by an agent other than the finder and the repo operator), <code>independent_agents</code> (distinct such agents), <code>format</code>, <code>repo</code>, <code>commit</code> (the 40-character sha read), <code>source_url</code>, <code>method_url</code> (the validator whose counting rules apply, at that commit), <code>validate_run_url</code> (the push run of that validator that passed on the commit) and <code>observed_at</code>. The weekly refresh re-reads the newest commit whose validator run passed; a record changes only when a count changes (<a href="{REPO_URL}/blob/main/atlas/site/replications.py" rel="nofollow noopener">contract</a>).</p>
 <h2 id="ids">IDs</h2>
 <p>An entry ID is its permanent URL slug (for example <code>{e(ex)}</code>). Never construct or guess an ID: take it from <a href="{V}/atlas/platforms.json">platforms.json</a> or a category file. An ID that is not listed there does not exist, and the request returns 404.</p>
 <h2 id="examples">Examples</h2>
@@ -2649,6 +2684,10 @@ def main():
     site.keys_books = cv2.load_keys_books()
     site.ev_overrides = cv2.load_evidence_overrides()
     site.first_tasks = cv2.load_first_tasks()
+    site.replications = repl.load()
+    bad_repl = repl.validate(site.replications, {c['slug'] for c in site.cards})
+    if bad_repl:  # fail closed: a record that breaks the contract is never rendered
+        raise SystemExit('atlas/data/replications.json: ' + '; '.join(bad_repl[:5]))
     enrich(site, tags)
     site.shot_dir, shots, site.shot_src = screens.load()
     site.shots = {c['slug']: shots[c['slug']] for c in site.cards if c['slug'] in shots}

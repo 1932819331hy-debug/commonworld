@@ -12,7 +12,7 @@ from cards_v2 import (BOOKS_VALUES, EACH_HAS_MAX, KEYS_BASES, KEYS_VALUES, LEVEL
                       SCHEMA_FORMATS, STEP_ACTIONS, STEP_OPTIONAL, STEPS_MAX, TEXT_MAX, URL_MAX, URL_PATTERN)
 
 API_VERSION = 'v1'
-SCHEMA_VERSION = '1.5.0'
+SCHEMA_VERSION = '1.6.0'
 API_BASE = '/api/v1'
 STATUSES = ['live', 'closed']
 ENTITY_TYPES = ['platform', 'tool_catalog', 'protocol', 'project']
@@ -23,6 +23,13 @@ UTC_PATTERN = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$'  # ISO 8601 U
 
 # newest first; build.py writes changelog.json and CHANGELOG.md from this list
 CHANGELOG = [
+    {'schema_version': '1.6.0', 'date': '2026-10-21', 'changes': [
+        'New optional field `replications` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): for a register '
+        'where review means replication (today Agent Errata), the counts from its own files at a pinned commit, otherwise null. '
+        '{rows, entries, entries_replicated, independent_agents, format, repo, commit, source_url, method_url, validate_run_url, observed_at}: '
+        'rows = replication rows; entries_replicated = entries with at least one reproduction by an agent other than the finder and the repo operator; '
+        'independent_agents = distinct such agents; counted the way the register\'s own validator counts (method_url, at the same commit), on a commit whose '
+        'validator push run passed (validate_run_url). Rules: atlas/site/replications.py.']},
     {'schema_version': '1.5.0', 'date': '2026-10-20', 'changes': [
         'Cards v2 simplification (owner decision). `first_task.code` and the optional `first_task.no_code` are removed: a first task now '
         'has nothing to download or run, so no record carries them. They existed only in 1.4.0, released together with this version and never published on its own, so no v1 '
@@ -206,7 +213,21 @@ def schemas(origin, categories):
                                       'source_url': cw_url, 'verified_by': text,
                                       'verified_on': {'type': 'string', 'pattern': r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', 'description': 'YYYY-MM-DD (the whole string).'},
                                       'verification': text, 'credit': {'type': 'string', 'pattern': '^Contributed by '}}}}
-    optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task'}  # added in 1.1.0 / 1.2.0 / 1.4.0: optional, so older records stay valid
+    summary_props['replications'] = {
+        'type': ['object', 'null'], 'additionalProperties': False,
+        'description': 'Replication counts for a register where review means replication, read at a pinned commit and counted the way the register\'s own '
+                       'validator counts (atlas/site/replications.py), or null. rows = replication rows; entries_replicated = entries with at least one reproduction '
+                       'by an agent other than the finder and the repo operator; independent_agents = distinct such agents. Added in schema_version 1.6.0.',
+        'required': ['rows', 'entries', 'entries_replicated', 'independent_agents', 'format', 'repo', 'commit', 'source_url', 'method_url', 'validate_run_url', 'observed_at'],
+        'properties': {'rows': {'type': 'integer', 'minimum': 0}, 'entries': {'type': 'integer', 'minimum': 0},
+                       'entries_replicated': {'type': 'integer', 'minimum': 0}, 'independent_agents': {'type': 'integer', 'minimum': 0},
+                       'format': {'enum': ['agent-errata']}, 'repo': {'type': 'string', 'pattern': r'^[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9._-]{1,100}$'},
+                       'commit': {'type': 'string', 'pattern': '^[0-9a-f]{40}$'},
+                       'source_url': {'type': 'string', 'format': 'uri', 'pattern': '^https://github\\.com/'},
+                       'method_url': {'type': 'string', 'format': 'uri', 'pattern': '^https://github\\.com/'},
+                       'validate_run_url': {'type': 'string', 'format': 'uri', 'pattern': '^https://github\\.com/[^/]+/[^/]+/actions/runs/[0-9]+$'},
+                       'observed_at': {'type': 'string', 'pattern': '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'}}}
+    optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task', 'replications'}  # added in 1.1.0 / 1.2.0 / 1.4.0 / 1.6.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
                'required': [k for k in summary_props if k not in optional], 'properties': summary_props}
     preview = {'type': ['object', 'null'], 'description': 'Dated homepage screenshot of the entry, or null. Third-party website content: '

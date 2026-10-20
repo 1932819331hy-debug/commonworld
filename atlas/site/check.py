@@ -1133,6 +1133,40 @@ def refresh_note_checks():
     return fails
 
 
+def replications_checks(pages):
+    """Replication counts (atlas/site/replications.py): atlas/data/replications.json is valid; every per-entry JSON carries
+    `replications` exactly as published from that file (null without a record); platforms.json agrees; the card page shows the
+    Replications block and its Markdown twin the '## Replications' section exactly when there is a record, with the same counts."""
+    import replications as repl
+    fails = []
+    pdir = os.path.join(DIST, 'atlas', 'platforms')
+    recs = {fn[:-5]: json.load(open(os.path.join(pdir, fn), encoding='utf-8')) for fn in sorted(os.listdir(pdir)) if fn.endswith('.json')}
+    cards = repl.load()
+    fails += repl.validate(cards, set(recs))
+    for slug, r in recs.items():
+        w = f'replications: {slug}'
+        want = repl.published(cards, slug)
+        if 'replications' not in r: fails.append(f'{w}: entry JSON lacks the replications field'); continue
+        if r['replications'] != want: fails.append(f'{w}: entry JSON replications differs from atlas/data/replications.json')
+        u = f'/atlas/platforms/{slug}/'
+        h = open(pages[u], encoding='utf-8').read() if u in pages else ''
+        mdp = os.path.join(DIST, 'atlas', 'platforms', slug, 'index.md')
+        md = open(mdp, encoding='utf-8').read() if os.path.exists(mdp) else ''
+        if ('id="h-repl"' in h) != bool(want): fails.append(f'{w}: card page Replications block out of step with the record')
+        if ('## Replications' in md) != bool(want): fails.append(f'{w}: Markdown twin Replications section out of step')
+        if want:
+            line = repl.sentence(want)
+            if html.escape(line) not in h: fails.append(f'{w}: card page counts differ from the record')
+            if line not in md or want['commit'] not in md: fails.append(f'{w}: Markdown twin counts or commit differ from the record')
+            for k in ('source_url', 'method_url', 'validate_run_url'):
+                if html.escape(want[k]) not in h or want[k] not in md: fails.append(f'{w}: {k} missing from the card page or its Markdown twin')
+    pl = json.load(open(os.path.join(DIST, 'atlas', 'platforms.json'), encoding='utf-8'))
+    for r in pl.get('platforms') or []:
+        if r.get('replications') != (recs.get(r['id']) or {}).get('replications'): fails.append(f'replications: platforms.json {r["id"]} differs from its entry file')
+    print(f'replications: {sum(1 for r in recs.values() if r.get("replications"))} card(s) with replication counts')
+    return fails
+
+
 def cards_v2_checks(pages):
     """Cards v2 (atlas/site/cards_v2.py, atlas/CURATION.md#cards-v2): the curated keys-and-books and first-task files are valid against
     the published claims; every per-entry JSON carries evidence_level / keys_and_books / first_task exactly as the rules compute them
@@ -1536,6 +1570,7 @@ def main():
     fails += refresh_note_checks()
     fails += markdown_twin_checks(pages)[0]
     fails += cards_v2_checks(pages)
+    fails += replications_checks(pages)
     fails += stats_checks(parsed, pages, locs)
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)
