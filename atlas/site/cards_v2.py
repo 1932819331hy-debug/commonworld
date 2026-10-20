@@ -6,8 +6,8 @@ tests/test_cards_v2.py pins the rules with examples.
 
 1. Evidence ladder. Every money or activity claim (kind economic_flow, metric, recent_activity) gets a level from its source URL:
    3 public transactions  the source is a concrete public record with a checkable identifier on a block explorer (a transaction
-                          hash, an address or account page, a block), well-formed for its page type (TX_PATH: /tx/1 is no
-                          transaction hash): records anyone can open and check independently;
+                          hash, an address or account page, a block): the whole path is one of that explorer's
+                          own record routes with an identifier of its network (RECORD_ROUTES): records anyone can open and check independently;
                           explorer stats, charts and other aggregate pages are level 2;
    2 public dashboard     the source is a public stats page, dashboard or API (machine-readable endpoint) anyone can open;
    1 operator says        any other page: the platform's own words (site text, docs, posts) and other text pages.
@@ -63,27 +63,43 @@ EXPLORER_HOSTS = (
     'explorer.aptoslabs.com', 'oklink.com',
     'kitescan.ai',  # kitescan.ai: the Blockscout explorer of the Kite chain (used by the Kite AI card)
 )
-# Concrete public record pages on an explorer host: a transaction, an address or account, a token contract or a block, each with a
-# WELL-FORMED identifier for that page type as the whole path segment (/tx/<hash>, /address/<addr>, /api/v2/addresses/<addr>,
-# /block/<number>). Path segment names are matched case-sensitively in lowercase (/ADDRESS/ is no record page). An identifier
-# of the wrong shape (/tx/1, /address/1, /token/12345, /tx/0x1234) and explorer pages without one (home, /stats, /charts,
-# /api/v2/stats) are aggregate or unchecked views: level 2. Formats (hex is case-insensitive; base58 = the Bitcoin alphabet):
-#   transaction  0x + 64 hex (EVM, Stacks, Aptos) | 64 hex (Bitcoin, Tron, TON) | base58, 86-88 chars (Solana signature)
-#                | base58, 43-44 chars (Sui digest)
-#   address      0x + 40 hex (EVM) | 0x + 64 hex (Sui, Aptos) | base58, 32-44 chars (Solana, Tron) | Bitcoin: base58 26-35
-#                chars starting 1 or 3, or bech32 bc1/tb1 | TON: EQ/UQ/kQ/0Q + 46 base64url chars, or 0:/-1: + 64 hex
-#   token        0x + 40 hex (EVM) | base58, 32-44 chars (Solana, Tron) | TON address as above
-#   block        a decimal block number (no leading zero, at most 12 digits) | 0x + 64 hex | 64 hex (block hash)
+# Level 3 (round 8, fixed table instead of a shared identifier union): a URL is a concrete public record only when its host is
+# in RECORD_ROUTES and its WHOLE path (an optional trailing slash aside, no other segments) is one of that explorer's own record
+# routes with an identifier in that explorer's network format. Route names are matched case-sensitively in lowercase.
+# Explorer hosts outside the table (multi-chain explorers such as blockscout.com, blockchair.com, oklink.com, and explorers whose
+# records live in the URL fragment, such as tronscan.org) and every other page on a listed explorer are level 2. There is no
+# guessing: an identifier of another network (a base58 string on an EVM explorer), a prefix before the route
+# (/unrelated/tx/<hash>), an API path or a sub-page (/address/<addr>/tokens) is level 2. Documented in CURATION.md.
 _B58 = '[1-9A-HJ-NP-Za-km-z]'
-_HEX64, _EVM_ADDR = '[0-9a-fA-F]{64}', '0x[0-9a-fA-F]{40}'
+_HEX64 = '[0-9a-fA-F]{64}'
+_EVM_TX, _EVM_ADDR, _HEX32_ID = f'0x{_HEX64}', '0x[0-9a-fA-F]{40}', f'0x{_HEX64}'
+_DEC = '0|[1-9][0-9]{0,11}'                                       # a block number or version: no leading zero, at most 12 digits
+_SOL_SIG, _SOL_ADDR = f'{_B58}{{86,88}}', f'{_B58}{{32,44}}'
+_BTC_ADDR = f'[13]{_B58}{{25,34}}|bc1[02-9ac-hj-np-z]{{11,71}}'
 _TON_ADDR = '[EUk0]Q[A-Za-z0-9_-]{46}|(?:0|-1):[0-9a-fA-F]{64}'
-RECORD_IDS = (
-    ('tx|txs|transactions?', f'0x{_HEX64}|{_HEX64}|{_B58}{{86,88}}|{_B58}{{43,44}}'),
-    ('address(?:es)?|accounts?', f'{_EVM_ADDR}|0x{_HEX64}|{_B58}{{32,44}}|[13]{_B58}{{25,34}}|(?:bc1|tb1)[02-9ac-hj-np-z]{{11,71}}|{_TON_ADDR}'),
-    ('tokens?', f'{_EVM_ADDR}|{_B58}{{32,44}}|{_TON_ADDR}'),
-    ('blocks?', f'0|[1-9][0-9]{{0,11}}|0x{_HEX64}|{_HEX64}'),
-)
-TX_PATH = re.compile('|'.join(f'/(?:{seg})/(?:{ident})(?=/|$)' for seg, ident in RECORD_IDS))
+# network -> {record kind: [(route prefix, identifier)]}
+NETWORK_ROUTES = {
+    'evm': {'tx': [('/tx/', _EVM_TX)], 'address': [('/address/', _EVM_ADDR)], 'token': [('/token/', _EVM_ADDR)],
+            'block': [('/block/', f'{_DEC}|{_EVM_TX}')]},
+    'solscan': {'tx': [('/tx/', _SOL_SIG)], 'address': [('/account/', _SOL_ADDR)], 'token': [('/token/', _SOL_ADDR)],
+                'block': [('/block/', _DEC)]},
+    'solana': {'tx': [('/tx/', _SOL_SIG)], 'address': [('/address/', _SOL_ADDR)], 'block': [('/block/', _DEC)]},
+    'bitcoin': {'tx': [('/tx/', _HEX64)], 'address': [('/address/', _BTC_ADDR)], 'block': [('/block/', f'{_HEX64}|{_DEC}')]},
+    'tonviewer': {'tx': [('/transaction/', _HEX64)], 'address': [('/', _TON_ADDR)]},
+    'tonscan': {'tx': [('/tx/', _HEX64)], 'address': [('/address/', _TON_ADDR)]},
+    'sui': {'tx': [('/mainnet/tx/', f'{_B58}{{43,44}}')], 'address': [('/mainnet/account/', _HEX32_ID)]},
+    'aptos': {'tx': [('/txn/', f'{_HEX32_ID}|{_DEC}')], 'address': [('/account/', _HEX32_ID)]},
+}
+_EVM_HOSTS = ('etherscan.io', 'optimistic.etherscan.io', 'sepolia.etherscan.io', 'basescan.org', 'sepolia.basescan.org', 'arbiscan.io',
+              'nova.arbiscan.io', 'polygonscan.com', 'zkevm.polygonscan.com', 'bscscan.com', 'celoscan.io', 'lineascan.build',
+              'scrollscan.com', 'snowtrace.io', 'ftmscan.com', 'gnosisscan.io', 'era.zksync.network', 'blastscan.io',
+              'eth.blockscout.com', 'base.blockscout.com', 'optimism.blockscout.com', 'gnosis.blockscout.com', 'kitescan.ai')
+# explorer host -> network (the explorer -> network map; every host here is also in EXPLORER_HOSTS)
+RECORD_ROUTES = {**{h: 'evm' for h in _EVM_HOSTS}, 'solscan.io': 'solscan', 'explorer.solana.com': 'solana', 'solana.fm': 'solana',
+                 'mempool.space': 'bitcoin', 'blockstream.info': 'bitcoin', 'tonviewer.com': 'tonviewer', 'tonscan.org': 'tonscan',
+                 'suiscan.xyz': 'sui', 'explorer.aptoslabs.com': 'aptos'}
+_ROUTE_RX = {net: {kind: re.compile('^(?:' + '|'.join(f'{re.escape(pre)}(?:{ident})' for pre, ident in rs) + ')/?$')
+                   for kind, rs in kinds.items()} for net, kinds in NETWORK_ROUTES.items()}
 # Public dashboards run by independent trackers (whole site is a dashboard).
 DASHBOARD_HOSTS = ('dune.com', 'chainward.ai', 'defillama.com', 'tokenterminal.com', 'x402scan.com')
 # Path segments of stats pages, dashboards and APIs.
@@ -116,6 +132,19 @@ def explorer_host(url):
     return _plain_netloc(u) and _bare_host(u) in EXPLORER_HOSTS
 
 
+def record_kind(url):
+    """'tx', 'address', 'token' or 'block' when the URL is a concrete record page under RECORD_ROUTES: https, a host in the
+    explorer -> network map (after a leading `www.`), no userinfo or port, no query or fragment, and the whole path is one of that
+    network's routes with an identifier in its format. None otherwise."""
+    if not isinstance(url, str) or not url.startswith('https://') or '?' in url or '#' in url:
+        return None
+    u = urlparse(url)
+    net = RECORD_ROUTES.get(_bare_host(u)) if _plain_netloc(u) else None
+    if not net:
+        return None
+    return next((kind for kind, rx in _ROUTE_RX[net].items() if rx.match(u.path or '')), None)
+
+
 def source_level(url):
     """Ladder level (1, 2 or 3) of one source URL, or None when there is no URL. Deterministic; ties go to the lower level."""
     if not url or not isinstance(url, str) or not url.startswith(('http://', 'https://')):
@@ -126,7 +155,7 @@ def source_level(url):
     if _host_in(host, TEXT_ONLY_HOSTS):
         return 1
     explorer = host in EXPLORER_HOSTS and _plain_netloc(u)  # exact allowlist, no subdomains, no userinfo or port, no "scan" guess
-    if explorer and u.scheme == 'https' and TX_PATH.search(path):
+    if explorer and record_kind(url):
         return 3
     if explorer:  # explorer stats, charts and other aggregate views
         return 2
@@ -293,17 +322,13 @@ def org_name_ok(names, orgs):
 # slash, nothing before or after it. Transactions and blocks are records too (ladder level 3), but they do not name the contract
 # that holds the funds; `/tx/<hash>/address/<addr>` or a query/fragment is rejected so the page shown is exactly that contract.
 # Segment names are lowercase and matched case-sensitively (/ADDRESS/ is rejected).
-CONTRACT_PATH = re.compile(r'^/(address|addresses|account|token)/(0x[0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})/?$')
-
-
 def contract_url_ok(url):
-    """contract_url is a level-3 explorer page of a specific address or token (not /tx/, /block/ or a stats page): printable
-    ASCII only, https, host exactly in EXPLORER_HOSTS, no userinfo, no port (not even :443), no query or fragment."""
+    """contract_url is a level-3 explorer page of one address or token (record_kind 'address' or 'token': not a transaction,
+    block or stats page): printable ASCII only, https, a host in the explorer -> network map, no userinfo, no port, no query or
+    fragment, and the whole path is that explorer's address or token route with an identifier of its network."""
     if not isinstance(url, str) or not ASCII_PRINTABLE.match(url):
         return False
-    u = urlparse(url)
-    return u.scheme == 'https' and url.startswith('https://') and _plain_netloc(u) and explorer_host(url) and source_level(url) == 3 and not u.query and not u.fragment and '?' not in url and '#' not in url \
-        and bool(CONTRACT_PATH.match(u.path or ''))
+    return record_kind(url) in ('address', 'token')
 
 
 def load_first_tasks(path=FIRST_TASKS_FILE):
@@ -445,7 +470,11 @@ RUN_PREFIXES = ('python3 ', 'python ', 'bash ', 'sh ', 'node ', 'ruby ', 'perl '
 #   - /c and /k (cmd.exe);
 #   - a heredoc `<<` (code fed on standard input).
 # `-m` (run an installed module) is not inline code; installs through it are caught by the install pattern below.
-# Interpreter-free forms are matched on their own: `eval `, `exec(` with an argument, PowerShell `iex` / `Invoke-Expression`.
+# Code on standard input (round 8): an interpreter token together with a pipe `|` or an input redirect `<` ANYWHERE in the same
+# field also fails (`printf 'puts 1' | ruby`, `perl < x`), for every interpreter in INTERPRETERS, as does an interpreter token
+# together with the word `exec` in any form.
+# Interpreter-free forms are matched on their own: the word `eval` in ANY form (`eval "..."`, `eval("...")`, `eval(`), `exec(`
+# with an argument, PowerShell `iex` / `Invoke-Expression`. Prose that uses the word "eval" fails too; write "evaluate".
 INTERPRETERS = ('python', 'py', 'pypy', 'bash', 'sh', 'zsh', 'dash', 'ksh', 'fish', 'pwsh', 'powershell', 'cmd', 'node', 'nodejs',
                 'deno', 'bun', 'perl', 'ruby', 'php', 'lua', 'osascript', 'rscript', 'tclsh')
 INTERPRETER_TOKEN = re.compile(
@@ -457,14 +486,16 @@ INLINE_FLAG = re.compile(
     r'|--(?:eval|print|command|exec|execute)(?![\w-])'  # long forms
     r'|/[ck](?![\w/.-])'                                # cmd.exe /c, /k
     r')|<<', re.I)
-INLINE_OTHER = re.compile(r'\beval\s|\bexec\s*\(\s*[^\s)]|\biex\b|\binvoke-expression\b', re.I)
+STDIN_OR_EXEC = re.compile(r'[|<]|\bexec\b', re.I)          # with an interpreter token: code on stdin, or exec in any form
+INLINE_OTHER = re.compile(r'\beval\b|\bexec\s*\(\s*[^\s)]|\biex\b|\binvoke-expression\b', re.I)
 
 
 def inline_exec(text):
-    """True when one text field runs inline code: an interpreter token and an inline-code flag anywhere in it, or an
-    interpreter-free form (eval, exec(...), iex, Invoke-Expression)."""
+    """True when one text field runs inline code: an interpreter token anywhere together with an inline-code flag, a pipe, an
+    input redirect or the word exec anywhere; or an interpreter-free form (eval in any form, exec(...), iex, Invoke-Expression)."""
     text = text or ''
-    return bool((INTERPRETER_TOKEN.search(text) and INLINE_FLAG.search(text)) or INLINE_OTHER.search(text))
+    return bool((INTERPRETER_TOKEN.search(text) and (INLINE_FLAG.search(text) or STDIN_OR_EXEC.search(text)))
+                or INLINE_OTHER.search(text))
 
 
 # Fail closed: free text in a first task may not fetch, install or pipe code. Code reaches a newcomer only through the structured

@@ -29,7 +29,7 @@ class EvidenceLadder(unittest.TestCase):
         # concrete public records with a checkable identifier: transaction hash, address or account, token contract, block
         for u in ('https://basescan.org/tx/' + self.TX, 'https://etherscan.io/address/0x' + 'a' * 40, 'https://solscan.io/account/' + self.SOL[:44],
                   'https://explorer.solana.com/tx/' + self.SOL, 'https://optimistic.etherscan.io/tx/' + self.TX,
-                  'https://kitescan.ai/api/v2/addresses/0x' + 'd' * 40, 'https://kitescan.ai/tx/' + self.TX,
+                  'https://kitescan.ai/tx/' + self.TX,
                   'https://mempool.space/tx/' + 'ab' * 32, 'https://mempool.space/block/840000', 'https://basescan.org/token/0x' + 'e' * 40,
                   'https://www.basescan.org/tx/' + self.TX):
             self.assertEqual(cv2.source_level(u), 3, u)
@@ -70,30 +70,47 @@ class EvidenceLadder(unittest.TestCase):
                   'https://example.com/tx/0x' + 'c' * 64):  # a tx-looking path on a host that is no explorer stays text
             self.assertEqual(cv2.source_level(u), 1, u)
 
-    def test_level_3_needs_a_well_formed_identifier_per_page_type(self):
-        """Round 7: the identifier must have the shape of its page type; anything else on an explorer is level 2."""
+    def test_level_3_needs_the_explorers_own_route_and_network_format(self):
+        """Round 8: level 3 only when the whole path is one of the explorer's own record routes (RECORD_ROUTES) with an identifier
+        of that explorer's network; everything else on an explorer is level 2."""
         h64 = 'ab' * 32
         good = ('https://etherscan.io/tx/0x' + h64, 'https://mempool.space/tx/' + h64, 'https://explorer.solana.com/tx/' + self.SOL,
                 'https://suiscan.xyz/mainnet/tx/' + self.SOL[:44], 'https://etherscan.io/address/0x' + 'A' * 40,
                 'https://suiscan.xyz/mainnet/account/0x' + h64, 'https://solscan.io/account/' + self.SOL[:44],
-                'https://tronscan.org/address/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf', 'https://mempool.space/address/bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
-                'https://mempool.space/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 'https://tonviewer.com/address/EQ' + 'A' * 46,
+                'https://mempool.space/address/bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
+                'https://blockstream.info/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 'https://tonviewer.com/EQ' + 'A' * 46,
                 'https://tonscan.org/address/0:' + h64, 'https://basescan.org/token/0x' + 'e' * 40, 'https://solscan.io/token/' + self.SOL[:43],
                 'https://etherscan.io/block/0', 'https://etherscan.io/block/19000000', 'https://mempool.space/block/' + '0' * 8 + 'ab' * 28,
-                'https://kitescan.ai/api/v2/transactions/0x' + h64, 'https://kitescan.ai/api/v2/addresses/0x' + 'd' * 40,
-                'https://etherscan.io/tx/0x' + h64 + '/', 'https://etherscan.io/address/0x' + 'a' * 40 + '/tokens')
+                'https://explorer.aptoslabs.com/txn/123456', 'https://explorer.aptoslabs.com/account/0x' + h64,
+                'https://kitescan.ai/address/0x' + 'd' * 40, 'https://etherscan.io/tx/0x' + h64 + '/')
         for u in good:
             self.assertEqual(cv2.source_level(u), 3, u)
-        bad = ('https://etherscan.io/tx/1', 'https://etherscan.io/tx/0x1', 'https://etherscan.io/tx/0x' + 'a' * 63,
+        bad = (# malformed identifiers (round 7)
+               'https://etherscan.io/tx/1', 'https://etherscan.io/tx/0x1', 'https://etherscan.io/tx/0x' + 'a' * 63,
                'https://etherscan.io/tx/0x' + 'a' * 65, 'https://etherscan.io/tx/0x' + 'g' * 64, 'https://etherscan.io/tx/0x' + 'a' * 40,
                'https://etherscan.io/tx/12345678', 'https://explorer.solana.com/tx/' + self.SOL[:60],
                'https://etherscan.io/address/1', 'https://etherscan.io/address/0x' + 'a' * 39, 'https://etherscan.io/address/0x' + 'a' * 41,
-               'https://etherscan.io/address/0x12345678', 'https://solscan.io/account/x', 'https://solscan.io/account/' + '0' * 40,
-               'https://basescan.org/token/12345', 'https://basescan.org/token/0x' + 'e' * 39, 'https://etherscan.io/block/01',
-               'https://etherscan.io/block/1234567890123', 'https://etherscan.io/block/0x12', 'https://basescan.org/tx/0x1',
-               'https://kitescan.ai/api/v2/addresses/1', 'https://tonviewer.com/address/EQ' + 'A' * 45)
+               'https://solscan.io/account/x', 'https://solscan.io/account/' + '0' * 40, 'https://basescan.org/token/12345',
+               'https://etherscan.io/block/01', 'https://etherscan.io/block/1234567890123', 'https://etherscan.io/block/0x12',
+               # another network's format on this explorer (Codex round 8)
+               'https://etherscan.io/tx/' + '1' * 44, 'https://etherscan.io/address/' + '1' * 44, 'https://basescan.org/address/' + 'A' * 32,
+               'https://etherscan.io/tx/' + self.SOL, 'https://etherscan.io/tx/' + h64, 'https://solscan.io/tx/0x' + h64,
+               'https://solscan.io/account/0x' + 'a' * 40, 'https://mempool.space/tx/0x' + h64, 'https://mempool.space/address/0x' + 'a' * 40,
+               'https://tonscan.org/address/0x' + 'a' * 40,
+               # not the explorer's own route: a prefix, a suffix, another route name, an API path (Codex round 8)
+               'https://etherscan.io/unrelated/tx/0x' + h64, 'https://etherscan.io/en/address/0x' + 'a' * 40,
+               'https://etherscan.io/address/0x' + 'a' * 40 + '/tokens', 'https://etherscan.io/tx/0x' + h64 + '//',
+               'https://etherscan.io/transaction/0x' + h64, 'https://etherscan.io/account/0x' + 'a' * 40, 'https://solscan.io/address/' + self.SOL[:44],
+               'https://kitescan.ai/api/v2/addresses/0x' + 'd' * 40, 'https://kitescan.ai/api/v2/transactions/0x' + h64,
+               'https://etherscan.io/tx/0x' + h64 + '?a=1', 'https://suiscan.xyz/testnet/tx/' + self.SOL[:44],
+               # explorers outside the explorer -> network map (multi-chain, or records in the fragment)
+               'https://blockscout.com/tx/0x' + h64, 'https://blockchair.com/bitcoin/transaction/' + h64,
+               'https://oklink.com/eth/tx/0x' + h64, 'https://tronscan.org/address/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
+               'https://explorer.hiro.so/txid/0x' + h64)
         for u in bad:
             self.assertEqual(cv2.source_level(u), 2, u)
+        # the map is part of the allowlist
+        self.assertTrue(set(cv2.RECORD_ROUTES) <= set(cv2.EXPLORER_HOSTS))
 
     def test_no_source_no_level(self):
         self.assertIsNone(cv2.source_level(None))
@@ -241,6 +258,7 @@ class KeysAndBooks(unittest.TestCase):
         for why, v in bad.items():
             self.assertTrue(cv2.validate_keys_books({'demo': {'keys': v}}, {'demo': self.CARD}, orgs=[]), why)
         for good in (addr, 'https://basescan.org/token/0x' + 'e' * 40, 'https://etherscan.io/address/0x' + 'a' * 40 + '/',
+                     'https://explorer.solana.com/address/' + EvidenceLadder.SOL[:44], 'https://tonviewer.com/EQ' + 'A' * 46,
                      'https://solscan.io/account/' + EvidenceLadder.SOL[:44]):
             self.assertTrue(cv2.contract_url_ok(good), good)
             self.assertEqual(cv2.validate_keys_books({'demo': {'keys': k | {'contract_url': good}}}, {'demo': self.CARD}, orgs=[]), [], good)
@@ -252,6 +270,8 @@ class KeysAndBooks(unittest.TestCase):
                         'https://etherscan.io/address/0x' + 'a' * 40 + '//',
                         'https://etherscan.io/address/0x' + 'a' * 40 + '/tokens',
                         'https://etherscan.io/en/address/0x' + 'a' * 40,
+                        # an address of another network on this explorer (Codex round 8)
+                        'https://basescan.org/address/' + 'A' * 32, 'https://solscan.io/account/0x' + 'a' * 40,
                         # https and an exact explorer host only
                         'https://evilscan.example/address/0x' + 'a' * 40, 'http://basescan.org/address/0x' + 'a' * 40,
                         'https://evil.basescan.org/address/0x' + 'a' * 40, 'https://explorer.evil.example/address/0x' + 'a' * 40,
@@ -524,6 +544,30 @@ class FirstTask(unittest.TestCase):
         for text in ('Check it with sha256sum -c and read the output', 'Run `python3 tool.py --selftest`', 'Read python.org and node.js docs',
                      'Open the dashboard', 'The -c flag of the checker is optional', 'Install Python 3 in a fresh venv',
                      'Run `python3 tool.py rec_01m1hbq666jjjyfw7s6tf7h2rd`', 'Use a .py file', 'Send an e-mail to the cmd-line team'):
+            self.assertFalse(cv2.inline_exec(text), text)
+
+    def test_inline_execution_eval_and_stdin(self):
+        """Round 8: `eval` in any form, and an interpreter token with a pipe, an input redirect or `exec` anywhere, fail."""
+        base = {k: v for k, v in self._task().items() if k != 'code'}
+        inline = ('Call eval("print(1)")', 'Call eval(code)', "Type `eval('1')`", 'Use EVAL(x)', "Run `printf 'puts 1' | ruby`",
+                  'Run `echo 1 | perl`', 'Run `cat x.php | php`', 'Run `echo 1|lua`', 'Run `ruby < script.txt`', 'Run `perl <x`',
+                  'Run `cat x | /usr/bin/env tclsh`', 'Run `Rscript < x.R`', 'Run `osascript < x`', 'Run `echo 1 | deno`',
+                  'Run `python3` then exec the pasted text', 'Pipe the text into node: `| node`')
+        fields = ('title', 'verification', 'steps', 'done_when', 'no_code', 'contributed_by', 'contributed_via', 'verified_by')
+        for text in inline:
+            self.assertTrue(cv2.inline_exec(text), text)
+            for field in fields:
+                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
+                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), (field, text))
+            for t in (self._task(sandbox='Work in a clean sandbox without secrets. ' + text),
+                      self._task(run=[{'cmd': 'python3 tool.py', 'then': text}])):
+                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), text)
+        # fail closed by design: prose with an interpreter name and a pipe or "<" in one field is rejected too
+        for text in ('Python | fine', 'The ruby page lists a < b'):
+            self.assertTrue(cv2.inline_exec(text), text)
+        # a pipe or redirect without an interpreter, and evaluate/executor words, pass
+        for text in ('Check it with `sha256sum -c` | read the output', 'Open the page < 1 minute', 'Evaluate the result',
+                     'The executor prints OK', 'Read the medieval page', 'Run `python3 tool.py --selftest`'):
             self.assertFalse(cv2.inline_exec(text), text)
 
     def test_published_first_tasks_still_pass(self):
