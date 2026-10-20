@@ -13,12 +13,15 @@ import { pruneLinkChecks } from './link-check';
 import { recountAll, refreshWindows } from './counters';
 import { logAiBotVisit, pruneAiBotVisits } from './ai-bots';
 import { handleLab } from './lab';
+import { MCP_PATH, handleMcp, wantsMcpPage } from './mcp/server';
 
 async function handle(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
   // Public SSR pages, assets, robots.txt and sitemap.xml: everything outside /v1/* and /health.
   // These run before the /v1 Content-Length check below; every body they read goes through the streaming byte-counting
   // readers in src/http.ts (readBodyCapped / readTextCapped: /lab/beat 1 KB, /login and /logout 4 KB, write forms 128 KB).
+  // MCP server (src/mcp/server.ts): POST /mcp; a browser or Markdown GET of /mcp is the docs page (src/pages/router.ts)
+  if (url.pathname === MCP_PATH && !wantsMcpPage(request)) return handleMcp(request, env, exec, route);
   const lab = await handleLab(request, env);
   if (lab) return lab;
   const page = await handlePage(request, env, exec);

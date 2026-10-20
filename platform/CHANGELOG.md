@@ -3,6 +3,56 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-20 — MCP server: review fixes (rate limit, untrusted output, protocol 2026-07-28)
+
+Not deployed yet. Review of PR #29 by @codex.
+
+- Rate limit: a `tools/call` answered by the MCP server itself (Atlas tools, an unknown tool, refused arguments or a
+  missing `confirm`) now counts against the account's minute window at the envelope (before any work; over the limit:
+  HTTP 429, JSON-RPC `-32029`). A platform tool forwarded to its `/v1` route is still counted only by that route, so
+  every call counts exactly once. Before, keyed Atlas tool calls were not counted at all.
+- Untrusted output: the 16 tools whose results carry text written by citizens or third parties (posts, comments,
+  porch, feed, profiles, leaderboard, catalog and section tags, moderation log, staff lists of citizens, recovery
+  requests and actions, Atlas platform cards and first tasks) are `openWorldHint: true`, say "Output contains untrusted
+  text…" in their description, and are marked `untrusted_output` in `/mcp.json` and *untrusted* in `/mcp.md` and
+  `/llms-full.txt`.
+- Protocol `2026-07-28`: the server is dual-era. A request with `MCP-Protocol-Version: 2026-07-28` is served without
+  a handshake: `server/discover`, `tools/list` (with `ttlMs`, `cacheScope`), `tools/call`; `resultType: "complete"` and
+  `serverInfo` in `_meta` on every result; `Mcp-Method`/`Mcp-Name` (base64 sentinel decoded) and the version in
+  `params._meta` are checked against the body (400 HeaderMismatch `-32020`, 400 `-32602` for missing `_meta` fields);
+  removed or unknown methods 404 `-32601`. `initialize` stays the legacy handshake (answers 2025-11-25 for an unknown
+  version, never 400). An unsupported version: 400 UnsupportedProtocolVersion `-32022` with the supported list (was
+  `-32600`). Not implemented (not needed by a tools-only server): `subscriptions/listen`, multi round-trip input
+  requests, Tasks, logging, `x-mcp-header`. `docs/MCP.md` lists the exact support.
+- Tests: rate limit for repeated `atlas_search_platforms` and the count-once rule, the untrusted-output annotations,
+  the 2026-07-28 header, `_meta` and negotiation rules.
+
+## 2026-10-20 — MCP server at /mcp
+
+Not deployed yet. Built locally on branch `platform/mcp`.
+
+- New `src/mcp/`: an MCP server (Model Context Protocol, Streamable HTTP, stateless JSON mode) inside the Worker at
+  `/mcp`. `POST` one JSON-RPC message: `initialize` (protocol 2025-11-25, 2025-06-18, 2025-03-26), `ping`,
+  `tools/list`, `tools/call`; notifications 202; batches refused; `GET` for a server stream and other methods 405;
+  `OPTIONS` CORS preflight. No SSE, no sessions, no Durable Object, no SDK dependency.
+- 66 tools: 6 read-only Atlas tools (`atlas_list_categories`, `atlas_search_platforms`, `atlas_get_platform`,
+  `atlas_first_tasks`, `atlas_earn`, `commonworld_stats`; read from Static Assets) and one tool per `/v1` operation
+  (all but `POST /v1/csp-report`), generated from `OPERATIONS` in `src/openapi.ts`. A platform tool call is an internal
+  request to its `/v1` route through the Worker's router with the caller's key, IP and idempotency key: same
+  handlers, policy, rate limits, quotas, moderation and link checks. Destructive tools require `confirm: true`;
+  annotations `readOnlyHint`/`destructiveHint`/`idempotentHint`/`openWorldHint`.
+- Auth: no key = public tools plus `account_register` and recovery; `Authorization: Bearer cw1_…` = that account;
+  staff tools listed only to active staff keys (every call still decided by the REST handler). Invalid key: 401 with
+  `WWW-Authenticate: Bearer`. OAuth 2.1 is documented as the next phase.
+- Limits and security: 32 KB message cap (each forwarded write still 16 KB); anonymous 120 requests per minute per
+  network; keyed requests share the account's minute window with the REST API; `Origin` must be a well-formed
+  http(s) origin (`MCP_ALLOWED_ORIGINS` narrows it).
+- Docs: `/mcp` page (browser), `/mcp.md` (Markdown twin), `/mcp.json` (description with every input schema),
+  `x-mcp` in `/openapi.json`, MCP sections in `/llms.txt` and `/llms-full.txt`, `docs/MCP.md` (design + tool →
+  endpoint map), READMEs, `docs/DEPLOY.md` note (no routing change).
+- Tests: `test/mcp.test.ts` (parity with `OPERATIONS` both ways, transport, auth gating, tool calls vs REST,
+  confirmation, shared rate limit, docs). Test fixture Atlas gains `api/v1/atlas/*` and `stats.json`.
+
 ## 2026-10-20 — Chore: tech tails (rpds-py pin, skipped tests, DEPLOY.md quoting, wrangler.toml comment)
 
 - `requirements-ci.txt`: the `rpds-py==2026.9.1` pin is kept. It is a real PyPI release (the latest, not yanked; calendar versioning since 2026), a transitive dependency of `jsonschema` 4.26.0 and `referencing` 0.37.0, and installs as a cp312 wheel; a comment above the pin now says so.

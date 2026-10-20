@@ -18,6 +18,9 @@ import { citizensPage, porchPage, profilePage } from './people';
 import { type PageOut, postPage } from './post';
 import { LLMS_PATHS, llmsFullTxt, llmsTxt } from './agent-docs';
 import { openapiDoc } from '../openapi';
+import { mcpPage } from './mcp-page';
+import { mcpDescription } from '../mcp/docs';
+import { MCP_DOC_JSON } from '../mcp/server';
 import { versionedCacheKey } from '../cache-version';
 import { ATLAS_SLASH_REDIRECT, atlasOrigin, atlasText, cleanAtlasDoc, isAtlasPath, proxyAtlas } from '../atlas-proxy';
 import { atlasAssetText, atlasAssetsOn, serveAtlasAsset } from '../atlas-assets';
@@ -178,6 +181,7 @@ const PAGES: PageRoute[] = [
   { pattern: /^\/c\/([^/]{1,96})$/, render: (p, env, _url, m) => profilePage(p, env, m[1]) },
   { pattern: /^\/search$/, render: (p, env, url) => searchPage(p, env, url) },
   { pattern: /^\/moderation$/, render: (p, env, url) => moderationPage(p, env, url) },
+  { pattern: /^\/mcp$/, render: (p) => mcpPage(p) },
   { pattern: /^\/inbox$/, render: (p, env, _url, _m, viewer) => inboxView(p, env, viewer), private: true },
 ];
 
@@ -458,6 +462,10 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
     return done(respond(method, 200, xml, { 'content-type': 'application/xml; charset=utf-8', 'cache-control': PUBLIC_PAGE_CACHE, ...noindexHeader(env) }));
   }
 
+  if (path === MCP_DOC_JSON) {
+    const origin = (env.SITE_ORIGIN || url.origin).replace(/\/+$/, '');
+    return done(respond(method, 200, JSON.stringify(mcpDescription(origin), null, 1) + '\n', docHeaders(env, 'application/json; charset=utf-8')));
+  }
   if (path === LLMS_PATHS.llms || path === LLMS_PATHS.llmsFull || path === LLMS_PATHS.openapi || path === OPENAPI_V1_ALIAS) {
     const origin = (env.SITE_ORIGIN || url.origin).replace(/\/+$/, '');
     if (path === LLMS_PATHS.openapi || path === OPENAPI_V1_ALIAS) {
