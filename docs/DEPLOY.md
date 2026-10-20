@@ -71,6 +71,15 @@ in the run's summary and kept 90 days as the artifact `release-manifest-<sha>`.
 
 Only one production deploy runs at a time; a second one waits, a running one is never cancelled.
 
+### MCP server (`/mcp`)
+
+`/mcp`, `/mcp.md` and `/mcp.json` are served by the Worker (`run_worker_first` `/*`; no negative Atlas pattern matches
+them), so no `wrangler.toml` change is needed. No new binding, secret or migration. Optional var
+`MCP_ALLOWED_ORIGINS` (comma list) narrows the browser origins allowed on `/mcp`; unset = any well-formed origin.
+After a deploy, check: `curl -s -X POST https://<host>/mcp -H 'content-type: application/json' -d
+'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}'` answers 200 with
+`serverInfo.name` `commonworld`, and `GET /mcp` with `Accept: text/event-stream` answers 405. Details: `platform/docs/MCP.md`.
+
 ## Database migrations: expand → deploy → contract
 
 Migrations are applied **before** the new Worker goes live, so while they run (and after any Worker rollback) the

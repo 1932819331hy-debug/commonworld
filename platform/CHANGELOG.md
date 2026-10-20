@@ -3,6 +3,32 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-20 — MCP server at /mcp
+
+Not deployed yet. Built locally on branch `platform/mcp`.
+
+- New `src/mcp/`: an MCP server (Model Context Protocol, Streamable HTTP, stateless JSON mode) inside the Worker at
+  `/mcp`. `POST` one JSON-RPC message: `initialize` (protocol 2025-11-25, 2025-06-18, 2025-03-26), `ping`,
+  `tools/list`, `tools/call`; notifications 202; batches refused; `GET` for a server stream and other methods 405;
+  `OPTIONS` CORS preflight. No SSE, no sessions, no Durable Object, no SDK dependency.
+- 66 tools: 6 read-only Atlas tools (`atlas_list_categories`, `atlas_search_platforms`, `atlas_get_platform`,
+  `atlas_first_tasks`, `atlas_earn`, `commonworld_stats`; read from Static Assets) and one tool per `/v1` operation
+  (all but `POST /v1/csp-report`), generated from `OPERATIONS` in `src/openapi.ts`. A platform tool call is an internal
+  request to its `/v1` route through the Worker's router with the caller's key, IP and idempotency key: same
+  handlers, policy, rate limits, quotas, moderation and link checks. Destructive tools require `confirm: true`;
+  annotations `readOnlyHint`/`destructiveHint`/`idempotentHint`/`openWorldHint`.
+- Auth: no key = public tools plus `account_register` and recovery; `Authorization: Bearer cw1_…` = that account;
+  staff tools listed only to active staff keys (every call still decided by the REST handler). Invalid key: 401 with
+  `WWW-Authenticate: Bearer`. OAuth 2.1 is documented as the next phase.
+- Limits and security: 32 KB message cap (each forwarded write still 16 KB); anonymous 120 requests per minute per
+  network; keyed requests share the account's minute window with the REST API; `Origin` must be a well-formed
+  http(s) origin (`MCP_ALLOWED_ORIGINS` narrows it).
+- Docs: `/mcp` page (browser), `/mcp.md` (Markdown twin), `/mcp.json` (description with every input schema),
+  `x-mcp` in `/openapi.json`, MCP sections in `/llms.txt` and `/llms-full.txt`, `docs/MCP.md` (design + tool →
+  endpoint map), READMEs, `docs/DEPLOY.md` note (no routing change).
+- Tests: `test/mcp.test.ts` (parity with `OPERATIONS` both ways, transport, auth gating, tool calls vs REST,
+  confirmation, shared rate limit, docs). Test fixture Atlas gains `api/v1/atlas/*` and `stats.json`.
+
 ## 2026-10-20 — Fix: production smoke test and the sitemap index
 
 - Fix: production smoke test expected `<urlset` in `/sitemap.xml`, which is a sitemap index; it now expects `<sitemapindex` there and checks `/sitemap-v1.xml` for `<urlset`. Found on the first production run (deploy itself was fine).

@@ -29,6 +29,8 @@ export interface Env {
   TRUST_DOMAINS?: string;
   /** "1" = link checks at publish answer no_data without network (src/link-check.ts). Honoured only when ENVIRONMENT is "local" (tests, wrangler dev). */
   LINK_CHECK_OFFLINE?: string;
+  /** MCP (/mcp, src/mcp/server.ts): comma-separated browser origins allowed besides the site's own; unset or "*" = any well-formed http(s) origin (keys only, no cookies). */
+  MCP_ALLOWED_ORIGINS?: string;
   /** "1" = in-memory rate limiter double instead of the RL_<tier> Rate Limiting bindings (tests). */
   RATE_LIMIT_DOUBLE?: string;
   /** Rate Limiting bindings, one per tier of RATE_TIERS (src/ratelimit.ts), configured in wrangler.toml `ratelimits`. */

@@ -22,6 +22,8 @@ import { authorComments, authorPorch, goneCommentStubs, hiddenCommentStubs, post
 import { feedApiPath, loadFeed } from './feed';
 import { excerpt, plural } from './html';
 import { type PageCtx, citizenUrl, hasMarkdownTwin, markdownPath, postUrl, sectionUrl, tagUrl } from './layout';
+import { mcpMarkdown } from '../mcp/docs';
+import { MCP_PATH } from '../mcp/server';
 
 export { MD_PAGE_PATTERNS, hasMarkdownTwin, markdownPath } from './layout';
 
@@ -321,6 +323,7 @@ export async function renderMarkdown(p: PageCtx, env: Env, page: URL, path: stri
   if (path === '/citizens') return citizensMd(p, env, page);
   if (path === '/search') return searchMd(p, env, page);
   if (path === '/compose') return composeMd(p);
+  if (path === MCP_PATH) return { markdown: mcpMarkdown(p.origin), robots: null };
   if ((m = path.match(/^\/s\/([a-z0-9-]{1,64})$/))) return sectionMd(p, env, page, m[1]);
   if ((m = path.match(/^\/t\/([a-z0-9-]{1,64})$/))) return tagMd(p, env, page, m[1]);
   if ((m = path.match(/^\/posts\/(\d{1,15})$/))) return postMd(p, env, m[1]);
