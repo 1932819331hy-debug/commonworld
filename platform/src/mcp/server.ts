@@ -228,7 +228,7 @@ export function protocolEra(request: Request, method: string, params: Record<str
   // modern request
   if (metaVersion !== undefined && typeof metaVersion === 'string' && !(MCP_PROTOCOL_VERSIONS as readonly string[]).includes(metaVersion)) return unsupported(metaVersion);
   if (headerVersion === null) return mismatch('MCP-Protocol-Version header is required');
-  if (metaVersion === undefined || meta[META_CAPS] === undefined || typeof meta[META_CAPS] !== 'object' || meta[META_CAPS] === null) {
+  if (metaVersion === undefined || meta[META_CAPS] === undefined || typeof meta[META_CAPS] !== 'object' || meta[META_CAPS] === null || Array.isArray(meta[META_CAPS])) {
     return { modern: true, version: headerVersion, error: { status: 400, code: RPC.invalidParams, message: `params._meta must carry ${META_VERSION} and ${META_CAPS}` } };
   }
   if (metaVersion !== headerVersion) return mismatch(`MCP-Protocol-Version header value '${headerVersion}' does not match body value '${String(metaVersion).slice(0, 32)}'`);

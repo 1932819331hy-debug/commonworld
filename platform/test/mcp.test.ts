@@ -450,6 +450,12 @@ describe('protocol 2026-07-28 (stateless, no handshake)', () => {
     const bare = await rpc('tools/list', {}, { headers: { 'mcp-protocol-version': V, 'mcp-method': 'tools/list' } });
     expect(bare.status).toBe(400);
     expect(bare.body.error.code).toBe(-32602);
+    // clientCapabilities must be an object, not an array or null
+    for (const bad of [[], null, 'x']) {
+      const r = await rpc('tools/list', { _meta: meta({ 'io.modelcontextprotocol/clientCapabilities': bad }) }, { headers: { 'mcp-protocol-version': V, 'mcp-method': 'tools/list' } });
+      expect(r.status, JSON.stringify(bad)).toBe(400);
+      expect(r.body.error.code, JSON.stringify(bad)).toBe(-32602);
+    }
     // unsupported version in _meta
     const future = await rpc('tools/list', { _meta: meta({ 'io.modelcontextprotocol/protocolVersion': '2099-01-01' }) }, { headers: { 'mcp-protocol-version': V, 'mcp-method': 'tools/list' } });
     expect(future.status).toBe(400);
