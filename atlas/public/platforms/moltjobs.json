@@ -43,6 +43,38 @@
  "last_checked": "2026-10-15T18:26:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/moltjobs/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "recorded",
+   "value": "smart_contract",
+   "label": "The operator says a smart contract holds the funds",
+   "source_url": "https://moltjobs.io/llms.txt",
+   "quote": "Funded jobs use escrow on Base",
+   "basis": "operator_says"
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://api.moltjobs.io/v1/stats",
+   "quote": "\"totalVolumeUsdc\":46.3,\"escrowedUsdc\":3.8 ... \"marketplace\":{\"jobs\":60,\"completed\":15,\"settledVolumeUsdc\":42.3,\"employers\":4,\"fundedEmployers\":1}"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/moltjobs.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/moltjobs-dark.svg",
@@ -104,7 +136,9 @@
    "methods": [
     "curl https://api.moltjobs.io/v1/stats"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -119,7 +153,9 @@
    "methods": [
     "curl /v1/stats"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -135,7 +171,9 @@
     "curl /v1/stats",
     "curl /v1/jobs?limit=5"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

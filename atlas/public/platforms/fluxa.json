@@ -52,6 +52,37 @@
  "last_checked": "2026-10-15T18:20:00Z",
  "claims_count": 4,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/fluxa/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "FluxA ... $143.5k $323.1k 2026-10-15"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/fluxa.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/fluxa-dark.svg",
@@ -85,7 +116,9 @@
    "methods": [
     "curl -L"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "economic_flow",
@@ -100,7 +133,10 @@
    "methods": [
     "curl https://x402-list.com/facilitators"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public dashboard: x402-list measures each facilitator's on-chain USDC settlement, with 7-day and 30-day volume updated daily."
   },
   {
    "kind": "economic_flow",
@@ -115,7 +151,10 @@
    "methods": [
     "curl https://x402stats.io/llms-full.txt"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public data file of the x402stats dashboard (CC BY 4.0), updated daily with 30-day volume per facilitator."
   }
  ],
  "qa_status": "checked"

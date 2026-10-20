@@ -33,6 +33,37 @@
  "last_checked": "2026-10-15T18:19:00Z",
  "claims_count": 3,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/thirdweb-x402/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 2
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://x402-list.com/facilitators",
+   "quote": "Thirdweb ... $31.11 $179.75 2026-10-15"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/thirdweb-x402.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/thirdweb-x402-dark.svg",
@@ -66,7 +97,9 @@
    "methods": [
     "GitHub API"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "economic_flow",
@@ -81,7 +114,10 @@
    "methods": [
     "curl https://x402-list.com/facilitators"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Independent public dashboard: x402-list measures each facilitator's on-chain USDC settlement, with 7-day and 30-day volume updated daily."
   }
  ],
  "qa_status": "checked"

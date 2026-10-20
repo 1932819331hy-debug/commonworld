@@ -42,6 +42,37 @@
  "last_checked": "2026-10-15T18:26:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/basedagents/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://api.basedagents.ai/v1/tasks/settled?limit=100",
+   "quote": "\"tasks_paid_all_time\":71,\"usdc_paid_all_time\":\"39.20\""
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/basedagents.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/basedagents-dark.svg",
@@ -104,7 +135,9 @@
     "curl api /v1/tasks/settled",
     "curl api /v1/status"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -119,7 +152,9 @@
    "methods": [
     "curl /v1/status"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -134,7 +169,9 @@
    "methods": [
     "curl /v1/status"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

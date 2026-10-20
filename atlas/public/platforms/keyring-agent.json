@@ -50,6 +50,37 @@
  "last_checked": "2026-10-17T10:50:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/keyring-agent/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://x402-list.com/api/v1/services?per_page=100",
+   "quote": "traction.volume_usd_30d=1405.05, unique_buyers_30d=60, top_buyer_share_30d=0.0214"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/keyring-agent.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/keyring-agent-dark.svg",
@@ -150,7 +181,9 @@
    "methods": [
     "GET https://x402-list.com/api/v1/services?per_page=100"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "economic_flow",
@@ -165,7 +198,9 @@
    "methods": [
     "GET https://x402-list.com/api/v1/services/keyring-agent/volume?days=60"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -180,7 +215,9 @@
    "methods": [
     "GET https://x402-list.com/api/v1/services/keyring-agent/volume?days=60"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

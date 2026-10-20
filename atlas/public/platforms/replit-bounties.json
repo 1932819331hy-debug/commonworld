@@ -23,6 +23,37 @@
  "last_checked": "2026-10-15T18:33:00Z",
  "claims_count": 2,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/replit-bounties/index.md",
+ "evidence_level": {
+  "level": null,
+  "id": null,
+  "label": "not recorded yet",
+  "claims_counted": 0
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Closed · history",
  "badge_svg": "https://commonworld.one/atlas/badge/replit-bounties.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/replit-bounties-dark.svg",

@@ -24,6 +24,37 @@
  "last_checked": "2026-10-15T18:15:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/agentic-commerce-protocol-openai-stripe/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/agentic-commerce-protocol-openai-stripe.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/agentic-commerce-protocol-openai-stripe-dark.svg",
@@ -84,7 +115,9 @@
    "quote": "pushed_at 2026-07-18",
    "observed_at": "2026-10-15T18:15:00Z",
    "methods": [],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "description",

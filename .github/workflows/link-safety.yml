@@ -66,7 +66,8 @@ jobs:
           else
             if [ "${{ steps.check.outputs.removed }}" != "0" ]; then
               echo "::error::build check failed after the removal; committing only the report, a curator step is needed"
-              git checkout -- atlas/data/removed.json atlas/data/snapshot-verified-*.json atlas/data/census-tags-*.json atlas/public 2>/dev/null || true
+              git checkout -- atlas/data/removed.json atlas/data/snapshot-verified-*.json atlas/data/census-tags-*.json \
+                atlas/data/first-tasks.json atlas/data/keys-and-books.json atlas/data/evidence-levels.json atlas/public 2>/dev/null || true
             fi
             git add atlas/data/link-safety.json
             msg="atlas: daily link safety report $(date -u +%F)"

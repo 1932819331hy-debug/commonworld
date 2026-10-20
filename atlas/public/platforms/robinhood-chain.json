@@ -20,6 +20,37 @@
  "last_checked": "2026-10-15T18:08:00Z",
  "claims_count": 3,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/robinhood-chain/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/robinhood-chain.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/robinhood-chain-dark.svg",
@@ -69,7 +100,9 @@
     "curl x402-list stats API",
     "curl dexter.cash"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "not_sampled"

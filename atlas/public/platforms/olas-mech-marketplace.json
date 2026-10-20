@@ -43,6 +43,37 @@
  "last_checked": "2026-10-15T21:40:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/olas-mech-marketplace/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/olas-mech-marketplace.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/olas-mech-marketplace-dark.svg",
@@ -130,7 +161,9 @@
      "qa-agent-a-0124"
     ],
     "finding": "The current page displays $109,994 total marketplace turnover as of Oct 15, compared with the claim’s $109,992."
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -167,7 +200,9 @@
     "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:olas-mech-marketplace:metric:3"
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "recent_activity",
@@ -182,7 +217,9 @@
    "methods": [
     "curl -sL https://olas.network/mech-marketplace"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

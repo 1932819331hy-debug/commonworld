@@ -2,17 +2,39 @@
 jsonschema library (Draft 2020-12 + FormatChecker). CI-only: install requirements-ci.txt first.
 
 Usage: python atlas/site/tools/validate_jsonschema.py [path/to/dist/api/v1]
-Exit code 1 on any error. check.py imports validator_for_dir() from here when jsonschema is installed.
+Exit code 1 on any error. check.py imports make_validators() from here when jsonschema is installed.
+
+Two Commonworld rules on top of the library: `pattern` keeps its ECMA-262 meaning ($ = end of the string; the library's
+re.search would let `$` match before a trailing newline), via api_v1.ecma_pattern; and the cw-* formats call the runtime checks
+in cards_v2.SCHEMA_FORMATS (cw-https-url -> https_url_ok, cw-label, cw-task-text), so schema validation and the build agree.
 """
 import json
 import os
 import sys
 
-from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema import Draft202012Validator, FormatChecker, ValidationError, validators
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT202012
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, '..'))
+import api_v1  # noqa: E402
+from cards_v2 import SCHEMA_FORMATS  # noqa: E402
+
+
+def _ecma_pattern(validator, patrn, instance, schema):
+    if validator.is_type(instance, 'string') and not api_v1.pattern_ok(patrn, instance):
+        yield ValidationError(f'{instance!r} does not match {patrn!r}')
+
+
+CwValidator = validators.extend(Draft202012Validator, {'pattern': _ecma_pattern})
+
+
+def format_checker():
+    fc = FormatChecker()
+    for name, fn in SCHEMA_FORMATS.items():
+        fc.checks(name)(lambda v, fn=fn: not isinstance(v, str) or fn(v))
+    return fc
 DEFAULT = os.path.join(HERE, '..', 'dist', 'api', 'v1')
 
 
@@ -27,11 +49,11 @@ def make_validators(schemas):
     """{file name: Draft202012Validator}; cross-file $refs resolve through each schema's $id."""
     registry = Registry().with_resources((s['$id'], Resource.from_contents(s, default_specification=DRAFT202012))
                                          for s in schemas.values())
-    fc = FormatChecker()
+    fc = format_checker()
     out = {}
     for name, s in schemas.items():
         Draft202012Validator.check_schema(s)
-        out[name] = Draft202012Validator(s, registry=registry, format_checker=fc)
+        out[name] = CwValidator(s, registry=registry, format_checker=fc)
     return out
 
 
@@ -74,7 +96,7 @@ def main(v_dir):
         print('FAIL no data documents found', file=sys.stderr)
         return 1
     from importlib.metadata import version
-    print(f'jsonschema {version("jsonschema")}: {n} API v1 data files validated (Draft 2020-12 + formats), {len(fails)} errors')
+    print(f'jsonschema {version("jsonschema")}: {n} API v1 data files validated (Draft 2020-12 + formats, cw-* formats, ECMA patterns), {len(fails)} errors')
     return 1 if fails else 0
 
 

@@ -1,5 +1,5 @@
 {
- "schema_version": "1.3.0",
+ "schema_version": "1.5.0",
  "name": "Commonworld Atlas of Agent Platforms",
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
@@ -103,7 +103,8 @@
   "html": "https://commonworld.one/atlas/",
   "method": "https://commonworld.one/atlas/about/",
   "docs": "https://commonworld.one/atlas/api/",
-  "openapi": "https://commonworld.one/api/v1/openapi.json"
+  "openapi": "https://commonworld.one/api/v1/openapi.json",
+  "events": "https://commonworld.one/atlas/events.json"
  },
  "id_rule": "IDs are permanent readable slugs. Never construct or guess an ID: take it from platforms.json or a category file."
 }

@@ -107,5 +107,60 @@ class Apply(unittest.TestCase):
         self.assertEqual(len(json.loads(self.snap.read_text())['platforms']), 3)
 
 
+class CardsV2Curation(unittest.TestCase):
+    """Cards v2 curation records (first task, keys and books, evidence levels) are slug-keyed and live next to the snapshot."""
+    def setUp(self):
+        self.td = tempfile.TemporaryDirectory()
+        d = self.d = Path(self.td.name)
+        (d / 'snapshot-verified-x.json').write_text(json.dumps({'count': 2, 'platforms': [
+            {'slug': 'good', 'canonical_url': 'https://good.example/'},
+            {'slug': 'task', 'canonical_url': 'https://task.example/'}]}))
+        (d / 'removed.json').write_text(json.dumps({'removed': [], 'decisions': []}))
+        (d / 'hold.json').write_text(json.dumps({'hold': []}))
+        (d / 'first-tasks.json').write_text(json.dumps({'_help': 'x', 'tasks': {'task': {
+            'title': 'Run it', 'source_url': 'https://proposal.example/p', 'steps': ['Read https://docs.example/a, then go on.'],
+            'code': {'url': 'https://payload.example/s.py', 'filename': 's.py'}}}}, indent=1))
+        (d / 'keys-and-books.json').write_text(json.dumps({'_help': 'x', 'org_names': {}, 'entries': {
+            'task': {'keys': {'value': 'operator'}}, 'good': {'keys': {'value': 'operator'}}}}, indent=1))
+        (d / 'evidence-levels.json').write_text(json.dumps({'_doc': 'x', 'overrides': {
+            'task': [{'source_url': 'https://task.example/s', 'evidence_level': 1}]}}, indent=1))
+
+    def tearDown(self):
+        self.td.cleanup()
+
+    def run_tool(self, flagged, *extra):
+        hosts = ('good.example', 'task.example', 'proposal.example', 'docs.example', 'payload.example')
+        (self.d / 'eng.json').write_text(json.dumps(engine({h: [src('google_safe_browsing', 'flagged' if h == flagged else 'clean'),
+                                                                 src('scamsniffer', 'clean')] for h in hosts})))
+        return ls.main(['--data', str(self.d / 'snapshot-verified-x.json'), '--removed', str(self.d / 'removed.json'),
+                        '--tags', str(self.d / 'none.json'), '--hold', str(self.d / 'hold.json'), '--out', str(self.d / 'ls.json'),
+                        '--report-in', str(self.d / 'eng.json'), '--actions-out', str(self.d / 'act.json'), *extra])
+
+    def test_first_task_hosts_are_checked(self):
+        self.run_tool(None)
+        hosts = json.loads((self.d / 'ls.json').read_text())['hosts']
+        for h in ('proposal.example', 'docs.example', 'payload.example'):
+            self.assertEqual(hosts[h]['entries'], ['task'], h)
+
+    def test_flagged_download_host_removes_the_card_and_prunes_its_curation(self):
+        self.assertEqual(self.run_tool('payload.example', '--apply'), 1)
+        self.assertEqual([c['slug'] for c in json.loads((self.d / 'snapshot-verified-x.json').read_text())['platforms']], ['good'])
+        self.assertEqual(json.loads((self.d / 'first-tasks.json').read_text())['tasks'], {})
+        self.assertEqual(list(json.loads((self.d / 'keys-and-books.json').read_text())['entries']), ['good'])
+        self.assertEqual(json.loads((self.d / 'evidence-levels.json').read_text())['overrides'], {})
+        self.assertEqual(json.loads((self.d / 'keys-and-books.json').read_text())['_help'], 'x', 'other keys are kept')
+        rep = json.loads((self.d / 'ls.json').read_text())
+        self.assertIn('payload.example', rep['removed_hosts'])
+        self.assertNotIn('proposal.example', rep['hosts'], 'hosts linked only by the removed card are no longer published')
+        act = json.loads((self.d / 'act.json').read_text())['removed']
+        self.assertEqual([(a['slug'], a['curation_pruned']) for a in act],
+                         [('task', ['first-tasks.json', 'keys-and-books.json', 'evidence-levels.json'])])
+
+    def test_clean_run_leaves_curation_untouched(self):
+        before = {f: (self.d / f).read_text() for f in ('first-tasks.json', 'keys-and-books.json', 'evidence-levels.json')}
+        self.assertEqual(self.run_tool(None, '--apply'), 0)
+        self.assertEqual({f: (self.d / f).read_text() for f in before}, before)
+
+
 if __name__ == '__main__':
     unittest.main()

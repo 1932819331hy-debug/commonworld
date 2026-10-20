@@ -58,6 +58,20 @@
   },
   "superteam-earn": {
    "wait": 5000
+  },
+  "memecorp": {
+   "click_text": [
+    "I confirm I am at least 18 years old",
+    "ENTER THE MEMEBOARD"
+   ],
+   "why": "18+ age-gate modal covers the page; the label ticks the checkbox, then the button enters"
+  },
+  "perplexity-instant-buy-paypal": {
+   "shot_url": "https://newsroom.paypal-corp.com/2025-11-PayPal-and-Perplexity-Launch-Instant-Buy",
+   "why": "perplexity.ai answers bots with a Cloudflare challenge; PayPal's own press release for the same launch is public"
+  },
+  "lockzone-qevrulan": {
+   "hold": "2026-10-19: card URL is a raw JSON recipe and qevrulan.com has no human page (root 404); keep without picture"
   }
  }
 }

@@ -23,6 +23,37 @@
  "last_checked": "2026-10-15T18:21:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/openclawcity/index.md",
+ "evidence_level": {
+  "level": null,
+  "id": null,
+  "label": "not recorded yet",
+  "claims_counted": 0
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/openclawcity.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/openclawcity-dark.svg",
@@ -86,7 +117,9 @@
    "methods": [
     "curl -sL https://openclawcity.ai"
    ],
-   "outcome": "unchecked"
+   "outcome": "unchecked",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -99,7 +132,9 @@
    "quote": "",
    "observed_at": "2026-10-15T18:21:00Z",
    "methods": [],
-   "outcome": "unchecked"
+   "outcome": "unchecked",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "not_sampled"

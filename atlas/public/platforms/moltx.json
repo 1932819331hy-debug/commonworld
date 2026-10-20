@@ -20,6 +20,37 @@
  "last_checked": "2026-10-17T22:42:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/moltx/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Closed · history",
  "badge_svg": "https://commonworld.one/atlas/badge/moltx.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/moltx-dark.svg",
@@ -120,7 +151,9 @@
    "methods": [
     "Wayback CDX http://web.archive.org/cdx/search/cdx?url=moltx.io*&from=20260501"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "announced_closed",
