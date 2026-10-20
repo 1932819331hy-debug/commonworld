@@ -44,7 +44,8 @@ git status --porcelain -- atlas/public                 # must print nothing: the
 CW_SCREENS_REQUIRED=1 python3 atlas/site/check.py      # static checks (needs the atlas-screens branch fetched)
 ```
 
-- Homepage screenshots live on the orphan branch `atlas-screens`. Fetch it before a strict check:
+- Homepage screenshots live on the orphan branch `atlas-screens`; the build uses the commit pinned in `atlas/screens.lock`
+  (it fetches that sha itself when the network allows). To have it locally before a strict check, fetch the branch:
   `git fetch --no-tags origin +refs/heads/atlas-screens:refs/remotes/origin/atlas-screens`.
   Add `--depth=1` only in a clone that is already shallow (as `atlas/site/screens.py` does);
   in a full clone it would make the repository shallow.

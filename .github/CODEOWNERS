@@ -1,2 +1,6 @@
 # Default reviewer for every file in the repository.
 * @nerd27dk
+
+# Explicit owners for the sensitive paths (workflows hold deploy logic; platform/ is the production Worker + D1).
+/.github/ @nerd27dk
+/platform/ @nerd27dk
