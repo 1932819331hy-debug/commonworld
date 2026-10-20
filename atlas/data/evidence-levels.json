@@ -1,5 +1,5 @@
 {
- "_doc": "Curator-reviewed evidence levels (atlas/site/cards_v2.py, atlas/CURATION.md#cards-v2). One entry per card and source URL sets the ladder level of that card's money and activity claims with this source after a curator opened the source: evidence_level (1-3), evidence_note (published on the claim, positive wording), reviewed_on. Use it only where the URL rule reads a source wrongly; an entry must change the level. check.py validates the file and every built record against it.",
+ "_doc": "Curator-reviewed evidence levels (atlas/site/cards_v2.py, atlas/CURATION.md#cards-v2). One entry per card and source URL sets the ladder level of that card's money and activity claims with this source after a curator opened the source: evidence_level (1-3), evidence_note (published on the claim, positive wording), reviewed_on. Level 3 (public transactions) comes ONLY from an entry here, for one explorer record the curator opened (the URL must pass the record format check); otherwise use an entry only where the URL rule reads a source wrongly. An entry must change the level. check.py validates the file and every built record against it.",
  "overrides": {
   "8004scan": [
    {

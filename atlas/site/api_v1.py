@@ -10,7 +10,7 @@ import re
 from cards_v2 import BOOKS_VALUES, KEYS_BASES, KEYS_VALUES, LEVELS, NOT_RECORDED, PEOPLE_VALUES  # cards v2 vocabulary (one source)
 
 API_VERSION = 'v1'
-SCHEMA_VERSION = '1.4.0'
+SCHEMA_VERSION = '1.5.0'
 API_BASE = '/api/v1'
 STATUSES = ['live', 'closed']
 ENTITY_TYPES = ['platform', 'tool_catalog', 'protocol', 'project']
@@ -21,6 +21,13 @@ UTC_PATTERN = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$'  # ISO 8601 U
 
 # newest first; build.py writes changelog.json and CHANGELOG.md from this list
 CHANGELOG = [
+    {'schema_version': '1.5.0', 'date': '2026-10-20', 'changes': [
+        'Cards v2 simplification (owner decision). `first_task.code` is removed: a first task now has nothing to download or run, so '
+        'no record carries it. It existed only in 1.4.0, released together with this version and never published on its own, so no v1 '
+        'client could rely on it; this is noted here instead of a /api/v2/.',
+        'Evidence level 3 (public_transactions) on a money or activity claim is now set only by a curator who opened the record '
+        '(atlas/data/evidence-levels.json, so such a claim always carries `evidence_note`); the automatic URL rule gives at most level 2, '
+        'and a block-explorer page of one record is level 2 unless a curator reviewed it. Field shapes are unchanged.']},
     {'schema_version': '1.4.0', 'date': '2026-10-19', 'changes': [
         'Cards v2. New optional fields on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): '
         '`evidence_level` {level, id, label, claims_counted}, the highest evidence-ladder level reached by the sources of the card\'s supported '
@@ -28,7 +35,7 @@ CHANGELOG = [
         '`keys_and_books` {keys, books, people}, each {state, value, label, source_url, quote} with state recorded (from a sourced claim on the card) '
         'or not_recorded; on `keys` also `basis` (operator_says: the label is the operator\'s claim, "The operator says ..."; onchain_verified: '
         'a smart contract recorded on a public block explorer, with `contract_url`, the explorer page of its address or token); `people` names an organization, never an individual person; '
-        '`first_task`, a verified first step for newcomers with credit (optional `no_code`; optional `code` {url, filename, sha256, run} on a task that downloads code), or null; `md_url`, the card page as Markdown.',
+        '`first_task`, a verified first step for newcomers with credit (optional `no_code`), or null; `md_url`, the card page as Markdown.',
         'New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: '
         '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md '
         '(level 3 only for a block-explorer page of one concrete record with a well-formed identifier for its type: a transaction hash, an address or account, a block; '
@@ -118,7 +125,7 @@ def schemas(origin, categories):
                                        'normal limits and a note on what it gives. Added in schema_version 1.3.0.',
                                        'required': ['url', 'note'], 'properties': {'url': uri, 'note': {'type': 'string', 'minLength': 1}}},
                             'evidence_level': {'enum': [1, 2, 3], 'description': 'Evidence-ladder level of this money or activity claim, from its source URL (or a curator review, see evidence_note): '
-                                               '1 operator says, 2 public dashboard, 3 public transactions. Added in schema_version 1.4.0.'},
+                                               '1 operator says, 2 public dashboard, 3 public transactions (only by a curator who opened the record, since 1.5.0). Added in schema_version 1.4.0.'},
                             'evidence_label': {'enum': [LEVELS[k][1] for k in (1, 2, 3)]},
                             'evidence_note': {'type': 'string', 'minLength': 1, 'description': 'Present when a curator opened the source and set the '
                                               'level by hand (atlas/data/evidence-levels.json): the short reason. Added in schema_version 1.4.0.'}}}
@@ -145,21 +152,14 @@ def schemas(origin, categories):
                            'required': ['keys', 'books', 'people'],
                            'properties': {f: kb_item(vals) for f, vals in (('keys', KEYS_VALUES), ('books', BOOKS_VALUES), ('people', PEOPLE_VALUES))}
                            | {'keys': kb_item(KEYS_VALUES, keys=True)}},
-        'first_task': {'type': ['object', 'null'], 'description': 'A verified first step for newcomers, with credit to its contributor, or null. Added in schema_version 1.4.0.',
+        'first_task': {'type': ['object', 'null'], 'description': 'A verified first step for newcomers, with credit to its contributor, or null. It has nothing to download or run '
+                       '(first_task.code was removed in schema_version 1.5.0). Added in schema_version 1.4.0.',
                        'required': ['title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification', 'credit'],
                        'properties': {'title': {'type': 'string'}, 'steps': {'type': 'array', 'items': {'type': 'string', 'minLength': 1}},
                                       'done_when': {'type': 'string'}, 'contributed_by': {'type': 'string'}, 'contributed_via': {'type': 'string'},
                                       'source_url': uri, 'verified_by': {'type': 'string'}, 'verified_on': {'type': 'string', 'pattern': r'^\d{4}-\d{2}-\d{2}$'},
                                       'verification': {'type': 'string'}, 'credit': {'type': 'string', 'pattern': '^Contributed by '},
-                                      'no_code': {'type': 'string', 'minLength': 1, 'description': 'Optional: a way to finish the task without running code.'},
-                                      'code': {'type': 'object', 'description': 'Optional, on a task that downloads code: the file it downloads and runs. '
-                                               'steps are generated from it in the order sandbox, download (url), SHA-256 check '
-                                               '(echo "<sha256>  <filename>" | sha256sum -c -), run; each run command starts filename.',
-                                               'required': ['url', 'filename', 'sha256', 'run'], 'additionalProperties': False,
-                                               'properties': {'url': {'type': 'string', 'format': 'uri', 'pattern': '^https://'},
-                                                              'filename': {'type': 'string', 'pattern': r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$'},
-                                                              'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
-                                                              'run': {'type': 'array', 'minItems': 1, 'items': {'type': 'string', 'minLength': 1}}}}}}}
+                                      'no_code': {'type': 'string', 'minLength': 1, 'description': 'Optional: another way to finish the task.'}}}}
     optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task'}  # added in 1.1.0 / 1.2.0 / 1.4.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
                'required': [k for k in summary_props if k not in optional], 'properties': summary_props}
@@ -227,7 +227,7 @@ def openapi(origin, categories, example_ids, docs_url, licence):
                                  'CORS is open (Access-Control-Allow-Origin: *). Responses may be cached by Cloudflare and browsers for up to a few hours. '
                                  + VERSIONING + ' Related file outside /api/: ' + origin + '/atlas/events.json, the public log of card changes '
                                  '(also as /atlas/events.md). '
-                                 'Money and activity claims carry evidence_level (1 operator says, 2 public dashboard, 3 public transactions) and '
+                                 'Money and activity claims carry evidence_level (1 operator says, 2 public dashboard, 3 public transactions, set only by a curator who opened the record) and '
                                  'evidence_label; where a curator opened the source and set the level by hand, the claim also carries evidence_note, '
                                  'a short reason (manual relabel rules: https://github.com/commonworld-one/commonworld/blob/main/atlas/CURATION.md#curator-review-of-a-level). '
                                  + f'Human documentation: {docs_url}'),

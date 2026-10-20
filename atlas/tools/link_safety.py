@@ -6,7 +6,7 @@
     python3 atlas/tools/link_safety.py --report-in r.json   # use an engine report you already have (tests, re-runs)
 
 1. Every outbound host linked from the published Atlas data (official URLs, claim and QA sources, any other URL in an
-   entry, and every URL in the card's slug-keyed cards v2 curation records: first task proposal and download, keys-and-
+   entry, and every URL in the card's slug-keyed cards v2 curation records: first task proposal and links, keys-and-
    books and evidence-level sources) plus the hosts of removed entries go to the engine, which asks every source (Google Safe Browsing, MetaMask
    eth-phishing-detect, ScamSniffer, CERT Polska) and combines the answers: flagged when ANY one source flags the domain,
    clean when at least one source answered and none flags it, no_data when no source could answer.

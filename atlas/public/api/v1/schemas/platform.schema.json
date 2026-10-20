@@ -430,7 +430,7 @@
       "object",
       "null"
      ],
-     "description": "A verified first step for newcomers, with credit to its contributor, or null. Added in schema_version 1.4.0.",
+     "description": "A verified first step for newcomers, with credit to its contributor, or null. It has nothing to download or run (first_task.code was removed in schema_version 1.5.0). Added in schema_version 1.4.0.",
      "required": [
       "title",
       "steps",
@@ -485,41 +485,7 @@
       "no_code": {
        "type": "string",
        "minLength": 1,
-       "description": "Optional: a way to finish the task without running code."
-      },
-      "code": {
-       "type": "object",
-       "description": "Optional, on a task that downloads code: the file it downloads and runs. steps are generated from it in the order sandbox, download (url), SHA-256 check (echo \"<sha256>  <filename>\" | sha256sum -c -), run; each run command starts filename.",
-       "required": [
-        "url",
-        "filename",
-        "sha256",
-        "run"
-       ],
-       "additionalProperties": false,
-       "properties": {
-        "url": {
-         "type": "string",
-         "format": "uri",
-         "pattern": "^https://"
-        },
-        "filename": {
-         "type": "string",
-         "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$"
-        },
-        "sha256": {
-         "type": "string",
-         "pattern": "^[0-9a-f]{64}$"
-        },
-        "run": {
-         "type": "array",
-         "minItems": 1,
-         "items": {
-          "type": "string",
-          "minLength": 1
-         }
-        }
-       }
+       "description": "Optional: another way to finish the task."
       }
      }
     }
@@ -761,7 +727,7 @@
       2,
       3
      ],
-     "description": "Evidence-ladder level of this money or activity claim, from its source URL (or a curator review, see evidence_note): 1 operator says, 2 public dashboard, 3 public transactions. Added in schema_version 1.4.0."
+     "description": "Evidence-ladder level of this money or activity claim, from its source URL (or a curator review, see evidence_note): 1 operator says, 2 public dashboard, 3 public transactions (only by a curator who opened the record, since 1.5.0). Added in schema_version 1.4.0."
     },
     "evidence_label": {
      "enum": [
