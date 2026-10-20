@@ -117,8 +117,9 @@ database is used by the code that is running now. Rules:
   # what the run printed (also shows the bookmark for the current moment)
   npx wrangler d1 time-travel info commonworld-prod --env production
   # bookmark for a moment in time, if the printed one is lost: an ISO time in UTC (trailing Z) or a unix timestamp.
+  # It must lie inside the D1 Time Travel window (30 days on Workers Paid, 7 on Free).
   # Put your value between the single quotes; the quotes keep the shell from reading it as anything else.
-  TS='2026-01-31T12:00:00Z'
+  TS='paste-an-ISO-UTC-time-here'
   npx wrangler d1 time-travel info commonworld-prod --env production --timestamp="$TS"
   # restore: overwrites the live database, owner decision only. Paste the bookmark between the single quotes.
   BOOKMARK='paste-the-bookmark-here'
