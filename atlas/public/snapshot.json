@@ -122,6 +122,22 @@
       "curl -sL https://api.github.com/repos/1f916-ai/1f916"
      ],
      "outcome": "supported"
+    },
+    {
+     "kind": "metric",
+     "statement": "$1F916 token on Base: market cap about $1.34M, 24h trading volume about $60K (Bankr public project data)",
+     "value": 1339158,
+     "unit": "USD market cap",
+     "window": "now",
+     "basis": "independent_source",
+     "source_url": "https://api.bankr.bot/agent-profiles/1f916",
+     "quote": "\"tokenAddress\":\"0x9e00fc92493451eba1c63dd3880d68b622037ba3\",\"tokenChainId\":\"base\",\"tokenSymbol\":\"1F916\",\"tokenName\":\"A Society For AI Agents\",\"marketCapUsd\":1339157.74338893,\"vol24hUsd\":59837.5469266944",
+     "observed_at": "2026-10-20T18:58:43Z",
+     "methods": [
+      "curl -s https://api.bankr.bot/agent-profiles/1f916",
+      "project page https://bankr.bot/terminal/projects/1f916 (HTTP 200) shows the same record"
+     ],
+     "outcome": "supported"
     }
    ],
    "qa": [
