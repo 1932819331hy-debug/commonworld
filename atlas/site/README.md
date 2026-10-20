@@ -188,9 +188,11 @@ The screenshots are **not stored on `main`**. They live on the orphan branch `at
 branch; it never merges into `main`.
 
 - `build.py` calls `screens.load()`: `CW_SCREENS=off` disables previews; `CW_SCREENS_DIR=/path` uses a local folder (manifest.json +
-  `<slug>.webp`); otherwise `git fetch origin atlas-screens` (`--depth=1` in shallow clones) and `git archive` into
-  `atlas/site/.screens-cache/branch/` (gitignored), with the public tarball from codeload.github.com as fallback (Cloudflare Pages only
-  clones the branch it builds). Files with a wrong sha256, size or non-https source are skipped with a warning.
+  `<slug>.webp`); otherwise the `atlas-screens` commit pinned in `atlas/screens.lock` (one line, full 40-hex sha; `CW_SCREENS_SHA=<sha>`
+  overrides it, `CW_SCREENS_SHA=head` follows the branch head for local work) is fetched by sha (`--depth=1` in shallow clones) and
+  `git archive`d into `atlas/site/.screens-cache/branch/` (gitignored), with the public tarball of that commit from codeload.github.com
+  as fallback (Cloudflare Pages only clones the branch it builds). Files with a wrong sha256, size or non-https source are skipped
+  with a warning. After a weekly screenshots PR is merged into `atlas-screens`, a PR on `main` bumps `atlas/screens.lock`.
 - Nothing found → the build still succeeds and every card shows a placeholder. CI sets `CW_SCREENS_REQUIRED=1`, which makes that an error.
 - Output: `dist/atlas/screens/<slug>.webp`, `dist/atlas/screens/t/<slug>.webp` (600×250 top band, Pillow, cached by sha256 in
   `.screens-cache/thumbs/`; without Pillow the grids reuse the full image), `dist/atlas/screens/manifest.json`, and a `preview` field
@@ -278,7 +280,7 @@ components. Operator is just "Commonworld"; the pages name no country or locatio
 
 ## Deploy to Cloudflare (later)
 
-Build command `python3 atlas/site/build.py`, output directory `atlas/site/dist`. The build fetches the screenshots itself (branch `atlas-screens` via git, else the public tarball); Pages builds of the `atlas-screens` branch itself fail harmlessly (no build.py there) and can be excluded in the Pages branch settings. The repo-root `requirements.txt` (`Pillow>=10`) makes Cloudflare Pages install Pillow for the OG images. Pages serves `dist/atlas/...` at `/atlas/...`, uses `dist/404.html` for missing pages and applies `dist/_headers`. If `/atlas` is mounted inside a bigger Commonworld site, copy `dist/atlas/` into that site's output and merge `robots.txt` (it only has to contain the `Sitemap:` line for `https://commonworld.one/atlas/sitemap.xml`).
+Build command `python3 atlas/site/build.py`, output directory `atlas/site/dist`. The build fetches the screenshots itself (the `atlas-screens` commit pinned in `atlas/screens.lock`, via git, else the public tarball of that commit); Pages builds of the `atlas-screens` branch itself fail harmlessly (no build.py there) and can be excluded in the Pages branch settings. The repo-root `requirements.txt` (`Pillow>=10`) makes Cloudflare Pages install Pillow for the OG images. Pages serves `dist/atlas/...` at `/atlas/...`, uses `dist/404.html` for missing pages and applies `dist/_headers`. If `/atlas` is mounted inside a bigger Commonworld site, copy `dist/atlas/` into that site's output and merge `robots.txt` (it only has to contain the `Sitemap:` line for `https://commonworld.one/atlas/sitemap.xml`).
 
 ### Security headers and CSP
 

@@ -116,8 +116,8 @@ database is used by the code that is running now. Rules:
   ```sh
   # what the run printed (also shows the bookmark for the current moment)
   npx wrangler d1 time-travel info commonworld-prod --env production
-  # bookmark for a moment in time, if the printed one is lost (UTC or unix timestamp)
-  npx wrangler d1 time-travel info commonworld-prod --env production --timestamp=2026-10-20T08:00:00Z
+  # bookmark for a moment in time, if the printed one is lost: an ISO time in UTC (trailing Z) or a unix timestamp
+  npx wrangler d1 time-travel info commonworld-prod --env production --timestamp=<YYYY-MM-DDTHH:MM:SSZ>
   # restore: overwrites the live database, owner decision only
   npx wrangler d1 time-travel restore commonworld-prod --env production --bookmark=<bookmark>
   ```
