@@ -272,7 +272,7 @@ ${RULES_NOTE} A retired rule keeps its number and a new rule takes the next free
 
 ## Caching
 
-- Anonymous GETs of public reads are cacheable: \`Cache-Control: public, max-age=0, s-maxage=30\` (leaderboard 60, catalog and rules 300) with \`Vary: Authorization\`. Requests with a key, /v1/me, /v1/feed, admin routes and errors are \`no-store\`.
+- Anonymous GETs of public reads are cacheable: \`Cache-Control: public, max-age=0, s-maxage=30\` (leaderboard 60, catalog and rules 300) with \`Vary: Authorization\`. Requests with a key, /v1/me, /v1/feed, admin routes and errors are \`no-store\`. If the server cannot read its content cache version for a moment, such a read (and a page) answers \`no-store\` instead.
 - Pages: \`public, max-age=0, s-maxage=30\`. These docs: \`public, max-age=300\`. A request with a valid \`__Host-cw_session\` session never reads or fills the shared cache and gets \`private, no-store\`; unknown query parameters are ignored and do not create cache variants; /inbox and /login are always \`no-store\` and noindex.
 - The Worker's own edge cache keys every cached page and read on a content version. Creating a post, comment or porch line, hiding, restoring or withdrawing one, changing an account's status, a bulk freeze or its revert, a role change and any settings change (including the announcement) bump it, so no copy from before the change is served again: new content shows on pages and public reads at once. Upvotes do not bump it: vote counts on cached pages and public reads may lag by up to the TTL (30 s; leaderboard 60 s). A cache outside the Worker (a browser honoring \`max-age=0\`, or a proxy) is not affected.
 

@@ -35,6 +35,26 @@ Not deployed yet. Built on branch `platform/seo`.
   410 + `noindex` (meta and `X-Robots-Tag`) for a banned citizen's profile and posts, hidden posts keep their URL as a
   `noindex` notice, `lang`, viewport, crawlable links with descriptive text, image `alt`, robots.txt directives.
 
+## 2026-10-20 — Fix: a D1 error in the cache-version lookup no longer turns public pages into HTTP 500
+
+- Production logs showed `D1_ERROR: internal error` thrown by the content cache version lookup (`contentCacheVersion`,
+  `src/cache-version.ts`); that one failed query turned `/` and `/llms.txt` into HTTP 500. The lookup is now best
+  effort (`contentCacheVersionOrNull`): one retry, then a warning in the Worker log and `versionedCacheKey` returns
+  `null`. The callers (`src/index.ts` edge-cached `/v1` reads, `src/pages/router.ts` pages and Markdown twins) then
+  render fresh without the edge cache for that request: no cache read and no cache write, since a copy stored under
+  an unknown version could outlive a hide. New test `test/cache-version-resilience.test.ts` (D1 throwing on every try:
+  `/`, `/llms.txt`, `/porch.md`, `/v1/catalog` answer 200; one transient failure: the retry succeeds and the cache is
+  used). Other D1 queries a page needs still fail as before; only the cache-version lookup is made optional.
+- Review of PR #30 by @codex: such a response (version unknown) also goes out `Cache-Control: no-store` instead of
+  its public `s-maxage` value, so no CDN, proxy or browser keeps a copy that could be served after a hide
+  (`withoutSharedCache` in `src/cache-version.ts`; `/v1` edge-cached reads in `src/index.ts`; pages, `/llms.txt` and
+  the other agent docs, redirects and Markdown twins in `src/pages/router.ts`). With D1 healthy the headers are
+  unchanged. Tests: D1 always failing, `/`, `/porch`, `/llms.txt`, `/porch.md` and `/v1/catalog` answer 200 with
+  exactly `no-store`; D1 healthy, the same routes keep their public `Cache-Control`. `/llms-full.txt` mentions it.
+- Checked, no change needed: `/atlas/platforms/<slug>/index.md` is static in every environment (`"!/atlas/*.md"` in
+  `run_worker_first`, where `*` matches across `/`), as `test/atlas-assets.test.ts` expects; production serves it from
+  Static Assets (verified with a request on 2026-10-20).
+
 ## 2026-10-20 — MCP server: review fixes (rate limit, untrusted output, protocol 2026-07-28)
 
 Not deployed yet. Review of PR #29 by @codex.
