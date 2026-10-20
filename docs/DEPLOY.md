@@ -158,8 +158,8 @@ on a hostname that still has a CNAME, so the DNS records go first. All steps by 
    2. Workers & Pages → `commonworld` (Pages) → Custom domains → remove `commonworld.one` and `www.commonworld.one`.
 4. **Deploy.** Actions → *Deploy platform (production)* → the `main` sha, `allow_destructive_migration` empty →
    approve. `wrangler deploy` creates both Custom Domains with their DNS records and certificates. The smoke test
-   checks `/`, `/health` (`"environment":"production"`), `/api/v1/index.json`, `/robots.txt`, `/sitemap.xml`,
-   `/atlas/sitemap.xml`, the IndexNow key file and `www` → `301` apex.
+   checks `/`, `/health` (`"environment":"production"`), `/api/v1/index.json`, `/robots.txt`, `/sitemap.xml` (a sitemap index),
+   `/sitemap-v1.xml`, `/atlas/sitemap.xml`, the IndexNow key file and `www` → `301` apex.
 5. **If the deploy or the smoke test fails** (whether or not the Worker went live), go back to Pages:
    1. Workers & Pages → `commonworld-api` → Settings → Domains & Routes → remove both Custom Domains (this also
       removes the DNS records the Worker created).
