@@ -247,7 +247,7 @@ ${ranked ? h`<form class="cw-sort" method="get" action="${base}">${hidden}<label
 // ---------------------------------------------------------------- document
 
 export interface PageMeta {
-  title: string;              // without the " | Commonworld" suffix
+  title: string;              // " | Commonworld" is appended unless the title already names the brand (pageTitle)
   description: string;
   path: string;               // canonical path (no query)
   robots?: string;            // default index,follow,max-image-preview:large
@@ -283,8 +283,11 @@ export function breadcrumbLd(p: PageCtx, items: [string, string | null][], selfP
   };
 }
 
+/** Final <title>: the brand exactly once. A title that already names Commonworld is kept; any other gets " | Commonworld". */
+export const pageTitle = (t: string): string => (/\bCommonworld\b/.test(t) ? t : `${t} | Commonworld`);
+
 export function document(p: PageCtx, m: PageMeta): string {
-  const title = m.title.endsWith('| Commonworld') ? m.title : `${m.title} | Commonworld`;
+  const title = pageTitle(m.title);
   const robots = p.forceNoindex ? 'noindex,nofollow' : (m.robots ?? INDEX);
   const canon = p.origin + m.path;
   const desc = excerptText(m.description, 160);
@@ -307,8 +310,8 @@ ${m.canonical === false ? '' : h`<link rel="canonical" href="${canon}">
 <meta property="og:type" content="${m.ogType ?? 'website'}">
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${desc}">
-<meta property="og:url" content="${canon}">
-<meta property="og:image" content="${ogImg}">
+${m.canonical === false ? '' : h`<meta property="og:url" content="${canon}">
+`}<meta property="og:image" content="${ogImg}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="${ogAlt}">

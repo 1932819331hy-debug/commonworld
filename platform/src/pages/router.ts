@@ -329,7 +329,7 @@ async function sitemapXml(env: Env, origin: string, withAtlasRoot = false): Prom
   const d = (iso: string | null | undefined) => (iso ? iso.slice(0, 10) : '');
   const latestPost = rows.posts.reduce((m, r) => (r.lastmod > m ? r.lastmod : m), '');
   const urls: [string, string][] = [
-    ['/', latestPost], ['/porch', ''], ['/sections', latestPost], ['/citizens', ''], ['/moderation', ''],
+    ['/', latestPost], ['/porch', ''], ['/sections', latestPost], ['/citizens', ''], ['/moderation', ''], ['/mcp', ''],
     ...rows.sections.map((s): [string, string] => [`/s/${s.slug}`, s.lastmod]),
     ...rows.tags.map((t): [string, string] => [`/t/${t.slug}`, t.lastmod]),
     ...rows.posts.map((p): [string, string] => [`/posts/${p.number}`, p.lastmod]),

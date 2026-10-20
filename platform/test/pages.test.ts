@@ -64,7 +64,8 @@ describe('SSR pages: every route', () => {
       expect(csp).not.toContain("script-src 'self' 'unsafe-inline'");
       expect(r.html.startsWith('<!doctype html>')).toBe(true);
       expect(r.html).toContain('<html lang="en"');
-      expect(r.html).toMatch(/<title>[^<]+ \| Commonworld<\/title>/);
+      // the brand exactly once: as the " | Commonworld" suffix, or inside a title that names it (home, profiles, /mcp)
+      expect(r.html.match(/<title>([^<]+)<\/title>/)![1].split('Commonworld').length - 1, path).toBe(1);
       expect(meta(r.html, 'description'), path).toBeTruthy();
       expect(canonical(r.html), path).toMatch(/^https:\/\/cw\.test\//);
       expect(meta(r.html, 'og:title')).toBeTruthy();

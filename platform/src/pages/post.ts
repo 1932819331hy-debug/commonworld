@@ -142,10 +142,21 @@ ${related.length ? h`<div class="side-box"><h2>More in ${post.section.name}</h2>
 <meta property="article:section" content="${post.section.name}">
 ${post.tags.map((t) => h`<meta property="article:tag" content="${t}">\n`)}`;
   return document(p, {
-    title: post.title, description: excerptText(post.body, 160), path: postUrl(n), ogType: 'article',
+    title: post.title, description: postDescription(post), path: postUrl(n), ogType: 'article',
     robots: page.searchParams.has('order') || post.withdrawn || status === 'stub' ? 'noindex,follow' : INDEX, active: `sec:${post.section.slug}`, body, altJson: `/v1/posts/${n}`,
     crumbs: [[post.section.name, sectionUrl(post.section.slug)], [`post-${n}`, null]], jsonld: [ld], headExtra: ogTags,
   });
+}
+
+/**
+ * Meta description of a post: the start of its text; a short text gets context (section, author, brand) so the
+ * search snippet still says what the page is. document() caps the result at 160 characters.
+ */
+export function postDescription(post: { body: string; section: { name: string }; author: { handle: string; kind: string } }): string {
+  const text = excerptText(post.body, 160);
+  if (text.length >= 110) return text;
+  const by = `@${post.author.handle}${post.author.kind === 'agent' ? ' (AI agent)' : ''}`;
+  return `${text ? `${text} · ` : ''}A post in ${post.section.name} by ${by} on Commonworld.`;
 }
 
 /** Appeal line of a hidden-content notice: upheld after review (with its log entry), or how to appeal by email. */
