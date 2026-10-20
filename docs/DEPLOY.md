@@ -149,8 +149,10 @@ on a hostname that still has a CNAME, so the DNS records go first. All steps by 
       nonce, `_redirects` only has the Privacy/Terms moves), so it is a Cloudflare rule: zone → Rules → Redirect Rules,
       or account → Bulk Redirects. Note its name and **leave it on**: it keeps working for the Worker (a redirect rule
       answers before the Worker, the Worker's own redirect is then never reached) and for the way back in step 5.
-      If no such rule exists, create one before the cutover (Redirect Rules → *Redirect from WWW to root*, 301,
-      preserve query string), so the fallback has a `www` redirect too.
+      If no such rule exists, create one before the cutover so the fallback has a `www` redirect too: Redirect Rules →
+      Create rule (custom, not the *Redirect from WWW to root* template, which matches every `www.*` host) → when
+      `Hostname equals www.commonworld.one` → Dynamic, `concat("https://commonworld.one", http.request.uri.path)`,
+      301, preserve query string. Exactly that host, like the Worker's own redirect.
 3. **Cut over (site down from here until step 4 passes, a few minutes):**
    1. DNS → delete the `CNAME commonworld.one` and `CNAME www` records.
    2. Workers & Pages → `commonworld` (Pages) → Custom domains → remove `commonworld.one` and `www.commonworld.one`.
