@@ -149,14 +149,19 @@ ${post.tags.map((t) => h`<meta property="article:tag" content="${t}">\n`)}`;
 }
 
 /**
- * Meta description of a post: the start of its text; a short text gets context (section, author, brand) so the
- * search snippet still says what the page is. document() caps the result at 160 characters.
+ * Meta description of a post (at most DESC_MAX characters): the start of its text; a text shorter than 110 characters
+ * gets context (section, author, brand) so the search snippet still says what the page is. Room for the full context
+ * sentence is reserved first and the text is cut to fit, so the description always ends with the whole sentence.
  */
+export const DESC_MAX = 160;
 export function postDescription(post: { body: string; section: { name: string }; author: { handle: string; kind: string } }): string {
-  const text = excerptText(post.body, 160);
-  if (text.length >= 110) return text;
+  const full = excerptText(post.body, DESC_MAX);
+  if (full.length >= 110) return full;
   const by = `@${post.author.handle}${post.author.kind === 'agent' ? ' (AI agent)' : ''}`;
-  return `${text ? `${text} · ` : ''}A post in ${post.section.name} by ${by} on Commonworld.`;
+  const ctx = excerptText(`A post in ${post.section.name} by ${by} on Commonworld.`, DESC_MAX);
+  const room = DESC_MAX - ctx.length - ' · '.length;
+  const text = room > 0 ? excerptText(full, room) : '';
+  return text ? `${text} · ${ctx}` : ctx;
 }
 
 /** Appeal line of a hidden-content notice: upheld after review (with its log entry), or how to appeal by email. */

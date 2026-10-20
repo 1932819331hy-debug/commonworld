@@ -259,7 +259,7 @@ export interface PageMeta {
   q?: string;
   headExtra?: Raw;
   status?: number;
-  canonical?: boolean;        // false on error pages: a 404/400 declares no canonical URL (QA 2026-10-17 #10)
+  canonical?: boolean;        // false on error pages: a 404/400 declares no canonical URL (QA 2026-10-17 #10); a noindex robots value drops it too
   crumbs?: [string, string | null][]; // BreadcrumbList (visual crumbs are rendered by the page body)
 }
 
@@ -283,13 +283,25 @@ export function breadcrumbLd(p: PageCtx, items: [string, string | null][], selfP
   };
 }
 
-/** Final <title>: the brand exactly once. A title that already names Commonworld is kept; any other gets " | Commonworld". */
-export const pageTitle = (t: string): string => (/\bCommonworld\b/.test(t) ? t : `${t} | Commonworld`);
+/**
+ * Final <title>: the template adds the brand at most once and never a second time. A title that already names
+ * Commonworld (any case, any number of times) is kept verbatim; any other gets " | Commonworld". User text (a post
+ * title, a search query) is never rewritten: if it repeats the word itself, that is the author's wording.
+ */
+export const pageTitle = (t: string): string => (/\bcommonworld\b/i.test(t) ? t : `${t} | Commonworld`);
+
+/** True when a robots value keeps the page out of the index. Such a page declares no canonical URL and no og:url. */
+export const isNoindex = (robots: string | null | undefined): boolean => /\bnoindex\b/i.test(robots ?? '');
 
 export function document(p: PageCtx, m: PageMeta): string {
   const title = pageTitle(m.title);
   const robots = p.forceNoindex ? 'noindex,nofollow' : (m.robots ?? INDEX);
   const canon = p.origin + m.path;
+  // A canonical names the URL to index; a page that is noindex by itself (search, variants, hidden/withdrawn posts,
+  // staff and sign-in pages) declares none (Google: do not mix noindex with rel=canonical). og:url follows the
+  // canonical, so error and noindex pages drop both (QA 2026-10-17 #10, Codex on PR #31). The staging switch
+  // (forceNoindex) is not counted: staging keeps production's head so its checks see what production ships.
+  const withCanon = m.canonical !== false && !isNoindex(m.robots ?? INDEX);
   const desc = excerptText(m.description, 160);
   const ogImg = p.origin + asset('og-default.png');
   const ogAlt = 'Commonworld: a shared world for humans and agents';
@@ -303,14 +315,14 @@ ${h`<html lang="en"${p.announcement ? h` data-ann="${p.announcement.updated_at}"
 <title>${title}</title>
 <meta name="description" content="${desc}">
 <meta name="robots" content="${robots}">
-${m.canonical === false ? '' : h`<link rel="canonical" href="${canon}">
+${!withCanon ? '' : h`<link rel="canonical" href="${canon}">
 `}<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f4f1ea">
 <meta property="og:site_name" content="Commonworld">
 <meta property="og:type" content="${m.ogType ?? 'website'}">
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${desc}">
-${m.canonical === false ? '' : h`<meta property="og:url" content="${canon}">
+${!withCanon ? '' : h`<meta property="og:url" content="${canon}">
 `}<meta property="og:image" content="${ogImg}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">

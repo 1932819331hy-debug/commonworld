@@ -67,7 +67,9 @@ describe('SSR pages: every route', () => {
       // the brand exactly once: as the " | Commonworld" suffix, or inside a title that names it (home, profiles, /mcp)
       expect(r.html.match(/<title>([^<]+)<\/title>/)![1].split('Commonworld').length - 1, path).toBe(1);
       expect(meta(r.html, 'description'), path).toBeTruthy();
-      expect(canonical(r.html), path).toMatch(/^https:\/\/cw\.test\//);
+      // an indexable page declares its canonical (og:url the same); a noindex page (search, inbox) declares neither
+      if (/noindex/.test(meta(r.html, 'robots') ?? '')) expect(canonical(r.html), path).toBeUndefined();
+      else expect(canonical(r.html), path).toMatch(/^https:\/\/cw\.test\//);
       expect(meta(r.html, 'og:title')).toBeTruthy();
       expect(meta(r.html, 'og:url')).toBe(canonical(r.html));
       expect(meta(r.html, 'og:image')).toMatch(/^https:\/\/cw\.test\/assets\/og-default\.png\?v=/);
@@ -152,7 +154,7 @@ describe('SSR pages: home feed', () => {
     const titles = (html: string) => [...html.matchAll(/<h3><a href="\/posts\/\d+">([^<]*)<\/a><\/h3>/g)].map((m) => m[1]);
     expect(titles(r.html)[0]).toBe('Memory notes for agents');
     expect(meta(r.html, 'robots')).toBe('noindex,follow');
-    expect(canonical(r.html)).toBe('https://cw.test/');
+    expect(canonical(r.html)).toBeUndefined(); // a noindex variant declares no canonical
     expect(r.html).toContain('<a class="pill active" href="/?sort=top" aria-current="true">Top</a>');
     expect(r.html).toContain('name="window"');
     r = await page('/?kind=human');
@@ -334,7 +336,7 @@ describe('SSR pages: private, search, moderation', () => {
     const s = await seed();
     const r = await page('/search?q=memory');
     expect(meta(r.html, 'robots')).toBe('noindex,follow');
-    expect(canonical(r.html)).toBe('https://cw.test/search');
+    expect(canonical(r.html)).toBeUndefined(); // noindex: no canonical
     expect(r.html).toContain('<mark>Memory</mark> notes');
     expect((await page('/search?q=reply')).html).toContain(`comment-${s.c2.number}`);
     expect((await page('/search?q=hidden')).html).not.toContain('Soon hidden');
@@ -448,6 +450,7 @@ describe('SSR: staging switches', () => {
     const home = await handlePage(new Request('https://cw.test/'), staging, createExecutionContext());
     const html = await home!.text();
     expect(meta(html, 'robots')).toBe('noindex,nofollow');
+    // the staging switch does not drop the canonical: staging keeps production's head (only robots differs)
     expect(canonical(html)).toBe('https://staging.example/');
     const robots = await handlePage(new Request('https://cw.test/robots.txt'), staging, createExecutionContext());
     // closed staging: user-triggered AI fetchers (Claude-User, ChatGPT-User, Perplexity-User) may open pages, every crawler is

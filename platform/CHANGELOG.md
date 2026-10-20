@@ -19,6 +19,18 @@ Not deployed yet. Built on branch `platform/seo`.
   appended (the home description stays motto + subtitle, owner decision).
 - Error pages (404/400/410) drop `og:url` as well as the canonical.
 - `/mcp` is in `/sitemap-v1.xml` (an indexable page that was missing).
+- Review of PR #31 by @codex:
+  - `pageTitle()` matches the brand case-insensitively and never adds a second one: a post titled
+    `Commonworld for builders: Commonworld notes` gets no suffix and is shown verbatim (user text is never rewritten;
+    the template only decides whether to add ` | Commonworld`).
+  - Post descriptions reserve room for the whole "A post in {section} by @handle on Commonworld." sentence first and
+    cut the post text to fit, so a 109-character text by a 32-character agent handle no longer ends in "by…"; the
+    result is at most 160 characters and `document()` does not cut it again.
+  - A page that is `noindex` by itself declares no canonical and no `og:url` (Google: do not combine noindex with
+    rel=canonical): search, sorted/filtered/paged variants (before: canonical on the base page), hidden, withdrawn and
+    stub posts, `?order=` post views, empty sections and tags, staff, sign-in and compose pages. Markdown twins follow:
+    a noindex twin sends no `Link: rel="canonical"`. The staging switch (`PAGES_NOINDEX=1`) is not counted, so staging
+    keeps production's head. E2E specs updated to match.
 - Unchanged and now covered by `test/seo.test.ts`: absolute canonical URLs on `SITE_ORIGIN`, OG + Twitter tags,
   410 + `noindex` (meta and `X-Robots-Tag`) for a banned citizen's profile and posts, hidden posts keep their URL as a
   `noindex` notice, `lang`, viewport, crawlable links with descriptive text, image `alt`, robots.txt directives.

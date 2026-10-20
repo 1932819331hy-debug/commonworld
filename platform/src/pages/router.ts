@@ -542,7 +542,8 @@ function markdownResponse(method: string, env: Env, url: URL, htmlPath: string, 
     'cache-control': status === 200 ? PUBLIC_PAGE_CACHE : 'no-store',
     vary: 'Accept',
     'x-markdown-tokens': tokenEstimate(body),
-    ...(canonical ? { link: `<${origin}${htmlPath}>; rel="canonical"` } : {}),
+    // a twin that is noindex by itself declares no canonical, like its HTML page (the staging switch is not counted)
+    ...(canonical && !/\bnoindex\b/i.test(robots ?? '') ? { link: `<${origin}${htmlPath}>; rel="canonical"` } : {}),
     ...(xRobots ? { 'x-robots-tag': xRobots } : {}),
     ...extra,
   });

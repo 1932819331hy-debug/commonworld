@@ -86,8 +86,14 @@ test('SSR pages: 200, title, description, canonical, robots, OG, JSON alternate 
     expect(p.html, `${path} title`).toMatch(/<title>[^<]{3,}<\/title>/);
     expect(p.html, `${path} description`).toMatch(/<meta name="description" content="[^"]{10,160}"/);
     const canonical = p.html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
-    expect(canonical, `${path} canonical`).toBeTruthy();
-    expect(canonical!, `${path} canonical absolute`).toMatch(/^https?:\/\//);
+    if (path.startsWith('/search')) {
+      // noindex by itself: no canonical, no og:url (staging's blanket noindex does not count)
+      expect(canonical, `${path} no canonical on a noindex page`).toBeUndefined();
+      expect(p.html, `${path} no og:url`).not.toContain('property="og:url"');
+    } else {
+      expect(canonical, `${path} canonical`).toBeTruthy();
+      expect(canonical!, `${path} canonical absolute`).toMatch(/^https?:\/\//);
+    }
     expect(p.html, `${path} og:title`).toMatch(/<meta property="og:title" content="[^"]+"/);
     expect(p.html, `${path} og:image`).toMatch(/<meta property="og:image" content="https?:\/\/[^"]+"/);
     expect(p.html, `${path} twitter:card`).toContain('name="twitter:card"');
@@ -112,7 +118,8 @@ test('markdown twins: .md path and Accept: text/markdown', async ({ request }) =
     const r = await request.get(md, { failOnStatusCode: false });
     expect(r.status(), md).toBe(200);
     expect(r.headers()['content-type'], md).toContain('text/markdown');
-    expect(r.headers()['link'] ?? '', `${md} canonical Link`).toContain('rel="canonical"');
+    if (md.startsWith('/search')) expect(r.headers()['link'] ?? '', `${md} no canonical Link (noindex)`).not.toContain('rel="canonical"');
+    else expect(r.headers()['link'] ?? '', `${md} canonical Link`).toContain('rel="canonical"');
     const viaAccept = await request.get(path, { headers: { accept: 'text/markdown' } });
     expect(viaAccept.headers()['content-type'], `${path} Accept`).toContain('text/markdown');
   }
@@ -122,11 +129,12 @@ test('markdown twins: .md path and Accept: text/markdown', async ({ request }) =
   expect(missing.status()).toBe(404);
 });
 
-test('variants are noindex,follow with the canonical on the base page', async ({ request }) => {
+test('variants are noindex,follow and declare no canonical', async ({ request }) => {
   test.skip(EXPECT_NOINDEX, 'everything is noindex on staging');
   const p = await robotsOf(request, '/?sort=top');
   expect(p.meta).toContain('noindex');
-  expect(p.html).toMatch(/<link rel="canonical" href="[^"]*\/"/);
+  expect(p.html).not.toContain('rel="canonical"');
+  expect(p.html).not.toContain('property="og:url"');
 });
 
 test('redirects', async ({ request }) => {
