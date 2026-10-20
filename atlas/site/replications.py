@@ -106,10 +106,17 @@ def count_agent_errata(entry_texts, row_texts, validate_ts):
         if eid not in found_by:
             raise FormatError(f'replications/{name} has no entry')
         rows_by_entry[eid] = parse_rows(name, row_texts[name])
+    for eid in found_by:
+        # validate.ts: every entry needs replications/<id>.jsonl with a replication-0 row that reproduces, by any agent
+        # (usually the finder, or the curator/operator standing in): `!rows.some((r) => r.result === "reproduces")` is an error.
+        if eid not in rows_by_entry:
+            raise FormatError(f'entries/{eid}.md has no replications/{eid}.jsonl')
+        if not any(r['result'] == 'reproduces' for r in rows_by_entry[eid]):
+            raise FormatError(f'replications/{eid}.jsonl has no replication-0 row that reproduces')
     agents, replicated = set(), 0
     for eid, finder in found_by.items():
         # validate.ts: rows.filter(r => r.agent !== e.found_by && r.agent !== OPERATOR), then distinct agents with result "reproduces"
-        indep = {r['agent'] for r in rows_by_entry.get(eid, []) if r['agent'] != finder and r['agent'] != operator and r['result'] == 'reproduces'}
+        indep = {r['agent'] for r in rows_by_entry[eid] if r['agent'] != finder and r['agent'] != operator and r['result'] == 'reproduces'}
         agents |= indep
         replicated += 1 if indep else 0
     return {'rows': sum(len(v) for v in rows_by_entry.values()), 'entries': len(found_by),

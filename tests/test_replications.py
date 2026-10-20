@@ -68,11 +68,30 @@ class Counting(unittest.TestCase):
         got = R.count_agent_errata(e, r, VALIDATE_TS)
         self.assertEqual((got['independent_agents'], got['rows']), (3, 13))  # y reproduced E002 too, but is counted once
 
-    def test_entry_without_rows_counts_as_entry_only(self):
+    def test_entry_without_jsonl_fails_closed(self):
+        # validate.ts: rowsByEntry.get(id) ?? [] has no "reproduces" row -> "needs a replication-0 row that reproduces"
         e, r = files()
         e['E005.md'] = entry('E005', 'op')
+        with self.assertRaises(R.FormatError):
+            R.count_agent_errata(e, r, VALIDATE_TS)
+        r['E005.jsonl'] = '\n'  # file present but no rows
+        with self.assertRaises(R.FormatError):
+            R.count_agent_errata(e, r, VALIDATE_TS)
+
+    def test_entry_without_reproduces_row_fails_closed(self):
+        e, r = files()
+        e['E005.md'] = entry('E005', 'finder')
+        r['E005.jsonl'] = '\n'.join([row('E005', 'x', 'does-not-reproduce'), row('E005', 'y', 'not-applicable')])
+        with self.assertRaises(R.FormatError):
+            R.count_agent_errata(e, r, VALIDATE_TS)
+
+    def test_replication_zero_by_finder_or_operator_satisfies_the_rule(self):
+        # validate.ts counts any agent's "reproduces" row as replication 0; it is not an independent reproduction
+        e, r = files()
+        e['E005.md'], r['E005.jsonl'] = entry('E005', 'finder'), row('E005', 'finder')
+        e['E006.md'], r['E006.jsonl'] = entry('E006', 'finder'), row('E006', 'op')
         got = R.count_agent_errata(e, r, VALIDATE_TS)
-        self.assertEqual((got['entries'], got['entries_replicated'], got['rows']), (5, 3, 12))
+        self.assertEqual((got['entries'], got['entries_replicated'], got['rows'], got['independent_agents']), (6, 3, 14, 3))
 
     def test_operator_is_read_from_validate_ts(self):
         e, r = files()
