@@ -39,58 +39,54 @@ class Findings(unittest.TestCase):
     def test_every_destructive_kind_is_found(self):
         self.assertEqual(rules(read(os.path.join(FIX, 'destructive', '0002_contract.sql'))), [
             'destructive: DROP TABLE', 'destructive: ALTER TABLE ... DROP', 'destructive: ALTER TABLE ... RENAME',
-            'destructive: ALTER TABLE ... RENAME', 'destructive: DELETE FROM without WHERE',
-            'destructive: UPDATE without WHERE'])
+            'destructive: ALTER TABLE ... RENAME', 'row-write: DELETE', 'row-write: UPDATE'])
 
     def test_comments_and_strings_are_ignored(self):
         self.assertEqual(cm.findings("-- DROP TABLE x;\n/* DELETE FROM x; */ SELECT 'UPDATE x SET a=1; DROP TABLE y';"), [])
         self.assertEqual(cm.findings("INSERT INTO x (a) VALUES ('it''s; DELETE FROM x');"), [])
 
-    def test_where_must_belong_to_the_statement(self):
-        self.assertEqual(cm.findings('DELETE FROM x WHERE id = 1;'), [])
-        self.assertEqual(cm.findings('DELETE FROM x WHERE id = 1 RETURNING id;'), [])
-        self.assertEqual(rules('DELETE FROM x;'), ['destructive: DELETE FROM without WHERE'])
-        self.assertEqual(rules('UPDATE OR IGNORE x SET a = 1;'), ['destructive: UPDATE without WHERE'])
-        self.assertEqual(rules('UPDATE OR REPLACE x SET a = 1;'), ['destructive: UPDATE without WHERE'])
-        self.assertEqual(rules('DELETE FROM x LIMIT 5;'), ['destructive: DELETE FROM without WHERE'])
-        self.assertEqual(cm.findings('INSERT INTO x (a) VALUES (1) ON CONFLICT (a) DO UPDATE SET a = 2;'), [])
+    def test_every_update_and_delete_is_row_write_whatever_the_where(self):
+        """Owner decision 2026-10-20: no WHERE heuristics; every UPDATE / DELETE needs a human."""
+        for sql in ('DELETE FROM x;', 'DELETE FROM x WHERE id = 1;', 'DELETE FROM x WHERE id = 1 RETURNING id;',
+                    "DELETE FROM users WHERE length('a') = 1;", 'DELETE FROM x WHERE 1;', 'DELETE FROM x LIMIT 5;',
+                    "DELETE FROM t WHERE abs(-1) = 1;", "DELETE FROM t WHERE 'a' = 'a';",
+                    'DELETE FROM accounts RETURNING (SELECT 1 WHERE 1);'):
+            self.assertEqual(rules(sql), ['row-write: DELETE'], sql)
+        for sql in ('UPDATE x SET a = 1;', 'UPDATE x SET a = 1 WHERE id = 5;', 'UPDATE OR IGNORE x SET a = 1;',
+                    'UPDATE OR REPLACE x SET a = 1 WHERE id = 2;', "UPDATE accounts SET status=(SELECT 'frozen' WHERE 1);",
+                    'UPDATE x SET a = 1 FROM (SELECT id FROM y WHERE y.k = 2) AS s;',
+                    "update t set a = 1 where coalesce(1, a) = 1;"):
+            self.assertEqual(rules(sql), ['row-write: UPDATE'], sql)
 
-    def test_where_in_subquery_or_returning_is_a_bypass(self):
-        for sql in ("UPDATE accounts SET status=(SELECT 'frozen' WHERE 1);",
-                    'DELETE FROM accounts RETURNING (SELECT 1 WHERE 1);',
-                    'UPDATE users SET is_admin=1, note=(SELECT value FROM config WHERE id=1);',
-                    'UPDATE x SET a = 1 RETURNING (SELECT 1 FROM y WHERE y.id = x.id);',
-                    'UPDATE x SET a = 1 FROM (SELECT id FROM y WHERE y.k = 2) AS s;'):
-            self.assertEqual(len(rules(sql)), 1, sql)
-            self.assertTrue(rules(sql)[0].startswith('destructive: '), sql)
-
-    def test_trivially_true_where_counts_as_none(self):
-        for cond in ('1', 'TRUE', '1=1', "'a'='a'", 'NOT 0', 'id=id', 'x.id = x.id', '"id" IS "id"', '[id] == [id]',
-                     '(SELECT 1)', '(1)', 'id = 5 OR 1', '1 AND 2', 'id = id AND 1', 'EXISTS (SELECT 1)',
-                     "'x' LIKE '%'", '2 > 1', 'NULL IS NULL'):
-            for verb in ('DELETE FROM t WHERE ', 'UPDATE t SET a = 1 WHERE '):
-                self.assertEqual(rules(verb + cond + ';'), [f'destructive: {verb.split()[0]}{" FROM" if verb.startswith("DELETE") else ""} with an always-true WHERE'], cond)
-
-    def test_real_conditions_are_accepted(self):
-        for cond in ('id = 5', 'id = 5 AND 1', 'a = b', 'id BETWEEN 1 AND 5', 'id IN (SELECT id FROM y)',
-                     'email = lower(email)', "status = 'old'", '0', 'x.id = y.id', 'id = old.id'):
-            self.assertEqual(cm.findings(f'DELETE FROM t WHERE {cond};'), [], cond)
+    def test_overwriting_inserts_are_row_write(self):
+        self.assertEqual(rules('INSERT INTO x (a) VALUES (1) ON CONFLICT (a) DO UPDATE SET a = 2;'),
+                         ['row-write: INSERT ... ON CONFLICT DO UPDATE (upsert)'])
+        self.assertEqual(rules('INSERT INTO x (a) SELECT a FROM y WHERE true ON CONFLICT DO UPDATE SET a = excluded.a;'),
+                         ['row-write: INSERT ... ON CONFLICT DO UPDATE (upsert)'])
+        self.assertEqual(rules('INSERT OR REPLACE INTO t VALUES (1);'), ['row-write: INSERT OR REPLACE'])
+        self.assertEqual(rules('REPLACE INTO t VALUES (1);'), ['row-write: REPLACE INTO'])
+        self.assertEqual(cm.findings('INSERT INTO x (a) VALUES (1) ON CONFLICT (a) DO NOTHING;'), [])
+        self.assertEqual(cm.findings('INSERT OR IGNORE INTO t VALUES (1);'), [])
+        self.assertEqual(cm.findings("INSERT INTO t (a) VALUES (replace('a', 'b', 'c'));"), [])
 
     def test_cte(self):
-        self.assertEqual(rules('WITH x AS (SELECT id FROM b WHERE 1) DELETE FROM a;'),
-                         ['destructive: DELETE FROM without WHERE'])
-        self.assertEqual(rules('WITH RECURSIVE x(n) AS (SELECT 1) UPDATE a SET v = 1;'),
-                         ['destructive: UPDATE without WHERE'])
-        self.assertEqual(cm.findings('WITH x AS (SELECT id FROM b) DELETE FROM a WHERE id IN (SELECT id FROM x);'), [])
+        self.assertEqual(rules('WITH x AS (SELECT id FROM b WHERE 1) DELETE FROM a;'), ['row-write: DELETE'])
+        self.assertEqual(rules('WITH RECURSIVE x(n) AS (SELECT 1) UPDATE a SET v = 1;'), ['row-write: UPDATE'])
+        self.assertEqual(rules('WITH x AS (SELECT id FROM b) DELETE FROM a WHERE id IN (SELECT id FROM x);'),
+                         ['row-write: DELETE'])
+        self.assertEqual(rules('WITH x AS (SELECT 1) INSERT INTO a SELECT * FROM x ON CONFLICT DO UPDATE SET v = 1;'),
+                         ['row-write: INSERT ... ON CONFLICT DO UPDATE (upsert)'])
         self.assertEqual(cm.findings('WITH x AS (SELECT 1) SELECT * FROM x;'), [])
+
+    def test_foreign_key_actions_and_trigger_events_are_not_row_writes(self):
+        self.assertEqual(cm.findings('CREATE TABLE c (id INT, p INT REFERENCES p(id) ON DELETE CASCADE ON UPDATE SET NULL);'
+                                     'CREATE TRIGGER tr AFTER UPDATE OF a ON t BEGIN SELECT 1; END;'
+                                     'CREATE TRIGGER tr2 BEFORE DELETE ON t BEGIN INSERT INTO log VALUES (old.id); END;'), [])
 
     def test_review_required(self):
         self.assertEqual(rules('DROP INDEX IF EXISTS users_email;'), ['review-required: DROP INDEX'])
         self.assertEqual(rules('DROP TRIGGER t;'), ['review-required: DROP TRIGGER'])
         self.assertEqual(rules('DROP VIEW v;'), ['review-required: DROP VIEW'])
-        self.assertEqual(rules('INSERT OR REPLACE INTO t VALUES (1);'), ['review-required: INSERT OR REPLACE (can overwrite rows)'])
-        self.assertEqual(rules('REPLACE INTO t VALUES (1);'), ['review-required: REPLACE INTO (can overwrite rows)'])
-        self.assertEqual(cm.findings('INSERT OR IGNORE INTO t VALUES (1);'), [])
 
     def test_unknown_or_unreadable_fails_closed(self):
         for sql in ('VACUUM;', 'ATTACH DATABASE x AS y;', 'PRAGMA writable_schema = 1;', "SELECT 'open;",
@@ -106,10 +102,16 @@ class Findings(unittest.TestCase):
 
     def test_trigger_body_is_checked(self):
         self.assertEqual(rules('CREATE TRIGGER t AFTER INSERT ON a BEGIN DELETE FROM b; END;'),
-                         ['destructive: DELETE FROM without WHERE (in trigger body)'])
-        self.assertEqual(cm.findings('CREATE TEMP TRIGGER t AFTER INSERT ON a BEGIN '
-                                     'UPDATE c SET n = CASE WHEN new.k THEN 1 ELSE 2 END WHERE id = new.id; END;'
-                                     'DELETE FROM a WHERE id = 1;'), [])
+                         ['row-write: DELETE (in trigger body)'])
+        self.assertEqual(rules('CREATE TEMP TRIGGER t AFTER INSERT ON a BEGIN '
+                               'UPDATE c SET n = CASE WHEN new.k THEN 1 ELSE 2 END WHERE id = new.id; END;'),
+                         ['row-write: UPDATE (in trigger body)'])
+        self.assertEqual(rules('CREATE TRIGGER t AFTER INSERT ON a BEGIN REPLACE INTO b VALUES (new.id); '
+                               'INSERT INTO c VALUES (new.id) ON CONFLICT DO UPDATE SET n = n + 1; END;'),
+                         ['row-write: REPLACE INTO (in trigger body)',
+                          'row-write: INSERT ... ON CONFLICT DO UPDATE (upsert) (in trigger body)'])
+        self.assertEqual(cm.findings('CREATE TRIGGER t AFTER INSERT ON a BEGIN '
+                                     'INSERT INTO log (x) VALUES (CASE WHEN new.k THEN 1 ELSE 2 END); END;'), [])
 
     def test_add_column_is_not_destructive(self):
         self.assertEqual(cm.findings('ALTER TABLE x ADD COLUMN y TEXT;'), [])
@@ -132,6 +134,11 @@ class Findings(unittest.TestCase):
         self.assertTrue(rules('ALTER TABLE x ADD COLUMN g INT AS (a + 1) STORED;')[0].startswith('review-required: ADD COLUMN ... STORED'))
         self.assertTrue(rules('ALTER TABLE x ADD COLUMN t TEXT DEFAULT CURRENT_TIMESTAMP;')[0].startswith(
             'review-required: ADD COLUMN ... DEFAULT CURRENT_TIMESTAMP'))
+        for d in ('(CURRENT_TIMESTAMP)', '(CURRENT_TIME)', '(CURRENT_DATE)', '((current_timestamp))',
+                  "(datetime('now'))", '(random())', "(strftime('%s', 'now'))", '(1 + 1)'):
+            r = rules(f'ALTER TABLE users ADD COLUMN created TEXT NOT NULL DEFAULT {d};')
+            self.assertEqual(len(r), 1, (d, r))
+            self.assertTrue(r[0].startswith('review-required: ADD COLUMN ... DEFAULT ('), (d, r))
 
     def test_add_column_rules_match_sqlite(self):
         """Every flagged definition really fails in SQLite on a table with a row; every passing one really works."""
@@ -139,6 +146,12 @@ class Findings(unittest.TestCase):
         for col, flagged in (('y TEXT NOT NULL', True), ('y TEXT NOT NULL DEFAULT NULL', True),
                              ('y INTEGER PRIMARY KEY', True), ('y TEXT UNIQUE', True),
                              ('g INT AS (a + 1) STORED', True), ('t TEXT DEFAULT CURRENT_TIMESTAMP', True),
+                             ('created TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)', True),
+                             ('d TEXT DEFAULT (CURRENT_DATE)', True), ('d TEXT DEFAULT (CURRENT_TIME)', True),
+                             ("d TEXT DEFAULT (datetime('now'))", True), ('d INT DEFAULT (random())', True),
+                             ('d INT DEFAULT (1 + 1)', True),
+                             ('y INT NOT NULL DEFAULT (2)', False), ("y TEXT DEFAULT ('x')", False),
+                             ('y INT DEFAULT (-3)', False), ('y TEXT DEFAULT (NULL)', False),
                              ("y TEXT NOT NULL DEFAULT ''", False), ('y INT NOT NULL DEFAULT -1', False),
                              ('y TEXT', False)):
             sql = f'ALTER TABLE x ADD COLUMN {col};'
@@ -256,6 +269,38 @@ class Cli(unittest.TestCase):
         for allow in ('yes', 'b' * 40, SHA.upper(), SHA[:12]):
             code, _ = run('--dir', self.d, '--pending-from', REAL_PENDING_2, '--sha', SHA, '--allow', allow)
             self.assertEqual(code, 1, allow)
+
+    def test_row_write_needs_owner_marker_and_override(self):
+        bad = "DELETE FROM users WHERE length('a') = 1;\n"
+        args = ('--dir', self.d, '--pending-from', REAL_PENDING_2, '--sha', SHA)
+        self.write('0005_more.sql', bad)
+        code, out = run(*args)
+        self.assertEqual(code, 1)
+        self.assertIn('0005_more.sql::row-write: DELETE', out)
+        code, out = run(*args, '--allow', SHA)                       # override alone is not enough
+        self.assertEqual(code, 1)
+        self.assertIn('reviewed-by-owner', out)
+        self.write('0005_more.sql', '-- reviewed-by-owner: #19\n' + bad)
+        self.assertEqual(run(*args)[0], 1)                           # marker alone is not enough
+        code, out = run(*args, '--allow', SHA)                       # marker AND override
+        self.assertEqual(code, 0)
+        self.assertIn('::warning file=', out)
+
+    def test_owner_marker_must_be_a_header_line(self):
+        for text in ('DELETE FROM t;\n-- reviewed-by-owner: #19\n',           # after the first statement
+                     '/* -- reviewed-by-owner: #19 */\nDELETE FROM t;\n',      # inside a block comment
+                     '-- reviewed-by-owner: yes\nDELETE FROM t;\n',            # no PR number
+                     '-- reviewed-by-owner: #0\nDELETE FROM t;\n',
+                     '-- reviewed-by-owner: #19 trust me\nDELETE FROM t;\n',
+                     "SELECT '\n-- reviewed-by-owner: #19\n';\nDELETE FROM t;\n"):
+            self.assertIsNone(cm.owner_marker(text), text)
+        self.assertEqual(cm.owner_marker('-- backfill\n\n--reviewed-by-owner:42\nUPDATE t SET a = 1;\n'), 42)
+        self.assertEqual(cm.owner_marker('  -- reviewed-by-owner: #7  \nDELETE FROM t;'), 7)
+
+    def test_marked_fixture_passes_only_with_override(self):
+        d = os.path.join(FIX, 'rowwrite')
+        self.assertEqual(run('--dir', d, '--all')[0], 1)
+        self.assertEqual(run('--dir', d, '--all', '--sha', SHA, '--allow', SHA)[0], 0)
 
     def test_nothing_pending_passes(self):
         code, out = run('--dir', self.d, '--pending-from', REAL_NONE, '--sha', SHA)

@@ -1,10 +1,9 @@
-/* expand only: new column with a default, backfill with WHERE, upsert */
+/* expand only: new column with a default, new table, insert-only upsert, trigger that only inserts */
 ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT '';
-UPDATE users SET display_name = email WHERE display_name = '';
-DELETE FROM users WHERE email = 'DROP TABLE users; DELETE FROM users';
+CREATE TABLE audit (id INTEGER PRIMARY KEY, user_id TEXT, note TEXT);
 INSERT INTO users (id, email, created_at) VALUES ('x', 'x@example.org', '2026-01-01')
-  ON CONFLICT (id) DO UPDATE SET email = excluded.email;
--- DROP TABLE users;  (a comment, ignored)
-CREATE TRIGGER users_touch AFTER DELETE ON users BEGIN
-  UPDATE users SET created_at = created_at WHERE id = old.id;
+  ON CONFLICT (id) DO NOTHING;
+-- DROP TABLE users; DELETE FROM users;  (a comment, ignored)
+CREATE TRIGGER users_audit AFTER DELETE ON users BEGIN
+  INSERT INTO audit (user_id, note) VALUES (old.id, 'DELETE FROM users');
 END;

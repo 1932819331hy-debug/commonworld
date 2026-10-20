@@ -12,8 +12,9 @@ name: Deploy platform (production)
 # What gets released is fixed by the sha alone: platform code and Atlas data come from that commit, the homepage
 # screenshots from the atlas-screens commit named in atlas/screens.lock at that commit. A release manifest (all three
 # shas, sha256 of the built Atlas assets, wrangler version) is printed in the job summary and kept as an artifact.
-# Pending D1 migrations with destructive, review-required or unreadable SQL stop the run (scripts/check-migrations.py,
-# expand -> deploy -> contract); allow_destructive_migration = the same sha typed again lets one such release through.
+# Pending D1 migrations with destructive, row-writing, review-required or unreadable SQL stop the run (scripts/check-migrations.py,
+# expand -> deploy -> contract); allow_destructive_migration = the same sha typed again lets one such release through
+# (a migration that changes existing rows also needs a `-- reviewed-by-owner: #<PR>` header line, docs/DEPLOY.md).
 # The production version live before the deploy is printed in the summary with the exact rollback command.
 on:
   workflow_dispatch:

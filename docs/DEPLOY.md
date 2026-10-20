@@ -78,26 +78,36 @@ database is used by the code that is running now. Rules:
 
 - **Every migration must be backward compatible with the currently running Worker.** Allowed in a normal release:
   new tables, new columns that are nullable or have a constant non-NULL default (a `NOT NULL` column without
-  one, `PRIMARY KEY`, `UNIQUE` or `STORED` columns are refused by SQLite and stop the gate), new indexes, backfills
-  with a `WHERE`.
+  one, `PRIMARY KEY`, `UNIQUE` or `STORED` columns are refused by SQLite and stop the gate), new indexes.
+- **Changing existing rows always needs the owner.** Any `UPDATE`, `DELETE`, `REPLACE INTO`, `INSERT OR REPLACE` or
+  upsert (`ON CONFLICT … DO UPDATE`), with any `WHERE` and also inside `WITH …` or a trigger body, is a *row-write*.
+  The gate does not try to judge whether a `WHERE` is safe (decided by the owner on 2026-10-20 after
+  `WHERE length('a') = 1` slipped past the earlier heuristics). A row-write migration passes only with **both**:
+  1. a line `-- reviewed-by-owner: #<PR>` in the file's header (the comment lines before the first SQL statement),
+     added in the PR the owner reviewed (`.github/CODEOWNERS`), and
+  2. the one-release override below (*allow_destructive_migration* = the release sha typed again), which can only be
+     used after the `production` environment approval.
+
+  Either one alone keeps the gate closed. The marker is a declaration checked by people in review, not something the
+  script can verify: that is the point, a human has to have looked.
 - **Destructive changes ship in a later release**, after the code no longer uses what they remove: first release
   stops reading/writing the column or table (expand + deploy), a following release drops or renames it (contract).
 - **The gate.** Before any migration runs, the workflow lists the migrations not yet applied in production
   (`wrangler d1 migrations list commonworld-prod --remote --env production`) and runs
   `scripts/check-migrations.py` on them. The script reads the SQL with a small tokenizer (comments, string literals
   and quoted names are handled, statements split on top-level `;`) and stops the run on:
-  - **destructive:** `DROP TABLE`, `ALTER TABLE … DROP`, `ALTER TABLE … RENAME`, and `DELETE` / `UPDATE` without a
-    `WHERE` of their own. A `WHERE` inside a subquery, a `SET` value or `RETURNING` does not count, and an always-true
-    one (`WHERE 1`, `TRUE`, `1=1`, `'a'='a'`, `NOT 0`, `id=id`, `(SELECT 1)` …) counts as none. Also inside
-    `WITH … DELETE/UPDATE` and inside trigger bodies;
-  - **review-required:** `DROP INDEX`, `DROP TRIGGER`, `DROP VIEW`, `INSERT OR REPLACE` / `REPLACE INTO` (can
-    overwrite rows);
+  - **destructive:** `DROP TABLE`, `ALTER TABLE … DROP`, `ALTER TABLE … RENAME`;
+  - **row-write:** every `UPDATE` / `DELETE` / `REPLACE INTO` / `INSERT OR REPLACE` / upsert `DO UPDATE` (see above;
+    needs the owner marker as well as the override);
+  - **review-required:** `DROP INDEX`, `DROP TRIGGER`, `DROP VIEW`, and an `ADD COLUMN` SQLite would refuse at apply
+    time (`NOT NULL` without a non-NULL default, `PRIMARY KEY`, `UNIQUE`, `STORED`, or a non-constant default such
+    as `CURRENT_TIMESTAMP` or `(CURRENT_TIMESTAMP)`; the script asks SQLite itself whether the default is accepted);
   - **unknown:** SQL it cannot read or a statement kind not on its known-safe list (fail closed).
 
   It also stops the run if the wrangler list cannot be read exactly: an error line, a table line it cannot parse, a
   listed name that is not a local file, a `*.sql` name outside the table, or pending names that are not the newest
   local migration files in order. It is a safety net, not a replacement for reading the migration.
-- **Override, one release only** (any finding, all three classes): start the run with
+- **Override, one release only** (any finding, every class; a row-write also needs its owner marker): start the run with
   *allow_destructive_migration* = the same 40-character sha typed a second time. Anything else (empty, `yes`, a short sha) keeps the gate closed.
   Only for a contract step whose code side is already live.
 - **Restore = D1 Time Travel** to the bookmark the run printed (step *Time Travel bookmark before migrations*, also

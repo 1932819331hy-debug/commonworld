@@ -9,17 +9,18 @@ after the code no longer uses it.
 The SQL is read by a small tokenizer (comments dropped, '...' strings, "..."/`...`/[...] identifiers, parenthesis
 depth, statements split on top-level ';', CREATE TRIGGER ... BEGIN ... END kept whole). Every statement is classified:
 
-  destructive      DROP TABLE, ALTER TABLE ... DROP (COLUMN), ALTER TABLE ... RENAME (table or column),
-                   DELETE / UPDATE without a top-level WHERE of their own (a WHERE inside a subquery, a SET value or
-                   RETURNING does not count) or with a trivially true one (1, TRUE, 1=1, 'a'='a', NOT 0, x=x, a
-                   constant subquery such as (SELECT 1) ...), also inside WITH ... and inside trigger bodies
-  review-required  DROP INDEX, DROP TRIGGER, DROP VIEW, INSERT OR REPLACE / REPLACE INTO (can overwrite rows),
+  destructive      DROP TABLE, ALTER TABLE ... DROP (COLUMN), ALTER TABLE ... RENAME (table or column)
+  row-write        anything that changes or removes existing rows: every UPDATE and DELETE (whatever the WHERE),
+                   REPLACE INTO, INSERT OR REPLACE, INSERT ... ON CONFLICT DO UPDATE (upsert); also inside WITH ...
+                   and inside trigger bodies. No attempt is made to judge a WHERE: a human reviews every one
+  review-required  DROP INDEX, DROP TRIGGER, DROP VIEW,
                    ALTER TABLE ... ADD of a column SQLite refuses at apply time: NOT NULL without a non-NULL DEFAULT,
-                   PRIMARY KEY, UNIQUE, a STORED generated column, DEFAULT CURRENT_TIME/DATE/TIMESTAMP
+                   PRIMARY KEY, UNIQUE, a STORED generated column, a DEFAULT that is not constant (CURRENT_TIME/DATE/
+                   TIMESTAMP, also in parentheses, or any expression SQLite itself refuses as an ADD COLUMN default)
   unknown          anything the tokenizer cannot read or a statement kind not on the known-safe list (fail closed)
 
 Known safe: CREATE TABLE / INDEX / VIEW / TRIGGER / VIRTUAL TABLE, ALTER TABLE ... ADD (other column definitions), INSERT (plain, OR IGNORE /
-ABORT / FAIL / ROLLBACK, ON CONFLICT DO ...), SELECT, VALUES, BEGIN / COMMIT / END / SAVEPOINT / RELEASE, ANALYZE,
+ABORT / FAIL / ROLLBACK, ON CONFLICT DO NOTHING), SELECT, VALUES, BEGIN / COMMIT / END / SAVEPOINT / RELEASE, ANALYZE,
 REINDEX, PRAGMA foreign_keys / defer_foreign_keys / optimize. Every finding of any class blocks the deploy unless the
 override is given. It is a safety net, not a SQL engine: a reviewer still reads every migration.
 
@@ -32,18 +33,25 @@ is not a local file or is listed twice, any "*.sql" name appears outside the tab
 suffix of the sorted local migration files (in that order).
 
 Override: --allow must equal --sha (the release sha typed a second time, workflow input allow_destructive_migration),
-then findings are printed as warnings and the gate passes.
+then findings are printed as warnings and the gate passes. A row-write migration needs, in addition, a
+`-- reviewed-by-owner: #<PR>` line in its header (comment lines before the first statement), written by the owner in
+the reviewed PR (CODEOWNERS). Without that line the gate fails even with the override; the line alone (no override)
+fails too. The deploy itself also waits for the production environment approval.
 
 Usage:
     check-migrations.py --dir platform/migrations --pending-from wrangler-list.txt [--sha SHA --allow SHA]
     check-migrations.py --dir platform/migrations --all          # scan every file (CI, report only with --warn-only)
-Exit codes: 0 ok, 1 findings without override, 2 usage / unreadable input / pending list not understood.
+Exit codes: 0 ok, 1 findings without override (or a row-write file without the owner marker), 2 usage / unreadable input / pending list not understood.
 """
 import argparse, os, re, sqlite3, sys
 
 SHA40 = re.compile(r'[0-9a-f]{40}')
 
-DESTRUCTIVE, REVIEW, UNKNOWN = 'destructive', 'review-required', 'unknown'
+DESTRUCTIVE, REVIEW, UNKNOWN, ROW_WRITE = 'destructive', 'review-required', 'unknown', 'row-write'
+
+# Owner-review marker for a migration that changes existing rows: a whole comment line in the file's header (the
+# comments before the first SQL statement), e.g. `-- reviewed-by-owner: #42` (number of the PR the owner reviewed).
+OWNER_MARKER = re.compile(r'--[ \t]*reviewed-by-owner:[ \t]*#?([1-9][0-9]*)[ \t]*')
 
 
 class SqlError(Exception):
@@ -166,7 +174,7 @@ def split_statements(toks):
     return out
 
 
-def show(toks):
+def show(toks, limit=200):
     parts = []
     for t in toks:
         if t.kind == 'string':
@@ -177,115 +185,7 @@ def show(toks):
             parts.append("X'" + t.text + "'")
         else:
             parts.append(t.text)
-    return ' '.join(parts)[:200]
-
-
-# ---------------------------------------------------------------- WHERE analysis
-
-_CLAUSE_END = {'RETURNING', 'ORDER', 'LIMIT'}
-_LITERAL_WORDS = {'TRUE', 'FALSE', 'NULL', 'NOT', 'AND', 'OR', 'IS', 'IN', 'BETWEEN', 'LIKE', 'GLOB', 'ESCAPE', 'CASE',
-                  'WHEN', 'THEN', 'ELSE', 'END', 'CAST', 'AS', 'INTEGER', 'INT', 'TEXT', 'REAL', 'NUMERIC', 'BLOB',
-                  'SELECT', 'WHERE', 'EXISTS', 'DISTINCT', 'ALL', 'UNION', 'INTERSECT', 'EXCEPT', 'VALUES',
-                  'CURRENT_DATE', 'CURRENT_TIME', 'CURRENT_TIMESTAMP'}
-
-
-def top_where(toks, start):
-    """Condition tokens of the statement's own WHERE (depth of the verb), or None when there is none."""
-    d = toks[start].depth
-    for k in range(start + 1, len(toks)):
-        t = toks[k]
-        if t.depth != d:
-            continue
-        if t.up in _CLAUSE_END:
-            return None
-        if t.up == 'WHERE':
-            cond = []
-            for u in toks[k + 1:]:
-                if u.depth == d and u.up in _CLAUSE_END:
-                    break
-                cond.append(u)
-            return cond
-    return None
-
-
-def _strip_parens(toks):
-    while len(toks) >= 2 and toks[0].text == '(' and toks[-1].text == ')' and toks[0].kind == 'op':
-        d = toks[0].depth
-        # outer pair only if the first '(' closes at the very end
-        closes = [k for k, t in enumerate(toks) if t.kind == 'op' and t.text == ')' and t.depth == d]
-        if closes and closes[0] == len(toks) - 1:
-            toks = toks[1:-1]
-        else:
-            break
-    return toks
-
-
-def _split(toks, word):
-    if not toks:
-        return [toks]
-    d = min(t.depth for t in toks)
-    parts, cur, between = [], [], False
-    for t in toks:
-        if t.depth == d and t.up == 'BETWEEN':
-            between = True
-        if t.depth == d and t.up == word:
-            if word == 'AND' and between:
-                between = False  # the AND of BETWEEN x AND y
-            else:
-                parts.append(cur); cur = []; continue
-        cur.append(t)
-    parts.append(cur)
-    return parts
-
-
-def _name(t):
-    return t.text.lower() if t.kind in ('word', 'ident') else None
-
-
-def _self_compare(toks):
-    """x = x, t.x == t.x, x IS x (same column on both sides)."""
-    for k, t in enumerate(toks):
-        if t.depth == toks[0].depth and (t.text in ('=', '==', '<=', '>=') or t.up == 'IS'):
-            left, right = toks[:k], toks[k + 1:]
-            names_l = [_name(u) if u.kind != 'op' else u.text for u in left]
-            names_r = [_name(u) if u.kind != 'op' else u.text for u in right]
-            return bool(left) and names_l == names_r and all(
-                u.kind in ('word', 'ident') or u.text == '.' for u in left) and all(
-                u.up not in _LITERAL_WORDS for u in left if u.kind == 'word')
-    return False
-
-
-def _constant_true(toks):
-    """Literal-only condition (no column, table or function name) that SQLite evaluates to true (or cannot evaluate)."""
-    if not toks:
-        return True
-    for t in toks:
-        if t.kind in ('ident', 'param'):
-            return False
-        if t.kind == 'word' and t.up not in _LITERAL_WORDS:
-            return False
-    try:
-        con = sqlite3.connect(':memory:')
-        try:
-            row = con.execute('SELECT CASE WHEN (' + show(toks) + ') THEN 1 ELSE 0 END').fetchone()
-        finally:
-            con.close()
-        return bool(row and row[0])
-    except sqlite3.Error:
-        return True  # cannot tell: fail closed
-
-
-def trivially_true(cond):
-    cond = _strip_parens(cond)
-    if not cond:
-        return True
-    ors = _split(cond, 'OR')
-    if len(ors) > 1:
-        return any(trivially_true(p) for p in ors)
-    ands = _split(cond, 'AND')
-    if len(ands) > 1:
-        return all(trivially_true(p) for p in ands)
-    return _constant_true(cond) or _self_compare(cond)
+    return ' '.join(parts)[:limit] if limit else ' '.join(parts)
 
 
 # ---------------------------------------------------------------- statement classification
@@ -303,15 +203,6 @@ def _skip_with(toks):
     return None
 
 
-def _check_where(toks, k, verb):
-    cond = top_where(toks, k)
-    if cond is None:
-        return [(DESTRUCTIVE, f'{verb} without WHERE')]
-    if trivially_true(cond):
-        return [(DESTRUCTIVE, f'{verb} with an always-true WHERE')]
-    return []
-
-
 def classify(st):
     """-> [(class, rule)] for one statement's tokens (empty = known safe)."""
     w = [t.up for t in st[:6]] + [None] * 6
@@ -324,16 +215,19 @@ def classify(st):
         first = st[k].up
         w = [t.up for t in st[k:k + 6]] + [None] * 6
     if first == 'UPDATE':
-        return _check_where(st, k, 'UPDATE')
+        return [(ROW_WRITE, 'UPDATE')]
     if first == 'DELETE':
-        return _check_where(st, k, 'DELETE FROM')
+        return [(ROW_WRITE, 'DELETE')]
     if first == 'REPLACE':
-        return [(REVIEW, 'REPLACE INTO (can overwrite rows)')]
+        return [(ROW_WRITE, 'REPLACE INTO')]
     if first == 'INSERT':
         if w[1] == 'OR' and w[2] == 'REPLACE':
-            return [(REVIEW, 'INSERT OR REPLACE (can overwrite rows)')]
+            return [(ROW_WRITE, 'INSERT OR REPLACE')]
         if w[1] == 'OR' and w[2] not in ('IGNORE', 'ABORT', 'FAIL', 'ROLLBACK'):
             return [(UNKNOWN, 'INSERT OR ' + str(w[2]))]
+        body = st[k:]
+        if any(a.up == 'DO' and b.up == 'UPDATE' for a, b in zip(body, body[1:])):
+            return [(ROW_WRITE, 'INSERT ... ON CONFLICT DO UPDATE (upsert)')]
         return []
     if first in ('SELECT', 'VALUES'):
         return []
@@ -402,18 +296,49 @@ def _add_column(toks):
             res.append((REVIEW, 'ADD COLUMN ... STORED (SQLite cannot add a STORED generated column)'))
         elif u == 'DEFAULT' and i + 1 < len(top):
             nxt = top[i + 1]
-            if nxt.kind == 'op' and nxt.text == '(':
-                inner = [t for t in toks[toks.index(nxt) + 1:] if t.depth > 0]
-                default = 'null' if [t.up for t in inner] == ['NULL'] else 'expr'
+            expr = _default_expr(toks, toks.index(nxt))
+            if [t.up for t in expr if not (t.kind == 'op' and t.text in '()')] == ['NULL']:
+                default = 'null'
             else:
-                default = 'null' if nxt.up == 'NULL' else 'value'
-            if nxt.up in ('CURRENT_TIME', 'CURRENT_DATE', 'CURRENT_TIMESTAMP'):
-                res.append((REVIEW, f'ADD COLUMN ... DEFAULT {nxt.up} (SQLite needs a constant default here)'))
+                default = 'value'
+            current = [t.up for t in expr if t.up in ('CURRENT_TIME', 'CURRENT_DATE', 'CURRENT_TIMESTAMP')]
+            if current:
+                res.append((REVIEW, f'ADD COLUMN ... DEFAULT {show(expr)} (SQLite needs a constant default here)'))
+            elif not _constant_default(expr):
+                res.append((REVIEW, f'ADD COLUMN ... DEFAULT {show(expr)} (SQLite refuses a non-constant default here)'))
     not_null = any(u == 'NOT' and ups[i + 1] == 'NULL' for i, u in enumerate(ups[:-1]))
     if not_null and not generated and default in (None, 'null'):
         res.append((REVIEW, 'ADD COLUMN ... NOT NULL without a non-NULL DEFAULT '
                             '(SQLite rejects it on a table that has rows)'))
     return res
+
+
+def _default_expr(toks, k):
+    """Tokens of the DEFAULT value starting at toks[k]: a whole (...) group, a signed literal, or one token."""
+    t = toks[k]
+    if t.kind == 'op' and t.text == '(':
+        end = next(j for j in range(k + 1, len(toks)) if toks[j].kind == 'op' and toks[j].text == ')'
+                   and toks[j].depth == t.depth)
+        return toks[k:end + 1]
+    if t.kind == 'op' and t.text in '+-' and k + 1 < len(toks):
+        return toks[k:k + 2]
+    return toks[k:k + 1]
+
+
+def _constant_default(expr):
+    """Ask SQLite itself: ALTER TABLE ... ADD COLUMN with this DEFAULT on a table with a row. Anything SQLite refuses
+    (non-constant default, or SQL it cannot read) -> False, so the gate stops it before D1 apply does."""
+    try:
+        con = sqlite3.connect(':memory:')
+        try:
+            con.execute('CREATE TABLE probe (a INT)')
+            con.execute('INSERT INTO probe VALUES (1)')
+            con.execute('ALTER TABLE probe ADD COLUMN c DEFAULT ' + show(expr, None))
+        finally:
+            con.close()
+        return True
+    except sqlite3.Error:
+        return False
 
 
 def _trigger_body(st):
@@ -439,6 +364,21 @@ def findings(text):
         for cls, rule in classify(st):
             res.append((f'{cls}: {rule}', show(st)))
     return res
+
+
+def owner_marker(text):
+    """PR number from a `-- reviewed-by-owner: #N` line in the file header (comment/blank lines before the first
+    statement), else None. A marker further down, inside a block comment or inside SQL does not count."""
+    for line in text.splitlines():
+        s = line.strip()
+        if not s:
+            continue
+        if not s.startswith('--'):
+            return None
+        m = OWNER_MARKER.fullmatch(s)
+        if m:
+            return int(m.group(1))
+    return None
 
 
 # ---------------------------------------------------------------- wrangler output
@@ -543,26 +483,36 @@ def main(argv=None):
             return 2
     print(f'pending migrations: {", ".join(pending) if pending else "none"}')
 
-    hits = []
+    hits, unmarked = [], []
     for f in pending:
         try:
             with open(os.path.join(a.dir, f), encoding='utf-8') as fh:
                 text = fh.read()
         except (OSError, UnicodeDecodeError) as ex:
             print(f'::error::cannot read {a.dir}/{f}: {ex}'); return 2
-        for rule, st in findings(text):
+        found = findings(text)
+        for rule, st in found:
             hits.append((f, rule, st))
+        if any(rule.startswith(ROW_WRITE + ':') for rule, _ in found) and owner_marker(text) is None:
+            unmarked.append(f)
     if not hits:
         print('no destructive or review-required SQL in pending migrations'); return 0
 
     override = bool(a.allow) and SHA40.fullmatch(a.sha or '') is not None and a.allow == a.sha
-    level = 'warning' if (override or a.warn_only) else 'error'
+    level = 'warning' if ((override and not unmarked) or a.warn_only) else 'error'
     for f, rule, st in hits:
         print(f'::{level} file={a.dir}/{f}::{rule}: {st}')
+    for f in unmarked:
+        print(f'::{level} file={a.dir}/{f}::row-write: changes existing rows (UPDATE / DELETE / REPLACE / upsert) '
+              'and has no "-- reviewed-by-owner: #<PR>" line in its header; the release override alone cannot pass it')
+    if a.warn_only:
+        return 0
+    if unmarked:
+        print('::error::migration blocked: a migration that changes existing rows needs the owner\'s review marker in '
+              'the file AND the release override (docs/DEPLOY.md, Database migrations).')
+        return 1
     if override:
         print('migration findings allowed for this release: allow_destructive_migration equals the release sha')
-        return 0
-    if a.warn_only:
         return 0
     print('::error::migration blocked (destructive, review-required or unreadable SQL). Ship destructive changes in '
           'a later release, after the running Worker no longer uses what they remove (docs/DEPLOY.md). To override '
