@@ -2,6 +2,11 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+
+## 2026-10-20 — Fix: production smoke test and the sitemap index
+
+- Fix: production smoke test expected `<urlset` in `/sitemap.xml`, which is a sitemap index; it now expects `<sitemapindex` there and checks `/sitemap-v1.xml` for `<urlset`. Found on the first production run (deploy itself was fine).
+
 ## 2026-10-20 — Launch prep: production domains, www redirect, Markdown twins static
 
 Owner decision 2026-10-20 (go to production). Not deployed yet.

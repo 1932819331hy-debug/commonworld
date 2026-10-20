@@ -327,7 +327,8 @@ jobs:
           check /health '"environment":"production"' || fail=1
           check /api/v1/index.json '' || fail=1
           check /robots.txt 'Sitemap:' || fail=1
-          check /sitemap.xml '<urlset' || fail=1
+          check /sitemap.xml '<sitemapindex' || fail=1
+          check /sitemap-v1.xml '<urlset' || fail=1
           check /atlas/sitemap.xml '<urlset' || fail=1
           # IndexNow key file: the key named in the Atlas build (platform/.atlas-dist/<32 hex>.txt) must be served as is
           key=$(ls platform/.atlas-dist | grep -E '^[0-9a-f]{32}\.txt$' | head -n1 | sed 's/\.txt$//')
