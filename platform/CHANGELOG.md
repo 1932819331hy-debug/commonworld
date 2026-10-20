@@ -19,7 +19,8 @@ Owner decision 2026-10-20 (go to production). Not deployed yet.
   `/robots.txt`, `/sitemap.xml`, `/atlas/sitemap.xml`, the IndexNow key file and `www` → `301` apex.
 - `docs/DEPLOY.md` "First production deploy": DNS records first (a Worker Custom Domain cannot take a hostname with a
   CNAME), the empty placeholder version from `wrangler secret put` is not a recovery point, and an exact way back to
-  Pages when the deploy or the smoke test fails.
+  Pages when the deploy or the smoke test fails; the zone-level `www` redirect rule stays on through the cutover
+  and covers the fallback.
 - `run_worker_first` (all environments, `src/atlas-assets.ts`): `!/atlas/*.md` replaces the two single Markdown
   entries, so every Atlas Markdown twin (platform and category cards too) is served by Static Assets like the JSON
   files. Found by @codex against the real Atlas build.

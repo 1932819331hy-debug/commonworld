@@ -142,8 +142,15 @@ on a hostname that still has a CNAME, so the DNS records go first. All steps by 
    deploys an **empty placeholder version** (a bare `fetch()`, no routes, so nothing public changes). It is **not** a
    recovery point: the deploy run's summary may list it as "Production version before this deploy"; never roll back
    to it, the recovery for the first deploy is step 5 below.
-2. **Write down the two DNS records** (Cloudflare → `commonworld.one` zone → DNS → Records): name, target
-   `commonworld.pages.dev`, Proxied. They are also in the ops DNS backup of 2026-10-16.
+2. **Write down what you will restore.**
+   1. The two DNS records (Cloudflare → `commonworld.one` zone → DNS → Records): name, target `commonworld.pages.dev`,
+      Proxied. They are also in the ops DNS backup of 2026-10-16.
+   2. Where today's `www` → apex `301` comes from. Pages does not do it (`functions/_middleware.js` only adds the CSP
+      nonce, `_redirects` only has the Privacy/Terms moves), so it is a Cloudflare rule: zone → Rules → Redirect Rules,
+      or account → Bulk Redirects. Note its name and **leave it on**: it keeps working for the Worker (a redirect rule
+      answers before the Worker, the Worker's own redirect is then never reached) and for the way back in step 5.
+      If no such rule exists, create one before the cutover (Redirect Rules → *Redirect from WWW to root*, 301,
+      preserve query string), so the fallback has a `www` redirect too.
 3. **Cut over (site down from here until step 4 passes, a few minutes):**
    1. DNS → delete the `CNAME commonworld.one` and `CNAME www` records.
    2. Workers & Pages → `commonworld` (Pages) → Custom domains → remove `commonworld.one` and `www.commonworld.one`.
@@ -159,7 +166,7 @@ on a hostname that still has a CNAME, so the DNS records go first. All steps by 
       wait until both are Active.
    4. Check: `curl -sI https://commonworld.one/atlas/` → `200` with `server: cloudflare` and no `/health` JSON from
       the Worker (`curl -s https://commonworld.one/health` is the Pages 404 page), `curl -sI https://www.commonworld.one/`
-      → `301` to the apex. Then read the failed run's log and fix before trying again.
+      → `301` to the apex (the redirect rule from step 2.2). Then read the failed run's log and fix before trying again.
 6. **After a green run:** first admin (account through the API, role by one SQL line on `commonworld-prod`),
    `GET /v1/admin/backups`, uptime monitor, WAF / rate limits, billing alerts, Search Console (sitemaps, indexing)
    and Bing Webmaster. The Pages project stays (not deleted) as the fallback.
