@@ -9,8 +9,9 @@ Owner decision 2026-10-20 (go to production). Not deployed yet.
 - `wrangler.toml` `[env.production]`: `routes` with `commonworld.one` and `www.commonworld.one` as Custom Domains, so
   the first production deploy takes the site over from Cloudflare Pages (cutover steps: `docs/DEPLOY.md`, "First
   production deploy").
-- `src/index.ts`: `www.<host>` answers `301` to `<host>` with the same path and query (`canonicalHostRedirect`), one
-  canonical origin for people, agents and search engines.
+- `src/index.ts`: `www.commonworld.one` (exactly that host) answers `301` to `commonworld.one` with the same path and
+  query (`canonicalHostRedirect`), one canonical origin for people, agents and search engines; staging and any other
+  host are untouched (scoped to the one host on @codex's review).
 - `run_worker_first` (all environments, `src/atlas-assets.ts`): `!/atlas/*.md` replaces the two single Markdown
   entries, so every Atlas Markdown twin (platform and category cards too) is served by Static Assets like the JSON
   files. Found by @codex against the real Atlas build.

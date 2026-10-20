@@ -12,6 +12,10 @@ describe('www -> apex redirect (launch cutover 2026-10-20)', () => {
     expect(canonicalHostRedirect(new Request('https://commonworld.one/'))).toBeNull();
     expect(canonicalHostRedirect(new Request('https://staging.commonworld.one/health'))).toBeNull();
   });
+  it('leaves any other www host alone (only the production www domain is redirected)', () => {
+    expect(canonicalHostRedirect(new Request('https://www.example.com/x?y=1'))).toBeNull();
+    expect(canonicalHostRedirect(new Request('https://www.staging.commonworld.one/'))).toBeNull();
+  });
   it('production routes the apex and www as custom domains', () => {
     const toml: string = (env as any).TEST_WRANGLER_TOML;
     const prod = toml.slice(toml.indexOf('[env.production]'));

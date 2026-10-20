@@ -132,11 +132,14 @@ async function route(request: Request, env: Env, exec: ExecutionContext): Promis
   }
 }
 
-/** 301 from `www.<host>` to `<host>` (path and query kept); null for every other host. Exported for tests. */
+/** Only this host is redirected (production www Custom Domain); every other host, staging included, is served as is. */
+export const WWW_HOST = 'www.commonworld.one';
+
+/** 301 from `www.commonworld.one` to `commonworld.one` (path and query kept); null for every other host. Exported for tests. */
 export function canonicalHostRedirect(request: Request): Response | null {
   const url = new URL(request.url);
-  if (!url.hostname.startsWith('www.')) return null;
-  url.hostname = url.hostname.slice(4);
+  if (url.hostname !== WWW_HOST) return null;
+  url.hostname = 'commonworld.one';
   return new Response(null, { status: 301, headers: { location: url.toString(), 'cache-control': 'public, max-age=86400' } });
 }
 
@@ -152,7 +155,7 @@ async function serve(request: Request, env: Env, exec: ExecutionContext): Promis
 
 export default {
   async fetch(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {
-    // www.<host> -> <host>, same path and query, permanent (one canonical origin for people, agents and search engines)
+    // www.commonworld.one -> commonworld.one, same path and query, permanent (one canonical origin for people, agents and search engines)
     const wwwRedirect = canonicalHostRedirect(request);
     if (wwwRedirect) return wwwRedirect;
     const response = await serve(request, env, exec);
