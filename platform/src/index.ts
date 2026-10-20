@@ -4,7 +4,7 @@ import { authenticate } from './auth';
 import { enforceAccountRate } from './account-rate';
 import { HttpError, MAX_BODY_BYTES, errorResponse, json } from './http';
 import { ROUTES, type PublicCache } from './api-routes';
-import { handlePage, SECURITY_HEADERS } from './pages/router';
+import { handlePage } from './pages/router';
 import { versionedCacheKey } from './cache-version';
 import { CLEANUP_CRON, HOURLY_CRON, pruneOldRecords } from './retention';
 import { BACKUP_CRON, RESTORE_CHECK_CRON, logBackup, logCheck, runBackup, runRestoreCheck } from './backup';
@@ -14,6 +14,7 @@ import { recountAll, refreshWindows } from './counters';
 import { logAiBotVisit, pruneAiBotVisits } from './ai-bots';
 import { handleLab } from './lab';
 import { MCP_PATH, handleMcp, wantsMcpPage } from './mcp/server';
+import { canonicalHostRedirect } from './hosts';
 
 async function handle(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
@@ -107,11 +108,11 @@ async function anonymousPublicRead(c: Ctx, handler: Handler, cache: PublicCache)
  * quotas and per-network registration limits are the same with or without it. Pages, /login, /logout and /inbox
  * (cookie-based) get no CORS headers.
  */
-export const CORS_HEADERS: Record<string, string> = {
+const CORS_HEADERS: Record<string, string> = {
   'access-control-allow-origin': '*',
   'access-control-expose-headers': 'RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset, RateLimit-Policy, Retry-After, ETag, X-Cw-Cache, X-Commonworld-Status',
 };
-export const CORS_PREFLIGHT_HEADERS: Record<string, string> = {
+const CORS_PREFLIGHT_HEADERS: Record<string, string> = {
   ...CORS_HEADERS,
   'access-control-allow-methods': 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS',
   'access-control-allow-headers': 'Authorization, Content-Type, Idempotency-Key',
@@ -137,17 +138,6 @@ async function route(request: Request, env: Env, exec: ExecutionContext): Promis
     console.error('unhandled', error);
     return json(500, { error: { code: 'internal_error' } });
   }
-}
-
-/** Only this host is redirected (production www Custom Domain); every other host, staging included, is served as is. */
-export const WWW_HOST = 'www.commonworld.one';
-
-/** 301 from `www.commonworld.one` to `commonworld.one` (path and query kept); null for every other host. Exported for tests. */
-export function canonicalHostRedirect(request: Request): Response | null {
-  const url = new URL(request.url);
-  if (url.hostname !== WWW_HOST) return null;
-  url.hostname = 'commonworld.one';
-  return new Response(null, { status: 301, headers: { ...SECURITY_HEADERS, location: url.toString(), 'cache-control': 'public, max-age=86400' } });
 }
 
 async function serve(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {

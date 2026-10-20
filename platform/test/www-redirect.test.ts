@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
-import { canonicalHostRedirect } from '../src/index';
+import { canonicalHostRedirect } from '../src/hosts';
 import { SECURITY_HEADERS } from '../src/pages/router';
 
 describe('www -> apex redirect (launch cutover 2026-10-20)', () => {
