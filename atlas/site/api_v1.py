@@ -31,7 +31,8 @@ CHANGELOG = [
         '`first_task`, a verified first step for newcomers with credit (optional `no_code`; optional `code` {url, filename, sha256, run} on a task that downloads code), or null; `md_url`, the card page as Markdown.',
         'New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: '
         '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md '
-        '(level 3 only for a block-explorer page of one concrete record: a transaction, an address or account, a block; explorer stats are level 2); '
+        '(level 3 only for a block-explorer page of one concrete record with a well-formed identifier for its type: a transaction hash, an address or account, a block; '
+        'an identifier of the wrong shape, such as /tx/1, and explorer stats are level 2); '
         'where a curator opened the source and the rule read it wrongly, the curator\'s level applies and the claim also carries `evidence_note` '
         '(a short reason, from atlas/data/evidence-levels.json).',
         'New Markdown twin of every card page at /atlas/platforms/{id}/index.md.',

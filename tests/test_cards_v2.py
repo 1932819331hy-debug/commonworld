@@ -70,6 +70,31 @@ class EvidenceLadder(unittest.TestCase):
                   'https://example.com/tx/0x' + 'c' * 64):  # a tx-looking path on a host that is no explorer stays text
             self.assertEqual(cv2.source_level(u), 1, u)
 
+    def test_level_3_needs_a_well_formed_identifier_per_page_type(self):
+        """Round 7: the identifier must have the shape of its page type; anything else on an explorer is level 2."""
+        h64 = 'ab' * 32
+        good = ('https://etherscan.io/tx/0x' + h64, 'https://mempool.space/tx/' + h64, 'https://explorer.solana.com/tx/' + self.SOL,
+                'https://suiscan.xyz/mainnet/tx/' + self.SOL[:44], 'https://etherscan.io/address/0x' + 'A' * 40,
+                'https://suiscan.xyz/mainnet/account/0x' + h64, 'https://solscan.io/account/' + self.SOL[:44],
+                'https://tronscan.org/address/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf', 'https://mempool.space/address/bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
+                'https://mempool.space/address/1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 'https://tonviewer.com/address/EQ' + 'A' * 46,
+                'https://tonscan.org/address/0:' + h64, 'https://basescan.org/token/0x' + 'e' * 40, 'https://solscan.io/token/' + self.SOL[:43],
+                'https://etherscan.io/block/0', 'https://etherscan.io/block/19000000', 'https://mempool.space/block/' + '0' * 8 + 'ab' * 28,
+                'https://kitescan.ai/api/v2/transactions/0x' + h64, 'https://kitescan.ai/api/v2/addresses/0x' + 'd' * 40,
+                'https://etherscan.io/tx/0x' + h64 + '/', 'https://etherscan.io/address/0x' + 'a' * 40 + '/tokens')
+        for u in good:
+            self.assertEqual(cv2.source_level(u), 3, u)
+        bad = ('https://etherscan.io/tx/1', 'https://etherscan.io/tx/0x1', 'https://etherscan.io/tx/0x' + 'a' * 63,
+               'https://etherscan.io/tx/0x' + 'a' * 65, 'https://etherscan.io/tx/0x' + 'g' * 64, 'https://etherscan.io/tx/0x' + 'a' * 40,
+               'https://etherscan.io/tx/12345678', 'https://explorer.solana.com/tx/' + self.SOL[:60],
+               'https://etherscan.io/address/1', 'https://etherscan.io/address/0x' + 'a' * 39, 'https://etherscan.io/address/0x' + 'a' * 41,
+               'https://etherscan.io/address/0x12345678', 'https://solscan.io/account/x', 'https://solscan.io/account/' + '0' * 40,
+               'https://basescan.org/token/12345', 'https://basescan.org/token/0x' + 'e' * 39, 'https://etherscan.io/block/01',
+               'https://etherscan.io/block/1234567890123', 'https://etherscan.io/block/0x12', 'https://basescan.org/tx/0x1',
+               'https://kitescan.ai/api/v2/addresses/1', 'https://tonviewer.com/address/EQ' + 'A' * 45)
+        for u in bad:
+            self.assertEqual(cv2.source_level(u), 2, u)
+
     def test_no_source_no_level(self):
         self.assertIsNone(cv2.source_level(None))
         self.assertIsNone(cv2.source_level(''))
@@ -468,10 +493,47 @@ class FirstTask(unittest.TestCase):
         for text in ('The executor prints OK', 'Calling exec() is not needed here', 'An exec( ) call is not needed', 'Evaluate the result',
                      'Python is used for the check', 'The -c flag of the checker is optional', 'Open the evaluation page',
                      'Check it with sha256sum -c and read the output', 'A bash script is not needed', 'Use the node list',
-                     'Run `python3 tool.py --selftest`', 'Read the cmd output', 'The php page shows -c as an option'):
+                     'Run `python3 tool.py --selftest`', 'Read the cmd output'):
             for field in fields:
                 t = base | ({'steps': [text]} if field == 'steps' else {field: text})
                 self.assertEqual(cv2.code_safety_errors(t), [], (field, text))
+
+    def test_inline_execution_without_option_parsing(self):
+        """Round 7: an interpreter token and an inline-code flag ANYWHERE in the same field fail, whatever stands between them."""
+        base = {k: v for k, v in self._task().items() if k != 'code'}
+        inline = ('Run `python -W ignore -c "1"`', 'Run `python3 -X dev -W error -c 1`', 'Run `node --input-type module -e "1"`',
+                  'Run `powershell -ExecutionPolicy Bypass -Command "1"`', 'Run `pwsh -NoLogo -NonInteractive -NoProfile -c 1`',
+                  'Run `bash -lc id`', 'Run `sh -ec id`', 'Run `python -cprint(1)`', 'Run `python3 -c"1"`', "Run `php -r'echo 1;'`",
+                  'Run `node -p 1`', 'Run `node --eval=1`', 'Run `perl -pe 1 file`', 'Run `ruby -rjson -e 1`', 'Run `cmd.exe /c dir`',
+                  'Run `python3 - <<EOF` and paste the code', 'Use -c with python3', '-e is the flag; the interpreter is node',
+                  'Run `"/usr/bin/python3" "-c" "1"`', 'Run `env -i python3 -I -c 1`', 'Run `PYTHON3.12.EXE -W ignore -C 1`',
+                  'Run `deno run -A --eval 1`', 'Run `C:\\Python312\\python.exe -B -c 1`')
+        fields = ('title', 'verification', 'steps', 'done_when', 'no_code', 'contributed_by', 'contributed_via', 'verified_by')
+        for text in inline:
+            self.assertTrue(cv2.inline_exec(text), text)
+            for field in fields:
+                t = base | ({'steps': [text]} if field == 'steps' else {field: text})
+                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), (field, text))
+            for t in (self._task(sandbox='Work in a clean sandbox without secrets. ' + text),
+                      self._task(run=[{'cmd': 'python3 tool.py', 'then': text}])):
+                self.assertTrue(any('inline code execution' in e for e in cv2.code_safety_errors(t)), text)
+        # fail closed by design: prose naming an interpreter and an inline-code flag in one field is rejected too
+        for text in ('The php page shows -c as an option', 'Python is fine; the checker takes -e'):
+            self.assertTrue(cv2.inline_exec(text), text)
+        # a flag without an interpreter, an interpreter without a flag, and look-alike words pass
+        for text in ('Check it with sha256sum -c and read the output', 'Run `python3 tool.py --selftest`', 'Read python.org and node.js docs',
+                     'Open the dashboard', 'The -c flag of the checker is optional', 'Install Python 3 in a fresh venv',
+                     'Run `python3 tool.py rec_01m1hbq666jjjyfw7s6tf7h2rd`', 'Use a .py file', 'Send an e-mail to the cmd-line team'):
+            self.assertFalse(cv2.inline_exec(text), text)
+
+    def test_published_first_tasks_still_pass(self):
+        tasks = cv2.load_first_tasks()
+        self.assertTrue(tasks)
+        for slug, t in tasks.items():
+            self.assertEqual(cv2.code_safety_errors(t), [], slug)
+            texts = [*(t.get('steps') or []), t['code']['sandbox'], *[r.get('then', '') for r in t['code']['run']]] if t.get('code') else []
+            texts += [t.get(k) or '' for k in cv2.TEXT_FIELDS]
+            self.assertFalse(any(cv2.inline_exec(x) for x in texts), slug)
 
     def test_hidden_unicode_in_title_and_verification(self):
         base = {k: v for k, v in self._task().items() if k != 'code'}

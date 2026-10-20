@@ -6,7 +6,8 @@ tests/test_cards_v2.py pins the rules with examples.
 
 1. Evidence ladder. Every money or activity claim (kind economic_flow, metric, recent_activity) gets a level from its source URL:
    3 public transactions  the source is a concrete public record with a checkable identifier on a block explorer (a transaction
-                          hash, an address or account page, a block): records anyone can open and check independently;
+                          hash, an address or account page, a block), well-formed for its page type (TX_PATH: /tx/1 is no
+                          transaction hash): records anyone can open and check independently;
                           explorer stats, charts and other aggregate pages are level 2;
    2 public dashboard     the source is a public stats page, dashboard or API (machine-readable endpoint) anyone can open;
    1 operator says        any other page: the platform's own words (site text, docs, posts) and other text pages.
@@ -62,12 +63,27 @@ EXPLORER_HOSTS = (
     'explorer.aptoslabs.com', 'oklink.com',
     'kitescan.ai',  # kitescan.ai: the Blockscout explorer of the Kite chain (used by the Kite AI card)
 )
-# Concrete public record pages on an explorer host: a transaction hash, an address or account, a token contract or a block, each
-# with its identifier in the path (/tx/<hash>, /address/<addr>, /api/v2/addresses/<addr>, /block/<number>). Path segment names are
-# matched case-sensitively in lowercase (/ADDRESS/ is no record page). Explorer pages without such an identifier (home, /stats,
-# /charts, /api/v2/stats) are aggregate views: level 2.
-TX_PATH = re.compile(r'/(tx|txs|transactions?|address(?:es)?|accounts?|tokens?|blocks?)/'
-                     r'(0x[0-9a-fA-F]{8,}|[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{32,}|\d+)(/|$)')
+# Concrete public record pages on an explorer host: a transaction, an address or account, a token contract or a block, each with a
+# WELL-FORMED identifier for that page type as the whole path segment (/tx/<hash>, /address/<addr>, /api/v2/addresses/<addr>,
+# /block/<number>). Path segment names are matched case-sensitively in lowercase (/ADDRESS/ is no record page). An identifier
+# of the wrong shape (/tx/1, /address/1, /token/12345, /tx/0x1234) and explorer pages without one (home, /stats, /charts,
+# /api/v2/stats) are aggregate or unchecked views: level 2. Formats (hex is case-insensitive; base58 = the Bitcoin alphabet):
+#   transaction  0x + 64 hex (EVM, Stacks, Aptos) | 64 hex (Bitcoin, Tron, TON) | base58, 86-88 chars (Solana signature)
+#                | base58, 43-44 chars (Sui digest)
+#   address      0x + 40 hex (EVM) | 0x + 64 hex (Sui, Aptos) | base58, 32-44 chars (Solana, Tron) | Bitcoin: base58 26-35
+#                chars starting 1 or 3, or bech32 bc1/tb1 | TON: EQ/UQ/kQ/0Q + 46 base64url chars, or 0:/-1: + 64 hex
+#   token        0x + 40 hex (EVM) | base58, 32-44 chars (Solana, Tron) | TON address as above
+#   block        a decimal block number (no leading zero, at most 12 digits) | 0x + 64 hex | 64 hex (block hash)
+_B58 = '[1-9A-HJ-NP-Za-km-z]'
+_HEX64, _EVM_ADDR = '[0-9a-fA-F]{64}', '0x[0-9a-fA-F]{40}'
+_TON_ADDR = '[EUk0]Q[A-Za-z0-9_-]{46}|(?:0|-1):[0-9a-fA-F]{64}'
+RECORD_IDS = (
+    ('tx|txs|transactions?', f'0x{_HEX64}|{_HEX64}|{_B58}{{86,88}}|{_B58}{{43,44}}'),
+    ('address(?:es)?|accounts?', f'{_EVM_ADDR}|0x{_HEX64}|{_B58}{{32,44}}|[13]{_B58}{{25,34}}|(?:bc1|tb1)[02-9ac-hj-np-z]{{11,71}}|{_TON_ADDR}'),
+    ('tokens?', f'{_EVM_ADDR}|{_B58}{{32,44}}|{_TON_ADDR}'),
+    ('blocks?', f'0|[1-9][0-9]{{0,11}}|0x{_HEX64}|{_HEX64}'),
+)
+TX_PATH = re.compile('|'.join(f'/(?:{seg})/(?:{ident})(?=/|$)' for seg, ident in RECORD_IDS))
 # Public dashboards run by independent trackers (whole site is a dashboard).
 DASHBOARD_HOSTS = ('dune.com', 'chainward.ai', 'defillama.com', 'tokenterminal.com', 'x402scan.com')
 # Path segments of stats pages, dashboards and APIs.
@@ -414,19 +430,42 @@ FILENAME = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$')
 # more code on their own (uv run, deno run, npx) are left out: what they fetch is not covered by the hash check.
 RUN_PREFIXES = ('python3 ', 'python ', 'bash ', 'sh ', 'node ', 'ruby ', 'perl ', './')
 
-# Inline code execution, as one structural rule instead of a list of spellings: an interpreter or shell token followed by
-# whitespace and an inline-code flag. The token may carry a path (`/usr/bin/python3`, `C:\Python312\python.exe`), sit behind
-# `env` (`/usr/bin/env python3 -c`, matched at the interpreter itself), have a version suffix (`python3.12`, `php8.2`) and `.exe`;
-# other options may come between it and the flag (`pwsh -NoProfile -Command`). Interpreter and flag are case-insensitive.
+# Inline code execution, fail closed, with NO option parsing: a human-text field is rejected when it names an interpreter or shell
+# ANYWHERE and has an inline-code flag ANYWHERE in the same field, whatever stands between them or in what order
+# (`python -W ignore -c`, `node --input-type module -e`, `powershell -ExecutionPolicy Bypass -Command` all fail). Prose that
+# names an interpreter and such a flag in one field fails too; reword it or split it.
+# Interpreter token: one of INTERPRETERS as a whole word, case-insensitive, also with a path (`/usr/bin/python3`,
+# `C:\Python312\python.exe`), behind `env`, with a version suffix (`python3.12`, `php8.2`) and `.exe`; `python.org` or `node.js`
+# (a dot and more letters) is no token.
+# Inline-code flag (case-insensitive, a separate word: after the start, whitespace, a quote, a backtick, `(`, `[`, `=` or `,`):
+#   - any one-dash option with `c` or `e` among its first four letters: -c, -e, -E, -lc, -ce, -ic, -enc, -ec, -Command,
+#     -EncodedCommand, -ExecutionPolicy, also with the code attached (`-cprint(1)`);
+#   - -p and -r (print / run code: node -p, perl -p, php -r);
+#   - --eval, --print, --command, --exec / --execute (also with `=`);
+#   - /c and /k (cmd.exe);
+#   - a heredoc `<<` (code fed on standard input).
+# `-m` (run an installed module) is not inline code; installs through it are caught by the install pattern below.
+# Interpreter-free forms are matched on their own: `eval `, `exec(` with an argument, PowerShell `iex` / `Invoke-Expression`.
 INTERPRETERS = ('python', 'py', 'pypy', 'bash', 'sh', 'zsh', 'dash', 'ksh', 'fish', 'pwsh', 'powershell', 'cmd', 'node', 'nodejs',
                 'deno', 'bun', 'perl', 'ruby', 'php', 'lua', 'osascript', 'rscript', 'tclsh')
-INLINE_FLAGS = ('-c', '-e', '--eval', '-p', '--print', '--command', '-command', '-encodedcommand', '-enc', '-ec', '/c', '/k', '-r', 'eval')
-INLINE_EXEC = re.compile(
-    r'(?<![\w.-])(?:' + '|'.join(INTERPRETERS) + r')(?:\d+(?:\.\d+)*)?(?:\.exe)?'   # the interpreter token
-    r'(?:\s+--?[a-z][\w-]*)*?'                                                      # other options before the flag
-    r'\s+(?:' + '|'.join(re.escape(f) for f in INLINE_FLAGS) + r')(?![\w-])'          # whitespace, then an inline-code flag
-    r'|\beval\s|\bexec\s*\(\s*[^\s)]|\biex\b|\binvoke-expression\b',                 # eval / exec(<code>) / PowerShell
-    re.I)
+INTERPRETER_TOKEN = re.compile(
+    r'(?<![\w.-])(?:' + '|'.join(INTERPRETERS) + r')(?:\d+(?:\.\d+)*)?(?:\.exe)?(?![\w-]|\.\w)', re.I)
+INLINE_FLAG = re.compile(
+    r'(?:^|(?<=[\s"\'`(\[=,]))(?:'
+    r'-[a-z]{0,3}[ce]'                                  # one-dash option with c or e among its first four letters
+    r'|-[pr](?![a-z])'                                  # -p, -r
+    r'|--(?:eval|print|command|exec|execute)(?![\w-])'  # long forms
+    r'|/[ck](?![\w/.-])'                                # cmd.exe /c, /k
+    r')|<<', re.I)
+INLINE_OTHER = re.compile(r'\beval\s|\bexec\s*\(\s*[^\s)]|\biex\b|\binvoke-expression\b', re.I)
+
+
+def inline_exec(text):
+    """True when one text field runs inline code: an interpreter token and an inline-code flag anywhere in it, or an
+    interpreter-free form (eval, exec(...), iex, Invoke-Expression)."""
+    text = text or ''
+    return bool((INTERPRETER_TOKEN.search(text) and INLINE_FLAG.search(text)) or INLINE_OTHER.search(text))
+
 
 # Fail closed: free text in a first task may not fetch, install or pipe code. Code reaches a newcomer only through the structured
 # `code` block, whose download, hash check and run steps are generated below.
@@ -441,13 +480,13 @@ DOWNLOAD_PATTERNS = (
         r'\b(pip3?\s+install|python3?\s+-m\s+pip\s+install|pipx\s+(install|run)|uvx|uv\s+(pip\s+install|tool\s+(install|run)|run|add)|'
         r'npm\s+(install|i|exec)|npx|pnpm\s+(add|install|dlx)|yarn\s+(add|dlx)|bunx|bun\s+(add|install|x)|gem\s+install|'
         r'cargo\s+install|go\s+(install|run)\s+\S*(@|\.go\b|/)|brew\s+install|apt(-get)?\s+install)\b', re.I)),
-    ('inline code execution', INLINE_EXEC),
+    ('inline code execution', inline_exec),
 )
 
 
 def download_hits(text):
     """Why a free-text step looks like it downloads, installs or pipes code ([] when it does not)."""
-    return [why for why, rx in DOWNLOAD_PATTERNS if rx.search(text or '')]
+    return [why for why, rx in DOWNLOAD_PATTERNS if (rx(text or '') if callable(rx) else rx.search(text or ''))]
 
 
 def code_steps(code):
@@ -538,7 +577,7 @@ RECORD_FIELDS = ('verification', 'contributed_by', 'contributed_via', 'verified_
 def code_safety_errors(t):
     """Fail closed: a task that downloads code carries a structured `code` block (validated by code_block_errors), and none of its
     human-text parts (title, steps, sandbox, the text after each run command, done_when, no_code, verification and the contributor
-    and verifier fields) runs inline code (INLINE_EXEC: an interpreter or shell followed by an inline-code flag, `eval`, `exec(...)`,
+    and verifier fields) runs inline code (inline_exec: an interpreter token and an inline-code flag anywhere in the field, `eval`, `exec(...)`,
     `iex` ...) or hides text with Unicode separators, zero-width or bidi characters; the task texts also may not download, install
     or pipe code."""
     errs = []
@@ -558,7 +597,7 @@ def code_safety_errors(t):
             errs.append(f'{where} {text[:60]!r} must not contain control characters (newline, tab, NUL)')
         if HIDDEN_UNICODE.search(text):
             errs.append(f'{where} {text[:60]!r} must not contain Unicode line separators, zero-width characters or bidi controls')
-        hits = download_hits(text) if where not in RECORD_FIELDS else (['inline code execution'] if INLINE_EXEC.search(text) else [])
+        hits = download_hits(text) if where not in RECORD_FIELDS else (['inline code execution'] if inline_exec(text) else [])
         for why in hits:
             errs.append(f'{where} {text[:60]!r} has {why}: code is allowed only through the structured `code` block '
                         f'(url, filename, sha256, run), with steps generated from it')
