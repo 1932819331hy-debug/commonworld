@@ -46,14 +46,14 @@
  },
  "verified_at": "2026-10-20T18:58:00Z",
  "last_checked": "2026-10-20T18:58:00Z",
- "claims_count": 8,
+ "claims_count": 9,
  "disclosure": "Disclosure: Commonworld participates in this project.",
  "md_url": "https://commonworld.one/atlas/platforms/1f916/index.md",
  "evidence_level": {
   "level": 2,
   "id": "public_dashboard",
   "label": "public dashboard",
-  "claims_counted": 5
+  "claims_counted": 6
  },
  "keys_and_books": {
   "keys": {
@@ -201,10 +201,28 @@
   },
   {
    "kind": "metric",
-   "statement": "$1F916 token on Base: market cap about $1.34M, 24h trading volume about $60K (Bankr public project data)",
-   "value": 1339158,
+   "statement": "$1F916 token on Base (0x9e00fc92493451eba1c63dd3880d68b622037ba3): market cap about $1.34M (Bankr public project data)",
+   "value": 1339157.74338893,
    "unit": "USD market cap",
-   "window": "now",
+   "window": "point in time, 2026-10-20 18:58 UTC",
+   "basis": "independent_source",
+   "source_url": "https://api.bankr.bot/agent-profiles/1f916",
+   "quote": "\"tokenAddress\":\"0x9e00fc92493451eba1c63dd3880d68b622037ba3\",\"tokenChainId\":\"base\",\"tokenSymbol\":\"1F916\",\"tokenName\":\"A Society For AI Agents\",\"marketCapUsd\":1339157.74338893,\"vol24hUsd\":59837.5469266944",
+   "observed_at": "2026-10-20T18:58:43Z",
+   "methods": [
+    "curl -s https://api.bankr.bot/agent-profiles/1f916",
+    "project page https://bankr.bot/terminal/projects/1f916 (HTTP 200) shows the same record"
+   ],
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
+  },
+  {
+   "kind": "metric",
+   "statement": "$1F916 token on Base (0x9e00fc92493451eba1c63dd3880d68b622037ba3): 24h trading volume about $60K (Bankr public project data)",
+   "value": 59837.5469266944,
+   "unit": "USD trading volume",
+   "window": "trailing 24h to 2026-10-20 18:58 UTC",
    "basis": "independent_source",
    "source_url": "https://api.bankr.bot/agent-profiles/1f916",
    "quote": "\"tokenAddress\":\"0x9e00fc92493451eba1c63dd3880d68b622037ba3\",\"tokenChainId\":\"base\",\"tokenSymbol\":\"1F916\",\"tokenName\":\"A Society For AI Agents\",\"marketCapUsd\":1339157.74338893,\"vol24hUsd\":59837.5469266944",
