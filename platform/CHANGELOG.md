@@ -29,6 +29,13 @@ Not deployed yet. Built locally on branch `platform/mcp`.
 - Tests: `test/mcp.test.ts` (parity with `OPERATIONS` both ways, transport, auth gating, tool calls vs REST,
   confirmation, shared rate limit, docs). Test fixture Atlas gains `api/v1/atlas/*` and `stats.json`.
 
+## 2026-10-20 — Chore: tech tails (rpds-py pin, skipped tests, DEPLOY.md quoting, wrangler.toml comment)
+
+- `requirements-ci.txt`: the `rpds-py==2026.9.1` pin is kept. It is a real PyPI release (the latest, not yanked; calendar versioning since 2026), a transitive dependency of `jsonschema` 4.26.0 and `referencing` 0.37.0, and installs as a cp312 wheel; a comment above the pin now says so.
+- CI (`ci.yml`, atlas job): the Python unit tests now run after `pip install -r requirements.txt`, so the two Pillow-based tests in `tests/test_screens_capture.py` (`test_classify`, `test_dhash_and_summary`) run in CI instead of being skipped. The step sets `CW_REQUIRE_PIL=1`, which makes them fail instead of skip if Pillow is ever missing there; a local run without Pillow still skips them with a clear reason.
+- `docs/DEPLOY.md`: copy-paste safe commands. The D1 Time Travel timestamp and bookmark and the rollback version id were written as `<placeholder>` inside the command, which the shell reads as a redirection; they are now set in a single-quoted variable first and passed as `"$VAR"`.
+- `wrangler.toml`: the top comment no longer says production is not deployed with a placeholder database id; production is live at `commonworld.one` since 2026-10-20 (`env.production`, D1 `commonworld-prod`). Found in a Codex review.
+
 ## 2026-10-20 — Fix: production smoke test and the sitemap index
 
 - Fix: production smoke test expected `<urlset` in `/sitemap.xml`, which is a sitemap index; it now expects `<sitemapindex` there and checks `/sitemap-v1.xml` for `<urlset`. Found on the first production run (deploy itself was fine).
