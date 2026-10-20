@@ -557,7 +557,7 @@ async function markdownPage(request: Request, env: Env, exec: ExecutionContext, 
     const keyUrl = pageCacheUrl(page);
     keyUrl.searchParams.set('__fmt', 'md');
     cacheKey = await versionedCacheKey(env, keyUrl);
-    const hit = await caches.default.match(cacheKey);
+    const hit = cacheKey ? await caches.default.match(cacheKey) : undefined;
     if (hit) { const out = new Response(hit.body, hit); out.headers.set('x-cw-cache', 'HIT'); return out; }
   }
   try {

@@ -85,7 +85,7 @@ async function anonymousPublicRead(c: Ctx, handler: Handler, cache: PublicCache)
       if (value !== null) keyUrl.searchParams.set(name, value);
     }
     key = await versionedCacheKey(c.env, keyUrl);
-    const hit = await caches.default.match(key);
+    const hit = key ? await caches.default.match(key) : undefined;
     if (hit) return withHeaders(hit, { ...cacheable, 'x-cw-cache': 'HIT' });
   }
   const response = await handler(c);

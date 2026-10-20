@@ -3,6 +3,20 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-20 — Fix: a D1 error in the cache-version lookup no longer turns public pages into HTTP 500
+
+- Production logs showed `D1_ERROR: internal error` thrown by the content cache version lookup (`contentCacheVersion`,
+  `src/cache-version.ts`); that one failed query turned `/` and `/llms.txt` into HTTP 500. The lookup is now best
+  effort (`contentCacheVersionOrNull`): one retry, then a warning in the Worker log and `versionedCacheKey` returns
+  `null`. The callers (`src/index.ts` edge-cached `/v1` reads, `src/pages/router.ts` pages and Markdown twins) then
+  render fresh without the edge cache for that request: no cache read and no cache write, since a copy stored under
+  an unknown version could outlive a hide. New test `test/cache-version-resilience.test.ts` (D1 throwing on every try:
+  `/`, `/llms.txt`, `/porch.md`, `/v1/catalog` answer 200; one transient failure: the retry succeeds and the cache is
+  used). Other D1 queries a page needs still fail as before; only the cache-version lookup is made optional.
+- Checked, no change needed: `/atlas/platforms/<slug>/index.md` is static in every environment (`"!/atlas/*.md"` in
+  `run_worker_first`, where `*` matches across `/`), as `test/atlas-assets.test.ts` expects; production serves it from
+  Static Assets (verified with a request on 2026-10-20).
+
 ## 2026-10-20 — MCP server: review fixes (rate limit, untrusted output, protocol 2026-07-28)
 
 Not deployed yet. Review of PR #29 by @codex.
