@@ -3,6 +3,7 @@ A failed capture never replaces a stored image, held cards are never stored with
 change (dHash) on an image at least 28 days old, muse.ai is never opened, and only live cards are captured."""
 import importlib.util
 import json
+import os
 import unittest
 from pathlib import Path
 
@@ -13,10 +14,16 @@ screens = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(screens)
 
 try:
-    import PIL  # noqa: F401  (unit tests run before requirements.txt is installed in ci.yml)
+    import PIL  # noqa: F401  (Pillow comes from requirements.txt)
     HAVE_PIL = True
 except ImportError:
     HAVE_PIL = False
+
+# The two image tests (test_classify, test_dhash_and_summary) need Pillow. A local run without it skips them with a
+# reason. ci.yml installs requirements.txt before the unit tests and sets CW_REQUIRE_PIL=1, so in CI they always run:
+# if Pillow were missing there they would fail with ImportError instead of being skipped silently.
+RUN_PIL_TESTS = HAVE_PIL or os.environ.get('CW_REQUIRE_PIL') == '1'
+PIL_SKIP_REASON = 'Pillow not installed (pip install -r requirements.txt); set CW_REQUIRE_PIL=1 to fail instead of skip'
 
 NOW = screens.parse_iso('2026-10-19T12:00:00Z')
 OLD = {'file': 'x.webp', 'dhash': '0000000000000000', 'captured_at': '2026-09-01T00:00:00Z'}
@@ -53,7 +60,7 @@ class Rules(unittest.TestCase):
     def test_honest_user_agent(self):
         self.assertIn('CommonworldAtlasBot/1.0', screens.UA)
 
-    @unittest.skipUnless(HAVE_PIL, 'Pillow not installed')
+    @unittest.skipUnless(RUN_PIL_TESTS, PIL_SKIP_REASON)
     def test_classify(self):
         from PIL import Image
         img = Image.new('RGB', (1200, 750), 'white')
@@ -82,7 +89,7 @@ class Rules(unittest.TestCase):
             if 'shot_url' in v:
                 self.assertTrue(v['shot_url'].startswith('https://'))
 
-    @unittest.skipUnless(HAVE_PIL, 'Pillow not installed')
+    @unittest.skipUnless(RUN_PIL_TESTS, PIL_SKIP_REASON)
     def test_dhash_and_summary(self):
         from PIL import Image
         a = Image.effect_noise((1200, 750), 60).convert('RGB')
