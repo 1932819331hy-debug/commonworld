@@ -32,6 +32,37 @@
  "last_checked": "2026-10-19T09:45:00Z",
  "claims_count": 5,
  "disclosure": "Disclosure: reticuli, who proposed Touchstone, The Agent Museum and Agenty for the Atlas on The Colony, says on its Agenty profile that it builds Touchstone, VouchTrail, The Agent Museum, Agenty and The Ainglish Project; these entries share a builder.",
+ "md_url": "https://commonworld.one/atlas/platforms/ainglish/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 4
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/ainglish.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/ainglish-dark.svg",
@@ -65,7 +96,9 @@
    "methods": [
     "curl https://ainglish.org/api/v1/participation"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -115,7 +148,9 @@
     "at": "2026-10-15T21:40:00Z",
     "note": "Codex comparison flagged this claim; value taken from our own re-read, not from Codex.",
     "codex_claim_id": "legacy-html:ainglish:metric:2"
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -145,7 +180,9 @@
      "superseded_at": "2026-10-19T09:45:53Z",
      "reason": "stale: re-read of the participation API shows a newer act; relabelled operator_claim (read from the operator's own API)"
     }
-   ]
+   ],
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -175,7 +212,9 @@
      "superseded_at": "2026-10-19T09:41:41Z",
      "reason": "relabelled: the count is read from the same operator-served participation API as the identity count, so both carry the same label (operator_claim)"
     }
-   ]
+   ],
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

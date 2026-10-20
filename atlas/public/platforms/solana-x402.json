@@ -22,6 +22,37 @@
  "last_checked": "2026-10-15T18:20:00Z",
  "claims_count": 2,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/solana-x402/index.md",
+ "evidence_level": {
+  "level": null,
+  "id": null,
+  "label": "not recorded yet",
+  "claims_counted": 0
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/solana-x402.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/solana-x402-dark.svg",
@@ -56,7 +87,9 @@
     "curl solana.com/x402",
     "curl x402-list.com/facilitators (daily chain table)"
    ],
-   "outcome": "contradicted"
+   "outcome": "contradicted",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

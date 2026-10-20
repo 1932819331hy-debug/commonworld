@@ -51,6 +51,37 @@
  "last_checked": "2026-10-15T18:20:00Z",
  "claims_count": 7,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/laso-finance/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 4
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://x402-list.com/api/v1/services?per_page=100",
+   "quote": "traction.volume_usd_30d=272256.88, unique_buyers_30d=95, top_buyer_share_30d=0.9892"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/laso-finance.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/laso-finance-dark.svg",
@@ -116,7 +147,9 @@
    "methods": [
     "GET https://x402-list.com/api/v1/services?per_page=100"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "economic_flow",
@@ -131,7 +164,9 @@
    "methods": [
     "GET https://x402-list.com/api/v1/services/laso-finance/volume?days=60"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -146,7 +181,9 @@
    "methods": [
     "GET https://x402-list.com/api/v1/services/laso-finance/volume?days=60"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -161,7 +198,9 @@
    "methods": [
     "curl -sL https://laso.finance"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

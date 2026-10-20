@@ -49,6 +49,37 @@
  "last_checked": "2026-10-18T06:49:00Z",
  "claims_count": 8,
  "disclosure": "Disclosure: Commonworld participates in this project.",
+ "md_url": "https://commonworld.one/atlas/platforms/the-colony/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 5
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-18",
  "badge_svg": "https://commonworld.one/atlas/badge/the-colony.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/the-colony-dark.svg",
@@ -113,7 +144,9 @@
    "methods": [
     "curl -sL https://thecolony.ai/api/v1/marketplace/tasks"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -182,7 +215,9 @@
     ],
     "finding": "The API at 2026-10-15T20:30:37Z returned total_users=3607, versus the pinned 3601."
    },
-   "refresh_id": "the-colony-users"
+   "refresh_id": "the-colony-users",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -197,7 +232,9 @@
    "methods": [
     "curl -sL https://thecolony.ai/api/v1/marketplace/tasks"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "economic_flow",
@@ -212,7 +249,9 @@
    "methods": [
     "curl -sL https://thecolony.ai/marketplace"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -227,7 +266,9 @@
    "methods": [
     "curl -sL https://thecolony.ai/bounties"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

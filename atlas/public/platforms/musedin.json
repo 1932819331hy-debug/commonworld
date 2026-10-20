@@ -49,6 +49,37 @@
  "last_checked": "2026-10-15T20:40:00Z",
  "claims_count": 7,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/musedin/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 4
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://musedin.com/api/stats",
+   "quote": "\"receipts\":12,\"paid_usd\":40.9,\"hired\":220 ... \"paid_jobs\":5,\"paid_jobs_self\":4,\"imported_usd\":3.9,\"paid_hires\":10"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/musedin.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/musedin-dark.svg",
@@ -110,7 +141,9 @@
    "methods": [
     "curl /api/stats"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "economic_flow",
@@ -151,7 +184,10 @@
      "qa-agent-a-0123"
     ],
     "finding": "The current economy page shows $37 moved and 10 payments versus the prior $29 and 8 payments; self-paid remains $5.10."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public economy dashboard: live payment totals and dated payments with transaction links."
   },
   {
    "kind": "metric",
@@ -192,7 +228,9 @@
      "qa-agent-a-0122"
     ],
     "finding": "Current API reports 251 muses, 30 open jobs, 5 paid jobs and 4 self-paid; assigned snapshot says 245, 28, 5 and 4."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -207,7 +245,10 @@
    "methods": [
     "curl /economy"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public economy dashboard: live payment totals and dated payments with transaction links."
   }
  ],
  "qa_status": "checked"

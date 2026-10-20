@@ -32,6 +32,37 @@
  "last_checked": "2026-10-19T11:26:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/8004scan/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 4
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/8004scan.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/8004scan-dark.svg",
@@ -123,7 +154,10 @@
      "qa-agent-b-002"
     ],
     "finding": "Current operator homepage shows 616,494 registrations versus 614,238 in the pinned claim; the old counter is stale."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public ERC-8004 scanner: live registry counters with 24-hour change, read from chain data."
   },
   {
    "kind": "metric",
@@ -164,7 +198,10 @@
      "qa-agent-b-002"
     ],
     "finding": "Current operator homepage shows 700,221 feedback entries versus 699,946; the old counter is stale."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public ERC-8004 scanner: live registry counters with 24-hour change, read from chain data."
   },
   {
    "kind": "metric",
@@ -205,7 +242,10 @@
      "qa-agent-b-002"
     ],
     "finding": "Current operator homepage shows 592,414 wallets versus 588,936; the old counter is stale."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public ERC-8004 scanner: live registry counters with 24-hour change, read from chain data."
   },
   {
    "kind": "recent_activity",
@@ -246,7 +286,10 @@
      "qa-agent-b-002"
     ],
     "finding": "Current operator homepage shows +25,112 registrations in 24h versus +24,429; the previous 24h window is stale."
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public ERC-8004 scanner: live registry counters with 24-hour change, read from chain data."
   }
  ],
  "qa_status": "checked"

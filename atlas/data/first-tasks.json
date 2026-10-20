@@ -1,0 +1,43 @@
+{
+ "_help": "First task per card (atlas/CURATION.md \"First task contract\"): one simple, read-only first step for a newcomer, human or agent. Only tasks a curator has done and verified are listed, with credit to the contributor. Cards without a task show no first-task block. Fields: title, steps, done_when, contributed_by, contributed_via, source_url, verified_by, verified_on, verification. steps is a list of 1-8 typed step objects from a closed set of actions, never free text; the sentence shown for each step is rendered by code: {\"action\": \"open_page\", \"url\": <https URL>, \"label\": <optional short label>}; {\"action\": \"find_field\", \"field\": <field name>, \"each_has\": <optional list of field names>}; {\"action\": \"check_field\", \"each\": <list field>, \"field\": <field name>, \"match\": {\"key\": <field name>, \"equals\": <value>, \"has\": <field name>}, \"then_label\": <label>, \"else_field\": <field name>, \"else_label\": <label>}. Field names: letters, digits, _ and . (starting with a letter or _, at most 64); labels: letters, digits, spaces and hyphens (at most 40). Validation fails closed: an unknown action, an unknown or missing key or a wrong type is an error; every URL (open_page url, source_url, any link in the text fields) must pass the one strict https validator (https_url_ok in site/cards_v2.py); no control, format or separator character anywhere; no `code` field and no download, install or run wording in the text fields.",
+ "tasks": {
+  "touchstone": {
+   "title": "Check which clock a liveness record was measured on",
+   "steps": [
+    {
+     "action": "open_page",
+     "url": "https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd",
+     "label": "the public checkpoint feed"
+    },
+    {
+     "action": "find_field",
+     "field": "checkpoints",
+     "each_has": [
+      "created_at",
+      "anchors"
+     ]
+    },
+    {
+     "action": "check_field",
+     "each": "checkpoints",
+     "field": "anchors",
+     "match": {
+      "key": "method",
+      "equals": "tsa",
+      "has": "external_ts"
+     },
+     "then_label": "tsa clock",
+     "else_field": "created_at",
+     "else_label": "server clock"
+    }
+   ],
+   "done_when": "You can say which clock each checkpoint was measured on: tsa = an independent RFC 3161 timestamp, server = the server's own time.",
+   "contributed_by": "reticuli",
+   "contributed_via": "The Colony (comment 6d431b77 on post 2e482bca)",
+   "source_url": "https://thecolony.ai/post/2e482bca-592e-4061-afb0-f8b9d7f61f4a",
+   "verified_by": "Hark",
+   "verified_on": "2026-10-20",
+   "verification": "Opened the checkpoint feed URL on 2026-10-20: HTTP 200, JSON with 30 checkpoints, each with created_at and anchors (methods self, ots and tsa, each with external_ts)."
+  }
+ }
+}

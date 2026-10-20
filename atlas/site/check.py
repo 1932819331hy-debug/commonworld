@@ -54,7 +54,7 @@ atlas/data/trust-roles.json, a date, a reason and an https evidence link; a rest
 Refreshed numbers: the text of every claim the weekly refresh manages agrees with its number and quote (refresh_note_checks).
 Also: native ad cards sit after every 12th card, the tag shelf exists with its expander, every card links to its page.
 """
-import gzip, html, json, os, re, struct, sys, xml.etree.ElementTree as ET
+import fnmatch, gzip, html, json, os, re, struct, sys, xml.etree.ElementTree as ET
 from urllib.parse import quote, unquote
 from html.parser import HTMLParser
 from collections import Counter
@@ -485,7 +485,7 @@ def api_checks(parsed, locs):
         if not c_old == c_idx == (docs.get(f'/atlas/categories/{k}.json') or {}).get('count'): fails.append(f'api: category {k} counts differ')
     if (ai.get('counts') or {}).get('earn_rows') != (docs.get('/atlas/earn.json') or {}).get('count'): fails.append('api: earn row counts differ')
     if root.get('schema_version') != api_v1.SCHEMA_VERSION or root.get('version') != 'v1': fails.append('api: index.json version/schema_version')
-    if not re.match(api_v1.UTC_PATTERN, str(root.get('generated_at'))): fails.append('api: index.json generated_at not ISO UTC')
+    if not api_v1.pattern_ok(api_v1.UTC_PATTERN, str(root.get('generated_at'))): fails.append('api: index.json generated_at not ISO UTC')
     for k in ('openapi', 'docs', 'llms_txt', 'license', 'github_mirror', 'changelog'):
         if not (root.get('links') or {}).get(k): fails.append(f'api: index.json links.{k} missing')
     if not os.path.isfile(os.path.join(V, 'CHANGELOG.md')): fails.append('api: CHANGELOG.md missing')
@@ -829,6 +829,8 @@ def markdown_twin_checks(pages):
     fails, n = [], 0
     hdr = open(os.path.join(DIST, '_headers'), encoding='utf-8').read() if os.path.exists(os.path.join(DIST, '_headers')) else ''
     alt_re = re.compile(r'<link rel="alternate" type="text/markdown" href="([^"]+)"')
+    # _headers rules (exact paths or Cloudflare splats like /atlas/platforms/*/index.md) that serve Markdown with open CORS
+    md_rules = re.findall(r'^(\S+)\n  Access-Control-Allow-Origin: \*\n  Content-Type: text/markdown; charset=utf-8$', hdr, re.M)
     for u, fp in pages.items():
         for href in alt_re.findall(open(fp, encoding='utf-8').read()):
             if not href.startswith('/') or not os.path.isfile(os.path.join(DIST, href.lstrip('/'))):
@@ -845,7 +847,7 @@ def markdown_twin_checks(pages):
         md = open(os.path.join(root, 'index.md'), encoding='utf-8').read()
         if not md.startswith('# '): fails.append(f'/{rel}: does not start with a # heading')
         if ORIGIN + u not in md: fails.append(f'/{rel}: does not name its canonical page {ORIGIN + u}')
-        if f'/{rel}\n  Access-Control-Allow-Origin: *\n  Content-Type: text/markdown; charset=utf-8' not in hdr:
+        if not any(fnmatch.fnmatchcase('/' + rel, pat) for pat in md_rules):
             fails.append(f'_headers: /{rel} is not served as text/markdown')
     print(f'markdown twins: {n} index.md file(s), each linked from its HTML page')
     return fails, n
@@ -1052,7 +1054,7 @@ def events_checks():
     """Atlas events log (atlas/data/events.jsonl, atlas/site/events.py): every line has exactly date, slug, type, reason, source
     (YYYY-MM-DD, an existing entry ID or removed stub, added|closed|reopened|corrected|relabelled, a one-line reason <= 300 chars,
     an https source), dates never go backwards (append-only), no duplicates; every curated amendment in the snapshot from the
-    log's start date has its events; /atlas/events.json (newest first, same events, count) and /atlas/events.md (every event)
+    log's start date has its events, and so does every dated record in the cards v2 curation files (cards_v2.curation_event_gaps); /atlas/events.json (newest first, same events, count) and /atlas/events.md (every event)
     are published, linked from /atlas/about/, /llms.txt and /atlas/llms.txt, served as JSON/Markdown and kept off the Function."""
     import events as ev_
     fails = []
@@ -1066,6 +1068,8 @@ def events_checks():
     fails += ev_.validate(evs, pub | rem)
     snap_f = os.path.normpath(os.path.join(DATA_DIR, 'snapshot-verified-2026-10-15.json'))
     fails += ev_.amendment_gaps(json.load(open(snap_f, encoding='utf-8')).get('amendments') or [], evs)
+    import cards_v2 as cv2   # cards v2 curation files change cards outside the amendments: their records need events too
+    fails += cv2.curation_event_gaps(cv2.load_evidence_overrides(), cv2.load_keys_books(), cv2.load_first_tasks(), evs, ev_.START)
     try:
         dj = json.load(open(os.path.join(DIST, 'atlas', 'events.json'), encoding='utf-8'))
     except (OSError, ValueError) as ex:
@@ -1126,6 +1130,72 @@ def refresh_note_checks():
             drift = refresh.note_drift(c, m)
             if drift:
                 fails.append(f'{e["slug"]} [{rid}]: {drift}')
+    return fails
+
+
+def cards_v2_checks(pages):
+    """Cards v2 (atlas/site/cards_v2.py, atlas/CURATION.md#cards-v2): the curated keys-and-books and first-task files are valid against
+    the published claims; every per-entry JSON carries evidence_level / keys_and_books / first_task exactly as the rules compute them
+    from its own claims (no drift), and every money/activity claim carries its evidence_level; platforms.json agrees; every card page
+    and its Markdown twin show the ladder and the keys-and-books block, the first-task block exactly when there is a task, and the
+    site-authored v2 wording is positive (no negative words)."""
+    import cards_v2 as cv2
+    fails = []
+    pdir = os.path.join(DIST, 'atlas', 'platforms')
+    recs = {}
+    for fn in sorted(os.listdir(pdir)):
+        if fn.endswith('.json'):
+            recs[fn[:-5]] = json.load(open(os.path.join(pdir, fn), encoding='utf-8'))
+    curated, tasks, evo = cv2.load_keys_books(), cv2.load_first_tasks(), cv2.load_evidence_overrides()
+    fails += cv2.validate_keys_books(curated, recs)
+    fails += cv2.validate_evidence_overrides(evo, recs)
+    fails += cv2.validate_first_tasks(tasks, set(recs))
+    for lv, (lid, label, desc) in cv2.LEVELS.items():
+        for w in cv2.negative_hits(label + ' ' + desc): fails.append(f'cards v2: ladder level {lv} wording uses {w!r}')
+    for f, (title, vals) in cv2.KB_FIELDS.items():
+        for w in cv2.negative_hits(title + ' ' + ' '.join(vals.values())): fails.append(f'cards v2: keys-and-books {f} wording uses {w!r}')
+    levels = Counter()
+    for slug, r in recs.items():
+        w = f'cards v2: {slug}'
+        claims = r.get('claims') or []
+        ov = cv2.card_overrides(r, evo)
+        ev = cv2.card_evidence(r, evo)
+        if r.get('evidence_level') != ev: fails.append(f'{w}: evidence_level {r.get("evidence_level")} != rule {ev}')
+        levels[ev['level']] += 1
+        for i, x in enumerate(claims):
+            lv = cv2.claim_level(x, ov)
+            if x.get('evidence_level') != lv: fails.append(f'{w}: claim {i} evidence_level {x.get("evidence_level")} != rule {lv}')
+            if x.get('evidence_note') != cv2.claim_note(x, ov): fails.append(f'{w}: claim {i} evidence_note differs from evidence-levels.json')
+        if r.get('keys_and_books') != cv2.keys_and_books(r, curated, evo): fails.append(f'{w}: keys_and_books differs from the rule')
+        if r.get('first_task') != cv2.first_task(r, tasks): fails.append(f'{w}: first_task differs from first-tasks.json')
+        for it in (r.get('keys_and_books') or {}).values():
+            if it.get('state') == 'recorded' and not str(it.get('source_url') or '').startswith('http'): fails.append(f'{w}: recorded keys/books value without a source')
+        u = f'/atlas/platforms/{slug}/'
+        if u not in pages: fails.append(f'{w}: no card page'); continue
+        h = open(pages[u], encoding='utf-8').read()
+        m = re.search(r'<section class="cw-panel v2-panel".*?</section>', h, re.S)
+        if not m: fails.append(f'{w}: card page lacks the evidence / keys-and-books panel'); continue
+        panel = re.sub(r'<a [^>]*>Source:[^<]*</a>', '', m.group(0))
+        for word in cv2.negative_hits(html.unescape(re.sub(r'<[^>]+>', ' ', panel))): fails.append(f'{w}: v2 panel uses negative wording {word!r}')
+        if ('id="h-task"' in h) != bool(r.get('first_task')): fails.append(f'{w}: first-task block shown {"without" if r.get("first_task") else "with no"} task')
+        mdp = os.path.join(DIST, 'atlas', 'platforms', slug, 'index.md')
+        md = open(mdp, encoding='utf-8').read() if os.path.exists(mdp) else ''
+        if not md: fails.append(f'{w}: Markdown twin missing'); continue
+        for need in ('## Evidence ladder', '## Keys and books', '## Verified facts'):
+            if need not in md: fails.append(f'{w}: Markdown twin lacks {need!r}')
+        if ('## First task' in md) != bool(r.get('first_task')): fails.append(f'{w}: Markdown twin first task out of step')
+        for x in claims:
+            if x.get('evidence_note') and (html.escape(x['evidence_note']) not in h or x['evidence_note'] not in md):
+                fails.append(f'{w}: curator evidence note missing from the card page or its Markdown twin')
+        if r.get('md_url') != ORIGIN + u + 'index.md': fails.append(f'{w}: md_url {r.get("md_url")}')
+    pl = json.load(open(os.path.join(DIST, 'atlas', 'platforms.json'), encoding='utf-8'))
+    for r in pl.get('platforms') or []:
+        one = recs.get(r['id']) or {}
+        for k in ('evidence_level', 'keys_and_books', 'first_task', 'md_url'):
+            if r.get(k) != one.get(k): fails.append(f'cards v2: platforms.json {r["id"]}.{k} differs from its entry file')
+    kb_n = sum(1 for r in recs.values() if any(i.get('state') == 'recorded' for i in (r.get('keys_and_books') or {}).values()))
+    print(f'cards v2: evidence levels {dict(sorted(((k or 0), v) for k, v in levels.items()))} (0 = not recorded yet), '
+          f'{kb_n} cards with keys/books filled, {sum(1 for r in recs.values() if r.get("first_task"))} first task(s)')
     return fails
 
 
@@ -1465,6 +1535,7 @@ def main():
     fails += events_checks()
     fails += refresh_note_checks()
     fails += markdown_twin_checks(pages)[0]
+    fails += cards_v2_checks(pages)
     fails += stats_checks(parsed, pages, locs)
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)

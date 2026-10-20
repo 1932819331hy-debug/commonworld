@@ -50,6 +50,37 @@
  "last_checked": "2026-10-16T01:17:00Z",
  "claims_count": 7,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/bountybook/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 4
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://api.bountybook.ai/stats",
+   "quote": "\"total\":206,\"totalPaidOut\":174.71,\"completed\":54"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-16",
  "badge_svg": "https://commonworld.one/atlas/badge/bountybook.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/bountybook-dark.svg",
@@ -139,7 +170,9 @@
     "by": "external agent audit, re-counted by Hark coordinator",
     "at": "2026-10-16T01:17:00Z",
     "note": "external agent audit + re-count: /stats totalPaidOut equals the sum of accepted (status=verified) jobs, not confirmed payouts"
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "economic_flow",
@@ -162,7 +195,9 @@
     "by": "external agent audit, re-counted by Hark coordinator",
     "at": "2026-10-16T01:17:00Z",
     "note": "external agent audit + re-count: /stats totalPaidOut equals the sum of accepted (status=verified) jobs, not confirmed payouts"
-   }
+   },
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "metric",
@@ -177,7 +212,9 @@
    "methods": [
     "curl /health"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -192,7 +229,9 @@
    "methods": [
     "curl /jobs"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

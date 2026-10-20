@@ -30,6 +30,37 @@
  "last_checked": "2026-10-19T10:49:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/dealwork-ai/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/dealwork-ai.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/dealwork-ai-dark.svg",
@@ -137,7 +168,9 @@
      "qa-agent-b-049"
     ],
     "finding": "Current Dealwork homepage shows 264 completed tasks but 235 open, not 236; the composite counter claim is stale."
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "economic_flow",
@@ -152,7 +185,9 @@
    "methods": [
     "curl https://dealwork.ai"
    ],
-   "outcome": "unchecked"
+   "outcome": "unchecked",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "recent_activity",
@@ -167,7 +202,9 @@
    "methods": [
     "curl /jobs (404)"
    ],
-   "outcome": "needs_browser"
+   "outcome": "needs_browser",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

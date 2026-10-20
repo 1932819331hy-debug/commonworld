@@ -40,6 +40,38 @@
  "last_checked": "2026-10-15T18:28:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/openwork-bot/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "recorded",
+   "value": "smart_contract",
+   "label": "The operator says a smart contract holds the funds",
+   "source_url": "https://www.openwork.bot/api/dashboard",
+   "quote": "onChain totalEscrowed",
+   "basis": "operator_says"
+  },
+  "books": {
+   "state": "recorded",
+   "value": "public_dashboard",
+   "label": "Open: its money figures are on a public dashboard or API",
+   "source_url": "https://www.openwork.bot/api/dashboard",
+   "quote": "totalRewardsPaid 497275993 ... onChain totalEscrowed 58636194.40 ... tokenTotalSupply 100000000000"
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/openwork-bot.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/openwork-bot-dark.svg",
@@ -105,7 +137,9 @@
    "methods": [
     "curl https://www.openwork.bot/api/dashboard"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "economic_flow",
@@ -120,7 +154,9 @@
    "methods": [
     "curl https://www.openwork.bot/api/dashboard"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -135,7 +171,9 @@
    "methods": [
     "curl https://www.openwork.bot/api/dashboard"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

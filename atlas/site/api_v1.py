@@ -5,10 +5,14 @@ Stability rule: within v1 only backwards-compatible changes (new optional fields
 schema_version; removing or renaming a field, changing its type or meaning, or moving a URL is a breaking change
 and ships as /api/v2/ while /api/v1/ keeps working.
 """
+import json
 import re
 
+from cards_v2 import (BOOKS_VALUES, EACH_HAS_MAX, KEYS_BASES, KEYS_VALUES, LEVELS, NOT_RECORDED, PEOPLE_VALUES,  # cards v2 vocabulary (one source)
+                      SCHEMA_FORMATS, STEP_ACTIONS, STEP_OPTIONAL, STEPS_MAX, TEXT_MAX, URL_MAX, URL_PATTERN)
+
 API_VERSION = 'v1'
-SCHEMA_VERSION = '1.3.0'
+SCHEMA_VERSION = '1.5.0'
 API_BASE = '/api/v1'
 STATUSES = ['live', 'closed']
 ENTITY_TYPES = ['platform', 'tool_catalog', 'protocol', 'project']
@@ -19,6 +23,41 @@ UTC_PATTERN = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$'  # ISO 8601 U
 
 # newest first; build.py writes changelog.json and CHANGELOG.md from this list
 CHANGELOG = [
+    {'schema_version': '1.5.0', 'date': '2026-10-20', 'changes': [
+        'Cards v2 simplification (owner decision). `first_task.code` and the optional `first_task.no_code` are removed: a first task now '
+        'has nothing to download or run, so no record carries them. They existed only in 1.4.0, released together with this version and never published on its own, so no v1 '
+        'client could rely on it; this is noted here instead of a /api/v2/.',
+        '`first_task.steps` are typed objects from a closed list of actions instead of free-text strings: open_page {url, label?}, '
+        'find_field {field, each_has?}, check_field {each, field, match {key, equals, has}, then_label, else_field, else_label} '
+        '(atlas/CURATION.md#first-task-contract). New required `first_task.steps_text`: the sentence the site renders for each step, in the same order. '
+        'Like the removals above, this changes a 1.4.0 field that was never published on its own, so it ships in 1.5.0 rather than /api/v2/.',
+        'The JSON Schema of `first_task` is as strict as the build check: each step is a `oneOf` with one branch per action (`action` as `const`, its own '
+        'required keys and value formats, no other key); `first_task` takes no other key; `steps` and `steps_text` hold 1-8 items; patterns are anchored '
+        '(`verified_on` is the whole YYYY-MM-DD). URLs, labels and curator prose carry the custom formats `cw-https-url`, `cw-label` and `cw-task-text`, '
+        'which name the authoritative checks in atlas/site/cards_v2.py (validators that do not know them treat them as annotations). An https URL in a '
+        'first task never contains < > " or ` (raw or percent-encoded).',
+        'Evidence level 3 (public_transactions) on a money or activity claim is now set only by a curator who opened the record '
+        '(atlas/data/evidence-levels.json, so such a claim always carries `evidence_note`); the automatic URL rule gives at most level 2, '
+        'and a block-explorer page of one record is level 2 unless a curator reviewed it. Field shapes are unchanged.',
+        '`keys_and_books.books` is no longer curated: it comes only from a supported money-flow claim at evidence level 2 or 3 '
+        '(public_dashboard or public_transactions), otherwise not_recorded. The field shape is unchanged.']},
+    {'schema_version': '1.4.0', 'date': '2026-10-19', 'changes': [
+        'Cards v2. New optional fields on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): '
+        '`evidence_level` {level, id, label, claims_counted}, the highest evidence-ladder level reached by the sources of the card\'s supported '
+        'money and activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions; level null with label "not recorded yet" when there is none); '
+        '`keys_and_books` {keys, books, people}, each {state, value, label, source_url, quote} with state recorded (from a sourced claim on the card) '
+        'or not_recorded; on `keys` also `basis` (operator_says: the label is the operator\'s claim, "The operator says ..."; onchain_verified: '
+        'a smart contract recorded on a public block explorer, with `contract_url`, the explorer page of its address or token); `people` names an organization, never an individual person; '
+        '`first_task`, a verified first step for newcomers with credit, or null; `md_url`, the card page as Markdown.',
+        'New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: '
+        '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md '
+        '(level 3 only for a block-explorer page of one concrete record with a well-formed identifier for its type: a transaction hash, an address or account, a block; '
+        'an identifier of the wrong shape, such as /tx/1, and explorer stats are level 2); '
+        'where a curator opened the source and the rule read it wrongly, the curator\'s level applies and the claim also carries `evidence_note` '
+        '(a short reason, from atlas/data/evidence-levels.json).',
+        'New Markdown twin of every card page at /atlas/platforms/{id}/index.md.',
+        'New related file outside /api/: /atlas/events.json (and /atlas/events.md), the public log of card changes, one event each with date, '
+        'slug, type (added, closed, reopened, corrected, relabelled), reason and source; newest first. Linked as `events` from atlas/index.json.']},
     {'schema_version': '1.3.0', 'date': '2026-10-19', 'changes': [
         'New optional field `verify` on a claim (platforms/{id}.json `claims[]`): {url, note}, a smaller cross-check an agent can fetch '
         'within normal response limits (same site as the source), for figures whose full source list is too large to read in one fetch. '
@@ -65,8 +104,50 @@ def schemas(origin, categories):
     gen_at = utc_n | {'description': GENERATED_AT_DESC}
     newest_obs = utc_n | {'description': NEWEST_OBSERVATION_DESC}
     uri = {'type': 'string', 'format': 'uri', 'pattern': '^https?://'}
+    # First-task step values. Patterns are anchored ^...$ (ECMA-262: $ is the end of the string, no trailing-newline allowance) and
+    # equal to the runtime regexes in cards_v2.py; the repo's validators apply them with that meaning (see validate()).
+    ident = {'type': 'string', 'pattern': r'^[A-Za-z_][A-Za-z0-9_.]{0,63}$', 'description': 'A JSON field name.'}
+    token = {'type': 'string', 'pattern': r'^[A-Za-z0-9_.-]{1,64}$'}
+    label = {'type': 'string', 'pattern': r'^[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?$', 'format': 'cw-label',
+             'description': 'A short label (letters, digits, spaces, hyphens; at most 40). format cw-label: also no download, install or run '
+                            'wording (cards_v2.label_ok, atlas/CURATION.md#first-task-contract).'}
+    cw_url = {'type': 'string', 'minLength': 9, 'maxLength': URL_MAX, 'pattern': URL_PATTERN, 'format': 'cw-https-url',
+              'description': 'A plain https URL. The pattern is the strictest form JSON Schema can express; the authoritative check is '
+                             'https_url_ok in atlas/site/cards_v2.py (format cw-https-url: one decode, no remaining %, no raw GitHub or gist host, '
+                             'no script or binary file; atlas/CURATION.md#first-task-contract), which the Commonworld build and CI apply for this format.'}
+    text = {'type': 'string', 'minLength': 1, 'maxLength': TEXT_MAX, 'format': 'cw-task-text',
+            'description': f'Curator prose, at most {TEXT_MAX} characters. format cw-task-text: no control, format or separator character, '
+                           'no download, install or run wording, every link a plain https URL (cards_v2.task_text_ok).'}
+    step_keys = {'url': cw_url, 'label': label, 'field': ident, 'each': ident, 'then_label': label, 'else_field': ident, 'else_label': label,
+                 'each_has': {'type': 'array', 'minItems': 1, 'maxItems': EACH_HAS_MAX, 'uniqueItems': True, 'items': ident},
+                 'match': {'type': 'object', 'additionalProperties': False, 'required': ['key', 'equals', 'has'],
+                           'properties': {'key': ident, 'equals': token, 'has': ident}}}
+
+    def step_branch(a):
+        keys = STEP_ACTIONS[a]
+        return {'type': 'object', 'additionalProperties': False,
+                'required': ['action'] + [k for k in keys if k not in STEP_OPTIONAL[a]],
+                'properties': {'action': {'const': a}} | {k: step_keys[k] for k in keys}}
+    step = {'description': 'One typed first-task step: exactly one of the closed list of actions, each with its own keys (no other key). '
+                           'open_page: url (a plain https page), optional label. find_field: field, optional each_has (1-8 distinct field names each item has). '
+                           'check_field: each (the list), field (the list inside each item), match {key, equals, has} (an entry whose `key` equals `equals` '
+                           'and that has `has`), then_label, else_field, else_label.',
+            'oneOf': [step_branch(a) for a in STEP_ACTIONS]}
     uri_n = {'type': ['string', 'null'], 'format': 'uri'}
     scalar = {'type': ['number', 'string', 'null']}
+
+    def kb_item(vals, keys=False):
+        it = {'type': 'object', 'required': ['state', 'value', 'label', 'source_url', 'quote'],
+              'properties': {'state': {'enum': ['recorded', 'not_recorded']}, 'value': {'enum': sorted(vals) + [None]},
+                             'label': {'type': 'string', 'minLength': 1}, 'source_url': uri_n, 'quote': {'type': ['string', 'null']}}}
+        if keys:
+            it['properties'] |= {
+                'basis': {'enum': list(KEYS_BASES), 'description': 'On a recorded value: operator_says = custody rests on the operator\'s own '
+                          'words and the label is an attributed claim ("The operator says ..."); onchain_verified = a smart contract recorded '
+                          'on a public block explorer (contract_url).'},
+                'contract_url': uri | {'description': 'The explorer page of the contract\'s address or token on a public block explorer, not a transaction '
+                                 'or block page (basis onchain_verified only).'}}
+        return it
     money_flow = {'type': 'object', 'description': 'A supported money-flow claim as shown on the card.',
                   'required': ['statement', 'value', 'unit', 'window', 'basis', 'observed_at', 'source_url'],
                   'properties': {'statement': {'type': 'string'}, 'value': scalar, 'unit': {'type': ['string', 'null']},
@@ -84,7 +165,12 @@ def schemas(origin, categories):
                             'recheck': {'type': 'object'},
                             'verify': {'type': 'object', 'description': 'Smaller cross-check for this figure: a URL an agent can fetch within '
                                        'normal limits and a note on what it gives. Added in schema_version 1.3.0.',
-                                       'required': ['url', 'note'], 'properties': {'url': uri, 'note': {'type': 'string', 'minLength': 1}}}}}
+                                       'required': ['url', 'note'], 'properties': {'url': uri, 'note': {'type': 'string', 'minLength': 1}}},
+                            'evidence_level': {'enum': [1, 2, 3], 'description': 'Evidence-ladder level of this money or activity claim, from its source URL (or a curator review, see evidence_note): '
+                                               '1 operator says, 2 public dashboard, 3 public transactions (only by a curator who opened the record, since 1.5.0). Added in schema_version 1.4.0.'},
+                            'evidence_label': {'enum': [LEVELS[k][1] for k in (1, 2, 3)]},
+                            'evidence_note': {'type': 'string', 'minLength': 1, 'description': 'Present when a curator opened the source and set the '
+                                              'level by hand (atlas/data/evidence-levels.json): the short reason. Added in schema_version 1.4.0.'}}}
     summary_props = {
         'id': {'type': 'string', 'pattern': ID_PATTERN, 'description': 'Permanent ID (URL slug). Never construct one: take it from platforms.json.'},
         'name': {'type': 'string'}, 'url': uri, 'json_url': uri, 'website': uri_n,
@@ -96,8 +182,31 @@ def schemas(origin, categories):
         'preview': {'$ref': '#/$defs/preview'},
         'link_safety': {'type': 'object', 'description': 'Google Safe Browsing status of the official URL from the latest daily check '
                         '(report: /atlas/safety.json). Added in schema_version 1.2.0.', 'required': ['status', 'checked_at'],
-                        'properties': {'status': {'enum': ['clean', 'flagged', 'no_data']}, 'checked_at': utc_n}}}
-    optional = {'preview', 'link_safety'}  # added in 1.1.0 / 1.2.0: optional, so older records stay valid
+                        'properties': {'status': {'enum': ['clean', 'flagged', 'no_data']}, 'checked_at': utc_n}},
+        'md_url': uri | {'description': 'The card page as Markdown. Added in schema_version 1.4.0.'},
+        'evidence_level': {'type': 'object', 'description': 'Highest evidence-ladder level reached by the sources of the card\'s supported money and '
+                           'activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions); level null = not recorded yet. Added in schema_version 1.4.0.',
+                           'required': ['level', 'id', 'label', 'claims_counted'],
+                           'properties': {'level': {'enum': [1, 2, 3, None]}, 'id': {'enum': [LEVELS[k][0] for k in (1, 2, 3)] + [None]},
+                                          'label': {'enum': [LEVELS[k][1] for k in (1, 2, 3)] + [NOT_RECORDED]}, 'claims_counted': {'type': 'integer', 'minimum': 0}}},
+        'keys_and_books': {'type': 'object', 'description': 'Who holds the keys, whether the books are open, who is behind it: each filled only from a '
+                           'sourced claim on the card, otherwise state not_recorded. Added in schema_version 1.4.0.',
+                           'required': ['keys', 'books', 'people'],
+                           'properties': {f: kb_item(vals) for f, vals in (('keys', KEYS_VALUES), ('books', BOOKS_VALUES), ('people', PEOPLE_VALUES))}
+                           | {'keys': kb_item(KEYS_VALUES, keys=True)}},
+        'first_task': {'type': ['object', 'null'], 'description': 'A verified, read-only first step for newcomers, with credit to its contributor, or null. '
+                       '`steps` are typed objects from a closed list of actions (open_page, find_field, check_field; atlas/CURATION.md#first-task-contract), '
+                       'never free text; `steps_text` holds the sentence the site renders for each step, in the same order. It has nothing to download or run '
+                       '(first_task.code and first_task.no_code were removed in schema_version 1.5.0, when steps became typed objects). Added in schema_version 1.4.0.',
+                       'additionalProperties': False,
+                       'required': ['title', 'steps', 'steps_text', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification', 'credit'],
+                       'properties': {'title': text, 'steps': {'type': 'array', 'minItems': 1, 'maxItems': STEPS_MAX, 'items': step},
+                                      'steps_text': {'type': 'array', 'minItems': 1, 'maxItems': STEPS_MAX, 'items': {'type': 'string', 'minLength': 1}},
+                                      'done_when': text, 'contributed_by': text, 'contributed_via': text,
+                                      'source_url': cw_url, 'verified_by': text,
+                                      'verified_on': {'type': 'string', 'pattern': r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', 'description': 'YYYY-MM-DD (the whole string).'},
+                                      'verification': text, 'credit': {'type': 'string', 'pattern': '^Contributed by '}}}}
+    optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task'}  # added in 1.1.0 / 1.2.0 / 1.4.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
                'required': [k for k in summary_props if k not in optional], 'properties': summary_props}
     preview = {'type': ['object', 'null'], 'description': 'Dated homepage screenshot of the entry, or null. Third-party website content: '
@@ -162,7 +271,12 @@ def openapi(origin, categories, example_ids, docs_url, licence):
                                  'generated_at: ' + GENERATED_AT_DESC + ' newest_observation: ' + NEWEST_OBSERVATION_DESC + ' '
                                  'No key, no rate limit beyond fair use; '
                                  'CORS is open (Access-Control-Allow-Origin: *). Responses may be cached by Cloudflare and browsers for up to a few hours. '
-                                 + VERSIONING + f' Human documentation: {docs_url}'),
+                                 + VERSIONING + ' Related file outside /api/: ' + origin + '/atlas/events.json, the public log of card changes '
+                                 '(also as /atlas/events.md). '
+                                 'Money and activity claims carry evidence_level (1 operator says, 2 public dashboard, 3 public transactions, set only by a curator who opened the record) and '
+                                 'evidence_label; where a curator opened the source and set the level by hand, the claim also carries evidence_note, '
+                                 'a short reason (manual relabel rules: https://github.com/commonworld-one/commonworld/blob/main/atlas/CURATION.md#curator-review-of-a-level). '
+                                 + f'Human documentation: {docs_url}'),
                  'license': {'name': f'Data: {licence}', 'url': 'https://creativecommons.org/licenses/by/4.0/'}},
         'servers': [{'url': f'{origin}{API_BASE}', 'description': 'Commonworld (canonical)'}],
         'externalDocs': {'url': docs_url, 'description': 'Commonworld API documentation'},
@@ -227,9 +341,46 @@ def _resolve(ref, base_name, registry):
     return node, name
 
 
+def ecma_pattern(p):
+    """A JSON Schema `pattern` (ECMA-262 regex) as a Python regex with the same meaning for the patterns used here: search semantics
+    (unanchored unless the pattern anchors itself), and every unescaped `$` outside a character class is the end of the string
+    (Python's `$` would also match before a trailing newline, so it becomes `\\Z`). Compiled with re.ASCII (\\d is [0-9] as in ECMA)."""
+    return _ECMA.get(p) or _ECMA.setdefault(p, re.compile(_dollar_to_z(p), re.ASCII))
+
+
+_ECMA = {}
+
+
+def _dollar_to_z(p):
+    out, i, cls = [], 0, False
+    while i < len(p):
+        c = p[i]
+        if c == '\\':
+            out.append(p[i:i + 2]); i += 2; continue
+        if cls:
+            cls = c != ']'
+        elif c == '[':
+            cls = True
+        elif c == '$':
+            c = r'\Z'
+        out.append(c); i += 1
+    return ''.join(out)
+
+
+def pattern_ok(p, s):
+    return ecma_pattern(p).search(s) is not None
+
+
+def format_ok(fmt, v):
+    """Commonworld's own formats (cards_v2.SCHEMA_FORMATS, e.g. cw-https-url -> https_url_ok); any other format is an annotation here."""
+    f = SCHEMA_FORMATS.get(fmt)
+    return f is None or not isinstance(v, str) or f(v)
+
+
 def validate(inst, schema, registry, base_name, path='$', errs=None, limit=20):
     """Validate inst against schema; registry maps schema file name -> schema. Supports $ref (local and file#/$defs/x),
-    allOf, type, enum, required, properties, items, pattern, minimum. Returns a list of 'path: message' strings."""
+    allOf, oneOf, const, type, enum, required, properties, additionalProperties: false, items, minItems, maxItems, uniqueItems,
+    pattern (ECMA meaning, ecma_pattern), minLength, maxLength, minimum and the cw-* formats (format_ok). Returns a list of 'path: message' strings."""
     errs = [] if errs is None else errs
     if len(errs) >= limit:
         return errs
@@ -238,16 +389,29 @@ def validate(inst, schema, registry, base_name, path='$', errs=None, limit=20):
         validate(inst, node, registry, nb, path, errs, limit)
     for sub in schema.get('allOf', []):
         validate(inst, sub, registry, base_name, path, errs, limit)
+    if 'oneOf' in schema:
+        res = [validate(inst, sub, registry, base_name, path, [], limit) for sub in schema['oneOf']]
+        ok = [r for r in res if not r]
+        if len(ok) != 1:
+            hint = '' if ok else ': ' + min(res, key=len)[0]
+            errs.append(f'{path}: matches {len(ok)} of the {len(res)} oneOf branches, not exactly one{hint}')
     t = schema.get('type')
     if t is not None:
         ts = t if isinstance(t, list) else [t]
         if not any(_is(inst, x) for x in ts):
             errs.append(f'{path}: expected {"/".join(ts)}, got {type(inst).__name__}')
             return errs
+    if 'const' in schema and not (type(inst) is type(schema['const']) and inst == schema['const']):
+        errs.append(f'{path}: {inst!r} is not {schema["const"]!r}')
     if 'enum' in schema and inst not in schema['enum']:
         errs.append(f'{path}: {inst!r} not in {schema["enum"]}')
-    if isinstance(inst, str) and 'pattern' in schema and not re.search(schema['pattern'], inst):
-        errs.append(f'{path}: {inst[:60]!r} does not match {schema["pattern"]}')
+    if isinstance(inst, str):
+        if 'pattern' in schema and not pattern_ok(schema['pattern'], inst):
+            errs.append(f'{path}: {inst[:60]!r} does not match {schema["pattern"]}')
+        if len(inst) < schema.get('minLength', 0) or ('maxLength' in schema and len(inst) > schema['maxLength']):
+            errs.append(f'{path}: length {len(inst)} outside {schema.get("minLength", 0)}-{schema.get("maxLength", "")}')
+        if 'format' in schema and not format_ok(schema['format'], inst):
+            errs.append(f'{path}: {inst[:60]!r} is not a valid {schema["format"]}')
     if isinstance(inst, (int, float)) and not isinstance(inst, bool) and 'minimum' in schema and inst < schema['minimum']:
         errs.append(f'{path}: {inst} < {schema["minimum"]}')
     if isinstance(inst, dict):
@@ -257,7 +421,15 @@ def validate(inst, schema, registry, base_name, path='$', errs=None, limit=20):
         for k, sub in (schema.get('properties') or {}).items():
             if k in inst:
                 validate(inst[k], sub, registry, base_name, f'{path}.{k}', errs, limit)
-    if isinstance(inst, list) and 'items' in schema:
-        for i, v in enumerate(inst):
-            validate(v, schema['items'], registry, base_name, f'{path}[{i}]', errs, limit)
+        if schema.get('additionalProperties') is False:
+            for k in sorted(set(inst) - set(schema.get('properties') or {}), key=str):
+                errs.append(f'{path}: unexpected key {k!r}')
+    if isinstance(inst, list):
+        if len(inst) < schema.get('minItems', 0) or ('maxItems' in schema and len(inst) > schema['maxItems']):
+            errs.append(f'{path}: {len(inst)} items, outside {schema.get("minItems", 0)}-{schema.get("maxItems", "")}')
+        if schema.get('uniqueItems') and len({json.dumps(v, sort_keys=True) for v in inst}) != len(inst):
+            errs.append(f'{path}: items are not unique')
+        if 'items' in schema:
+            for i, v in enumerate(inst):
+                validate(v, schema['items'], registry, base_name, f'{path}[{i}]', errs, limit)
     return errs

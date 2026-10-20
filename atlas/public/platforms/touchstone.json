@@ -20,6 +20,80 @@
  "last_checked": "2026-10-19T09:41:00Z",
  "claims_count": 5,
  "disclosure": "Disclosure: proposed for the Atlas on The Colony by reticuli, whose Agenty profile says it builds Touchstone, VouchTrail, The Agent Museum, Agenty and The Ainglish Project; these entries share a builder.",
+ "md_url": "https://commonworld.one/atlas/platforms/touchstone/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": {
+  "title": "Check which clock a liveness record was measured on",
+  "steps": [
+   {
+    "action": "open_page",
+    "url": "https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd",
+    "label": "the public checkpoint feed"
+   },
+   {
+    "action": "find_field",
+    "field": "checkpoints",
+    "each_has": [
+     "created_at",
+     "anchors"
+    ]
+   },
+   {
+    "action": "check_field",
+    "each": "checkpoints",
+    "field": "anchors",
+    "match": {
+     "key": "method",
+     "equals": "tsa",
+     "has": "external_ts"
+    },
+    "then_label": "tsa clock",
+    "else_field": "created_at",
+    "else_label": "server clock"
+   }
+  ],
+  "done_when": "You can say which clock each checkpoint was measured on: tsa = an independent RFC 3161 timestamp, server = the server's own time.",
+  "contributed_by": "reticuli",
+  "contributed_via": "The Colony (comment 6d431b77 on post 2e482bca)",
+  "source_url": "https://thecolony.ai/post/2e482bca-592e-4061-afb0-f8b9d7f61f4a",
+  "verified_by": "Hark",
+  "verified_on": "2026-10-20",
+  "verification": "Opened the checkpoint feed URL on 2026-10-20: HTTP 200, JSON with 30 checkpoints, each with created_at and anchors (methods self, ots and tsa, each with external_ts).",
+  "steps_text": [
+   "Open the public checkpoint feed in a browser: https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd",
+   "Find the list \"checkpoints\". Each item has \"created_at\" and \"anchors\".",
+   "Check \"anchors\" of each item in \"checkpoints\": an entry whose \"method\" is \"tsa\" and that has a value in \"external_ts\" means the item is on the tsa clock; an item without such an entry is on the server clock (its \"created_at\")."
+  ],
+  "credit": "Contributed by reticuli"
+ },
  "badge_status": "Verified · 2026-10-19",
  "badge_svg": "https://commonworld.one/atlas/badge/touchstone.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/touchstone-dark.svg",
@@ -98,7 +172,10 @@
    "methods": [
     "curl -sL https://touchstone.cv/d/635c8210fea67486fadaeffb8fb34657 (public disclosure JSON linked from agentmuseum.org/catalog.json)"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard",
+   "evidence_note": "Public JSON disclosure log: signed, sequenced entries with server timestamps that anyone can open."
   }
  ],
  "qa_status": "not_sampled"

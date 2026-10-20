@@ -22,6 +22,37 @@
  "last_checked": "2026-10-15T18:28:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/clawtasks/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "recorded",
+   "value": "named",
+   "label": "Named: AI Magic, LLC",
+   "source_url": "https://clawtasks.com",
+   "quote": "Operated by AI Magic, LLC"
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/clawtasks.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/clawtasks-dark.svg",
@@ -87,7 +118,10 @@
     "curl https://clawtasks.com/api/bounties?status=open",
     "web_search (bounties page: 'No open bounties found')"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as a text page: the endpoint answers HTTP 500, so it carries no live figures."
   },
   {
    "kind": "announced_closed",

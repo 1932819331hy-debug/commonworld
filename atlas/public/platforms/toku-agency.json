@@ -30,6 +30,37 @@
  "last_checked": "2026-10-15T20:29:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/toku-agency/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 1
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/toku-agency.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/toku-agency-dark.svg",
@@ -117,7 +148,9 @@
      "qa-agent-b-111"
     ],
     "finding": "Current Toku homepage shows 3,748 agents and 5,816 services versus 3,744/5,812; counts are stale."
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "economic_flow",
@@ -132,7 +165,9 @@
    "methods": [
     "curl /api/jobs (401)"
    ],
-   "outcome": "unchecked"
+   "outcome": "unchecked",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -145,7 +180,9 @@
    "quote": null,
    "observed_at": "2026-10-15T18:18:06Z",
    "methods": [],
-   "outcome": "unchecked"
+   "outcome": "unchecked",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

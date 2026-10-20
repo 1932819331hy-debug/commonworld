@@ -228,6 +228,429 @@
        "format": "date-time"
       }
      }
+    },
+    "md_url": {
+     "type": "string",
+     "format": "uri",
+     "pattern": "^https?://",
+     "description": "The card page as Markdown. Added in schema_version 1.4.0."
+    },
+    "evidence_level": {
+     "type": "object",
+     "description": "Highest evidence-ladder level reached by the sources of the card's supported money and activity claims (1 operator_says, 2 public_dashboard, 3 public_transactions); level null = not recorded yet. Added in schema_version 1.4.0.",
+     "required": [
+      "level",
+      "id",
+      "label",
+      "claims_counted"
+     ],
+     "properties": {
+      "level": {
+       "enum": [
+        1,
+        2,
+        3,
+        null
+       ]
+      },
+      "id": {
+       "enum": [
+        "operator_says",
+        "public_dashboard",
+        "public_transactions",
+        null
+       ]
+      },
+      "label": {
+       "enum": [
+        "operator says",
+        "public dashboard",
+        "public transactions",
+        "not recorded yet"
+       ]
+      },
+      "claims_counted": {
+       "type": "integer",
+       "minimum": 0
+      }
+     }
+    },
+    "keys_and_books": {
+     "type": "object",
+     "description": "Who holds the keys, whether the books are open, who is behind it: each filled only from a sourced claim on the card, otherwise state not_recorded. Added in schema_version 1.4.0.",
+     "required": [
+      "keys",
+      "books",
+      "people"
+     ],
+     "properties": {
+      "keys": {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "label",
+        "source_url",
+        "quote"
+       ],
+       "properties": {
+        "state": {
+         "enum": [
+          "recorded",
+          "not_recorded"
+         ]
+        },
+        "value": {
+         "enum": [
+          "operator",
+          "smart_contract",
+          "user_wallet",
+          null
+         ]
+        },
+        "label": {
+         "type": "string",
+         "minLength": 1
+        },
+        "source_url": {
+         "type": [
+          "string",
+          "null"
+         ],
+         "format": "uri"
+        },
+        "quote": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "basis": {
+         "enum": [
+          "operator_says",
+          "onchain_verified"
+         ],
+         "description": "On a recorded value: operator_says = custody rests on the operator's own words and the label is an attributed claim (\"The operator says ...\"); onchain_verified = a smart contract recorded on a public block explorer (contract_url)."
+        },
+        "contract_url": {
+         "type": "string",
+         "format": "uri",
+         "pattern": "^https?://",
+         "description": "The explorer page of the contract's address or token on a public block explorer, not a transaction or block page (basis onchain_verified only)."
+        }
+       }
+      },
+      "books": {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "label",
+        "source_url",
+        "quote"
+       ],
+       "properties": {
+        "state": {
+         "enum": [
+          "recorded",
+          "not_recorded"
+         ]
+        },
+        "value": {
+         "enum": [
+          "public_dashboard",
+          "public_transactions",
+          null
+         ]
+        },
+        "label": {
+         "type": "string",
+         "minLength": 1
+        },
+        "source_url": {
+         "type": [
+          "string",
+          "null"
+         ],
+         "format": "uri"
+        },
+        "quote": {
+         "type": [
+          "string",
+          "null"
+         ]
+        }
+       }
+      },
+      "people": {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "label",
+        "source_url",
+        "quote"
+       ],
+       "properties": {
+        "state": {
+         "enum": [
+          "recorded",
+          "not_recorded"
+         ]
+        },
+        "value": {
+         "enum": [
+          "named",
+          null
+         ]
+        },
+        "label": {
+         "type": "string",
+         "minLength": 1
+        },
+        "source_url": {
+         "type": [
+          "string",
+          "null"
+         ],
+         "format": "uri"
+        },
+        "quote": {
+         "type": [
+          "string",
+          "null"
+         ]
+        }
+       }
+      }
+     }
+    },
+    "first_task": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "description": "A verified, read-only first step for newcomers, with credit to its contributor, or null. `steps` are typed objects from a closed list of actions (open_page, find_field, check_field; atlas/CURATION.md#first-task-contract), never free text; `steps_text` holds the sentence the site renders for each step, in the same order. It has nothing to download or run (first_task.code and first_task.no_code were removed in schema_version 1.5.0, when steps became typed objects). Added in schema_version 1.4.0.",
+     "additionalProperties": false,
+     "required": [
+      "title",
+      "steps",
+      "steps_text",
+      "done_when",
+      "contributed_by",
+      "contributed_via",
+      "source_url",
+      "verified_by",
+      "verified_on",
+      "verification",
+      "credit"
+     ],
+     "properties": {
+      "title": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 400,
+       "format": "cw-task-text",
+       "description": "Curator prose, at most 400 characters. format cw-task-text: no control, format or separator character, no download, install or run wording, every link a plain https URL (cards_v2.task_text_ok)."
+      },
+      "steps": {
+       "type": "array",
+       "minItems": 1,
+       "maxItems": 8,
+       "items": {
+        "description": "One typed first-task step: exactly one of the closed list of actions, each with its own keys (no other key). open_page: url (a plain https page), optional label. find_field: field, optional each_has (1-8 distinct field names each item has). check_field: each (the list), field (the list inside each item), match {key, equals, has} (an entry whose `key` equals `equals` and that has `has`), then_label, else_field, else_label.",
+        "oneOf": [
+         {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+           "action",
+           "url"
+          ],
+          "properties": {
+           "action": {
+            "const": "open_page"
+           },
+           "url": {
+            "type": "string",
+            "minLength": 9,
+            "maxLength": 2048,
+            "pattern": "^https://[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?:[/?#][\\x21\\x23-\\x3b\\x3d\\x3f-\\x5b\\x5d-\\x5f\\x61-\\x7e]*)?$",
+            "format": "cw-https-url",
+            "description": "A plain https URL. The pattern is the strictest form JSON Schema can express; the authoritative check is https_url_ok in atlas/site/cards_v2.py (format cw-https-url: one decode, no remaining %, no raw GitHub or gist host, no script or binary file; atlas/CURATION.md#first-task-contract), which the Commonworld build and CI apply for this format."
+           },
+           "label": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?$",
+            "format": "cw-label",
+            "description": "A short label (letters, digits, spaces, hyphens; at most 40). format cw-label: also no download, install or run wording (cards_v2.label_ok, atlas/CURATION.md#first-task-contract)."
+           }
+          }
+         },
+         {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+           "action",
+           "field"
+          ],
+          "properties": {
+           "action": {
+            "const": "find_field"
+           },
+           "field": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$",
+            "description": "A JSON field name."
+           },
+           "each_has": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "uniqueItems": true,
+            "items": {
+             "type": "string",
+             "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$",
+             "description": "A JSON field name."
+            }
+           }
+          }
+         },
+         {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+           "action",
+           "each",
+           "field",
+           "match",
+           "then_label",
+           "else_field",
+           "else_label"
+          ],
+          "properties": {
+           "action": {
+            "const": "check_field"
+           },
+           "each": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$",
+            "description": "A JSON field name."
+           },
+           "field": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$",
+            "description": "A JSON field name."
+           },
+           "match": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+             "key",
+             "equals",
+             "has"
+            ],
+            "properties": {
+             "key": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$",
+              "description": "A JSON field name."
+             },
+             "equals": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+             },
+             "has": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$",
+              "description": "A JSON field name."
+             }
+            }
+           },
+           "then_label": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?$",
+            "format": "cw-label",
+            "description": "A short label (letters, digits, spaces, hyphens; at most 40). format cw-label: also no download, install or run wording (cards_v2.label_ok, atlas/CURATION.md#first-task-contract)."
+           },
+           "else_field": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_.]{0,63}$",
+            "description": "A JSON field name."
+           },
+           "else_label": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9 -]{0,38}[A-Za-z0-9])?$",
+            "format": "cw-label",
+            "description": "A short label (letters, digits, spaces, hyphens; at most 40). format cw-label: also no download, install or run wording (cards_v2.label_ok, atlas/CURATION.md#first-task-contract)."
+           }
+          }
+         }
+        ]
+       }
+      },
+      "steps_text": {
+       "type": "array",
+       "minItems": 1,
+       "maxItems": 8,
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      },
+      "done_when": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 400,
+       "format": "cw-task-text",
+       "description": "Curator prose, at most 400 characters. format cw-task-text: no control, format or separator character, no download, install or run wording, every link a plain https URL (cards_v2.task_text_ok)."
+      },
+      "contributed_by": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 400,
+       "format": "cw-task-text",
+       "description": "Curator prose, at most 400 characters. format cw-task-text: no control, format or separator character, no download, install or run wording, every link a plain https URL (cards_v2.task_text_ok)."
+      },
+      "contributed_via": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 400,
+       "format": "cw-task-text",
+       "description": "Curator prose, at most 400 characters. format cw-task-text: no control, format or separator character, no download, install or run wording, every link a plain https URL (cards_v2.task_text_ok)."
+      },
+      "source_url": {
+       "type": "string",
+       "minLength": 9,
+       "maxLength": 2048,
+       "pattern": "^https://[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?:[/?#][\\x21\\x23-\\x3b\\x3d\\x3f-\\x5b\\x5d-\\x5f\\x61-\\x7e]*)?$",
+       "format": "cw-https-url",
+       "description": "A plain https URL. The pattern is the strictest form JSON Schema can express; the authoritative check is https_url_ok in atlas/site/cards_v2.py (format cw-https-url: one decode, no remaining %, no raw GitHub or gist host, no script or binary file; atlas/CURATION.md#first-task-contract), which the Commonworld build and CI apply for this format."
+      },
+      "verified_by": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 400,
+       "format": "cw-task-text",
+       "description": "Curator prose, at most 400 characters. format cw-task-text: no control, format or separator character, no download, install or run wording, every link a plain https URL (cards_v2.task_text_ok)."
+      },
+      "verified_on": {
+       "type": "string",
+       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+       "description": "YYYY-MM-DD (the whole string)."
+      },
+      "verification": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 400,
+       "format": "cw-task-text",
+       "description": "Curator prose, at most 400 characters. format cw-task-text: no control, format or separator character, no download, install or run wording, every link a plain https URL (cards_v2.task_text_ok)."
+      },
+      "credit": {
+       "type": "string",
+       "pattern": "^Contributed by "
+      }
+     }
     }
    }
   },
@@ -460,6 +883,26 @@
        "minLength": 1
       }
      }
+    },
+    "evidence_level": {
+     "enum": [
+      1,
+      2,
+      3
+     ],
+     "description": "Evidence-ladder level of this money or activity claim, from its source URL (or a curator review, see evidence_note): 1 operator says, 2 public dashboard, 3 public transactions (only by a curator who opened the record, since 1.5.0). Added in schema_version 1.4.0."
+    },
+    "evidence_label": {
+     "enum": [
+      "operator says",
+      "public dashboard",
+      "public transactions"
+     ]
+    },
+    "evidence_note": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Present when a curator opened the source and set the level by hand (atlas/data/evidence-levels.json): the short reason. Added in schema_version 1.4.0."
     }
    }
   },

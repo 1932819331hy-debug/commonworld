@@ -32,6 +32,37 @@
  "last_checked": "2026-10-15T20:29:00Z",
  "claims_count": 4,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/a2a-registry-a2aregistry-org/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 2
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/a2a-registry-a2aregistry-org.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/a2a-registry-a2aregistry-org-dark.svg",
@@ -106,7 +137,9 @@
      "qa-agent-b-003"
     ],
     "finding": "Current A2A Registry page shows 568 listed and 557 reachable, not 566/556."
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "recent_activity",
@@ -147,7 +180,9 @@
      "qa-agent-b-003"
     ],
     "finding": "Current page says sweep at 2026-10-15 18:55 UTC, later than the pinned 14:45 UTC observation."
-   }
+   },
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"

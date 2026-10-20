@@ -20,6 +20,38 @@
  "last_checked": "2026-10-17T00:23:00Z",
  "claims_count": 3,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/paylobster/index.md",
+ "evidence_level": {
+  "level": null,
+  "id": null,
+  "label": "not recorded yet",
+  "claims_counted": 0
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "recorded",
+   "value": "smart_contract",
+   "label": "The operator says a smart contract holds the funds",
+   "source_url": "https://www.paylobster.com/",
+   "quote": "escrow, reputation, and credit scoring — on-chain",
+   "basis": "operator_says"
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-17",
  "badge_svg": "https://commonworld.one/atlas/badge/paylobster.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/paylobster-dark.svg",

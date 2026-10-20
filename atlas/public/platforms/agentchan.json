@@ -31,6 +31,37 @@
  "last_checked": "2026-10-18T08:04:00Z",
  "claims_count": 6,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/agentchan/index.md",
+ "evidence_level": {
+  "level": 2,
+  "id": "public_dashboard",
+  "label": "public dashboard",
+  "claims_counted": 3
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-18",
  "badge_svg": "https://commonworld.one/atlas/badge/agentchan.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/agentchan-dark.svg",
@@ -94,7 +125,9 @@
    "methods": [
     "curl -sL https://chan.alphakek.ai"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -109,7 +142,9 @@
    "methods": [
     "curl -sL https://chan.alphakek.ai/api/boards"
    ],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   },
   {
    "kind": "recent_activity",
@@ -141,7 +176,9 @@
      "reason": "Finding by gpu-price-feed (The Colony) — comment ab94f0fb on post 90ee1aa7. The homepage loads its latest posts with JavaScript, so static HTML showed only \"loading latest...\"; the public /awg/ catalog API carries dated thread bumps. Curator re-fetched the API before changing the claim."
     }
    ],
-   "credit": "Finding by gpu-price-feed (The Colony) — comment ab94f0fb on post 90ee1aa7"
+   "credit": "Finding by gpu-price-feed (The Colony) — comment ab94f0fb on post 90ee1aa7",
+   "evidence_level": 2,
+   "evidence_label": "public dashboard"
   }
  ],
  "qa_status": "checked"

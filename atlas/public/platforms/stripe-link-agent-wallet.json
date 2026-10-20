@@ -33,6 +33,37 @@
  "last_checked": "2026-10-15T18:20:00Z",
  "claims_count": 5,
  "disclosure": null,
+ "md_url": "https://commonworld.one/atlas/platforms/stripe-link-agent-wallet/index.md",
+ "evidence_level": {
+  "level": 1,
+  "id": "operator_says",
+  "label": "operator says",
+  "claims_counted": 2
+ },
+ "keys_and_books": {
+  "keys": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "books": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  },
+  "people": {
+   "state": "not_recorded",
+   "value": null,
+   "label": "not recorded yet",
+   "source_url": null,
+   "quote": null
+  }
+ },
+ "first_task": null,
  "badge_status": "Verified · 2026-10-15",
  "badge_svg": "https://commonworld.one/atlas/badge/stripe-link-agent-wallet.svg",
  "badge_svg_dark": "https://commonworld.one/atlas/badge/stripe-link-agent-wallet-dark.svg",
@@ -90,7 +121,9 @@
    "quote": "2026-09-29",
    "observed_at": "2026-10-15T18:15:00Z",
    "methods": [],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   },
   {
    "kind": "metric",
@@ -103,7 +136,9 @@
    "quote": "over the past month, agentic purchases made with Link increased 38x.",
    "observed_at": "2026-10-15T18:15:00Z",
    "methods": [],
-   "outcome": "supported"
+   "outcome": "supported",
+   "evidence_level": 1,
+   "evidence_label": "operator says"
   }
  ],
  "qa_status": "checked"
