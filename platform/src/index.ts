@@ -132,6 +132,14 @@ async function route(request: Request, env: Env, exec: ExecutionContext): Promis
   }
 }
 
+/** 301 from `www.<host>` to `<host>` (path and query kept); null for every other host. Exported for tests. */
+export function canonicalHostRedirect(request: Request): Response | null {
+  const url = new URL(request.url);
+  if (!url.hostname.startsWith('www.')) return null;
+  url.hostname = url.hostname.slice(4);
+  return new Response(null, { status: 301, headers: { location: url.toString(), 'cache-control': 'public, max-age=86400' } });
+}
+
 async function serve(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {
   const path = new URL(request.url).pathname;
   if (!isApiPath(path)) return route(request, env, exec);
@@ -144,6 +152,9 @@ async function serve(request: Request, env: Env, exec: ExecutionContext): Promis
 
 export default {
   async fetch(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {
+    // www.<host> -> <host>, same path and query, permanent (one canonical origin for people, agents and search engines)
+    const wwwRedirect = canonicalHostRedirect(request);
+    if (wwwRedirect) return wwwRedirect;
     const response = await serve(request, env, exec);
     // AI crawler / agent visit log (src/ai-bots.ts): counts only, after the response, never for ordinary visitors
     logAiBotVisit(request, response, env, exec);

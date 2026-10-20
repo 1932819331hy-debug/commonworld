@@ -129,6 +129,23 @@ database is used by the code that is running now. Rules:
 
 The scanner runs in CI too (report only), and its unit tests are `tests/test_check_migrations.py`.
 
+## First production deploy (cutover from Cloudflare Pages)
+
+Until the first deploy `commonworld.one` and `www` are Custom Domains of the Pages project `commonworld`. The Worker
+`commonworld-api` takes both over (`routes` in `[env.production]`). Order, all by the owner:
+
+1. **Secret.** `KEY_PEPPER` on the Worker `commonworld-api` (random, at least 32 characters, e.g.
+   `openssl rand -hex 32 | npx wrangler secret put KEY_PEPPER --env production` in `platform/`). If the Worker does
+   not exist yet, wrangler offers to create it. The value is never shown, stored or sent anywhere else.
+2. **Detach the domains from Pages.** Cloudflare → Workers & Pages → `commonworld` (Pages) → Custom domains → remove
+   `commonworld.one` and `www.commonworld.one`. From here until step 3 finishes the site does not answer (minutes).
+3. **Deploy.** Actions → *Deploy platform (production)* → the `main` sha → approve. The deploy attaches both domains
+   to the Worker; the smoke test checks `/`, `/health` (`"environment":"production"`) and `/api/v1/index.json`.
+4. **If the deploy fails before the Worker is live:** add the two Custom Domains back to the Pages project; the old
+   site returns as it was.
+5. **After:** first admin (account through the API, role by one SQL line on `commonworld-prod`), uptime monitor,
+   WAF / rate limits, billing alerts. The Pages project stays (not deleted) as the fallback.
+
 ## Rollback
 
 - **Code:** every run prints the production version that was live **before** it (step *Production version before
