@@ -131,20 +131,38 @@ The scanner runs in CI too (report only), and its unit tests are `tests/test_che
 
 ## First production deploy (cutover from Cloudflare Pages)
 
-Until the first deploy `commonworld.one` and `www` are Custom Domains of the Pages project `commonworld`. The Worker
-`commonworld-api` takes both over (`routes` in `[env.production]`). Order, all by the owner:
+Until the first deploy `commonworld.one` and `www` are Custom Domains of the Pages project `commonworld`, served
+through two proxied DNS records `CNAME commonworld.one → commonworld.pages.dev` and `CNAME www → commonworld.pages.dev`.
+The Worker `commonworld-api` takes both over (`routes` in `[env.production]`). A Worker Custom Domain cannot be created
+on a hostname that still has a CNAME, so the DNS records go first. All steps by the owner, in this order:
 
-1. **Secret.** `KEY_PEPPER` on the Worker `commonworld-api` (random, at least 32 characters, e.g.
-   `openssl rand -hex 32 | npx wrangler secret put KEY_PEPPER --env production` in `platform/`). If the Worker does
-   not exist yet, wrangler offers to create it. The value is never shown, stored or sent anywhere else.
-2. **Detach the domains from Pages.** Cloudflare → Workers & Pages → `commonworld` (Pages) → Custom domains → remove
-   `commonworld.one` and `www.commonworld.one`. From here until step 3 finishes the site does not answer (minutes).
-3. **Deploy.** Actions → *Deploy platform (production)* → the `main` sha → approve. The deploy attaches both domains
-   to the Worker; the smoke test checks `/`, `/health` (`"environment":"production"`) and `/api/v1/index.json`.
-4. **If the deploy fails before the Worker is live:** add the two Custom Domains back to the Pages project; the old
-   site returns as it was.
-5. **After:** first admin (account through the API, role by one SQL line on `commonworld-prod`), uptime monitor,
-   WAF / rate limits, billing alerts. The Pages project stays (not deleted) as the fallback.
+1. **Secret.** `KEY_PEPPER` on the Worker `commonworld-api` (random, at least 32 characters), in `platform/`:
+   `openssl rand -hex 32 | npx wrangler secret put KEY_PEPPER --env production`. The value is never shown, stored or
+   sent anywhere else. If the Worker does not exist yet, wrangler offers to create it: say yes. That creates and
+   deploys an **empty placeholder version** (a bare `fetch()`, no routes, so nothing public changes). It is **not** a
+   recovery point: the deploy run's summary may list it as "Production version before this deploy"; never roll back
+   to it, the recovery for the first deploy is step 5 below.
+2. **Write down the two DNS records** (Cloudflare → `commonworld.one` zone → DNS → Records): name, target
+   `commonworld.pages.dev`, Proxied. They are also in the ops DNS backup of 2026-10-16.
+3. **Cut over (site down from here until step 4 passes, a few minutes):**
+   1. DNS → delete the `CNAME commonworld.one` and `CNAME www` records.
+   2. Workers & Pages → `commonworld` (Pages) → Custom domains → remove `commonworld.one` and `www.commonworld.one`.
+4. **Deploy.** Actions → *Deploy platform (production)* → the `main` sha, `allow_destructive_migration` empty →
+   approve. `wrangler deploy` creates both Custom Domains with their DNS records and certificates. The smoke test
+   checks `/`, `/health` (`"environment":"production"`), `/api/v1/index.json`, `/robots.txt`, `/sitemap.xml`,
+   `/atlas/sitemap.xml`, the IndexNow key file and `www` → `301` apex.
+5. **If the deploy or the smoke test fails** (whether or not the Worker went live), go back to Pages:
+   1. Workers & Pages → `commonworld-api` → Settings → Domains & Routes → remove both Custom Domains (this also
+      removes the DNS records the Worker created).
+   2. DNS → add the two records from step 2 again (`CNAME`, target `commonworld.pages.dev`, Proxied).
+   3. Workers & Pages → `commonworld` (Pages) → Custom domains → add `commonworld.one` and `www.commonworld.one`;
+      wait until both are Active.
+   4. Check: `curl -sI https://commonworld.one/atlas/` → `200` with `server: cloudflare` and no `/health` JSON from
+      the Worker (`curl -s https://commonworld.one/health` is the Pages 404 page), `curl -sI https://www.commonworld.one/`
+      → `301` to the apex. Then read the failed run's log and fix before trying again.
+6. **After a green run:** first admin (account through the API, role by one SQL line on `commonworld-prod`),
+   `GET /v1/admin/backups`, uptime monitor, WAF / rate limits, billing alerts, Search Console (sitemaps, indexing)
+   and Bing Webmaster. The Pages project stays (not deleted) as the fallback.
 
 ## Rollback
 

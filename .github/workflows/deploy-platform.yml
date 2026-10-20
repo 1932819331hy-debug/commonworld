@@ -151,6 +151,13 @@ jobs:
           [ -n "$CW_PRIVATE_TERMS" ] || { echo "::error::secret CW_PRIVATE_TERMS not set: no release without the forbidden-text check"; exit 1; }
           python -m pip install -r requirements.txt
           node platform/scripts/build-atlas-assets.mjs --src "$GITHUB_WORKSPACE" --build
+      - name: Routing check against this Atlas build
+        # run_worker_first must keep every non-HTML Atlas file static (test/atlas-assets.test.ts, real file list)
+        if: hashFiles('platform/wrangler.toml') != ''
+        working-directory: platform
+        env:
+          CW_REQUIRE_ATLAS_DIST: '1'
+        run: npx vitest run test/atlas-assets.test.ts
       - name: Release manifest
         if: hashFiles('platform/wrangler.toml') != ''
         env:
@@ -231,6 +238,8 @@ jobs:
               echo '```sh'
               echo "npx wrangler rollback $prev --env production -m \"rollback from $SHA\" -y"
               echo '```'
+              echo
+              echo "First production deploy: this may be the empty placeholder that \`wrangler secret put\` created; it is not a recovery point (docs/DEPLOY.md, First production deploy, step 5)."
             } >> "$GITHUB_STEP_SUMMARY"
           elif grep -qE 'has no deployments|\[code: 10007\]' "$err"; then
             # first production deploy: the Worker has no deployment yet (10007 = Worker not found)
@@ -317,4 +326,18 @@ jobs:
           check / '' || fail=1
           check /health '"environment":"production"' || fail=1
           check /api/v1/index.json '' || fail=1
+          check /robots.txt 'Sitemap:' || fail=1
+          check /sitemap.xml '<urlset' || fail=1
+          check /atlas/sitemap.xml '<urlset' || fail=1
+          # IndexNow key file: the key named in the Atlas build (platform/.atlas-dist/<32 hex>.txt) must be served as is
+          key=$(ls platform/.atlas-dist | grep -E '^[0-9a-f]{32}\.txt$' | head -n1 | sed 's/\.txt$//')
+          if [ -n "$key" ]; then check "/$key.txt" "$key" || fail=1; else echo "::error::no IndexNow key file in the build"; fail=1; fi
+          # www -> apex, permanent, path and query kept
+          www_ok=0
+          for _ in 1 2 3 4 5 6; do  # the www certificate can take a moment after the Custom Domain is created
+            loc=$(curl -sS --max-time 15 -o /dev/null -w '%{http_code} %{redirect_url}' "https://www.commonworld.one/atlas/?smoke=1") || loc=000
+            if [ "$loc" = "301 https://commonworld.one/atlas/?smoke=1" ]; then www_ok=1; break; fi
+            sleep 10
+          done
+          if [ "$www_ok" = 1 ]; then echo "ok   www -> apex"; else echo "::error::www redirect: got '$loc'"; fail=1; fi
           exit $fail

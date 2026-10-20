@@ -1,12 +1,18 @@
 import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { canonicalHostRedirect } from '../src/index';
+import { SECURITY_HEADERS } from '../src/pages/router';
 
 describe('www -> apex redirect (launch cutover 2026-10-20)', () => {
   it('sends www to the apex with path and query, 301', () => {
     const r = canonicalHostRedirect(new Request('https://www.commonworld.one/atlas/platforms/1f916/?ref=x'))!;
     expect(r.status).toBe(301);
     expect(r.headers.get('location')).toBe('https://commonworld.one/atlas/platforms/1f916/?ref=x');
+  });
+  it('carries the site security headers (HSTS included)', () => {
+    const r = canonicalHostRedirect(new Request('https://www.commonworld.one/'))!;
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) expect(r.headers.get(k), k).toBe(v);
+    expect(r.headers.get('strict-transport-security')).toContain('max-age=31536000');
   });
   it('leaves the apex and staging alone', () => {
     expect(canonicalHostRedirect(new Request('https://commonworld.one/'))).toBeNull();

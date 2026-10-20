@@ -4,7 +4,7 @@ import { authenticate } from './auth';
 import { enforceAccountRate } from './account-rate';
 import { HttpError, MAX_BODY_BYTES, errorResponse, json } from './http';
 import { ROUTES, type PublicCache } from './api-routes';
-import { handlePage } from './pages/router';
+import { handlePage, SECURITY_HEADERS } from './pages/router';
 import { versionedCacheKey } from './cache-version';
 import { CLEANUP_CRON, HOURLY_CRON, pruneOldRecords } from './retention';
 import { BACKUP_CRON, RESTORE_CHECK_CRON, logBackup, logCheck, runBackup, runRestoreCheck } from './backup';
@@ -140,7 +140,7 @@ export function canonicalHostRedirect(request: Request): Response | null {
   const url = new URL(request.url);
   if (url.hostname !== WWW_HOST) return null;
   url.hostname = 'commonworld.one';
-  return new Response(null, { status: 301, headers: { location: url.toString(), 'cache-control': 'public, max-age=86400' } });
+  return new Response(null, { status: 301, headers: { ...SECURITY_HEADERS, location: url.toString(), 'cache-control': 'public, max-age=86400' } });
 }
 
 async function serve(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {
