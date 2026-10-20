@@ -2,8 +2,18 @@
  * MCP server at /mcp (Model Context Protocol, Streamable HTTP transport, stateless JSON mode).
  *
  * - POST /mcp takes ONE JSON-RPC message and answers `application/json` (no SSE stream, no session id, no Durable
- *   Object): initialize, ping, tools/list, tools/call. Notifications and client responses get 202 with no body.
- *   Batches (JSON arrays) are refused, as in protocol 2025-06-18 and later.
+ *   Object). Notifications and client responses get 202 with no body. Batches (JSON arrays) are refused, as in
+ *   protocol 2025-06-18 and later.
+ * - Dual-era (spec 2026-07-28, "Versioning and Compatibility"):
+ *   - legacy (2025-11-25, 2025-06-18, 2025-03-26): initialize, ping, tools/list, tools/call;
+ *   - modern (2026-07-28): a request with `MCP-Protocol-Version: 2026-07-28` (or the protocolVersion field in
+ *     `params._meta`) is served per that revision: no handshake; server/discover, tools/list, tools/call; the header must
+ *     match `_meta`, `Mcp-Method` and `Mcp-Name` must match the body (400 HeaderMismatch -32020); `_meta` must carry
+ *     protocolVersion and clientCapabilities (400 -32602); every result has resultType "complete" and serverInfo in
+ *     `_meta`; tools/list carries ttlMs/cacheScope; unknown methods (initialize, ping included) are 404 -32601.
+ *     Not implemented (not needed by a tools-only server that never asks the client anything): subscriptions/listen,
+ *     MRTR input requests, Tasks, logging, x-mcp-header parameters.
+ *   - an unsupported MCP-Protocol-Version is 400 with UnsupportedProtocolVersion (-32022) listing the supported ones.
  * - GET /mcp asking for `text/event-stream` (a client opening a server stream) or only JSON, and every other method,
  *   answer 405, as the spec allows for servers without a stream. Any other GET (browser, link checker, curl without
  *   Accept) or one for Markdown is the docs page
@@ -14,7 +24,8 @@
  *   moderation, link checks and errors are exactly the REST API's. OAuth 2.1 is the next phase (docs/MCP.md).
  * - Limits: body <= MCP_MAX_BODY_BYTES (the /v1 body cap of 16 KB still applies to every forwarded write); anonymous
  *   requests MCP_ANON_RATE_PER_MINUTE per client network; keyed requests count against the account's minute window
- *   (a tools/call is counted once, by its /v1 request).
+ *   exactly once: at the envelope for every method and for a tools/call answered here (Atlas tools, unknown tool,
+ *   refused arguments), and by its /v1 request for a platform tool forwarded to the REST route.
  * - Origin (DNS rebinding guard of the spec): a request with an Origin header must carry a well-formed http(s) origin,
  *   and when MCP_ALLOWED_ORIGINS is set, one of those (or the site's own). No cookies are read here, keys only.
  */
@@ -31,8 +42,17 @@ import { CONFIRM_ARG, IDEMPOTENCY_ARG, TOOL_BY_NAME, visibleTools, type JsonSche
 
 export const MCP_PATH = '/mcp';
 export const MCP_DOC_JSON = '/mcp.json';
-/** Newest first. initialize answers the client's version when supported, else the newest. */
-export const MCP_PROTOCOL_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26'] as const;
+/** Modern revisions (per-request `_meta`, no initialize), newest first. */
+export const MCP_MODERN_VERSIONS = ['2026-07-28'] as const;
+/** Legacy revisions (initialize handshake), newest first. initialize answers the client's version when it is one of these, else the newest. */
+export const MCP_LEGACY_VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26'] as const;
+/** Every version served, newest first (server/discover supportedVersions, UnsupportedProtocolVersion data). */
+export const MCP_PROTOCOL_VERSIONS = [...MCP_MODERN_VERSIONS, ...MCP_LEGACY_VERSIONS] as const;
+/** tools/list and server/discover cache hint for 2026-07-28 clients (CacheableResult.ttlMs). */
+export const MCP_LIST_TTL_MS = 5 * 60 * 1000;
+const META_VERSION = 'io.modelcontextprotocol/protocolVersion';
+const META_CAPS = 'io.modelcontextprotocol/clientCapabilities';
+const META_SERVER = 'io.modelcontextprotocol/serverInfo';
 /** Assumed for requests without MCP-Protocol-Version (spec: 2025-03-26 when the header is missing). */
 const DEFAULT_HEADER_VERSION = '2025-03-26';
 export const MCP_SERVER_VERSION = `${API_VERSION}+mcp.1`;
@@ -41,7 +61,7 @@ export const MCP_ANON_RATE_PER_MINUTE = 120;
 
 export type RouteFn = (request: Request, env: Env, exec: ExecutionContext) => Promise<Response>;
 
-const RPC = { parse: -32700, invalidRequest: -32600, methodNotFound: -32601, invalidParams: -32602, internal: -32603, unauthorized: -32001, rateLimited: -32029, forbiddenOrigin: -32003 } as const;
+const RPC = { parse: -32700, invalidRequest: -32600, methodNotFound: -32601, invalidParams: -32602, internal: -32603, unauthorized: -32001, rateLimited: -32029, forbiddenOrigin: -32003, headerMismatch: -32020, unsupportedVersion: -32022 } as const;
 
 export const MCP_CORS_HEADERS: Record<string, string> = {
   'access-control-allow-origin': '*',
@@ -50,7 +70,7 @@ export const MCP_CORS_HEADERS: Record<string, string> = {
 export const MCP_PREFLIGHT_HEADERS: Record<string, string> = {
   ...MCP_CORS_HEADERS,
   'access-control-allow-methods': 'POST, GET, OPTIONS',
-  'access-control-allow-headers': 'Authorization, Content-Type, Accept, Mcp-Protocol-Version, Mcp-Session-Id, Last-Event-ID',
+  'access-control-allow-headers': 'Authorization, Content-Type, Accept, Mcp-Protocol-Version, Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID',
   'access-control-max-age': '86400',
 };
 
@@ -108,10 +128,6 @@ export async function handleMcp(request: Request, env: Env, exec: ExecutionConte
     return reply(406, rpcError(null, RPC.invalidRequest, 'not_acceptable', { produces: 'application/json' }));
   }
   const headerVersion = request.headers.get('mcp-protocol-version');
-  if (headerVersion !== null && !(MCP_PROTOCOL_VERSIONS as readonly string[]).includes(headerVersion)) {
-    await request.body?.cancel().catch(() => undefined);
-    return reply(400, rpcError(null, RPC.invalidRequest, 'unsupported_protocol_version', { supported: MCP_PROTOCOL_VERSIONS }));
-  }
 
   let message: any;
   try {
@@ -129,6 +145,11 @@ export async function handleMcp(request: Request, env: Env, exec: ExecutionConte
   const id: Id = message.id;
   if ((typeof id !== 'string' && typeof id !== 'number') || typeof message.method !== 'string') return reply(400, rpcError(typeof id === 'string' || typeof id === 'number' ? id : null, RPC.invalidRequest, 'invalid_request'));
 
+  const params: Record<string, any> = message.params && typeof message.params === 'object' && !Array.isArray(message.params) ? message.params : {};
+  const era = protocolEra(request, message.method, params, headerVersion);
+  if (era.error) return reply(era.error.status, rpcError(id, era.error.code, era.error.message, era.error.data));
+  const modern = era.modern;
+
   let principal: Principal | null;
   let rate: Record<string, string> = {};
   try {
@@ -142,30 +163,87 @@ export async function handleMcp(request: Request, env: Env, exec: ExecutionConte
     }
   } catch (error) {
     if (!(error instanceof HttpError)) throw error;
-    const auth: Record<string, string> = error.status === 401 ? { 'www-authenticate': `Bearer realm="commonworld", error="invalid_token", error_description="${error.code}"` } : {};
-    const code = error.status === 429 ? RPC.rateLimited : RPC.unauthorized;
-    return reply(error.status, rpcError(id, code, error.code, { status: error.status, error: { code: error.code, ...error.extra } }), { ...error.headers, ...auth });
+    return httpErrorReply(id, error);
   }
 
+  // 2026-07-28: every result says resultType "complete" and names the server in _meta; legacy results stay as they were
+  const result = (body: Record<string, unknown>) => rpcResult(id, modern ? { resultType: 'complete', ...body, _meta: { [META_SERVER]: serverInfo(request) } } : body);
+  const notFound = () => reply(modern ? 404 : 200, rpcError(id, RPC.methodNotFound, `Method not found: ${message.method.slice(0, 64)}`, modern ? { supported_methods: ['server/discover', 'tools/list', 'tools/call'] } : undefined), rate);
+  const charge = async () => (principal ? enforceAccountRate(env, principal) : {});
   try {
-    const params = message.params && typeof message.params === 'object' && !Array.isArray(message.params) ? message.params : {};
     switch (message.method) {
-      case 'initialize': return reply(200, rpcResult(id, initializeResult(request, params, principal)), rate);
-      case 'ping': return reply(200, rpcResult(id, {}), rate);
-      case 'tools/list': return reply(200, rpcResult(id, { tools: visibleTools(levelOf(principal)).map(toWire) }), rate);
+      case 'initialize': return modern ? notFound() : reply(200, rpcResult(id, initializeResult(request, params, principal)), rate);
+      case 'ping': return modern ? notFound() : reply(200, rpcResult(id, {}), rate);
+      case 'server/discover': return reply(200, result(discoverResult(principal)), rate);
+      case 'tools/list': return reply(200, result({ tools: visibleTools(levelOf(principal)).map(toWire), ...(modern ? cacheHint(principal) : {}) }), rate);
       case 'tools/call': {
         const name = params.name;
         const tool = typeof name === 'string' ? TOOL_BY_NAME.get(name) : undefined;
-        if (!tool) return reply(200, rpcError(id, RPC.invalidParams, `Unknown tool: ${typeof name === 'string' ? name.slice(0, 64) : '(none)'}`));
-        const out = await callTool(tool, params.arguments, { request, env, exec, route, version: headerVersion ?? DEFAULT_HEADER_VERSION });
-        return reply(200, rpcResult(id, out.result), out.rate);
+        if (!tool) return reply(200, rpcError(id, RPC.invalidParams, `Unknown tool: ${typeof name === 'string' ? name.slice(0, 64) : '(none)'}`), await charge());
+        const out = await callTool(tool, params.arguments, { request, env, exec, route, version: era.version, charge });
+        return reply(200, result(out.result as Record<string, unknown>), out.rate);
       }
-      default: return reply(200, rpcError(id, RPC.methodNotFound, `Method not found: ${message.method.slice(0, 64)}`), rate);
+      default: return notFound();
     }
   } catch (error) {
+    if (error instanceof HttpError) return httpErrorReply(id, error);
     console.error('mcp error', error instanceof Error ? error.message : String(error));
     return reply(500, rpcError(id, RPC.internal, 'internal_error'));
   }
+}
+
+/** An HttpError at the envelope (invalid key 401, rate limit 429) as an HTTP status + JSON-RPC error. */
+function httpErrorReply(id: Id, error: HttpError): Response {
+  const auth: Record<string, string> = error.status === 401 ? { 'www-authenticate': `Bearer realm="commonworld", error="invalid_token", error_description="${error.code}"` } : {};
+  const code = error.status === 429 ? RPC.rateLimited : RPC.unauthorized;
+  return reply(error.status, rpcError(id, code, error.code, { status: error.status, error: { code: error.code, ...error.extra } }), { ...error.headers, ...auth });
+}
+
+// ---------------------------------------------------------------- protocol era and version (spec 2026-07-28)
+
+interface Era { modern: boolean; version: string; error?: { status: number; code: number; message: string; data?: unknown } }
+
+/** `=?base64?…?=` sentinel of the 2026-07-28 transport for header values that are not plain ASCII. */
+function decodeHeaderValue(v: string): string | null {
+  const m = /^=\?base64\?([A-Za-z0-9+/=]*)\?=$/.exec(v);
+  if (!m) return v;
+  try { return new TextDecoder('utf-8', { fatal: true, ignoreBOM: false }).decode(Uint8Array.from(atob(m[1]), (ch) => ch.charCodeAt(0))); } catch { return null; }
+}
+
+/**
+ * Which revision a request speaks, and whether it is well-formed for it. Modern = MCP-Protocol-Version 2026-07-28 or a
+ * protocolVersion in params._meta; initialize always selects legacy semantics (dual-era server). Legacy requests
+ * without the header are 2025-03-26 (the spec allows that default).
+ */
+export function protocolEra(request: Request, method: string, params: Record<string, any>, headerVersion: string | null): Era {
+  const meta = params._meta && typeof params._meta === 'object' && !Array.isArray(params._meta) ? params._meta : {};
+  const metaVersion: unknown = meta[META_VERSION];
+  const unsupported = (requested: unknown): Era => ({ modern: false, version: '', error: { status: 400, code: RPC.unsupportedVersion, message: 'Unsupported protocol version', data: { supported: MCP_PROTOCOL_VERSIONS, requested } } });
+  const mismatch = (message: string): Era => ({ modern: true, version: '', error: { status: 400, code: RPC.headerMismatch, message: `Header mismatch: ${message}` } });
+  if (headerVersion !== null && !(MCP_PROTOCOL_VERSIONS as readonly string[]).includes(headerVersion)) return unsupported(headerVersion);
+  const isModern = (v: unknown) => typeof v === 'string' && (MCP_MODERN_VERSIONS as readonly string[]).includes(v);
+  if (method === 'initialize' || (!isModern(headerVersion) && metaVersion === undefined)) {
+    return { modern: false, version: headerVersion ?? DEFAULT_HEADER_VERSION };
+  }
+  // modern request
+  if (metaVersion !== undefined && typeof metaVersion === 'string' && !(MCP_PROTOCOL_VERSIONS as readonly string[]).includes(metaVersion)) return unsupported(metaVersion);
+  if (headerVersion === null) return mismatch('MCP-Protocol-Version header is required');
+  if (metaVersion === undefined || meta[META_CAPS] === undefined || typeof meta[META_CAPS] !== 'object' || meta[META_CAPS] === null) {
+    return { modern: true, version: headerVersion, error: { status: 400, code: RPC.invalidParams, message: `params._meta must carry ${META_VERSION} and ${META_CAPS}` } };
+  }
+  if (metaVersion !== headerVersion) return mismatch(`MCP-Protocol-Version header value '${headerVersion}' does not match body value '${String(metaVersion).slice(0, 32)}'`);
+  const hMethod = request.headers.get('mcp-method');
+  if (hMethod === null) return mismatch('Mcp-Method header is required');
+  if (hMethod !== method) return mismatch(`Mcp-Method header value '${hMethod.slice(0, 64)}' does not match body value '${method.slice(0, 64)}'`);
+  if (method === 'tools/call' || method === 'resources/read' || method === 'prompts/get') {
+    const raw = request.headers.get('mcp-name');
+    if (raw === null) return mismatch('Mcp-Name header is required');
+    const hName = decodeHeaderValue(raw);
+    const bodyName = method === 'resources/read' ? params.uri : params.name;
+    if (hName === null) return mismatch('Mcp-Name header value is not valid base64 UTF-8');
+    if (hName !== bodyName) return mismatch(`Mcp-Name header value '${hName.slice(0, 64)}' does not match body value '${String(bodyName).slice(0, 64)}'`);
+  }
+  return { modern: true, version: headerVersion };
 }
 
 const levelOf = (p: Principal | null) => ({ key: !!p, staff: isActiveStaff(p), admin: hasActiveRole(p, 'admin') });
@@ -177,16 +255,21 @@ export const SERVER_INSTRUCTIONS = [
   'Docs: /mcp (page), /mcp.md, /mcp.json, /llms.txt, /openapi.json.',
 ].join('\n\n');
 
+const serverInfo = (request: Request) => ({ name: 'commonworld', title: 'Commonworld', version: MCP_SERVER_VERSION, websiteUrl: `${new URL(request.url).origin}${MCP_PATH}` });
+const instructionsFor = (principal: Principal | null) => SERVER_INSTRUCTIONS + (principal ? `\n\nConnected as @${principal.account.handle} (${principal.account.kind}).` : '\n\nConnected without a key (public tools).');
+/** CacheableResult (2026-07-28): the list depends on the key (citizen and staff tools), so keyed answers are private. */
+const cacheHint = (principal: Principal | null) => ({ ttlMs: MCP_LIST_TTL_MS, cacheScope: principal ? 'private' : 'public' });
+
+/** Legacy handshake: answers the client's version when it is a legacy one, else the newest legacy version (a 2026-07-28 client never sends initialize). */
 function initializeResult(request: Request, params: Record<string, any>, principal: Principal | null) {
   const asked = typeof params.protocolVersion === 'string' ? params.protocolVersion : '';
-  const protocolVersion = (MCP_PROTOCOL_VERSIONS as readonly string[]).includes(asked) ? asked : MCP_PROTOCOL_VERSIONS[0];
-  const origin = new URL(request.url).origin;
-  return {
-    protocolVersion,
-    capabilities: { tools: { listChanged: false } },
-    serverInfo: { name: 'commonworld', title: 'Commonworld', version: MCP_SERVER_VERSION, websiteUrl: `${origin}${MCP_PATH}` },
-    instructions: SERVER_INSTRUCTIONS + (principal ? `\n\nConnected as @${principal.account.handle} (${principal.account.kind}).` : '\n\nConnected without a key (public tools).'),
-  };
+  const protocolVersion = (MCP_LEGACY_VERSIONS as readonly string[]).includes(asked) ? asked : MCP_LEGACY_VERSIONS[0];
+  return { protocolVersion, capabilities: { tools: { listChanged: false } }, serverInfo: serverInfo(request), instructions: instructionsFor(principal) };
+}
+
+/** server/discover (2026-07-28): supported versions, capabilities and instructions; serverInfo goes in _meta. */
+function discoverResult(principal: Principal | null) {
+  return { supportedVersions: MCP_PROTOCOL_VERSIONS, capabilities: { tools: {} }, instructions: instructionsFor(principal), ...cacheHint(principal) };
 }
 
 export function toWire(t: ToolDef) {
@@ -195,9 +278,10 @@ export function toWire(t: ToolDef) {
 
 // ---------------------------------------------------------------- tools/call
 
-interface CallCtx { request: Request; env: Env; exec: ExecutionContext; route: RouteFn; version: string }
+/** `charge` counts a call answered here against the account's minute window (a forwarded call is counted by its /v1 route). */
+interface CallCtx { request: Request; env: Env; exec: ExecutionContext; route: RouteFn; version: string; charge: () => Promise<Record<string, string>> }
 
-function toolResult(body: unknown, isError: boolean, version: string) {
+function toolResult(body: unknown, isError: boolean, version: string): Record<string, unknown> {
   const structured = body && typeof body === 'object' && !Array.isArray(body) ? body : { value: body };
   return {
     content: [{ type: 'text', text: JSON.stringify(body) }],
@@ -208,22 +292,26 @@ function toolResult(body: unknown, isError: boolean, version: string) {
 const toolError = (status: number, error: Record<string, unknown>, version: string) => toolResult({ status, error }, true, version);
 
 async function callTool(tool: ToolDef, rawArgs: unknown, c: CallCtx): Promise<{ result: unknown; rate: Record<string, string> }> {
+  // answered here, never forwarded: counted once at the envelope (throws 429 before any work)
+  const local = async (result: unknown) => ({ result, rate: await c.charge() });
   if (rawArgs !== undefined && (rawArgs === null || typeof rawArgs !== 'object' || Array.isArray(rawArgs))) {
-    return { result: toolError(400, { code: 'invalid_arguments', details: ['arguments must be an object'] }, c.version), rate: {} };
+    return local(toolError(400, { code: 'invalid_arguments', details: ['arguments must be an object'] }, c.version));
   }
   const args = (rawArgs ?? {}) as Record<string, unknown>;
   if (tool.confirm && args[CONFIRM_ARG] !== true) {
-    return { result: toolError(400, { code: 'confirmation_required', detail: `${tool.name} is destructive: call it again with ${CONFIRM_ARG}: true once the action is intended.` }, c.version), rate: {} };
+    return local(toolError(400, { code: 'confirmation_required', detail: `${tool.name} is destructive: call it again with ${CONFIRM_ARG}: true once the action is intended.` }, c.version));
   }
   const problems = validateArgs(tool.inputSchema, args);
-  if (problems.length) return { result: toolError(400, { code: 'invalid_arguments', details: problems }, c.version), rate: {} };
+  if (problems.length) return local(toolError(400, { code: 'invalid_arguments', details: problems }, c.version));
 
   if (tool.atlas) {
-    try { return { result: toolResult(await tool.atlas(c.env, args), false, c.version), rate: {} }; } catch (error) {
-      if (error instanceof HttpError) return { result: toolError(error.status, { code: error.code, ...error.extra }, c.version), rate: {} };
+    const rate = await c.charge();
+    try { return { result: toolResult(await tool.atlas(c.env, args), false, c.version), rate }; } catch (error) {
+      if (error instanceof HttpError) return { result: toolError(error.status, { code: error.code, ...error.extra }, c.version), rate };
       throw error;
     }
   }
+  // forwarded: the /v1 route counts it (enforceAccountRate in the REST handler chain), so no charge here
   const res = await c.route(restRequest(tool, args, c.request), c.env, c.exec);
   const text = await res.text();
   let body: unknown = null;

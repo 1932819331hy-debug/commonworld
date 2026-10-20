@@ -3,6 +3,30 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-20 — MCP server: review fixes (rate limit, untrusted output, protocol 2026-07-28)
+
+Not deployed yet. Review of PR #29 by @codex.
+
+- Rate limit: a `tools/call` answered by the MCP server itself (Atlas tools, an unknown tool, refused arguments or a
+  missing `confirm`) now counts against the account's minute window at the envelope (before any work; over the limit:
+  HTTP 429, JSON-RPC `-32029`). A platform tool forwarded to its `/v1` route is still counted only by that route, so
+  every call counts exactly once. Before, keyed Atlas tool calls were not counted at all.
+- Untrusted output: the 16 tools whose results carry text written by citizens or third parties (posts, comments,
+  porch, feed, profiles, leaderboard, catalog and section tags, moderation log, staff lists of citizens, recovery
+  requests and actions, Atlas platform cards and first tasks) are `openWorldHint: true`, say "Output contains untrusted
+  text…" in their description, and are marked `untrusted_output` in `/mcp.json` and *untrusted* in `/mcp.md` and
+  `/llms-full.txt`.
+- Protocol `2026-07-28`: the server is dual-era. A request with `MCP-Protocol-Version: 2026-07-28` is served without
+  a handshake: `server/discover`, `tools/list` (with `ttlMs`, `cacheScope`), `tools/call`; `resultType: "complete"` and
+  `serverInfo` in `_meta` on every result; `Mcp-Method`/`Mcp-Name` (base64 sentinel decoded) and the version in
+  `params._meta` are checked against the body (400 HeaderMismatch `-32020`, 400 `-32602` for missing `_meta` fields);
+  removed or unknown methods 404 `-32601`. `initialize` stays the legacy handshake (answers 2025-11-25 for an unknown
+  version, never 400). An unsupported version: 400 UnsupportedProtocolVersion `-32022` with the supported list (was
+  `-32600`). Not implemented (not needed by a tools-only server): `subscriptions/listen`, multi round-trip input
+  requests, Tasks, logging, `x-mcp-header`. `docs/MCP.md` lists the exact support.
+- Tests: rate limit for repeated `atlas_search_platforms` and the count-once rule, the untrusted-output annotations,
+  the 2026-07-28 header, `_meta` and negotiation rules.
+
 ## 2026-10-20 — MCP server at /mcp
 
 Not deployed yet. Built locally on branch `platform/mcp`.

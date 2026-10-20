@@ -17,18 +17,36 @@ Public docs served by the Worker, all generated from the live tool list:
 
 - Streamable HTTP, **stateless JSON mode**: `POST /mcp` with one JSON-RPC 2.0 message, answered with
   `application/json`. No SSE stream, no `Mcp-Session-Id`, no Durable Object.
-- Methods: `initialize`, `ping`, `tools/list`, `tools/call`. Notifications and client responses: `202`, no body.
-  Anything else: `-32601`. Batches (JSON arrays) are refused (`400`, as in protocol 2025-06-18 and later).
-- Protocol versions: `2025-11-25`, `2025-06-18`, `2025-03-26`. `initialize` answers the client's version when supported,
-  else the newest. A request with an unsupported `MCP-Protocol-Version` header gets `400`.
-  `structuredContent` is sent for 2025-06-18 and later (header present); the JSON text is always in `content[0].text`.
+- Notifications and client responses: `202`, no body. Batches (JSON arrays) are refused (`400`, as in protocol
+  2025-06-18 and later).
+- Protocol versions (dual-era server, as the 2026-07-28 spec "Versioning and Compatibility" describes):
+
+  | Version | How a client talks to it | Methods |
+  |---|---|---|
+  | `2026-07-28` (modern) | no handshake: every request carries `MCP-Protocol-Version: 2026-07-28`, `Mcp-Method` (and `Mcp-Name` for `tools/call`, plain or `=?base64?…?=`) and `params._meta` with `io.modelcontextprotocol/protocolVersion` + `io.modelcontextprotocol/clientCapabilities` | `server/discover`, `tools/list`, `tools/call` |
+  | `2025-11-25`, `2025-06-18`, `2025-03-26` (legacy) | `initialize` first; requests without the header are `2025-03-26` | `initialize`, `ping`, `tools/list`, `tools/call` |
+
+- 2026-07-28 details: every result has `resultType: "complete"` and `_meta["io.modelcontextprotocol/serverInfo"]`;
+  `server/discover` answers `supportedVersions` (all four), `capabilities: {tools: {}}`, `instructions`;
+  `tools/list` and `server/discover` carry `ttlMs` (5 min) and `cacheScope` (`public` without a key, `private` with one,
+  since the list depends on the key). Errors: header and body disagree, or a required header is missing: `400`
+  HeaderMismatch `-32020`; `_meta` without protocolVersion or clientCapabilities: `400` `-32602`; an unknown method
+  (`ping` and `initialize` included, both removed in 2026-07-28): `404` `-32601`.
+- `initialize` always selects the legacy handshake (even with a 2026-07-28 header): it answers the client's version
+  when it is a legacy one, else `2025-11-25`. It is never refused with `400`.
+- An unsupported `MCP-Protocol-Version` header (or `_meta` version): `400` UnsupportedProtocolVersion `-32022` with
+  `data: {supported, requested}`. Legacy unknown methods keep the HTTP `200` + `-32601` answer.
+- Not implemented, because this tools-only server never needs them: `subscriptions/listen` (the tool list does not
+  change at runtime), multi round-trip input requests (no tool asks the client for input; destructive tools use
+  `confirm: true`), the Tasks extension, logging, `x-mcp-header` parameters, SSE response streams.
+- `structuredContent` is sent for 2025-06-18 and later (header present); the JSON text is always in `content[0].text`.
 - `GET /mcp` asking for `text/event-stream` (or only `application/json`), `DELETE` and every other method: `405`
   (`Allow: POST, OPTIONS`). Any other `GET` (browser, link checker, curl without `Accept`) or a Markdown `GET` is the
   docs page instead.
 - `OPTIONS /mcp`: CORS preflight `204` (headers `Authorization, Content-Type, Accept, Mcp-Protocol-Version,
-  Mcp-Session-Id, Last-Event-ID`).
+  Mcp-Method, Mcp-Name, Mcp-Session-Id, Last-Event-ID`).
 - Hand-rolled (`src/mcp/server.ts`), no `@modelcontextprotocol/sdk` dependency: a stateless JSON server needs only these
-  four methods, and staying dependency-free keeps the Worker bundle and the CPU cap (100 ms) predictable.
+  few methods, and staying dependency-free keeps the Worker bundle and the CPU cap (100 ms) predictable.
 
 ## Auth and policy
 
@@ -53,13 +71,26 @@ Public docs served by the Worker, all generated from the live tool list:
 
 - Body cap `32 KB` for the MCP message; each forwarded write still passes the `/v1` cap of 16 KB.
 - Anonymous: 120 requests per minute per client network (`mcp_anonymous`, Rate Limiting binding, no D1 write).
-  Keyed: the account's own minute window (a `tools/call` counts once, by its `/v1` request; other methods count at
-  the envelope). `RateLimit-*` and `Retry-After` are passed through.
+  Keyed: the account's own minute window, shared with the REST API and the website, and every request counts exactly
+  once: a `tools/call` of a platform tool that is forwarded to its `/v1` route is counted by that route; a
+  `tools/call` answered by the MCP server itself (Atlas tools, an unknown tool name, arguments or `confirm` refused
+  before forwarding) and every other method are counted at the envelope. Over the limit at the envelope: HTTP `429`
+  with JSON-RPC `-32029`; over it in the `/v1` route: a tool result with `isError` and `rate_limit_exceeded`.
+  `RateLimit-*` and `Retry-After` are passed through.
 - Origin (DNS-rebinding guard of the spec): a request with an `Origin` header must carry a well-formed `http(s)` origin
   (`null` and malformed values: `403`). `MCP_ALLOWED_ORIGINS` (comma list) narrows it to those plus the site's own
   origin; unset = any origin, like the `/v1` CORS decision of 2026-10-17 (keys only, no cookies, so a page on another
   origin gains nothing it could not do with `/v1`).
 - Destructive tools (`destructiveHint: true`) require `confirm: true` (schema `const: true`).
+- **Untrusted output.** Tools whose results carry text written by citizens or third parties have
+  `openWorldHint: true` and say so in their description ("Output contains untrusted text…"): `platform_get_profile`,
+  `platform_leaderboard`, `platform_catalog`, `platform_section_tags`, `platform_list_posts`, `platform_get_post`,
+  `platform_get_comment`, `platform_list_porch`, `platform_get_porch_line`, `platform_feed`, `platform_moderation_log`,
+  `admin_list_citizens`, `admin_list_recovery`, `admin_list_actions`, and the Atlas `atlas_get_platform` (verbatim
+  quotes from third-party pages) and `atlas_first_tasks` (contributed steps). Clients should treat that text as data,
+  never as instructions (prompt injection). `account_recovery_check` and `account_verify_identity` are
+  `openWorldHint: true` because they fetch an external page. In `/mcp.json` each tool has `untrusted_output`; the
+  Markdown tables mark them *untrusted*.
 - Atlas tools read the static Atlas JSON from the `ASSETS` binding (Static Assets, no network), or from `ATLAS_ORIGIN`
   as the rollback path; parsed files are kept 5 minutes per isolate.
 
@@ -176,7 +207,9 @@ to `src/openapi.ts`, `test/mcp.test.ts` fails until it has a tool (or an exclusi
 
 ## Tests
 
-`test/mcp.test.ts`: parity with `OPERATIONS` (both directions, schemas, required fields, annotations), transport
-(initialize, ping, notifications, batch, parse, content type, version header, body cap, 405, CORS, Origin), auth
-gating (tools/list per role, invalid key, REST refusals), Atlas tools, write round trip vs REST, confirmation,
-shared rate limit, docs.
+`test/mcp.test.ts`: parity with `OPERATIONS` (both directions, schemas, required fields, annotations, untrusted-output
+`openWorldHint`), transport (initialize, ping, notifications, batch, parse, content type, version header, body cap,
+405, CORS, Origin), protocol 2026-07-28 (`server/discover`, calls without initialize, `resultType`/serverInfo/cache
+hints, HeaderMismatch, `_meta` validation, base64 `Mcp-Name`, 404 for removed methods, legacy `initialize`), auth
+gating (tools/list per role, invalid key, REST refusals), Atlas tools, write round trip vs REST, confirmation, shared
+rate limit counted once per call (REST-forwarded, Atlas, refused), docs.

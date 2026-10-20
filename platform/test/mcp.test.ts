@@ -5,8 +5,8 @@
 import { env, exports } from 'cloudflare:workers';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { OPERATIONS, schemaOf } from '../src/openapi';
-import { REST_EXCLUDED, REST_TOOLS, TOOLS, TOOL_BY_NAME, CONFIRM_ARG, IDEMPOTENCY_ARG } from '../src/mcp/tools';
-import { MCP_MAX_BODY_BYTES, MCP_PROTOCOL_VERSIONS, validateArgs } from '../src/mcp/server';
+import { REST_EXCLUDED, REST_TOOLS, TOOLS, TOOL_BY_NAME, CONFIRM_ARG, IDEMPOTENCY_ARG, UNTRUSTED_TEXT } from '../src/mcp/tools';
+import { MCP_LEGACY_VERSIONS, MCP_LIST_TTL_MS, MCP_MAX_BODY_BYTES, MCP_PROTOCOL_VERSIONS, validateArgs } from '../src/mcp/server';
 import { resetAtlasCache } from '../src/mcp/atlas';
 import MCP_DOC from '../docs/MCP.md?raw';
 import { api, makeAdmin, register, resetDb, setSetting } from './helpers';
@@ -85,6 +85,22 @@ describe('tool / REST parity', () => {
     for (const n of ['platform_withdraw_post', 'account_rotate_key', 'account_confirm_deletion', 'admin_delete_account', 'admin_moderate_content']) expect(TOOL_BY_NAME.get(n)!.confirm, n).toBe(true);
   });
 
+  it('tools whose output carries citizen or third-party text are openWorldHint: true and say so', () => {
+    const untrusted = ['platform_get_profile', 'platform_leaderboard', 'platform_catalog', 'platform_section_tags', 'platform_list_posts',
+      'platform_get_post', 'platform_get_comment', 'platform_list_porch', 'platform_get_porch_line', 'platform_feed', 'platform_moderation_log',
+      'admin_list_citizens', 'admin_list_recovery', 'admin_list_actions', 'atlas_get_platform', 'atlas_first_tasks'];
+    for (const name of untrusted) {
+      const t = TOOL_BY_NAME.get(name)!;
+      expect(t, name).toBeDefined();
+      expect(t.untrustedOutput, name).toBe(true);
+      expect(t.annotations.openWorldHint, name).toBe(true);
+      expect(t.description, name).toContain(UNTRUSTED_TEXT);
+    }
+    // open world = untrusted output or an external fetch, nothing else
+    const external = ['account_recovery_check', 'account_verify_identity'];
+    for (const t of TOOLS) expect(t.annotations.openWorldHint, t.name).toBe(untrusted.includes(t.name) || external.includes(t.name));
+  });
+
   it('argument validation: unknown, missing and mistyped arguments', () => {
     const schema = TOOL_BY_NAME.get('platform_get_post')!.inputSchema;
     expect(validateArgs(schema, { number: 3 })).toEqual([]);
@@ -105,7 +121,7 @@ describe('transport and routing', () => {
     expect(r.body.result.capabilities.tools).toBeDefined();
     expect(r.body.result.instructions).toContain('account_register');
     const other = await rpc('initialize', { protocolVersion: '1999-01-01' });
-    expect(other.body.result.protocolVersion).toBe(MCP_PROTOCOL_VERSIONS[0]);
+    expect(other.body.result.protocolVersion).toBe(MCP_LEGACY_VERSIONS[0]);
     expect(r.headers.get('mcp-session-id')).toBeNull();
   });
 
@@ -122,7 +138,9 @@ describe('transport and routing', () => {
     expect(bad.status).toBe(400);
     expect(bad.body.error.code).toBe(-32700);
     expect((await raw({ method: 'POST', headers: { 'content-type': 'text/plain' }, body: '{}' })).status).toBe(415);
-    expect((await rpc('ping', undefined, { headers: { 'mcp-protocol-version': '2020-01-01' } })).status).toBe(400);
+    const old = await rpc('ping', undefined, { headers: { 'mcp-protocol-version': '2020-01-01' } });
+    expect(old.status).toBe(400);
+    expect(old.body.error).toMatchObject({ code: -32022, data: { supported: [...MCP_PROTOCOL_VERSIONS], requested: '2020-01-01' } });
     expect((await rpc('ping', undefined, { headers: { accept: 'text/html' } })).status).toBe(406);
     const big = await raw({ method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'ping', params: { pad: 'x'.repeat(MCP_MAX_BODY_BYTES) } }) });
     expect(big.status).toBe(413);
@@ -333,11 +351,130 @@ describe('tools/call', () => {
     expect(list.status).toBe(429);
   });
 
+  it('Atlas tool calls (answered here, not forwarded) count against the account minute window', async () => {
+    const c = await register('mcp-atlas-rate');
+    await setSetting('limits.rate_per_minute', 3);
+    for (let i = 0; i < 3; i++) expect((await call('atlas_search_platforms', { query: 'demo' }, c.key)).isError, `call ${i}`).toBeUndefined();
+    const over = await rpc('tools/call', { name: 'atlas_search_platforms', arguments: {} }, { key: c.key, headers: { 'mcp-protocol-version': '2025-06-18' } });
+    expect(over.status).toBe(429);
+    expect(over.body.error).toMatchObject({ code: -32029, message: 'rate_limit_exceeded' });
+    expect(over.headers.get('retry-after')).toBeTruthy();
+    // the same window as the REST API
+    expect((await api('/v1/me', { key: c.key })).status).toBe(429);
+  });
+
+  it('a forwarded (REST) tool call counts once, an Atlas call once, a refused call once: one shared window', async () => {
+    const c = await register('mcp-once');
+    await setSetting('limits.rate_per_minute', 5); // a rate tier (src/ratelimit.ts RATE_TIERS)
+    expect((await call('account_me', {}, c.key)).isError).toBeUndefined(); // 1 (by the /v1 route only)
+    expect((await call('atlas_list_categories', {}, c.key)).isError).toBeUndefined(); // 2 (envelope)
+    expect((await call('account_me', { nope: 1 }, c.key)).data.error.code).toBe('invalid_arguments'); // 3 (refused here, envelope)
+    expect((await call('account_me', {}, c.key)).isError).toBeUndefined(); // 4
+    expect((await call('platform_rules', {}, c.key)).isError).toBeUndefined(); // 5 (public REST tool with a key: the /v1 route)
+    const over = await call('account_me', {}, c.key);
+    expect(over.data).toMatchObject({ status: 429, error: { code: 'rate_limit_exceeded' } });
+  });
+
   it('structuredContent only for protocol 2025-06-18 and later', async () => {
     const old = await rpc('tools/call', { name: 'platform_rules', arguments: {} }, { headers: { 'mcp-protocol-version': '2025-03-26' } });
     expect(old.body.result.structuredContent).toBeUndefined();
     expect(JSON.parse(old.body.result.content[0].text).rules.length).toBeGreaterThan(0);
     const now = await call('platform_rules');
     expect(now.data.rules.length).toBeGreaterThan(0);
+  });
+});
+
+describe('protocol 2026-07-28 (stateless, no handshake)', () => {
+  const V = '2026-07-28';
+  const meta = (extra: Record<string, unknown> = {}) => ({ 'io.modelcontextprotocol/protocolVersion': V, 'io.modelcontextprotocol/clientCapabilities': {}, 'io.modelcontextprotocol/clientInfo': { name: 'test', version: '1' }, ...extra });
+  const modern = (method: string, params: Record<string, unknown> = {}, headers: Record<string, string> = {}, key?: string) =>
+    rpc(method, { ...params, _meta: meta() }, { key, headers: { 'mcp-protocol-version': V, 'mcp-method': method, ...(typeof params.name === 'string' ? { 'mcp-name': params.name } : {}), ...headers } });
+
+  it('server/discover lists every supported version, the tools capability and the server', async () => {
+    const r = await modern('server/discover');
+    expect(r.status).toBe(200);
+    expect(r.body.result).toMatchObject({ resultType: 'complete', supportedVersions: [...MCP_PROTOCOL_VERSIONS], capabilities: { tools: {} }, ttlMs: MCP_LIST_TTL_MS, cacheScope: 'public' });
+    expect(r.body.result.supportedVersions[0]).toBe(V);
+    expect(r.body.result._meta['io.modelcontextprotocol/serverInfo'].name).toBe('commonworld');
+    expect(r.body.result.instructions).toContain('account_register');
+  });
+
+  it('tools/list and tools/call without initialize; results carry resultType, serverInfo and cache hints', async () => {
+    const list = await modern('tools/list');
+    expect(list.status).toBe(200);
+    expect(list.body.result).toMatchObject({ resultType: 'complete', ttlMs: MCP_LIST_TTL_MS, cacheScope: 'public' });
+    expect(list.body.result.tools.map((t: { name: string }) => t.name)).toContain('atlas_search_platforms');
+    const c = await register('mcp-modern');
+    expect((await modern('tools/list', {}, {}, c.key)).body.result.cacheScope).toBe('private');
+    const call = await modern('tools/call', { name: 'atlas_search_platforms', arguments: { query: 'demo' } });
+    expect(call.status).toBe(200);
+    expect(call.body.result.resultType).toBe('complete');
+    expect(call.body.result.structuredContent.total).toBeGreaterThan(0);
+    expect(call.body.result._meta['io.modelcontextprotocol/serverInfo'].name).toBe('commonworld');
+    const rest = await modern('tools/call', { name: 'platform_rules', arguments: {} });
+    expect(rest.body.result.structuredContent.rules.length).toBeGreaterThan(0);
+  });
+
+  it('Mcp-Name may use the base64 sentinel', async () => {
+    const r = await modern('tools/call', { name: 'platform_rules', arguments: {} }, { 'mcp-name': `=?base64?${btoa('platform_rules')}?=` });
+    expect(r.status).toBe(200);
+    expect(r.body.result.resultType).toBe('complete');
+  });
+
+  it('header mismatches are 400 HeaderMismatch (-32020); missing _meta fields are 400 -32602', async () => {
+    const cases: [string, Record<string, unknown>, Record<string, string>][] = [
+      ['tools/list', {}, { 'mcp-method': 'tools/call' }],
+      ['tools/list', {}, { 'mcp-method': '' }],
+      ['tools/call', { name: 'platform_rules', arguments: {} }, { 'mcp-name': 'atlas_earn' }],
+      ['tools/call', { name: 'platform_rules', arguments: {} }, { 'mcp-name': '=?base64?***?=' }],
+    ];
+    for (const [method, params, headers] of cases) {
+      const r = await modern(method, params, headers);
+      expect(r.status, JSON.stringify(headers)).toBe(400);
+      expect(r.body.error.code, JSON.stringify(headers)).toBe(-32020);
+    }
+    // header missing entirely
+    const noMethod = await rpc('tools/list', { _meta: meta() }, { headers: { 'mcp-protocol-version': V } });
+    expect(noMethod.status).toBe(400);
+    expect(noMethod.body.error.code).toBe(-32020);
+    const noName = await rpc('tools/call', { name: 'platform_rules', arguments: {}, _meta: meta() }, { headers: { 'mcp-protocol-version': V, 'mcp-method': 'tools/call' } });
+    expect(noName.body.error.code).toBe(-32020);
+    // _meta version without the header
+    const noVersionHeader = await rpc('tools/list', { _meta: meta() }, { headers: { 'mcp-method': 'tools/list' } });
+    expect(noVersionHeader.status).toBe(400);
+    expect(noVersionHeader.body.error.code).toBe(-32020);
+    // header and _meta disagree
+    const disagree = await rpc('tools/list', { _meta: meta({ 'io.modelcontextprotocol/protocolVersion': '2025-11-25' }) }, { headers: { 'mcp-protocol-version': V, 'mcp-method': 'tools/list' } });
+    expect(disagree.body.error.code).toBe(-32020);
+    // modern header, no _meta
+    const bare = await rpc('tools/list', {}, { headers: { 'mcp-protocol-version': V, 'mcp-method': 'tools/list' } });
+    expect(bare.status).toBe(400);
+    expect(bare.body.error.code).toBe(-32602);
+    // unsupported version in _meta
+    const future = await rpc('tools/list', { _meta: meta({ 'io.modelcontextprotocol/protocolVersion': '2099-01-01' }) }, { headers: { 'mcp-protocol-version': V, 'mcp-method': 'tools/list' } });
+    expect(future.status).toBe(400);
+    expect(future.body.error).toMatchObject({ code: -32022, data: { requested: '2099-01-01' } });
+  });
+
+  it('ping and other removed or unknown methods are 404 -32601 for 2026-07-28; initialize stays the legacy handshake', async () => {
+    for (const m of ['ping', 'subscriptions/listen', 'resources/list']) {
+      const r = await modern(m);
+      expect(r.status, m).toBe(404);
+      expect(r.body.error.code, m).toBe(-32601);
+    }
+    const init = await rpc('initialize', { protocolVersion: V, capabilities: {}, clientInfo: { name: 'x', version: '1' } }, { headers: { 'mcp-protocol-version': V } });
+    expect(init.status).toBe(200);
+    expect(init.body.result.protocolVersion).toBe(MCP_LEGACY_VERSIONS[0]);
+    // legacy requests are unchanged: no resultType, ping works
+    expect((await rpc('ping', undefined, { headers: { 'mcp-protocol-version': '2025-11-25' } })).body.result).toEqual({});
+    expect((await rpc('tools/list', undefined, { headers: { 'mcp-protocol-version': '2025-11-25' } })).body.result.resultType).toBeUndefined();
+  });
+
+  it('a modern tools/call counts once against the account window', async () => {
+    const c = await register('mcp-modern-rate');
+    await setSetting('limits.rate_per_minute', 2);
+    expect((await modern('tools/call', { name: 'atlas_earn', arguments: {} }, {}, c.key)).status).toBe(200);
+    expect((await modern('tools/call', { name: 'account_me', arguments: {} }, {}, c.key)).body.result.isError).toBeUndefined();
+    expect((await modern('tools/call', { name: 'atlas_earn', arguments: {} }, {}, c.key)).status).toBe(429);
   });
 });
