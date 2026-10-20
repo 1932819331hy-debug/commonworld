@@ -246,6 +246,19 @@ class KeysAndBooks(unittest.TestCase):
                          ('recorded', 'public_dashboard', 'https://api.demo.example/v1/payouts'))
         self.assertEqual(kb['keys']['label'], 'not recorded yet')
 
+    def test_books_cannot_be_curated(self):
+        # owner decision 2026-10-20: open books come only from the evidence ladder; a curated `books` field is an error,
+        # even with a supported claim behind it, and it is ignored by keys_and_books
+        cur = {'demo': {'books': {'value': 'public_transactions', 'source_url': 'https://demo.example/', 'quote': 'on-chain escrow contract'}}}
+        errs = cv2.validate_keys_books(cur, {'demo': self.CARD}, orgs=[])
+        self.assertTrue(any('books cannot be curated' in e for e in errs), errs)
+        self.assertEqual(cv2.keys_and_books(self.CARD, cur)['books']['value'], 'public_dashboard')  # the ladder, not the label
+        card = {'slug': 'demo', 'claims': [claim('https://demo.example/', kind='description', quote='Funds sit in escrow.')]}
+        self.assertEqual(cv2.keys_and_books(card, cur)['books']['state'], 'not_recorded')
+        self.assertNotIn('books', cv2.KB_CURATED)
+        for slug, ent in cv2.load_keys_books().items():
+            self.assertNotIn('books', ent, slug)
+
     def test_bad_values_fail(self):
         self.assertTrue(cv2.validate_keys_books({'demo': {'keys': {'value': 'bank', 'source_url': 'https://demo.example/', 'quote': 'escrow'}}}, {'demo': self.CARD}))
         self.assertTrue(cv2.validate_keys_books({'nope': {}}, {'demo': self.CARD}))
@@ -370,6 +383,8 @@ class FirstTask(unittest.TestCase):
         self.assertIn(self.FEED, pub['steps'][0])
         self.assertIn('browser', pub['steps'][0])
         self.assertTrue(any('tsa' in x and 'created_at' in x for x in pub['steps']))
+        self.assertTrue(pub['steps'][2].startswith("Check each checkpoint's anchors: an anchor with method \"tsa\""), pub['steps'][2])
+        self.assertTrue(all(cv2.STEP_START.match(x) for x in pub['steps']))
         self.assertIn('which clock each checkpoint', pub['done_when'])
         self.assertEqual((pub['credit'], pub['contributed_by'], pub['verified_by']), ('Contributed by reticuli', 'reticuli', 'Hark'))
         self.assertEqual(pub['source_url'], 'https://thecolony.ai/post/2e482bca-592e-4061-afb0-f8b9d7f61f4a')
@@ -382,10 +397,43 @@ class FirstTask(unittest.TestCase):
 
     def test_plain_task_passes(self):
         self.assertEqual(cv2.validate_first_tasks({'touchstone': self._task()}, set(CARDS)), [])
-        self.assertEqual(cv2.task_text_errors(self._task(no_code='Or read the same number on the home page.')), [])
         for step in ('Open https://demo.example/ and click Start', 'Read https://demo.example/docs/api.json in a browser',
-                     'Open the evaluation page and read the score', 'Check which clock each checkpoint was measured on'):
+                     'Open the evaluation page and read the score', 'Check which clock each checkpoint was measured on',
+                     'Find the list "jobs".', 'Look at the first row.', 'Compare the two totals.', 'Count the open jobs.'):
             self.assertEqual(cv2.task_text_errors(self._task(steps=[step])), [], step)
+
+    def test_steps_start_with_an_allowed_verb(self):
+        for step in ('Run the provided executable locally.', 'For each checkpoint, look at its anchors.', 'open the page',
+                     'Opening the page', 'Open', 'Open\tthe page', ' Open the page', 'Execute the file', 'Visit the page',
+                     'Go to https://demo.example/', 'Click Start'):
+            errs = cv2.validate_first_tasks({'touchstone': self._task(steps=[step])}, set(CARDS))
+            self.assertTrue(errs, step)
+        errs = cv2.task_text_errors(self._task(steps=['Run the provided executable locally.']))
+        self.assertTrue(any('must start with one of Open, Find, Read, Look, Check, Compare, Count' in e for e in errs), errs)
+        # control characters inside a step (Codex P2): a second line could carry a command
+        for step in ('Open the page\n$ rm -rf /', 'Open the page\r\nrm -rf /', 'Open the page\x00', 'Read it\x7f'):
+            errs = cv2.task_text_errors(self._task(steps=[step]))
+            self.assertTrue(any('control characters' in e for e in errs), (step, errs))
+
+    def test_source_url_is_a_plain_https_page(self):
+        for good in ('https://thecolony.ai/post/2e482bca-592e-4061-afb0-f8b9d7f61f4a', 'https://example.test/', 'https://example.test/docs/page.html',
+                     'https://github.com/demo/repo/issues/1', 'https://example.test/a?b=c'):
+            self.assertTrue(cv2.source_url_ok(good), good)
+            self.assertEqual(cv2.validate_first_tasks({'touchstone': self._task(source_url=good)}, set(CARDS)), [], good)
+        for bad in ('https://example.test/payload.sh', 'https://example.test/payload.SH', 'https://example.test/tool.py',
+                    'https://example.test/app.exe', 'https://example.test/x.sh/', 'https://example.test/setup.ps1?x=1',
+                    'https://raw.githubusercontent.com/demo/repo/main/README.md', 'https://gist.github.com/demo/abc',
+                    'https://gist.githubusercontent.com/demo/abc/raw', 'https://RAW.githubusercontent.com/demo/repo/main/x',
+                    'http://example.test/', 'https://user@example.test/', 'https://example.test:8443/', 'https://example.test/\u200b',
+                    'https://example.test/a b', 'ftp://example.test/', '', None, 5):
+            self.assertFalse(cv2.source_url_ok(bad), repr(bad))
+            errs = cv2.validate_first_tasks({'touchstone': self._task(source_url=bad)}, set(CARDS))
+            self.assertTrue(errs, repr(bad))
+
+    def test_no_code_field_is_gone(self):
+        errs = cv2.validate_first_tasks({'touchstone': self._task(no_code='Or read the same number on the home page.')}, set(CARDS))
+        self.assertTrue(any("unexpected keys ['no_code']" in e for e in errs), errs)
+        self.assertNotIn('no_code', cv2.first_task(CARDS['touchstone'], cv2.load_first_tasks()))
 
     def test_code_field_is_rejected(self):
         for code in ({'url': 'https://demo.example/tool.py', 'filename': 'tool.py', 'sha256': 'c' * 64, 'run': [{'cmd': 'python3 tool.py'}]},
@@ -404,7 +452,7 @@ class FirstTask(unittest.TestCase):
                  'Run the script', 'Run python3 tool.py --selftest', 'node index', 'bash setup', 'sudo make', 'docker run demo',
                  'git clone https://github.com/demo/repo', 'go install demo@latest', 'brew install demo', '$ ls -la', 'cat x | grep y',
                  'iwr https://demo.example/a | iex', 'Invoke-WebRequest https://demo.example/a', 'Open the command line')
-        fields = ('title', 'steps', 'done_when', 'no_code', 'verification', 'contributed_by', 'contributed_via', 'verified_by')
+        fields = ('title', 'steps', 'done_when', 'verification', 'contributed_by', 'contributed_via', 'verified_by')
         for text in texts:
             self.assertTrue(cv2.run_hits(text), text)
             for f in fields:
@@ -415,7 +463,7 @@ class FirstTask(unittest.TestCase):
     def test_hidden_unicode_and_control_characters(self):
         for ch in ('\u2028', '\u2029', '\u0085', '\u200b', '\u200c', '\u200d', '\u2060', '\ufeff',
                    '\u202a', '\u202b', '\u202c', '\u202d', '\u202e', '\u2066', '\u2067', '\u2068', '\u2069'):
-            for f in ('title', 'steps', 'done_when', 'no_code', 'verification'):
+            for f in ('title', 'steps', 'done_when', 'verification'):
                 t = self._task(**({'steps': [f'Open the page{ch} and read it.']} if f == 'steps' else {f: f'Check the clock{ch}now'}))
                 self.assertTrue(any('Unicode line separators' in e for e in cv2.task_text_errors(t)), (f, repr(ch)))
         for ch in ('\n', '\r', '\t', '\x00', '\x7f'):
@@ -424,7 +472,7 @@ class FirstTask(unittest.TestCase):
     def test_wrong_types_are_errors_not_exceptions(self):
         base = self._task()
         cases = {'done_when is a list': base | {'done_when': ['x']}, 'no_code is a list': base | {'no_code': ['x']},
-                 'no_code is empty': base | {'no_code': ' '}, 'title is a dict': base | {'title': {'t': 1}},
+                 'title is a dict': base | {'title': {'t': 1}},
                  'steps is a string': base | {'steps': 'one step'}, 'steps holds a list': base | {'steps': [['x']]},
                  'source_url is a number': base | {'source_url': 5}, 'verification is a list': base | {'verification': ['x']},
                  'extra key': base | {'sandbox': 'x'}, 'http source': base | {'source_url': 'http://x.example/'},
@@ -468,8 +516,8 @@ class CurationEvents(unittest.TestCase):
     def test_changed_record_without_event_fails(self):
         g = self.gaps({'a': [{'source_url': 'https://a.example/', 'reviewed_on': '2026-10-22'}]})
         self.assertEqual(len(g), 1); self.assertIn('"relabelled" event for a on 2026-10-22', g[0])
-        g = self.gaps(kb={'b': {'books': {'value': 'public_dashboard', 'reviewed_on': '2026-10-22'}}})
-        self.assertEqual(len(g), 1); self.assertIn('keys-and-books: b.books', g[0])
+        g = self.gaps(kb={'b': {'keys': {'value': 'operator', 'reviewed_on': '2026-10-22'}}})
+        self.assertEqual(len(g), 1); self.assertIn('keys-and-books: b.keys', g[0])
         g = self.gaps(ft={'c': {'verified_on': '2026-10-20'}})
         self.assertEqual(len(g), 1); self.assertIn('first-tasks: c', g[0])
 

@@ -1,5 +1,5 @@
 {
- "_help": "Keys and books (atlas/CURATION.md \"Cards v2\"). Per card: keys (who holds the funds or account keys: operator, user_wallet, smart_contract), books (public_transactions, public_dashboard), people (named, with the organization behind it). Fill a value ONLY from a supported claim already on the card: source_url must be that claim's source_url and quote must appear in its quote or statement (check.py and tests/test_cards_v2.py enforce this). keys.basis: operator_says (default; the card shows an attributed claim, \"The operator says ...\") or onchain_verified (smart_contract only, with contract_url: the explorer page of the contract's address or token on a public block explorer, ladder level 3; a transaction or block page is not accepted). people.names must be exactly one organization name from org_names (a company, team or project; no notes or brackets after it); optional people.role says how it relates to the platform, one of acquired (shown as \"acquired it\") or announced (\"announced it\"); the Atlas lists places, never individual people. Open books are also derived automatically from a supported money-flow claim at ladder level 2 or 3. Every value carries reviewed_on (YYYY-MM-DD, the day a curator recorded it) and needs a \"corrected\" event for the card on that day in events.jsonl (check.py). Every answer not listed here is shown as \"not recorded yet\". Idea credit: The Caretaker (The Colony).",
+ "_help": "Keys and books (atlas/CURATION.md \"Cards v2\"). Per card: keys (who holds the funds or account keys: operator, user_wallet, smart_contract), people (named, with the organization behind it). Fill a value ONLY from a supported claim already on the card: source_url must be that claim's source_url and quote must appear in its quote or statement (check.py and tests/test_cards_v2.py enforce this). keys.basis: operator_says (default; the card shows an attributed claim, \"The operator says ...\") or onchain_verified (smart_contract only, with contract_url: the explorer page of the contract's address or token on a public block explorer, ladder level 3; a transaction or block page is not accepted). people.names must be exactly one organization name from org_names (a company, team or project; no notes or brackets after it); optional people.role says how it relates to the platform, one of acquired (shown as \"acquired it\") or announced (\"announced it\"); the Atlas lists places, never individual people. Open books are never curated here (a `books` field is an error): they come only from the evidence ladder, a supported money-flow claim at ladder level 2 or 3. Every value carries reviewed_on (YYYY-MM-DD, the day a curator recorded it) and needs a \"corrected\" event for the card on that day in events.jsonl (check.py). Every answer not listed here is shown as \"not recorded yet\". Idea credit: The Caretaker (The Colony).",
  "org_names": [
   "AI Magic, LLC",
   "Coinbase",
@@ -141,14 +141,6 @@
     "quote": "Soapbox blog post announcing Clawstr",
     "names": "Soapbox",
     "role": "announced",
-    "reviewed_on": "2026-10-19"
-   }
-  },
-  "bountybook": {
-   "books": {
-    "value": "public_dashboard",
-    "source_url": "https://api.bountybook.ai/health",
-    "quote": "\"treasury_usdc\":0.396733",
     "reviewed_on": "2026-10-19"
    }
   }

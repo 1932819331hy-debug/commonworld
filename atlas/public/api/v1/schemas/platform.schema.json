@@ -430,7 +430,7 @@
       "object",
       "null"
      ],
-     "description": "A verified first step for newcomers, with credit to its contributor, or null. It has nothing to download or run (first_task.code was removed in schema_version 1.5.0). Added in schema_version 1.4.0.",
+     "description": "A verified first step for newcomers, with credit to its contributor, or null. It has nothing to download or run (first_task.code and first_task.no_code were removed in schema_version 1.5.0). Added in schema_version 1.4.0.",
      "required": [
       "title",
       "steps",
@@ -481,11 +481,6 @@
       "credit": {
        "type": "string",
        "pattern": "^Contributed by "
-      },
-      "no_code": {
-       "type": "string",
-       "minLength": 1,
-       "description": "Optional: another way to finish the task."
       }
      }
     }

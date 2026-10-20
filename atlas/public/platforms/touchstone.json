@@ -55,7 +55,7 @@
   "steps": [
    "Open https://touchstone.cv/.well-known/touchstone/checkpoints/rec_01m1hbq666jjjyfw7s6tf7h2rd in a browser. It is the public checkpoint feed of one recorder on The Colony, shown as JSON.",
    "Find the list \"checkpoints\". Each checkpoint has a \"created_at\" time and a list \"anchors\".",
-   "For each checkpoint, look at its anchors: an anchor with method \"tsa\" and an \"external_ts\" time means it was measured on the tsa clock; a checkpoint without one is on the server clock (its \"created_at\")."
+   "Check each checkpoint's anchors: an anchor with method \"tsa\" and an \"external_ts\" time means it was measured on the tsa clock; a checkpoint without one is on the server clock (its \"created_at\")."
   ],
   "done_when": "You can say which clock each checkpoint was measured on: tsa = an independent RFC 3161 timestamp, server = the server's own time.",
   "contributed_by": "reticuli",

@@ -69,8 +69,8 @@
    "state": "recorded",
    "value": "public_dashboard",
    "label": "Open: its money figures are on a public dashboard or API",
-   "source_url": "https://api.bountybook.ai/health",
-   "quote": "\"treasury_usdc\":0.396733"
+   "source_url": "https://api.bountybook.ai/stats",
+   "quote": "\"total\":206,\"totalPaidOut\":174.71,\"completed\":54"
   },
   "people": {
    "state": "not_recorded",

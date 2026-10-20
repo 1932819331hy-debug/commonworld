@@ -22,12 +22,14 @@ UTC_PATTERN = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$'  # ISO 8601 U
 # newest first; build.py writes changelog.json and CHANGELOG.md from this list
 CHANGELOG = [
     {'schema_version': '1.5.0', 'date': '2026-10-20', 'changes': [
-        'Cards v2 simplification (owner decision). `first_task.code` is removed: a first task now has nothing to download or run, so '
-        'no record carries it. It existed only in 1.4.0, released together with this version and never published on its own, so no v1 '
+        'Cards v2 simplification (owner decision). `first_task.code` and the optional `first_task.no_code` are removed: a first task now '
+        'has nothing to download or run, so no record carries them. They existed only in 1.4.0, released together with this version and never published on its own, so no v1 '
         'client could rely on it; this is noted here instead of a /api/v2/.',
         'Evidence level 3 (public_transactions) on a money or activity claim is now set only by a curator who opened the record '
         '(atlas/data/evidence-levels.json, so such a claim always carries `evidence_note`); the automatic URL rule gives at most level 2, '
-        'and a block-explorer page of one record is level 2 unless a curator reviewed it. Field shapes are unchanged.']},
+        'and a block-explorer page of one record is level 2 unless a curator reviewed it. Field shapes are unchanged.',
+        '`keys_and_books.books` is no longer curated: it comes only from a supported money-flow claim at evidence level 2 or 3 '
+        '(public_dashboard or public_transactions), otherwise not_recorded. The field shape is unchanged.']},
     {'schema_version': '1.4.0', 'date': '2026-10-19', 'changes': [
         'Cards v2. New optional fields on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): '
         '`evidence_level` {level, id, label, claims_counted}, the highest evidence-ladder level reached by the sources of the card\'s supported '
@@ -35,7 +37,7 @@ CHANGELOG = [
         '`keys_and_books` {keys, books, people}, each {state, value, label, source_url, quote} with state recorded (from a sourced claim on the card) '
         'or not_recorded; on `keys` also `basis` (operator_says: the label is the operator\'s claim, "The operator says ..."; onchain_verified: '
         'a smart contract recorded on a public block explorer, with `contract_url`, the explorer page of its address or token); `people` names an organization, never an individual person; '
-        '`first_task`, a verified first step for newcomers with credit (optional `no_code`), or null; `md_url`, the card page as Markdown.',
+        '`first_task`, a verified first step for newcomers with credit, or null; `md_url`, the card page as Markdown.',
         'New optional fields on money and activity claims (kind economic_flow, metric, recent_activity) in platforms/{id}.json: '
         '`evidence_level` (1, 2 or 3) and `evidence_label`. The level is a fixed rule on the claim\'s source URL, documented in atlas/CURATION.md '
         '(level 3 only for a block-explorer page of one concrete record with a well-formed identifier for its type: a transaction hash, an address or account, a block; '
@@ -153,13 +155,12 @@ def schemas(origin, categories):
                            'properties': {f: kb_item(vals) for f, vals in (('keys', KEYS_VALUES), ('books', BOOKS_VALUES), ('people', PEOPLE_VALUES))}
                            | {'keys': kb_item(KEYS_VALUES, keys=True)}},
         'first_task': {'type': ['object', 'null'], 'description': 'A verified first step for newcomers, with credit to its contributor, or null. It has nothing to download or run '
-                       '(first_task.code was removed in schema_version 1.5.0). Added in schema_version 1.4.0.',
+                       '(first_task.code and first_task.no_code were removed in schema_version 1.5.0). Added in schema_version 1.4.0.',
                        'required': ['title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification', 'credit'],
                        'properties': {'title': {'type': 'string'}, 'steps': {'type': 'array', 'items': {'type': 'string', 'minLength': 1}},
                                       'done_when': {'type': 'string'}, 'contributed_by': {'type': 'string'}, 'contributed_via': {'type': 'string'},
                                       'source_url': uri, 'verified_by': {'type': 'string'}, 'verified_on': {'type': 'string', 'pattern': r'^\d{4}-\d{2}-\d{2}$'},
-                                      'verification': {'type': 'string'}, 'credit': {'type': 'string', 'pattern': '^Contributed by '},
-                                      'no_code': {'type': 'string', 'minLength': 1, 'description': 'Optional: another way to finish the task.'}}}}
+                                      'verification': {'type': 'string'}, 'credit': {'type': 'string', 'pattern': '^Contributed by '}}}}
     optional = {'preview', 'link_safety', 'md_url', 'evidence_level', 'keys_and_books', 'first_task'}  # added in 1.1.0 / 1.2.0 / 1.4.0: optional, so older records stay valid
     summary = {'type': 'object', 'description': 'Stable public fields of one published Atlas entry (as in platforms.json).',
                'required': [k for k in summary_props if k not in optional], 'properties': summary_props}

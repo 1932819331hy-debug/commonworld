@@ -21,11 +21,15 @@ tests/test_cards_v2.py pins the rules with examples.
    the organization relates to it, such as "acquired it"). Custody resting on the operator's own words is shown as an
    attributed claim ("The operator says ..."); only a smart contract recorded with a public explorer link (basis onchain_verified,
    contract_url = an explorer page of one address or token) is stated plainly. A value is filled only from a supported claim already on
-   the card (curated in atlas/data/keys-and-books.json with the claim's source URL and a quote from that claim; open books are also
-   derived from a supported money-flow claim at ladder level 2 or 3, where level 3 comes only from a curator). Every other answer is "not recorded yet".
+   the card: keys and people curated in atlas/data/keys-and-books.json with the claim's source URL and a quote from that claim.
+   Open books are never curated: they come ONLY from the evidence ladder, a supported money-flow claim (economic_flow) at level 2
+   or 3, where level 3 comes only from a curator (a `books` field in keys-and-books.json is an error). Every other answer is
+   "not recorded yet".
 3. First task. One simple first step for a newcomer, from atlas/data/first-tasks.json. Only tasks a curator ran and verified are
    published, with credit to the contributor. Cards without one show no first-task block. A first task has nothing to download
-   or run: a `code` field, or any download, install or run instruction in its text, fails validation (fail closed).
+   or run (fail closed): every step starts with one verb from STEP_VERBS (Open, Find, Read, Look, Check, Compare, Count); no
+   `code` field, no backticks, no control characters or hidden Unicode in any field, no link to a script, binary, raw GitHub
+   or gist file in any text; its source_url is a plain https page (source_url_ok).
 """
 import json
 import os
@@ -293,6 +297,8 @@ PEOPLE_VALUES = {'named': 'Named'}  # an organization (company, team, project), 
 # Optional people.role: how the named organization relates to the platform. A fixed list, so no free text sits next to the name.
 ORG_ROLES = {'acquired': 'acquired it', 'announced': 'announced it'}
 KB_FIELDS = {'keys': ('Who holds the keys', KEYS_VALUES), 'books': ('Open books', BOOKS_VALUES), 'people': ('People behind it', PEOPLE_VALUES)}
+# Fields a curator may set in keys-and-books.json. `books` is not one of them: open books come only from the evidence ladder.
+KB_CURATED = ('keys', 'people')
 BOOKS_BY_LEVEL = {3: 'public_transactions', 2: 'public_dashboard'}
 
 
@@ -349,7 +355,7 @@ def _supporting_claim(card, source_url, quote):
 
 
 def validate_keys_books(entries, cards_by_slug, orgs=None):
-    """Errors in the curated keys-and-books file: unknown slug or field, value outside its list, a source/quote that is not a
+    """Errors in the curated keys-and-books file: unknown slug or field (`books` included: it is derived only), value outside its list, a source/quote that is not a
     supported claim already on the card, a people.names that is not exactly one allowlisted organization (the Atlas lists places,
     never individual people) or a people.role outside ORG_ROLES, or a custody basis onchain_verified without a public explorer
     page of the contract's address or token (contract_url_ok)."""
@@ -360,8 +366,13 @@ def validate_keys_books(entries, cards_by_slug, orgs=None):
         if c is None:
             errs.append(f'keys-and-books: {slug} is not a published card'); continue
         for f, v in ent.items():
-            if f not in KB_FIELDS:
-                errs.append(f'keys-and-books: {slug}.{f} is not one of {", ".join(KB_FIELDS)}'); continue
+            if f == 'books':
+                errs.append(f'keys-and-books: {slug}.books cannot be curated: open books come only from the evidence ladder '
+                            f'(a supported money-flow claim at level 2 or 3)'); continue
+            if f not in KB_CURATED:
+                errs.append(f'keys-and-books: {slug}.{f} is not one of {", ".join(KB_CURATED)}'); continue
+            if not isinstance(v, dict):
+                errs.append(f'keys-and-books: {slug}.{f} must be an object'); continue
             vals = KB_FIELDS[f][1]
             if v.get('value') not in vals:
                 errs.append(f'keys-and-books: {slug}.{f} value {v.get("value")!r} not in {sorted(vals)}')
@@ -410,42 +421,50 @@ def _empty():
 
 
 def keys_and_books(card, curated, overrides=None):
-    """{keys, books, people} for one card. Curated values first; open books otherwise derived from the highest-level supported
-    money-flow claim at ladder level 2 or 3 (curator levels applied). Everything else: not recorded yet."""
+    """{keys, books, people} for one card. Keys and people from the curated file; open books ONLY from the highest-level
+    supported money-flow claim at ladder level 2 or 3 (curator levels applied; a curated `books` value is ignored here and an
+    error in validate_keys_books). Everything else: not recorded yet."""
     ent = curated.get(card.get('slug') or card.get('id')) or {}
     ov = card_overrides(card, overrides)
     out = {}
     for f in KB_FIELDS:
-        v = ent.get(f)
-        if v and _supporting_claim(card, v.get('source_url'), v.get('quote')):
+        v = ent.get(f) if f in KB_CURATED else None
+        if isinstance(v, dict) and _supporting_claim(card, v.get('source_url'), v.get('quote')):
             out[f] = _keys_item(v) if f == 'keys' else _item(f, v['value'], v['source_url'], v['quote'], v.get('names'), v.get('role'))
         else:
             out[f] = _empty()
-    if out['books']['state'] == 'not_recorded':
-        best = None
-        for x in card.get('claims', []):
-            lv = claim_level(x, ov)
-            if x.get('kind') == 'economic_flow' and x.get('outcome') == 'supported' and lv in BOOKS_BY_LEVEL and (best is None or lv > best[0]):
-                best = (lv, x)
-        if best:
-            x = best[1]
-            out['books'] = _item('books', BOOKS_BY_LEVEL[best[0]], x['source_url'], (x.get('quote') or x.get('statement') or '')[:240])
+    best = None  # open books: the evidence ladder only
+    for x in card.get('claims', []):
+        lv = claim_level(x, ov)
+        if x.get('kind') == 'economic_flow' and x.get('outcome') == 'supported' and lv in BOOKS_BY_LEVEL and (best is None or lv > best[0]):
+            best = (lv, x)
+    if best:
+        x = best[1]
+        out['books'] = _item('books', BOOKS_BY_LEVEL[best[0]], x['source_url'], (x.get('quote') or x.get('statement') or '')[:240])
     return out
 
 
 # ---------------------------------------------------------------- 3. first task
 TASK_FIELDS = ('title', 'steps', 'done_when', 'contributed_by', 'contributed_via', 'source_url', 'verified_by', 'verified_on', 'verification')
-TEXT_FIELDS = ('title', 'done_when', 'no_code', 'verification', 'contributed_by', 'contributed_via', 'verified_by')  # + each step
+TEXT_FIELDS = ('title', 'done_when', 'verification', 'contributed_by', 'contributed_via', 'verified_by')  # + each step
 DATE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 # Control characters (newline, carriage return, tab, NUL, any other below 0x20, and DEL) could hide a second command or line.
+# Not allowed in ANY text field, steps included.
 CONTROL = re.compile(r'[\x00-\x1f\x7f]')
-# A custody contract_url and a curator's level-3 source: printable ASCII only (0x20-0x7e).
+# A custody contract_url, a curator's level-3 source and a first task's source_url: printable ASCII only (0x20-0x7e).
 ASCII_PRINTABLE = re.compile(r'^[\x20-\x7e]*$')
 # Hidden text: Unicode line breaks (U+2028, U+2029, U+0085), zero-width characters (U+200B-U+200D, U+2060, U+FEFF) and bidi
 # controls (U+202A-U+202E, U+2066-U+2069) can hide or reorder text.
 HIDDEN_UNICODE = re.compile('[\u2028\u2029\u0085\u200b-\u200d\u2060\ufeff\u202a-\u202e\u2066-\u2069]')
-# A first task has NOTHING to download or run (owner decision, 2026-10-20). One fail-closed rule on every text field: any of
-# these is an error. Prose that trips it is reworded (for example "fetch" or "get" instead of "download").
+# A first task has NOTHING to download or run (owner decision, 2026-10-20). The main rule is a positive allowlist: every step
+# starts with one of these verbs, capitalized, followed by a space. Reading public pages needs no other verb.
+STEP_VERBS = ('Open', 'Find', 'Read', 'Look', 'Check', 'Compare', 'Count')
+STEP_START = re.compile(r'^(?:' + '|'.join(STEP_VERBS) + r') ')
+# Script and binary file extensions: a link to one of these (in any text field, or as source_url) is no plain page.
+RUN_EXTENSIONS = ('py', 'pyz', 'sh', 'bash', 'zsh', 'ps1', 'bat', 'cmd', 'js', 'mjs', 'cjs', 'ts', 'exe', 'msi', 'dmg', 'pkg',
+                  'deb', 'rpm', 'apk', 'appimage', 'jar', 'whl', 'bin', 'run')
+RAW_HOSTS = re.compile(r'raw\.githubusercontent\.com|gist\.github(usercontent)?\.com', re.I)
+# Defense in depth on every text field, steps included (the verb allowlist is the main rule). Prose that trips it is reworded.
 NO_RUN = (
     ('backticked text (a command)', re.compile(r'`')),
     ('a shell command or a download, install or run instruction', re.compile(
@@ -453,9 +472,8 @@ NO_RUN = (
         r'chmod|docker|git\s+clone|go\s+(install|run|get)|bash|zsh|sh|pwsh|powershell|cmd|python[\d.]*|py|node(js)?|perl|ruby|php|'
         r'download(s|ed|ing)?|install(s|ed|ing)?|terminal|command line|shell|script)(?![\w-])|^\s*[$>#]\s|\|\s*\w', re.I)),
     ('a link to a script or binary', re.compile(
-        r'https?://[^\s"\'<>)]+\.(py|pyz|sh|bash|zsh|ps1|bat|cmd|js|mjs|cjs|ts|exe|msi|dmg|pkg|deb|rpm|apk|appimage|jar|whl|bin|run)'
-        r'(?=$|[\s"\'<>)?#.,;:])', re.I)),
-    ('a raw GitHub or gist link', re.compile(r'raw\.githubusercontent\.com|gist\.github(usercontent)?\.com', re.I)),
+        r'https?://[^\s"\'<>)]+\.(' + '|'.join(RUN_EXTENSIONS) + r')(?=$|[\s"\'<>)?#.,;:])', re.I)),
+    ('a raw GitHub or gist link', RAW_HOSTS),
 )
 
 
@@ -464,15 +482,30 @@ def run_hits(text):
     return [why for why, rx in NO_RUN if rx.search(text or '')]
 
 
+def source_url_ok(url):
+    """A first task's source_url is a plain https page: printable ASCII, https, a host with no userinfo or port, no raw GitHub
+    or gist host, and a path that does not end in a script or binary extension (RUN_EXTENSIONS)."""
+    if not (isinstance(url, str) and ASCII_PRINTABLE.match(url) and url.startswith('https://')) or ' ' in url:
+        return False
+    u = urlparse(url)
+    if not _plain_netloc(u) or not u.hostname or RAW_HOSTS.search(u.hostname):
+        return False
+    last = (u.path or '').rstrip('/').rsplit('/', 1)[-1].lower()
+    return not ('.' in last and last.rsplit('.', 1)[-1] in RUN_EXTENSIONS)
+
+
 def task_text_errors(t):
-    """Fail closed: no `code` field, and no text field (title, steps, done_when, no_code, verification, contributor and verifier
-    fields) with a download/install/run instruction (run_hits), a control character (steps aside) or hidden Unicode."""
+    """Fail closed: no `code` field; every step starts with an allowed verb (STEP_VERBS); no text field (title, steps, done_when,
+    verification, contributor and verifier fields) with a control character, hidden Unicode or a download/install/run hint
+    (run_hits)."""
     errs = ['a first task has nothing to download or run: remove the `code` field'] if 'code' in t else []
     steps = t.get('steps') if isinstance(t.get('steps'), list) else []
     for where, text in [('step', s) for s in steps] + [(k, t.get(k)) for k in TEXT_FIELDS]:
         if not isinstance(text, str):
             continue  # a wrong type is reported by validate_first_tasks
-        if CONTROL.search(text) and where != 'step':
+        if where == 'step' and not STEP_START.match(text):
+            errs.append(f'step {text[:60]!r} must start with one of {", ".join(STEP_VERBS)} and a space: a first task has nothing to download or run')
+        if CONTROL.search(text):
             errs.append(f'{where} {text[:60]!r} must not contain control characters (newline, tab, NUL)')
         if HIDDEN_UNICODE.search(text):
             errs.append(f'{where} {text[:60]!r} must not contain Unicode line separators, zero-width characters or bidi controls')
@@ -492,18 +525,17 @@ def validate_first_tasks(tasks, slugs):
         for k in TASK_FIELDS:
             if k != 'steps' and k in t and not isinstance(t[k], str):
                 errs.append(f'{w}: {k} must be a string, not {type(t[k]).__name__}')
-        extra = set(t) - set(TASK_FIELDS) - {'no_code', 'code'}  # `code` is reported by task_text_errors
+        extra = set(t) - set(TASK_FIELDS) - {'code'}  # `code` is reported by task_text_errors
         if extra:
             errs.append(f'{w}: unexpected keys {sorted(extra)}')
-        if 'no_code' in t and not (isinstance(t['no_code'], str) and t['no_code'].strip()):
-            errs.append(f'{w}: no_code must be a non-empty string')
         miss = [k for k in TASK_FIELDS if not t.get(k)]
         if miss:
             errs.append(f'{w} missing {", ".join(miss)}')
         if not isinstance(t.get('steps', []), list) or not all(isinstance(s, str) and s.strip() for s in t.get('steps') or []):
             errs.append(f'{w}: steps must be a list of non-empty strings')
-        if not str(t.get('source_url') or '').startswith('https://'):
-            errs.append(f'{w}: source_url must be https')
+        if not source_url_ok(t.get('source_url')):
+            errs.append(f'{w}: source_url must be a plain https page (printable ASCII, no userinfo or port, no script or binary '
+                        f'file, no raw GitHub or gist link)')
         if not DATE.match(str(t.get('verified_on') or '')):
             errs.append(f'{w}: verified_on must be YYYY-MM-DD')
         errs += [f'{w}: {x}' for x in task_text_errors(t)]
@@ -543,10 +575,7 @@ def first_task(card, tasks):
     t = tasks.get(card.get('slug') or card.get('id'))
     if not t or not isinstance(t, dict):
         return None
-    out = {k: t[k] for k in TASK_FIELDS} | {'credit': f"Contributed by {t['contributed_by']}"}
-    if t.get('no_code'):
-        out['no_code'] = t['no_code']  # optional: a way to finish the task without running code
-    return out
+    return {k: t[k] for k in TASK_FIELDS} | {'credit': f"Contributed by {t['contributed_by']}"}
 
 
 # ---------------------------------------------------------------- public wording guard
