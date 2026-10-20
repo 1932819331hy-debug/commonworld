@@ -62,6 +62,33 @@ describe('content cache version: a D1 error never becomes a 500', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('cache version lookup failed'), expect.stringContaining('D1_ERROR'));
   });
 
+  // Without a known version the response must not be kept by any HTTP cache downstream either (a CDN or proxy copy of
+  // a public s-maxage response could be served after a hide). D1 healthy: the usual public headers, unchanged.
+  const PATHS: Array<[string, string]> = [
+    ['/', 'public, max-age=0, s-maxage=30'],
+    ['/porch', 'public, max-age=0, s-maxage=30'],
+    ['/llms.txt', 'public, max-age=300, s-maxage=300'],
+    ['/porch.md', 'public, max-age=0, s-maxage=30'],
+    ['/v1/catalog', 'public, max-age=0, s-maxage=300'],
+  ];
+
+  it('D1 failing on every try: HTML pages, /llms.txt, a Markdown twin and /v1/catalog go out Cache-Control: no-store', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    for (const [path] of PATHS) {
+      const res = await call(path, flakyDb(Infinity).db);
+      expect(res.status, path).toBe(200);
+      expect(res.headers.get('cache-control'), path).toBe('no-store');
+    }
+  });
+
+  it('D1 healthy: the same routes keep their public Cache-Control', async () => {
+    for (const [path, cacheControl] of PATHS) {
+      const res = await call(path, flakyDb(0).db);
+      expect(res.status, path).toBe(200);
+      expect(res.headers.get('cache-control'), path).toBe(cacheControl);
+    }
+  });
+
   it('one transient failure: the retry succeeds and the edge cache is used as normal', async () => {
     const match = vi.spyOn(caches.default, 'match');
     const { db, state } = flakyDb(1);

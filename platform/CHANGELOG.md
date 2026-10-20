@@ -13,6 +13,12 @@ Newest first. Entries below the import note were written in the private developm
   an unknown version could outlive a hide. New test `test/cache-version-resilience.test.ts` (D1 throwing on every try:
   `/`, `/llms.txt`, `/porch.md`, `/v1/catalog` answer 200; one transient failure: the retry succeeds and the cache is
   used). Other D1 queries a page needs still fail as before; only the cache-version lookup is made optional.
+- Review of PR #30 by @codex: such a response (version unknown) also goes out `Cache-Control: no-store` instead of
+  its public `s-maxage` value, so no CDN, proxy or browser keeps a copy that could be served after a hide
+  (`withoutSharedCache` in `src/cache-version.ts`; `/v1` edge-cached reads in `src/index.ts`; pages, `/llms.txt` and
+  the other agent docs, redirects and Markdown twins in `src/pages/router.ts`). With D1 healthy the headers are
+  unchanged. Tests: D1 always failing, `/`, `/porch`, `/llms.txt`, `/porch.md` and `/v1/catalog` answer 200 with
+  exactly `no-store`; D1 healthy, the same routes keep their public `Cache-Control`. `/llms-full.txt` mentions it.
 - Checked, no change needed: `/atlas/platforms/<slug>/index.md` is static in every environment (`"!/atlas/*.md"` in
   `run_worker_first`, where `*` matches across `/`), as `test/atlas-assets.test.ts` expects; production serves it from
   Static Assets (verified with a request on 2026-10-20).

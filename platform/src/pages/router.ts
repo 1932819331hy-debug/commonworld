@@ -21,7 +21,7 @@ import { openapiDoc } from '../openapi';
 import { mcpPage } from './mcp-page';
 import { mcpDescription } from '../mcp/docs';
 import { MCP_DOC_JSON } from '../mcp/server';
-import { versionedCacheKey } from '../cache-version';
+import { versionedCacheKey, withoutSharedCache } from '../cache-version';
 import { ATLAS_SLASH_REDIRECT, atlasOrigin, atlasText, cleanAtlasDoc, isAtlasPath, proxyAtlas } from '../atlas-proxy';
 import { atlasAssetText, atlasAssetsOn, serveAtlasAsset } from '../atlas-assets';
 import { queryStats } from '../stats';
@@ -441,12 +441,15 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
   // Keyed on path + allow-listed params + content cache version: a hide/restore/freeze bumps the version, so
   // pre-change copies are never served.
   const cacheKey = edge ? await versionedCacheKey(env, pageCacheUrl(url)) : null;
+  // edge cache on but the version lookup failed: every response below goes out no-store (done), not public
+  const versionUnknown = edge && cacheKey === null;
   if (cacheKey) {
     const hit = await caches.default.match(cacheKey);
     if (hit) { const out = new Response(hit.body, hit); out.headers.set('x-cw-cache', 'HIT'); return withSession(out); }
   }
 
   const done = (res: Response): Response => {
+    if (versionUnknown) return withoutSharedCache(res);
     if (cacheKey && res.status === 200 && EDGE_CACHEABLE.has(res.headers.get('cache-control') ?? '') && !res.headers.has('set-cookie')) exec.waitUntil(caches.default.put(cacheKey, res.clone()).catch(() => undefined));
     return res;
   };
@@ -491,7 +494,7 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
         // /citizens/{handle} -> /c/{handle} (and /sections/, /tags/, /privacy|terms|about -> Atlas) are permanent 301s, kept forever; comment/porch refs are 302 (they move with visibility).
         // only /comments/{n} and /porch/{n} are temporary; the trailing-slash strip (/porch/, /comments/) is a permanent 301 (F2)
         const temporary = /^\/(comments|porch)\/\d{1,15}$/.test(path);
-        return respond(method, temporary ? 302 : 301, '', { location: to + (to.includes('#') ? '' : url.search), 'cache-control': temporary ? 'public, max-age=300' : 'public, max-age=86400' });
+        return done(respond(method, temporary ? 302 : 301, '', { location: to + (to.includes('#') ? '' : url.search), 'cache-control': temporary ? 'public, max-age=300' : 'public, max-age=86400' }));
       }
       // F1: a comment or porch line of a disabled citizen (or on their post) is gone, not missing
       const ref = path.match(/^\/(comments|porch)\/(\d{1,15})$/);
@@ -502,7 +505,7 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
     const tm = path.match(/^\/t\/([a-z0-9-]{1,64})$/);
     if (tm) {
       const merged = await env.DB.prepare("SELECT merged_into FROM tags WHERE slug = ? AND status = 'merged'").bind(tm[1]).first<{ merged_into: string }>();
-      if (merged) return respond(method, 301, '', { location: `/t/${merged.merged_into}${url.search}`, 'cache-control': 'public, max-age=86400' });
+      if (merged) return done(respond(method, 301, '', { location: `/t/${merged.merged_into}${url.search}`, 'cache-control': 'public, max-age=86400' }));
     }
     p = await pageCtx(env, url, session.viewer);
     const out = await route.render(p, env, url, m!, session.viewer);
@@ -553,10 +556,12 @@ async function markdownPage(request: Request, env: Env, exec: ExecutionContext, 
   const method = request.method;
   const page = new URL(htmlPath + url.search, url.origin);
   let cacheKey: Request | null = null;
+  let versionUnknown = false;
   if (env.PUBLIC_EDGE_CACHE !== '0' && method === 'GET') {
     const keyUrl = pageCacheUrl(page);
     keyUrl.searchParams.set('__fmt', 'md');
     cacheKey = await versionedCacheKey(env, keyUrl);
+    versionUnknown = cacheKey === null;
     const hit = cacheKey ? await caches.default.match(cacheKey) : undefined;
     if (hit) { const out = new Response(hit.body, hit); out.headers.set('x-cw-cache', 'HIT'); return out; }
   }
@@ -564,11 +569,13 @@ async function markdownPage(request: Request, env: Env, exec: ExecutionContext, 
     const p = await pageCtx(env, url);
     const out = await renderMarkdown(p, env, page, htmlPath);
     const res = markdownResponse(method, env, url, htmlPath, out.status ?? 200, out.markdown, out.robots, out.headers ?? {});
+    if (versionUnknown) return withoutSharedCache(res); // version unknown: no edge cache, no shared copy downstream
     if (cacheKey && res.status === 200) exec.waitUntil(caches.default.put(cacheKey, res.clone()).catch(() => undefined));
     return res;
   } catch (error) {
     if (error instanceof HttpError && error.code === 'tag_merged') {
-      return respond(method, 301, '', { location: markdownPath(`/t/${String(error.extra.into)}`), 'cache-control': 'public, max-age=86400', vary: 'Accept' });
+      const moved = respond(method, 301, '', { location: markdownPath(`/t/${String(error.extra.into)}`), 'cache-control': 'public, max-age=86400', vary: 'Accept' });
+      return versionUnknown ? withoutSharedCache(moved) : moved;
     }
     const status = error instanceof HttpError ? error.status : 500;
     if (status === 500) console.error('markdown page error', htmlPath, error);

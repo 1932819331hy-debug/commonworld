@@ -10,6 +10,8 @@
  * The lookup is best effort: if D1 throws (a transient `D1_ERROR: internal error` turned / and /llms.txt into HTTP 500
  * on production on 2026-10-20), it is retried once and then the request goes on without the edge cache (no read, no
  * write: a copy stored under an unknown version could outlive a hide). A cache-version failure never becomes a 500.
+ * Such a response also goes out `Cache-Control: no-store` (withoutSharedCache), so no external HTTP cache keeps it
+ * past a hide either.
  */
 import type { Env } from './env';
 import { nowIso } from './http';
@@ -51,4 +53,15 @@ export async function versionedCacheKey(env: Env, url: URL): Promise<Request | n
   const keyUrl = new URL(url.toString());
   keyUrl.searchParams.set(CACHE_VERSION_PARAM, String(version));
   return new Request(keyUrl.toString(), { method: 'GET' });
+}
+
+/**
+ * For a response rendered after versionedCacheKey returned null: `Cache-Control: no-store`, replacing any public /
+ * s-maxage value. Without a known content version nothing downstream (CDN, proxy, browser) may keep a copy that could
+ * outlive a hide.
+ */
+export function withoutSharedCache(response: Response): Response {
+  const out = new Response(response.body, response);
+  out.headers.set('cache-control', 'no-store');
+  return out;
 }

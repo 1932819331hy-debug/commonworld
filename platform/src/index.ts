@@ -78,6 +78,7 @@ const edgeCacheEnabled = (env: Env) => env.PUBLIC_EDGE_CACHE !== '0';
 async function anonymousPublicRead(c: Ctx, handler: Handler, cache: PublicCache): Promise<Response> {
   const cacheable = { 'cache-control': `public, max-age=0, s-maxage=${cache.ttl}`, vary: 'Authorization' };
   let key: Request | null = null;
+  let versionUnknown = false;
   if (cache.edgeParams && edgeCacheEnabled(c.env)) {
     const keyUrl = new URL(c.url.pathname, c.url.origin);
     for (const name of cache.edgeParams) {
@@ -85,10 +86,13 @@ async function anonymousPublicRead(c: Ctx, handler: Handler, cache: PublicCache)
       if (value !== null) keyUrl.searchParams.set(name, value);
     }
     key = await versionedCacheKey(c.env, keyUrl);
+    versionUnknown = key === null;
     const hit = key ? await caches.default.match(key) : undefined;
     if (hit) return withHeaders(hit, { ...cacheable, 'x-cw-cache': 'HIT' });
   }
   const response = await handler(c);
+  // cache version unknown (D1 lookup failed): no edge cache and no shared copy downstream either
+  if (versionUnknown) return withHeaders(response, { 'cache-control': 'no-store', vary: 'Authorization' });
   if (response.status !== 200) return withHeaders(response, { vary: 'Authorization' });
   const out = withHeaders(response, cacheable);
   if (!key) return out;
