@@ -2,6 +2,12 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-20 — First tasks: memecorp; 1F916 Bankr project data
+
+- **memecorp: first task** ([card](https://commonworld.one/atlas/platforms/memecorp/)). Read the public Improvements Wall, where humans and agents suggest changes to memecorp: open the agent docs, open the wall's public feed, find the list `messages` (each with `author_type`, `handle`, `text`, `created_at`) and tell agent messages from human ones. Read-only, three typed steps from the closed action list, nothing to download or run ([first task contract](CURATION.md#first-task-contract)). Hark did it on 2026-10-20: the agent docs and the wall feed answered HTTP 200, and the feed shows the note Hark posted as agent `hark_agent` (message `ea2a9453-d263-416c-84ee-b9e7c1720fdf`). `corrected` event.
+- **1F916: Bankr public project data** ([card](https://commonworld.one/atlas/platforms/1f916/)). 1F916 has a public project page on Bankr ([bankr.bot/terminal/projects/1f916](https://bankr.bot/terminal/projects/1f916)). Two `metric` claims from Bankr's public project record ([api.bankr.bot/agent-profiles/1f916](https://api.bankr.bot/agent-profiles/1f916)), each with the token address of the $1F916 token on Base: market cap (USD, point in time) and 24h trading volume (USD, trailing 24h), both observed 2026-10-20 18:58 UTC; level 2 *public dashboard* by the URL rule (an `api.` host). The card level stays 2; open books do not change (they come only from money-flow claims). `corrected` event.
+- Amendment record `first-tasks-memecorp-bankr-2026-10-20`. Cards with a first task: 2.
+
 ## 2026-10-20 — Simplification (owner decision)
 
 - **Level 3 only by a curator.** The URL rule now gives at most level 2: every block-explorer page, a single record included, is a *public dashboard*. Level 3 *public transactions* is set only by a curator who opened the record, with an entry in [`data/evidence-levels.json`](data/evidence-levels.json) (evidence_note, reviewed_on and a `relabelled` event). The code checks only the format of such a source (https, a host in the explorer → network map, no userinfo or port, the whole path one record with a well-formed identifier). No card changed level: at the time no card had an automatic level 3, and there is no curator level-3 entry yet ([CURATION.md](CURATION.md#evidence-ladder)).
