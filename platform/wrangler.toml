@@ -1,0 +1,237 @@
+# Commonworld v1 — Cloudflare Worker + D1 (SSR pages + /v1 API).
+# Staging is live at https://staging.commonworld.one (env.staging). Production is prepared but NOT deployed:
+# its database_id is a placeholder until the prod D1 exists (see ../docs/DEPLOY.md).
+name = "commonworld-api-dev"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = false
+
+# Per-minute rate limits (src/ratelimit.ts): one Rate Limiting binding per tier, 60 s period. namespace_id is account-wide,
+# so each environment has its own range (local 7100+, staging 7200+, production 7300+) and never shares counters.
+ratelimits = [
+  { name = "RL_1", namespace_id = "7100", simple = { limit = 1, period = 60 } },
+  { name = "RL_2", namespace_id = "7101", simple = { limit = 2, period = 60 } },
+  { name = "RL_3", namespace_id = "7102", simple = { limit = 3, period = 60 } },
+  { name = "RL_5", namespace_id = "7103", simple = { limit = 5, period = 60 } },
+  { name = "RL_10", namespace_id = "7104", simple = { limit = 10, period = 60 } },
+  { name = "RL_20", namespace_id = "7105", simple = { limit = 20, period = 60 } },
+  { name = "RL_30", namespace_id = "7106", simple = { limit = 30, period = 60 } },
+  { name = "RL_60", namespace_id = "7107", simple = { limit = 60, period = 60 } },
+  { name = "RL_120", namespace_id = "7108", simple = { limit = 120, period = 60 } },
+  { name = "RL_240", namespace_id = "7109", simple = { limit = 240, period = 60 } },
+  { name = "RL_600", namespace_id = "7110", simple = { limit = 600, period = 60 } },
+  { name = "RL_1200", namespace_id = "7111", simple = { limit = 1200, period = 60 } },
+  { name = "RL_6000", namespace_id = "7112", simple = { limit = 6000, period = 60 } },
+]
+
+# Static Assets = the Atlas (routing option A3, owner decision 2026-10-18; src/atlas-assets.ts). Paths matched by a "!"
+# pattern below are Atlas static files: Cloudflare serves them without invoking the Worker (free, unlimited), with the
+# Atlas's own _headers/_redirects. Everything else (v1 + Atlas HTML pages, which need the CSP nonce) runs the Worker
+# first. The list must equal ATLAS_RUN_WORKER_FIRST in src/atlas-assets.ts in every environment (test/atlas-assets.test.ts).
+# Locally (tests, wrangler dev) a small fixture stands in for the Atlas; staging/production use .atlas-dist, built by
+# `npm run atlas:build` from cw-public (scripts/build-atlas-assets.mjs). Deploy only via `npm run deploy:staging|production`.
+[assets]
+directory = "./test/fixtures/atlas-dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
+html_handling = "auto-trailing-slash"
+run_worker_first = [
+  "/*",
+  "!/atlas/assets/*", "!/atlas/og/*", "!/atlas/screens/*", "!/atlas/badge/*", "!/atlas/data/*",
+  "!/atlas/platforms/*.json", "!/atlas/categories/*.json", "!/atlas/*.json", "!/atlas/*.txt", "!/atlas/*.xml",
+  "!/atlas/decisions/index.md", "!/atlas/events.md", "!/stats.json", "!/stats/index.md", "!/api/*", "!/.well-known/*",
+]
+
+[vars]
+ENVIRONMENT = "local"
+# name of the bucket bound as BACKUPS below (src/backup.ts BACKUP_TARGETS; must equal r2_buckets bucket_name)
+BACKUPS_BUCKET = "commonworld-backups-local"
+SETTINGS_CACHE_MS = "5000"
+
+# Nightly (UTC) retention clean-up (deletes daily_usage and idempotency_keys rows older than 30 days, src/retention.ts)
+# + full counters reconcile; hourly karma_7d window expiry + stored ranks (src/counters.ts). scheduled() in src/index.ts.
+# Daily 03:00 UTC D1 backup to R2 + weekly Monday 04:30 UTC restore check (src/backup.ts, docs/ops/BACKUP-RESTORE.md).
+# Must equal [CLEANUP_CRON, HOURLY_CRON, BACKUP_CRON, RESTORE_CHECK_CRON] (src/retention.ts, src/backup.ts; a test checks).
+[triggers]
+crons = ["17 3 * * *", "7 * * * *", "0 3 * * *", "30 4 * * 1"]
+
+# CPU cap per invocation (denial-of-wallet guard): `[limits] cpu_ms = 100` in env.staging and env.production. Needs
+# Workers Paid (the account is on Paid since 2026-10-17; on Free a deploy with `[limits]` fails with code 100328).
+# Local dev / tests run without a cap.
+
+# Workers Logs: keep console.log/error output (errors, retention cron summary, CSP report summaries) but NOT the
+# automatic per-request invocation logs — those would store full URLs, and /login?t=cwl_… carries a one-time token.
+[observability]
+enabled = true
+[observability.logs]
+invocation_logs = false
+
+# Local development database (miniflare, stored under .wrangler/).
+[[d1_databases]]
+binding = "DB"
+database_name = "commonworld-dev"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# D1 backups (src/backup.ts): one private R2 bucket PER ENVIRONMENT (owner decision 2026-10-20), so staging can never
+# read or overwrite production backups. Local (tests, wrangler dev) uses a simulated local-only bucket; it is never the
+# production bucket. BACKUPS_BUCKET in [vars] must equal bucket_name (src/backup.ts refuses to run otherwise).
+[[r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "commonworld-backups-local"
+
+# ---------- staging (closed, own D1) ----------
+[env.staging]
+name = "commonworld-api-staging"
+workers_dev = false
+routes = [{ pattern = "staging.commonworld.one", custom_domain = true }]
+ratelimits = [
+  { name = "RL_1", namespace_id = "7200", simple = { limit = 1, period = 60 } },
+  { name = "RL_2", namespace_id = "7201", simple = { limit = 2, period = 60 } },
+  { name = "RL_3", namespace_id = "7202", simple = { limit = 3, period = 60 } },
+  { name = "RL_5", namespace_id = "7203", simple = { limit = 5, period = 60 } },
+  { name = "RL_10", namespace_id = "7204", simple = { limit = 10, period = 60 } },
+  { name = "RL_20", namespace_id = "7205", simple = { limit = 20, period = 60 } },
+  { name = "RL_30", namespace_id = "7206", simple = { limit = 30, period = 60 } },
+  { name = "RL_60", namespace_id = "7207", simple = { limit = 60, period = 60 } },
+  { name = "RL_120", namespace_id = "7208", simple = { limit = 120, period = 60 } },
+  { name = "RL_240", namespace_id = "7209", simple = { limit = 240, period = 60 } },
+  { name = "RL_600", namespace_id = "7210", simple = { limit = 600, period = 60 } },
+  { name = "RL_1200", namespace_id = "7211", simple = { limit = 1200, period = 60 } },
+  { name = "RL_6000", namespace_id = "7212", simple = { limit = 6000, period = 60 } },
+]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+BACKUPS_BUCKET = "commonworld-backups-staging"
+SETTINGS_CACHE_MS = "5000"
+# Closed staging: every SSR page noindex,nofollow and robots.txt disallows all.
+PAGES_NOINDEX = "1"
+SITE_ORIGIN = "https://staging.commonworld.one"
+# Routing option A3: the Atlas comes from this Worker's Static Assets (src/atlas-assets.ts). ATLAS_ORIGIN is the
+# rollback path only (empty ATLAS_SOURCE + redeploy = proxy the Atlas paths to the Pages project, src/atlas-proxy.ts).
+ATLAS_SOURCE = "assets"
+ATLAS_ORIGIN = "https://commonworld.pages.dev"
+
+[env.staging.assets]
+directory = "./.atlas-dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
+html_handling = "auto-trailing-slash"
+run_worker_first = [
+  "/*",
+  "!/atlas/assets/*", "!/atlas/og/*", "!/atlas/screens/*", "!/atlas/badge/*", "!/atlas/data/*",
+  "!/atlas/platforms/*.json", "!/atlas/categories/*.json", "!/atlas/*.json", "!/atlas/*.txt", "!/atlas/*.xml",
+  "!/atlas/decisions/index.md", "!/atlas/events.md", "!/stats.json", "!/stats/index.md", "!/api/*", "!/.well-known/*",
+]
+
+[env.staging.triggers]
+crons = ["17 3 * * *", "7 * * * *", "0 3 * * *", "30 4 * * 1"]
+
+# Same CPU cap as production (see env.production.limits).
+[env.staging.limits]
+cpu_ms = 100
+
+# Same as production: console.log/error output stays in Workers Logs, automatic per-request invocation logs stay off.
+# The 2026-10-18 browser-agent visibility experiment (invocation_logs = true) ended early on 2026-10-19: full request
+# URLs include the one-time /login?t=… tokens, so per-request logs must not store them.
+[env.staging.observability]
+enabled = true
+[env.staging.observability.logs]
+invocation_logs = false
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "commonworld-staging"
+database_id = "351f462a-a990-4ea1-8532-7845e3d7f397"
+migrations_dir = "migrations"
+
+# D1 backups (src/backup.ts): staging's OWN private R2 bucket commonworld-backups-staging (WEUR, lifecycle: objects
+# deleted after 35 days, unfinished multipart uploads aborted after 7 days), keys under staging/. Separate from the
+# production bucket (owner decision 2026-10-20). Must exist before the next staging deploy (docs/ops/BACKUP-RESTORE.md).
+[[env.staging.r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "commonworld-backups-staging"
+
+# ---------- production (only on explicit owner approval) ----------
+[env.production]
+name = "commonworld-api"
+workers_dev = false
+ratelimits = [
+  { name = "RL_1", namespace_id = "7300", simple = { limit = 1, period = 60 } },
+  { name = "RL_2", namespace_id = "7301", simple = { limit = 2, period = 60 } },
+  { name = "RL_3", namespace_id = "7302", simple = { limit = 3, period = 60 } },
+  { name = "RL_5", namespace_id = "7303", simple = { limit = 5, period = 60 } },
+  { name = "RL_10", namespace_id = "7304", simple = { limit = 10, period = 60 } },
+  { name = "RL_20", namespace_id = "7305", simple = { limit = 20, period = 60 } },
+  { name = "RL_30", namespace_id = "7306", simple = { limit = 30, period = 60 } },
+  { name = "RL_60", namespace_id = "7307", simple = { limit = 60, period = 60 } },
+  { name = "RL_120", namespace_id = "7308", simple = { limit = 120, period = 60 } },
+  { name = "RL_240", namespace_id = "7309", simple = { limit = 240, period = 60 } },
+  { name = "RL_600", namespace_id = "7310", simple = { limit = 600, period = 60 } },
+  { name = "RL_1200", namespace_id = "7311", simple = { limit = 1200, period = 60 } },
+  { name = "RL_6000", namespace_id = "7312", simple = { limit = 6000, period = 60 } },
+]
+# Routing (option A 2026-10-17, Atlas from Static Assets = A3 2026-10-18): the Worker serves the whole domain.
+# READY BUT OFF. Turn on only at launch, after the apex/www custom domains are removed from the Pages project
+# (../docs/DEPLOY.md). Custom domains create the DNS records themselves.
+# routes = [
+#   { pattern = "commonworld.one", custom_domain = true },
+#   { pattern = "www.commonworld.one", custom_domain = true },
+# ]
+
+[env.production.vars]
+ENVIRONMENT = "production"
+BACKUPS_BUCKET = "commonworld-backups"
+SETTINGS_CACHE_MS = "5000"
+SITE_ORIGIN = "https://commonworld.one"
+# Routing option A3: the Atlas from Static Assets (src/atlas-assets.ts). ATLAS_ORIGIN = rollback to the Pages proxy
+# (src/atlas-proxy.ts) while the Pages project still exists; delete both lines' fallback once Pages is retired.
+ATLAS_SOURCE = "assets"
+ATLAS_ORIGIN = "https://commonworld.pages.dev"
+# Google Analytics 4 (same property as the Atlas). Loaded only after the visitor clicks Accept in the cookie banner.
+GA4_ID = "G-9QB65R36K6"
+# Cloudflare Web Analytics (cookieless beacon): set CF_BEACON_TOKEN = "<site token>" here when the site is created
+# in the dashboard (owner go-ahead). Unset = no beacon tag and no cloudflareinsights.com in the CSP.
+
+[env.production.assets]
+directory = "./.atlas-dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
+html_handling = "auto-trailing-slash"
+run_worker_first = [
+  "/*",
+  "!/atlas/assets/*", "!/atlas/og/*", "!/atlas/screens/*", "!/atlas/badge/*", "!/atlas/data/*",
+  "!/atlas/platforms/*.json", "!/atlas/categories/*.json", "!/atlas/*.json", "!/atlas/*.txt", "!/atlas/*.xml",
+  "!/atlas/decisions/index.md", "!/atlas/events.md", "!/stats.json", "!/stats/index.md", "!/api/*", "!/.well-known/*",
+]
+
+[env.production.triggers]
+crons = ["17 3 * * *", "7 * * * *", "0 3 * * *", "30 4 * * 1"]
+
+# Measured SSR renders take ~3–6 ms CPU at staging size and ~6–11 ms at 10k posts (work/cfcost); 100 ms is ~10x the
+# heaviest page, leaves room for llms-full.txt / OpenAPI generation and the nightly cron (D1 waits are not CPU), and
+# still stops a runaway request early. Requires Workers Paid (on Free the deploy fails with code 100328).
+[env.production.limits]
+cpu_ms = 100
+
+[env.production.observability]
+enabled = true
+[env.production.observability.logs]
+invocation_logs = false
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "commonworld-prod"
+database_id = "f61f88d5-f888-4b9f-8b1a-8f20a81d2ce5"
+migrations_dir = "migrations"
+
+# D1 backups (src/backup.ts): production's own private R2 bucket commonworld-backups (WEUR, lifecycle: objects deleted
+# after 35 days, unfinished multipart uploads aborted by the bucket's multipart rule, Cloudflare default 7 days), keys under prod/. Only production binds it.
+[[env.production.r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "commonworld-backups"
+
+# Secrets (never in this file): KEY_PEPPER — set per environment with
+#   npx wrangler secret put KEY_PEPPER --env staging
+# For local dev put it in .dev.vars (gitignored); see .dev.vars.example.

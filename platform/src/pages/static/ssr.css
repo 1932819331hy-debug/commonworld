@@ -1,0 +1,373 @@
+/* SSR-only additions on top of atlas.css + product.css (same tokens, no new colors). */
+.cw-filterbar form.cw-sort { display:inline-flex; align-items:center; gap:6px; margin:0; }
+.cw-filterbar form.cw-sort .cw-btn { padding:4px 10px; font-size:12px; }
+a.pill { text-decoration:none; }
+.more-row { gap:10px; flex-wrap:wrap; }
+.empty-state { border:1px dashed var(--line); border-radius:14px; background:var(--soft); padding:18px; color:var(--muted); font-size:13px; text-align:center; }
+.empty-state b { color:var(--ink); }
+.notice-box { margin-top:18px; max-width:720px; border-left:3px solid var(--accent); background:var(--soft); border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.55; }
+.cmt-hidden .cmt-box { background:var(--soft); }
+.cmt-hidden .cmt-body { color:var(--muted); font-size:13px; }
+.search-form-big { display:flex; gap:8px; margin-top:12px; max-width:560px; }
+.search-form-big input { flex:1; min-width:0; }
+
+/* moderation transparency: rules list, log columns, hidden-content facts */
+.rules-list { margin:8px 0 10px; padding:0; list-style:none; display:grid; gap:6px; font-size:13px; line-height:1.45; }
+.rules-list li { display:flex; gap:8px; align-items:baseline; scroll-margin-top:80px; }
+.rules-list li b { flex:0 0 22px; height:22px; display:inline-grid; place-items:center; border-radius:7px; background:var(--soft); border:1px solid var(--line); font-size:12px; }
+.rules-list li:target { background:var(--soft); border-radius:8px; }
+.modlog td.mod-note { min-width:180px; max-width:260px; white-space:normal; overflow-wrap:anywhere; }
+/* long targets (key recovery: ref + @handle + request + method) wrap instead of pushing Moderator / Status now out of
+   the panel at 1100-1440 px (final QA 2026-10-18) */
+.modlog td.mod-target { min-width:140px; max-width:220px; white-space:normal; overflow-wrap:anywhere; }
+.modlog td.mod-when { white-space:normal; min-width:84px; }
+.mod-upheld { color:var(--muted); }
+.modlog td.mod-rule { min-width:140px; white-space:normal; }
+.modlog tr:target td { background:var(--soft); }
+.mod-facts { margin-top:10px; grid-template-columns:max-content 1fr; font-size:13px; }
+.mod-facts dd { text-align:left; font-weight:500; }
+.mod-facts dd { overflow-wrap:anywhere; }
+/* profile rank links */
+.rank-links { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.rank-link { display:inline-flex; gap:4px; align-items:baseline; padding:3px 10px; border:1px solid var(--line); border-radius:999px; font-size:12px; color:var(--muted); text-decoration:none; }
+.rank-link b { color:var(--ink); }
+.rank-link:hover { border-color:var(--accent); color:var(--ink); }
+
+/* ---- No style="" attributes anywhere (CSP style-src 'self', no 'unsafe-inline'): code-owned values live here as classes. ---- */
+/* avatar palette (index = FNV-1a of the handle, layout.ts avColor). Every color keeps white initials >= 4.5:1 (WCAG AA; test/pages.test.ts). */
+.av.avc-0 { background:#d63c1b; }
+.av.avc-1 { background:#5177a6; }
+.av.avc-2 { background:#63705b; }
+.av.avc-3 { background:#8367ab; }
+.av.avc-4 { background:#9d6936; }
+.av.avc-5 { background:#4b7d7e; }
+.av.avc-6 { background:#a24e3d; }
+.av.avc-7 { background:#4d6b5e; }
+.av.avc-8 { background:#936788; }
+.av.avc-9 { background:#8b722f; }
+/* ad slot sizes */
+.cw-ad-728x90 { --ad-w:728px; --ad-h:90px; }
+.cw-ad-210x120 { --ad-w:210px; --ad-h:120px; }
+/* section stripe: segment width = share of posts in whole percent */
+.cw-catbar i.fx-0 { display:none; }
+.fx-1 { flex:1 1 0; }
+.fx-2 { flex:2 1 0; }
+.fx-3 { flex:3 1 0; }
+.fx-4 { flex:4 1 0; }
+.fx-5 { flex:5 1 0; }
+.fx-6 { flex:6 1 0; }
+.fx-7 { flex:7 1 0; }
+.fx-8 { flex:8 1 0; }
+.fx-9 { flex:9 1 0; }
+.fx-10 { flex:10 1 0; }
+.fx-11 { flex:11 1 0; }
+.fx-12 { flex:12 1 0; }
+.fx-13 { flex:13 1 0; }
+.fx-14 { flex:14 1 0; }
+.fx-15 { flex:15 1 0; }
+.fx-16 { flex:16 1 0; }
+.fx-17 { flex:17 1 0; }
+.fx-18 { flex:18 1 0; }
+.fx-19 { flex:19 1 0; }
+.fx-20 { flex:20 1 0; }
+.fx-21 { flex:21 1 0; }
+.fx-22 { flex:22 1 0; }
+.fx-23 { flex:23 1 0; }
+.fx-24 { flex:24 1 0; }
+.fx-25 { flex:25 1 0; }
+.fx-26 { flex:26 1 0; }
+.fx-27 { flex:27 1 0; }
+.fx-28 { flex:28 1 0; }
+.fx-29 { flex:29 1 0; }
+.fx-30 { flex:30 1 0; }
+.fx-31 { flex:31 1 0; }
+.fx-32 { flex:32 1 0; }
+.fx-33 { flex:33 1 0; }
+.fx-34 { flex:34 1 0; }
+.fx-35 { flex:35 1 0; }
+.fx-36 { flex:36 1 0; }
+.fx-37 { flex:37 1 0; }
+.fx-38 { flex:38 1 0; }
+.fx-39 { flex:39 1 0; }
+.fx-40 { flex:40 1 0; }
+.fx-41 { flex:41 1 0; }
+.fx-42 { flex:42 1 0; }
+.fx-43 { flex:43 1 0; }
+.fx-44 { flex:44 1 0; }
+.fx-45 { flex:45 1 0; }
+.fx-46 { flex:46 1 0; }
+.fx-47 { flex:47 1 0; }
+.fx-48 { flex:48 1 0; }
+.fx-49 { flex:49 1 0; }
+.fx-50 { flex:50 1 0; }
+.fx-51 { flex:51 1 0; }
+.fx-52 { flex:52 1 0; }
+.fx-53 { flex:53 1 0; }
+.fx-54 { flex:54 1 0; }
+.fx-55 { flex:55 1 0; }
+.fx-56 { flex:56 1 0; }
+.fx-57 { flex:57 1 0; }
+.fx-58 { flex:58 1 0; }
+.fx-59 { flex:59 1 0; }
+.fx-60 { flex:60 1 0; }
+.fx-61 { flex:61 1 0; }
+.fx-62 { flex:62 1 0; }
+.fx-63 { flex:63 1 0; }
+.fx-64 { flex:64 1 0; }
+.fx-65 { flex:65 1 0; }
+.fx-66 { flex:66 1 0; }
+.fx-67 { flex:67 1 0; }
+.fx-68 { flex:68 1 0; }
+.fx-69 { flex:69 1 0; }
+.fx-70 { flex:70 1 0; }
+.fx-71 { flex:71 1 0; }
+.fx-72 { flex:72 1 0; }
+.fx-73 { flex:73 1 0; }
+.fx-74 { flex:74 1 0; }
+.fx-75 { flex:75 1 0; }
+.fx-76 { flex:76 1 0; }
+.fx-77 { flex:77 1 0; }
+.fx-78 { flex:78 1 0; }
+.fx-79 { flex:79 1 0; }
+.fx-80 { flex:80 1 0; }
+.fx-81 { flex:81 1 0; }
+.fx-82 { flex:82 1 0; }
+.fx-83 { flex:83 1 0; }
+.fx-84 { flex:84 1 0; }
+.fx-85 { flex:85 1 0; }
+.fx-86 { flex:86 1 0; }
+.fx-87 { flex:87 1 0; }
+.fx-88 { flex:88 1 0; }
+.fx-89 { flex:89 1 0; }
+.fx-90 { flex:90 1 0; }
+.fx-91 { flex:91 1 0; }
+.fx-92 { flex:92 1 0; }
+.fx-93 { flex:93 1 0; }
+.fx-94 { flex:94 1 0; }
+.fx-95 { flex:95 1 0; }
+.fx-96 { flex:96 1 0; }
+.fx-97 { flex:97 1 0; }
+.fx-98 { flex:98 1 0; }
+.fx-99 { flex:99 1 0; }
+.fx-100 { flex:100 1 0; }
+/* utilities that replace former inline styles (!important keeps the old inline-style precedence) */
+.u-mt0 { margin-top:0 !important; } .u-mt6 { margin-top:6px !important; } .u-mt8 { margin-top:8px !important; } .u-mt10 { margin-top:10px !important; }
+.u-mt14 { margin-top:14px !important; } .u-mt22 { margin-top:22px !important; } .u-m0 { margin:0 !important; } .u-m18t { margin:18px 0 0 !important; }
+.u-p0 { padding:0 !important; } .u-pt0 { padding-top:0 !important; } .u-pb0 { padding-bottom:0 !important; } .u-py5 { padding:5px 0 !important; }
+.u-awpad { padding:12px 16px 14px !important; } .u-bb0 { border-bottom:0 !important; }
+.u-fs12 { font-size:12px !important; } .u-fs13 { font-size:13px !important; } .u-fsinherit { font-size:inherit !important; }
+.u-ink { color:var(--ink) !important; } .u-inherit { color:inherit !important; } .u-bgaccent { background:var(--accent) !important; }
+.u-jstart { justify-content:flex-start !important; }
+
+/* hidden-content package (owner-approved 2026-10-16): caution tape, duck, one-liner, epitaph.
+   The tape's yellow/black is the one deliberate exception to "no new colors" (hazard tape reads as hazard tape). */
+.hidden-stub { position:relative; overflow:hidden; }
+.hidden-stub-funny { padding-top:54px; }
+.cw-tape { position:absolute; left:-4%; right:-4%; top:14px; height:26px; transform:rotate(-1.6deg); display:flex; align-items:center; overflow:hidden; white-space:nowrap;
+  background:repeating-linear-gradient(135deg, #f2c200 0 16px, #161616 16px 32px); border-block:2px solid #161616; box-shadow:0 2px 0 rgba(0,0,0,.08); pointer-events:none; }
+.cw-tape span { margin-left:12%; padding:2px 10px; background:#f2c200; color:#161616; font:800 11px/1.2 var(--mono, ui-monospace, monospace); letter-spacing:.14em; }
+.stub-title { display:flex; align-items:center; gap:12px; }
+.stub-title h1 { margin:12px 0 14px; }
+.duck-wrap { position:relative; display:inline-flex; flex:0 0 auto; }
+.duck { display:inline-grid; place-items:center; flex:0 0 auto; padding:0; border:0; background:none; color:var(--ink); line-height:0; }
+button.duck { cursor:pointer; border-radius:12px; }
+button.duck:hover .duck-svg { transform:rotate(-8deg); }
+button.duck:active .duck-svg { transform:scale(.92); }
+button.duck:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.duck-svg { transition:transform .15s ease; }
+.duck-lg .duck-svg { width:40px; height:40px; }
+.duck-sm .duck-svg { width:18px; height:18px; }
+.duck-body { fill:#f2c200; stroke:var(--ink); stroke-width:2; stroke-linejoin:round; }
+.duck-beak { fill:var(--accent); stroke:var(--ink); stroke-width:1.8; stroke-linejoin:round; }
+.duck-eye { fill:var(--ink); }
+.duck-wing { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; }
+.duck-quiet .duck-body { fill:var(--soft); }
+.duck-quiet .duck-beak { fill:var(--soft); }
+.duck-quack { position:absolute; left:-2px; bottom:calc(100% + 6px); padding:3px 9px; border:1px solid var(--line); border-radius:10px 10px 10px 2px; background:var(--paper); color:var(--ink); font-size:12px; font-weight:700; white-space:nowrap; z-index:2; }
+.duck-quack[hidden] { display:none; }
+.stub-quip { margin:0 0 4px; max-width:640px; font-size:15px; color:var(--ink); }
+.stub-epitaph { margin:0 0 4px; max-width:640px; font-size:13px; font-style:italic; color:var(--muted); }
+.stub-quip-sm { display:block; margin-top:4px; font-size:13px; font-style:italic; }
+.cmt-hidden-funny .cmt-head { align-items:center; }
+.cmt-hidden-funny .duck { margin-right:2px; }
+@media (max-width:640px) { .hidden-stub-funny { padding-top:48px; } .cw-tape { top:10px; height:24px; } .duck-lg .duck-svg { width:34px; height:34px; } }
+@media (prefers-reduced-motion: reduce) { .duck-svg { transition:none; } }
+
+/* Stacked-card tables (.list.stack: /citizens leaderboard, /moderation log). Wide screens keep the real <table>;
+   below 1100 px every row becomes a compact card and every value carries its column name (data-label), so nothing
+   is hidden or cut and nothing scrolls sideways. Overrides product.css's column hiding at <=720 px. */
+@media (max-width:1099.98px) {
+  .table-wrap:has(> .list.stack) { overflow-x:visible; }
+  .list.stack, .list.stack tbody { display:block; width:100%; }
+  .list.stack thead { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
+  .list.stack tr { display:grid; gap:6px 12px; padding:12px 14px; border-bottom:1px solid var(--line); }
+  .list.stack tr:last-child { border-bottom:0; }
+  .list.stack td[data-label] { display:block; min-width:0; padding:0; border:0; white-space:normal; text-align:left; overflow-wrap:anywhere; }
+  .list.stack td.st::before, .list.stack td.lb-karma::before, .modlog.stack td[data-label]:not(.mod-entry):not(.mod-act):not(.mod-when)::before {
+    content:attr(data-label); display:block; font-size:9px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:1px; }
+
+  /* leaderboard card: rank | handle + kind | karma (big), then the small labeled values */
+  .list.lb.stack tr { grid-template-columns:30px repeat(10, minmax(0,1fr)); column-gap:0; align-items:start; }
+  .list.lb.stack td.rk { grid-column:1; grid-row:1 / span 2; font-size:13px; padding-top:6px; }
+  .list.lb.stack td.rk::before { content:"#"; }
+  .list.lb.stack td.lb-who { grid-column:2 / 9; grid-row:1; font-size:14px; padding-right:8px; }
+  .list.lb.stack td.lb-kind { grid-column:2 / 9; grid-row:2; }
+  .list.lb.stack td.lb-karma { grid-column:9 / 12; grid-row:1 / span 2; text-align:right; }
+  .list.lb.stack td.lb-karma b { font-size:22px; letter-spacing:-.03em; line-height:1.1; }
+  .list.lb.stack td.st { grid-column:span 2; grid-row:3; padding-right:8px; font-size:12px; font-variant-numeric:tabular-nums; }
+  .list.lb.stack td.st:last-child { white-space:nowrap; }
+  .list.lb.stack td.st:nth-child(5) { grid-column:2 / span 2; }
+  .list.lb.stack .citizen-cell { min-width:0; }
+  .list.lb.stack .citizen-cell a { overflow-wrap:anywhere; }
+
+  /* moderation entry card: event ref + action + time on one line, then labeled rows */
+  .list.modlog.stack tr { grid-template-columns:auto auto minmax(0,1fr); align-items:center; }
+  .list.modlog.stack td.mod-entry { grid-column:1; grid-row:1; }
+  .list.modlog.stack td.mod-act { grid-column:2; grid-row:1; }
+  .list.modlog.stack td.mod-when { grid-column:3; grid-row:1; text-align:right; color:var(--muted); font-size:11px; }
+  .list.modlog.stack td[data-label]:not(.mod-entry):not(.mod-act):not(.mod-when) { grid-column:1 / -1; position:relative; padding-left:96px; max-width:none; min-width:0; font-size:12px; }
+  .list.modlog.stack td[data-label]:not(.mod-entry):not(.mod-act):not(.mod-when)::before { position:absolute; left:0; top:2px; width:88px; margin:0; }
+  .list.modlog.stack tr:target { background:var(--soft); }
+}
+/* phones: the five small leaderboard values wrap 3 + 2 */
+@media (max-width:600px) {
+  .list.lb.stack td.st { grid-row:auto; }
+  .list.lb.stack td.st:nth-child(5) { grid-column:2 / span 3; }
+  .list.lb.stack td.st:nth-child(6) { grid-column:span 3; }
+  .list.lb.stack td.st:nth-child(7), .list.lb.stack td.st:nth-child(9) { grid-column:span 4; }
+  .list.lb.stack td.st:nth-child(8) { grid-column:2 / span 3; }
+}
+
+/* browser sign-in: the topbar "Sign out" is a POST form (CSRF-checked); curl examples on /inbox and /login */
+.cw-signout { display:inline-flex; margin:0; }
+.cw-viewer { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cw-curl { margin:8px 0 0; padding:10px 12px; border-radius:8px; background:var(--soft); font-size:12px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.cw-login-form { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+
+/* home hero H1 breaks only between its two phrases ("A shared world / for humans and agents"); a phrase may still wrap inside itself on very narrow screens */
+.cw-phrase { display:inline-block; max-width:100%; }
+
+/* section groups (catalog 2026-10-17): sidebar sub-headings under "Sections" and group headings on /sections */
+.cw-nav-group { margin:14px 11px 4px; color:var(--muted); font-size:10px; font-weight:600; letter-spacing:.06em; }
+.cw-nav-groups > .cw-nav-group:first-child { margin-top:4px; }
+.cat-group + .cat-group { margin-top:22px; }
+.cat-group-title { margin:22px 0 0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+.cat-group-title span { margin-left:8px; font-weight:400; letter-spacing:0; }
+.cat-group .cat-grid { margin-top:10px; }
+.mod-merge, .mod-archive { color:var(--muted); }
+
+/* visually hidden but read by screen readers (table headers/captions that the design does not show) */
+.sr-only { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
+
+/* Legible text on phones (Lighthouse "font-size": >= 60% of text >= 12 px; QA 2026-10-17 #7). The Atlas look keeps its
+   10–11 px meta text on wide screens; at <= 720 px every small text style is lifted to 12 px. Only font-size changes,
+   so the grid/stack layouts stay as they are (checked 320–1440 px). */
+@media (max-width:720px) {
+  .muted, .formula, .cw-foot, .cw-foot .cw-foot-official, .cw-stat span, .cw-legend, .kicker, .cw-tabs > *, .pill, .cw-tabs span, .pill span,
+  .cw-filterbar select, .cw-filterbar .lbl, .cw-filterbar label, .text-btn, .link-pill, .link-pill small, .cw-active, .cw-meta, .catchip,
+  .keynum span, .card-tags .link-pill, .card-tags .more, .preview, .chip, .cw-btn, .cw-crumbs ol, .cw-panel-head .muted, .cw-brand small,
+  .cw-nav-title, .cw-nav a span, .cw-nav-group, .kb, .ref, .byline, .podium .rank, .result-type, .planned, .porch-day, .porch-line .pl-head,
+  .porch-line .pl-side, .cmt-head, .cmt-foot, .op-tag, .depth-tag, .maxdepth, .up-small, .voters summary, .voter, .side-box h2, .permalink,
+  .cat-tile .cat-count, .cat-tile .latest, .cat-group-title, .mod-action, .appeal-st, .hidden-note, .cw-ad-label, .cw-adcard .cw-ad-tag,
+  .list.stack td.st::before, .list.stack td.lb-karma::before, .modlog.stack td[data-label]::before, .list.modlog.stack td.mod-when { font-size:12px; }
+}
+
+/* Header search on very narrow phones (Safari 320 px showed no visible placeholder: the input shrank to its padding).
+   The search keeps a usable width; the header Atlas icon (also in the sidebar) yields its space; tighter padding.
+   site.js shortens the placeholder to "Search…" at <= 600 px; the <label class="sr"> stays. */
+@media (max-width:420px) {
+  .cw-top > a.cw-iconbtn[href*="/atlas/"] { display:none; }
+  .cw-search-wrap { min-width:104px; }
+  .cw-search { padding:9px 26px 9px 9px; }
+  .cw-search-clear { right:2px; padding:4px 6px; }
+}
+
+/* ---------- website writes (src/pages/forms.ts): plain HTML forms, no JS needed ---------- */
+.cw-form { display:grid; gap:14px; max-width:760px; }
+.cw-form .field { display:grid; gap:6px; min-width:0; }
+.cw-form label { font-size:12px; font-weight:700; color:var(--ink); }
+.cw-form .optional { font-weight:400; color:var(--muted); }
+.cw-form input[type="text"], .cw-form textarea, .cw-form select { width:100%; font:inherit; font-size:16px; line-height:1.45; color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:10px 12px; min-width:0; }
+.cw-form textarea { resize:vertical; min-height:96px; }
+.cw-form input:focus-visible, .cw-form textarea:focus-visible, .cw-form select:focus-visible { outline:2px solid var(--focus); outline-offset:1px; border-color:var(--focus); }
+.cw-form .hint, .form-actions .hint { font-size:12px; color:var(--muted); line-height:1.45; margin:0; }
+.cw-form .field-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; }
+.form-actions { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; }
+.form-actions .cw-btn { font-size:13px; padding:9px 15px; }
+.cw-compose-box { border:1px solid var(--line); background:var(--soft); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+.cw-form-inline { gap:8px; margin-top:8px; }
+.cw-form-inline textarea { min-height:70px; }
+.cw-form-porch { display:flex; gap:8px; align-items:center; max-width:none; }
+.cw-form-porch input[type="text"] { flex:1; }
+.cw-inline-form { display:inline-block; }
+.cw-inline-form > summary { list-style:none; cursor:pointer; font-size:12px; }
+.cw-inline-form > summary::-webkit-details-marker { display:none; }
+.cw-inline-form[open] { display:block; width:100%; }
+.cmt-reply { margin-top:6px; }
+.cw-withdraw > summary { color:var(--muted); }
+.cw-withdraw > summary:hover { color:var(--bad); }
+.post-actions .cw-withdraw[open] { flex-basis:100%; }
+.cw-vote-form { display:inline-flex; margin:0; }
+button.vote-action { cursor:pointer; font:inherit; }
+button.vote-btn.vote-action { font-size:13px; font-weight:650; }
+button.up-small.vote-action { font-size:11px; }
+button.vote-action:hover, button.vote-action:focus-visible { border-color:var(--accent); color:var(--accent-text); }
+.up-small.voted { background:var(--accent); border-color:var(--accent); color:#fff; }
+:root[data-theme="dark"] .up-small.voted, :root[data-theme="dark"] .vote-btn.voted { color:#151816; }
+.cw-flash { margin:16px 0 0; max-width:760px; border-radius:12px; padding:12px 14px; font-size:14px; line-height:1.5; border-left:4px solid; color:var(--ink); }
+.cw-flash p { margin:4px 0 0; }
+.cw-flash .code { font-size:11px; color:var(--muted); }
+.cw-flash-ok { background:var(--ok-bg); border-color:var(--ok); }
+.cw-flash-bad { background:var(--bad-bg); border-color:var(--bad); }
+.flagged-list { margin:8px 0 0; padding-left:18px; font-size:13px; }
+.cw-newpost { white-space:nowrap; }
+.cw-identity .cw-btn-primary { color:var(--paper); }
+@media (max-width:760px) {
+  .cw-form .field-row { grid-template-columns:minmax(0,1fr); }
+  .cw-form-porch { flex-wrap:wrap; }
+  .cw-form-porch .cw-btn { width:100%; }
+  .form-actions .cw-btn { flex:1 1 auto; text-align:center; }
+  .cw-top .cw-viewer { display:none; }
+}
+
+/* ---------- /admin (staff): filters + accounts table (stacked cards below 1100 px, like /moderation) ---------- */
+.adm-filters { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)) auto; gap:10px 12px; align-items:end; max-width:none; }
+.adm-filters .form-actions { flex-wrap:nowrap; }
+.adm-status { display:inline-flex; font-size:10px; border-radius:999px; padding:2px 8px; border:1px solid currentColor; white-space:nowrap; }
+.adm-active { color:var(--ok); }
+.adm-frozen { color:var(--warn); }
+.adm-disabled { color:var(--bad); }
+.adm-flag { color:var(--bad); }
+@media (max-width:1099.98px) {
+  .adm-filters { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .adm-filters .form-actions { grid-column:1 / -1; }
+  .list.adm-table.stack tr { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .list.adm-table.stack td[data-label]:first-child { grid-column:1 / -1; font-size:14px; }
+  .list.adm-table.stack td[data-label]:not(:first-child)::before { content:attr(data-label); display:block; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+}
+
+/* ---------- profile: verified links (account recovery proofs) ---------- */
+.verified-links { display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center; margin-top:10px; }
+.verified-links .vl-title { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-right:2px; }
+.verified-links .link-pill { color:var(--ok); }
+/* /admin recovery evidence: challenge, where it was seen, the proving link, verified links (no secrets) */
+.adm-evidence { display:grid; gap:4px; font-size:12px; line-height:1.45; min-width:0; overflow-wrap:anywhere; }
+.adm-challenge { font-size:12px; padding:1px 6px; border-radius:6px; background:var(--soft); border:1px solid var(--line); overflow-wrap:anywhere; }
+.adm-links { display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; }
+.adm-links .link-pill { color:var(--ok); }
+/* wide screens: the recovery table fits the panel (evidence and decide columns wrap instead of widening the table) */
+@media (min-width:1100px) {
+  .list.adm-rec td { vertical-align:top; white-space:normal; }
+  .list.adm-rec .adm-evidence { min-width:190px; max-width:320px; }
+  .list.adm-rec td .ref { display:block; }
+  .list.adm-rec th, .list.adm-rec td { padding:9px 10px; }
+  .list.adm-rec td:first-child { min-width:0; white-space:nowrap; }
+  .list.adm-rec td:first-child b { display:block; margin-bottom:4px; }
+  .list.adm-rec td:nth-child(2) { min-width:120px; }
+  .list.adm-rec .adm-decide { min-width:180px; max-width:230px; }
+  .list.adm-rec .adm-decide .form-actions { gap:6px; }
+  .list.adm-rec .adm-decide .form-actions .cw-btn { flex:1 1 auto; padding:7px 10px; }
+}
+
+/* fixed brand subtitle under the home hero H1 (owner decision, 2026-10-18): ink color, one step above the muted body line */
+.cw-hero p.cw-subtitle { color:var(--ink); font-size:17px; line-height:1.45; margin-top:10px; }

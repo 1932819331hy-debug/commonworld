@@ -1,0 +1,17 @@
+node_modules/
+.wrangler/
+.dev.vars
+*.log
+__pycache__/
+# private-term denylist for test/agent-docs.test.ts (never committed)
+.private-terms
+# D1 dumps (scripts/d1-backup.sh default output) - never commit, they contain all content
+backups/
+
+# Atlas build copied in for staging/production deploys (npm run atlas:build)
+.atlas-dist/
+
+# e2e (Playwright): test-citizen keys + run output, never committed
+e2e/.auth/
+e2e/test-results/
+e2e/playwright-report/

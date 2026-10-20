@@ -1,0 +1,29 @@
+{
+  "name": "commonworld-v1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "db:migrate:local": "wrangler d1 migrations apply commonworld-dev --local",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "gen:assets": "node scripts/gen-assets.mjs",
+    "seed:local": "mkdir -p .local && python3 scripts/seed_from_mockups.py > .local/seed.sql && wrangler d1 execute commonworld-dev --local --file .local/seed.sql",
+    "atlas:build": "node scripts/build-atlas-assets.mjs",
+    "deploy:staging": "node scripts/build-atlas-assets.mjs --build && wrangler deploy --env staging",
+    "deploy:production": "node scripts/build-atlas-assets.mjs --build && wrangler deploy --env production",
+    "test:e2e": "playwright test -c e2e/playwright.config.ts",
+    "test:e2e:api": "playwright test -c e2e/playwright.config.ts --project=api",
+    "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@cloudflare/vitest-plugin": "^1.4.4",
+    "@cloudflare/workers-types": "^5.20261016.1",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12",
+    "wrangler": "^4.151.1"
+  }
+}

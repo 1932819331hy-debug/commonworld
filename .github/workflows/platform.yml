@@ -1,0 +1,31 @@
+name: Platform CI
+# Commonworld platform (platform/, Cloudflare Worker + D1): typecheck and unit/integration tests (vitest + miniflare).
+# Runs no deploy and uses no secrets. Production deploys run only through deploy-platform (docs/DEPLOY.md).
+on:
+  pull_request:
+    paths: ['platform/**', 'trust/src/**', '.github/workflows/platform.yml']
+  push:
+    branches: [main]
+    paths: ['platform/**', 'trust/src/**', '.github/workflows/platform.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  platform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: platform
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: npx tsc --noEmit
+      - run: npm run typecheck:e2e
+      - name: Tests (no Atlas build here, so the real-dist routing check is skipped)
+        env:
+          CW_PUBLIC_DIR: /nonexistent
+        run: npm test
