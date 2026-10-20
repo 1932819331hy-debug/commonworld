@@ -16,7 +16,11 @@ function privateTerms(): string {
 /** File list of a real Atlas build, when one is built in this repository (atlas/site/dist at the repo root, or $CW_PUBLIC_DIR): test/atlas-assets.test.ts checks the routing split against it. */
 function atlasDistFiles(): string {
   const dir = path.resolve(process.env.CW_PUBLIC_DIR ?? path.join(import.meta.dirname, '..'), 'atlas', 'site', 'dist');
-  if (!fs.existsSync(path.join(dir, 'atlas', 'index.html'))) return '';
+  if (!fs.existsSync(path.join(dir, 'atlas', 'index.html'))) {
+    // CI and the deploy run set CW_REQUIRE_ATLAS_DIST=1: the routing check must never be skipped there
+    if (process.env.CW_REQUIRE_ATLAS_DIST === '1') throw new Error(`CW_REQUIRE_ATLAS_DIST=1 but no Atlas build at ${dir}`);
+    return '';
+  }
   const out: string[] = [];
   const walk = (d: string) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else out.push('/' + path.relative(dir, p).split(path.sep).join('/')); } };
   walk(dir);

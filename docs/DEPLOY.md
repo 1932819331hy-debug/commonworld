@@ -129,6 +129,50 @@ database is used by the code that is running now. Rules:
 
 The scanner runs in CI too (report only), and its unit tests are `tests/test_check_migrations.py`.
 
+## First production deploy (cutover from Cloudflare Pages)
+
+Until the first deploy `commonworld.one` and `www` are Custom Domains of the Pages project `commonworld`, served
+through two proxied DNS records `CNAME commonworld.one → commonworld.pages.dev` and `CNAME www → commonworld.pages.dev`.
+The Worker `commonworld-api` takes both over (`routes` in `[env.production]`). A Worker Custom Domain cannot be created
+on a hostname that still has a CNAME, so the DNS records go first. All steps by the owner, in this order:
+
+1. **Secret.** `KEY_PEPPER` on the Worker `commonworld-api` (random, at least 32 characters), in `platform/`:
+   `openssl rand -hex 32 | npx wrangler secret put KEY_PEPPER --env production`. The value is never shown, stored or
+   sent anywhere else. If the Worker does not exist yet, wrangler offers to create it: say yes. That creates and
+   deploys an **empty placeholder version** (a bare `fetch()`, no routes, so nothing public changes). It is **not** a
+   recovery point: the deploy run's summary may list it as "Production version before this deploy"; never roll back
+   to it, the recovery for the first deploy is step 5 below.
+2. **Write down what you will restore.**
+   1. The two DNS records (Cloudflare → `commonworld.one` zone → DNS → Records): name, target `commonworld.pages.dev`,
+      Proxied. They are also in the ops DNS backup of 2026-10-16.
+   2. Where today's `www` → apex `301` comes from. Pages does not do it (`functions/_middleware.js` only adds the CSP
+      nonce, `_redirects` only has the Privacy/Terms moves), so it is a Cloudflare rule: zone → Rules → Redirect Rules,
+      or account → Bulk Redirects. Note its name and **leave it on**: it keeps working for the Worker (a redirect rule
+      answers before the Worker, the Worker's own redirect is then never reached) and for the way back in step 5.
+      If no such rule exists, create one before the cutover so the fallback has a `www` redirect too: Redirect Rules →
+      Create rule (custom, not the *Redirect from WWW to root* template, which matches every `www.*` host) → when
+      `Hostname equals www.commonworld.one` → Dynamic, `concat("https://commonworld.one", http.request.uri.path)`,
+      301, preserve query string. Exactly that host, like the Worker's own redirect.
+3. **Cut over (site down from here until step 4 passes, a few minutes):**
+   1. DNS → delete the `CNAME commonworld.one` and `CNAME www` records.
+   2. Workers & Pages → `commonworld` (Pages) → Custom domains → remove `commonworld.one` and `www.commonworld.one`.
+4. **Deploy.** Actions → *Deploy platform (production)* → the `main` sha, `allow_destructive_migration` empty →
+   approve. `wrangler deploy` creates both Custom Domains with their DNS records and certificates. The smoke test
+   checks `/`, `/health` (`"environment":"production"`), `/api/v1/index.json`, `/robots.txt`, `/sitemap.xml`,
+   `/atlas/sitemap.xml`, the IndexNow key file and `www` → `301` apex.
+5. **If the deploy or the smoke test fails** (whether or not the Worker went live), go back to Pages:
+   1. Workers & Pages → `commonworld-api` → Settings → Domains & Routes → remove both Custom Domains (this also
+      removes the DNS records the Worker created).
+   2. DNS → add the two records from step 2 again (`CNAME`, target `commonworld.pages.dev`, Proxied).
+   3. Workers & Pages → `commonworld` (Pages) → Custom domains → add `commonworld.one` and `www.commonworld.one`;
+      wait until both are Active.
+   4. Check: `curl -sI https://commonworld.one/atlas/` → `200` with `server: cloudflare` and no `/health` JSON from
+      the Worker (`curl -s https://commonworld.one/health` is the Pages 404 page), `curl -sI https://www.commonworld.one/`
+      → `301` to the apex (the redirect rule from step 2.2). Then read the failed run's log and fix before trying again.
+6. **After a green run:** first admin (account through the API, role by one SQL line on `commonworld-prod`),
+   `GET /v1/admin/backups`, uptime monitor, WAF / rate limits, billing alerts, Search Console (sitemaps, indexing)
+   and Bing Webmaster. The Pages project stays (not deleted) as the fallback.
+
 ## Rollback
 
 - **Code:** every run prints the production version that was live **before** it (step *Production version before

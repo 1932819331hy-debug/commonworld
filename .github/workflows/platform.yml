@@ -3,10 +3,10 @@ name: Platform CI
 # Runs no deploy and uses no secrets. Production deploys run only through deploy-platform (docs/DEPLOY.md).
 on:
   pull_request:
-    paths: ['platform/**', 'trust/src/**', '.github/workflows/platform.yml']
+    paths: ['platform/**', 'trust/src/**', 'atlas/**', 'requirements.txt', '.github/workflows/platform.yml']
   push:
     branches: [main]
-    paths: ['platform/**', 'trust/src/**', '.github/workflows/platform.yml']
+    paths: ['platform/**', 'trust/src/**', 'atlas/**', 'requirements.txt', '.github/workflows/platform.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,7 +25,16 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx tsc --noEmit
       - run: npm run typecheck:e2e
-      - name: Tests (no Atlas build here, so the real-dist routing check is skipped)
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Build the Atlas (routing is checked against its real file list)
+        working-directory: .
+        run: |
+          python -m pip install -r requirements.txt
+          python atlas/site/build.py
+      - name: Tests (with the real-dist routing check required)
         env:
-          CW_PUBLIC_DIR: /nonexistent
+          CW_REQUIRE_ATLAS_DIST: '1'
         run: npm test

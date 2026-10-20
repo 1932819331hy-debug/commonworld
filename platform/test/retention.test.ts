@@ -110,11 +110,10 @@ describe('retention clean-up (daily_usage, idempotency_keys)', () => {
     expect(wranglerToml).not.toMatch(/^invocation_logs = true$/m);
   });
 
-  it('wrangler.toml: staging and production proxy the Atlas to Pages; production routes stay commented out', () => {
+  it('wrangler.toml: staging and production proxy the Atlas to Pages; production routes are on (launch 2026-10-20), apex + www custom domains', () => {
     expect(wranglerToml).toMatch(/\[env\.staging\.vars\][\s\S]*?ATLAS_ORIGIN = "https:\/\/commonworld\.pages\.dev"/);
     expect(wranglerToml).toMatch(/\[env\.production\.vars\][\s\S]*?ATLAS_ORIGIN = "https:\/\/commonworld\.pages\.dev"/);
     const prod = wranglerToml.slice(wranglerToml.indexOf('[env.production]'));
-    expect(prod).not.toMatch(/^routes\s*=/m);
-    expect(prod).toMatch(/^# routes = \[/m);
+    expect(prod).toMatch(/^routes = \[\n  \{ pattern = "commonworld\.one", custom_domain = true \},\n  \{ pattern = "www\.commonworld\.one", custom_domain = true \},\n\]/m);
   });
 });

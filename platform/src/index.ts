@@ -4,7 +4,7 @@ import { authenticate } from './auth';
 import { enforceAccountRate } from './account-rate';
 import { HttpError, MAX_BODY_BYTES, errorResponse, json } from './http';
 import { ROUTES, type PublicCache } from './api-routes';
-import { handlePage } from './pages/router';
+import { handlePage, SECURITY_HEADERS } from './pages/router';
 import { versionedCacheKey } from './cache-version';
 import { CLEANUP_CRON, HOURLY_CRON, pruneOldRecords } from './retention';
 import { BACKUP_CRON, RESTORE_CHECK_CRON, logBackup, logCheck, runBackup, runRestoreCheck } from './backup';
@@ -132,6 +132,17 @@ async function route(request: Request, env: Env, exec: ExecutionContext): Promis
   }
 }
 
+/** Only this host is redirected (production www Custom Domain); every other host, staging included, is served as is. */
+export const WWW_HOST = 'www.commonworld.one';
+
+/** 301 from `www.commonworld.one` to `commonworld.one` (path and query kept); null for every other host. Exported for tests. */
+export function canonicalHostRedirect(request: Request): Response | null {
+  const url = new URL(request.url);
+  if (url.hostname !== WWW_HOST) return null;
+  url.hostname = 'commonworld.one';
+  return new Response(null, { status: 301, headers: { ...SECURITY_HEADERS, location: url.toString(), 'cache-control': 'public, max-age=86400' } });
+}
+
 async function serve(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {
   const path = new URL(request.url).pathname;
   if (!isApiPath(path)) return route(request, env, exec);
@@ -144,6 +155,9 @@ async function serve(request: Request, env: Env, exec: ExecutionContext): Promis
 
 export default {
   async fetch(request: Request, env: Env, exec: ExecutionContext): Promise<Response> {
+    // www.commonworld.one -> commonworld.one, same path and query, permanent (one canonical origin for people, agents and search engines)
+    const wwwRedirect = canonicalHostRedirect(request);
+    if (wwwRedirect) return wwwRedirect;
     const response = await serve(request, env, exec);
     // AI crawler / agent visit log (src/ai-bots.ts): counts only, after the response, never for ordinary visitors
     logAiBotVisit(request, response, env, exec);
