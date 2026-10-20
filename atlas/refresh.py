@@ -18,6 +18,11 @@ What it does, per entry of the Atlas snapshot (atlas/data/snapshot-verified-*.js
   3. Domain moved: final URL on another registrable domain than canonical_url -> flagged for human review, nothing changed.
   4. Numbers: only the explicit mappings in atlas/refresh-sources.json. A changed value is a re-observation (new value
      with observed_at in UTC, the previous value appended to claim.history); past records are never rewritten.
+  5. Replication counts: for entries with a `replications` source in atlas/refresh-sources.json, the register's files are
+     read at the newest commit on main whose validator workflow push run succeeded, counted the way that validator counts
+     (atlas/site/replications.py), and written to atlas/data/replications.json with the pinned commit. A record changes only
+     when a count changes; the previous record moves into its history.
+       python3 atlas/refresh.py --replications-only      # step 5 alone (no reachability, no numbers)
 No change at all -> the snapshot and state files are left byte-identical (so the workflow opens no PR).
 Exit code 0 always unless the script itself breaks; findings go to the summary.
 """
@@ -572,6 +577,133 @@ def apply_number(entry, m, val, quote, methods, ts, fields=None):
     return what, old['value']
 
 
+# ------------------------------------------------------------------ replication counts (atlas/site/replications.py)
+GITHUB_API = 'https://api.github.com'
+GITHUB_RAW = 'https://raw.githubusercontent.com'
+MAX_REPL_FILES = 500
+
+
+def _repl_module():
+    sys.path.insert(0, os.path.join(HERE, 'site'))
+    import replications
+    return replications
+
+
+def _get_text(url):
+    last = None
+    for i in range(ATTEMPTS):
+        r = fetch(url, want_body=True)
+        if r['status'] == 200 and r['body'] is not None:
+            return r['body'].decode('utf-8'), None
+        last = r['error'] or f'HTTP {r["status"]}'
+        if r['error'] and ('refused' in r['error'] or 'larger than' in r['error']):
+            break
+        if i < ATTEMPTS - 1:
+            time.sleep(BACKOFF[min(i, len(BACKOFF) - 1)])
+    return None, f'{url}: {last}'
+
+
+def read_replications(cfg, workers=8):
+    """-> (counts+provenance dict, methods, error). cfg: {format, repo, workflow, branch} from atlas/refresh-sources.json.
+    Pins the newest commit on `branch` whose `workflow` push run succeeded, lists entries/ and replications/ at that commit
+    through the GitHub contents API, reads every file (and scripts/validate.ts) from raw.githubusercontent.com at the same
+    sha, and counts with atlas/site/replications.py. Any surprise is an error and nothing is counted."""
+    R = _repl_module()
+    repo, wf, branch = cfg.get('repo', ''), cfg.get('workflow', ''), cfg.get('branch', 'main')
+    if cfg.get('format') not in R.FORMATS or not R.REPO_RE.fullmatch(repo) or not re.fullmatch(r'[A-Za-z0-9._-]{1,100}\.ya?ml', wf) \
+            or not re.fullmatch(r'[A-Za-z0-9._/-]{1,100}', branch):
+        return None, [], 'bad replications config'
+    q = urllib.parse.urlencode({'branch': branch, 'event': 'push', 'status': 'success', 'per_page': 1})
+    runs_url = f'{GITHUB_API}/repos/{repo}/actions/workflows/{wf}/runs?{q}'
+    methods = [f'GET {runs_url}']
+    doc, err = get_json(runs_url)
+    if err:
+        return None, methods, f'{runs_url}: {err}'
+    run = ((doc or {}).get('workflow_runs') or [None])[0] if isinstance(doc, dict) else None
+    sha = (run or {}).get('head_sha') if isinstance(run, dict) else None
+    run_url = (run or {}).get('html_url') if isinstance(run, dict) else None
+    if not isinstance(sha, str) or not R.SHA_RE.fullmatch(sha):
+        return None, methods, f'no successful {wf} push run on {branch}'
+    if not isinstance(run_url, str) or not re.fullmatch(rf'https://github\.com/{re.escape(repo)}/actions/runs/[0-9]{{1,20}}', run_url):
+        return None, methods, 'unexpected run html_url'
+    names = {}
+    for d, pat in (('entries', R.ENTRY_FILE), ('replications', R.ROW_FILE)):
+        u = f'{GITHUB_API}/repos/{repo}/contents/{d}?ref={sha}'
+        methods.append(f'GET {u}')
+        lst, err = get_json(u)
+        if err or not isinstance(lst, list):
+            return None, methods, f'{u}: {err or "not a directory listing"}'
+        files = [x.get('name') for x in lst if isinstance(x, dict) and x.get('type') == 'file']
+        if any(not isinstance(n, str) or not pat.fullmatch(n) for n in files):
+            return None, methods, f'{d}/ holds a file name the validator rejects'
+        names[d] = sorted(files)
+    paths = [f'{d}/{n}' for d in ('entries', 'replications') for n in names[d]] + ['scripts/validate.ts']
+    if len(paths) > MAX_REPL_FILES:
+        return None, methods, f'more than {MAX_REPL_FILES} files'
+    with cf.ThreadPoolExecutor(max_workers=max(1, workers)) as ex:
+        got = dict(zip(paths, ex.map(lambda p: _get_text(f'{GITHUB_RAW}/{repo}/{sha}/{p}'), paths)))
+    bad = [e for _t, e in got.values() if e]
+    if bad:
+        return None, methods, bad[0]
+    methods.append(f'GET {GITHUB_RAW}/{repo}/{sha}/<{len(paths)} files: entries/*.md, replications/*.jsonl, scripts/validate.ts>')
+    try:
+        counts = R.count_agent_errata({p.split('/', 1)[1]: got[p][0] for p in paths if p.startswith('entries/')},
+                                      {p.split('/', 1)[1]: got[p][0] for p in paths if p.startswith('replications/')},
+                                      got['scripts/validate.ts'][0])
+    except R.FormatError as ex:
+        return None, methods, f'format: {ex}'
+    methods.append('counted as scripts/validate.ts counts (atlas/site/replications.py count_agent_errata)')
+    return counts | {'format': cfg['format'], 'repo': repo, 'commit': sha,
+                     'source_url': f'https://github.com/{repo}/tree/{sha}/replications',
+                     'method_url': f'https://github.com/{repo}/blob/{sha}/scripts/validate.ts',
+                     'validate_run_url': run_url}, methods, None
+
+
+def apply_replications(cards, slug, got, ts):
+    """Mutates cards ({slug: record}). Returns ('new'|'changed'|'same', old_counts). Only a count change is a new record;
+    the previous record goes into history (oldest first) and is never rewritten."""
+    R = _repl_module()
+    cur = cards.get(slug)
+    new_counts = {k: got[k] for k in R.COUNT_KEYS}
+    if cur and {k: cur.get(k) for k in R.COUNT_KEYS} == new_counts:
+        return 'same', new_counts
+    rec = {k: got[k] for k in R.RECORD_KEYS if k != 'observed_at'} | {'observed_at': ts}
+    if cur:
+        rec['history'] = list(cur.get('history') or []) + [{k: cur[k] for k in R.RECORD_KEYS if k in cur}]
+        cards[slug] = rec
+        return 'changed', {k: cur.get(k) for k in R.COUNT_KEYS}
+    cards[slug] = rec
+    return 'new', None
+
+
+def run_replications(entries, sources, results, rep, ts, path, dry_run, workers=8):
+    """Step 5 for every live entry with a replications source. Returns True when the data file changed (and was written unless dry_run)."""
+    R = _repl_module()
+    raw = None
+    if os.path.exists(path):
+        with open(path, encoding='utf-8') as f:
+            raw = f.read()
+    doc = json.loads(raw) if raw else {'_help': 'Replication counts per card; written by atlas/refresh.py, rules in atlas/site/replications.py.', 'cards': {}}
+    cards = doc.setdefault('cards', {})
+    changed = False
+    for e in entries:
+        cfg = (sources.get(e['slug']) or {}).get('replications')
+        if not cfg or e['status'] != 'live' or (results.get(e['slug']) or {}).get('cls') == 'fail':
+            continue
+        got, methods, err = read_replications(cfg, workers)
+        if err:
+            rep['replication_errors'].append({'slug': e['slug'], 'error': err})
+            continue
+        what, old = apply_replications(cards, e['slug'], got, ts)
+        rep['replications'].append({'slug': e['slug'], 'action': what, 'old': old, 'new': {k: got[k] for k in R.COUNT_KEYS},
+                                    'commit': got['commit'], 'source': got['source_url'], 'methods': methods})
+        changed |= what != 'same'
+    if changed and not dry_run:
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(dump(doc))
+    return changed
+
+
 # ------------------------------------------------------------------ main
 def closed_by_refresh(e):
     hist = e.get('status_history') or []
@@ -601,6 +733,8 @@ def main():
     ap.add_argument('--report', default=None, help='write the full JSON report here')
     ap.add_argument('--only', default=None, help='comma-separated slugs (testing)')
     ap.add_argument('--workers', type=int, default=8)
+    ap.add_argument('--replications', default=os.path.join(DATA, 'replications.json'), help='replication counts file (step 5)')
+    ap.add_argument('--replications-only', action='store_true', help='run step 5 only: no reachability check, no numbers, no state change')
     a = ap.parse_args()
 
     snap_path = a.snapshot or default_snapshot()
@@ -624,6 +758,21 @@ def main():
         keep = set(a.only.split(','))
         entries = [e for e in entries if e['slug'] in keep]
 
+    if a.replications_only:
+        rep = {'run_at': ts, 'dry_run': a.dry_run, 'replications_only': True, 'replications': [], 'replication_errors': [], 'notes': []}
+        ch = run_replications(entries, sources, {}, rep, ts, a.replications, a.dry_run, a.workers)
+        rep['replications_changed'] = ch
+        md = replications_md(rep)
+        if a.summary:
+            with open(a.summary, 'w', encoding='utf-8') as f:
+                f.write(md)
+        if a.report:
+            with open(a.report, 'w', encoding='utf-8') as f:
+                json.dump(rep, f, ensure_ascii=False, indent=1)
+        print(md)
+        print(f'changes: replications={ch} dry_run={a.dry_run}')
+        return
+
     def job(e):
         url = (sources.get(e['slug']) or {}).get('check_url') or e.get('canonical_url')
         if not url:
@@ -640,7 +789,8 @@ def main():
     print(f'checked {len(results)} entries in {time.time() - t0:.0f}s', file=sys.stderr)
 
     rep = {'run_at': ts, 'dry_run': a.dry_run, 'counts': {}, 'died': [], 'suspected': [], 'recovered': [], 'revived': [],
-           'moved': [], 'closed_responding': [], 'numbers': [], 'number_errors': [], 'note_drift': [], 'notes': []}
+           'moved': [], 'closed_responding': [], 'numbers': [], 'number_errors': [], 'note_drift': [], 'notes': [],
+           'replications': [], 'replication_errors': []}
     from collections import Counter
     rep['counts'] = dict(Counter(r['cls'] for r in results.values()))
     rep['counts_by_status'] = {st: dict(Counter(results[e['slug']]['cls'] for e in entries if e['status'] == st)) for st in ('live', 'closed')}
@@ -727,6 +877,8 @@ def main():
                 if m.get('on_change_note'):
                     rep['notes'].append(f'{e["slug"]}: {m["on_change_note"]}')
 
+    repl_changed = run_replications(entries, sources, results, rep, ts, a.replications, a.dry_run, a.workers)
+    rep['replications_changed'] = repl_changed
     data_changed = bool(changed_slugs)
     if data_changed:
         snap['generated_at'] = ts
@@ -740,7 +892,7 @@ def main():
         state['updated_at'] = ts
     rep['data_changed'], rep['state_changed'] = data_changed, state_changed
     rep['changed_slugs'] = sorted(changed_slugs)
-    if not data_changed and not state_changed:
+    if not data_changed and not state_changed and not repl_changed:
         rep['notes'].append('No data or state change: no PR needed.')
 
     md = summary_md(rep, snap_path)
@@ -770,7 +922,7 @@ def main():
         with open(a.report, 'w', encoding='utf-8') as f:
             json.dump(rep | {'results': results}, f, ensure_ascii=False, indent=1)
     print(md)
-    print(f'changes: data={data_changed} state={state_changed} dry_run={a.dry_run}')
+    print(f'changes: data={data_changed} state={state_changed} replications={repl_changed} dry_run={a.dry_run}')
 
 
 def summary_md(rep, snap_path):
@@ -785,7 +937,8 @@ def summary_md(rep, snap_path):
           f'| **died** (2nd failed week → closed history) | {len(rep["died"])} |', f'| suspected down (1st failed week) | {len(rep["suspected"])} |',
           f'| recovered from suspected | {len(rep["recovered"])} |', f'| **revived** (closed by refresh → live) | {len(rep["revived"])} |',
           f'| domain moved (needs human review) | {len(rep["moved"])} |', f'| number changes | {len(rep["numbers"])} |',
-          f'| statements out of step with their number (needs a human) | {len(rep.get("note_drift", []))} |', '']
+          f'| statements out of step with their number (needs a human) | {len(rep.get("note_drift", []))} |',
+          f'| replication count changes | {sum(1 for r in rep.get("replications", []) if r["action"] != "same")} |', '']
 
     def table(title, rows, cols):
         if not rows:
@@ -802,6 +955,7 @@ def summary_md(rep, snap_path):
     table('Recovered (was suspected)', rep['recovered'], [('entry', lambda r: pg(r['slug'])), ('failed weeks before', lambda r: r['was_failed_weeks'])])
     table('Redirects to another domain (flag only, data unchanged)', rep['moved'], [('entry', lambda r: pg(r['slug'])), ('status', lambda r: r['status']), ('canonical', lambda r: r['canonical']), ('now ends at', lambda r: r['final_url']), ('previously seen', lambda r: r['previous'] or '—')])
     table('Number changes (re-observations; old value kept in claim history)', rep['numbers'], [('entry', lambda r: pg(r['slug'])), ('claim', lambda r: r['id']), ('basis', lambda r: r['basis']), ('change', lambda r: r['action']), ('old', lambda r: '—' if r['old'] is None else fmt_value(r['old'])), ('new', lambda r: fmt_value(r['new'])), ('unit', lambda r: r['unit']), ('source', lambda r: r['source'])])
+    L.append(replications_md(rep, heading=False))
     if rep['notes']:
         L.append('### Needs a human'); L.append(''); L += [f'- {n}' for n in rep['notes']]; L.append('')
     if rep['closed_responding']:
@@ -811,6 +965,24 @@ def summary_md(rep, snap_path):
         L.append('<details><summary>Number sources that could not be read (no change made)</summary>'); L.append('')
         L += [f'- {r["slug"]} `{r["id"]}`: {r["error"]}' for r in rep['number_errors']]; L += ['', '</details>', '']
     return '\n'.join(L) + '\n'
+
+
+def replications_md(rep, heading=True):
+    """Markdown for step 5 (replication counts): a table of changed records and the reads that failed."""
+    L = [f'## Atlas replication counts {rep["run_at"][:10]}', ''] if heading else []
+    fmt = lambda c: '—' if not c else f'{c["rows"]} rows, {c["entries"]} entries, {c["entries_replicated"]} replicated by {c["independent_agents"]} independent agents'
+    rows = [r for r in rep.get('replications', []) if r['action'] != 'same']
+    if rows:
+        L += ['### Replication counts (old record kept in history)', '', '| entry | change | old | new | commit | source |', '|---|---|---|---|---|---|']
+        L += [f'| [{r["slug"]}](https://commonworld.one/atlas/platforms/{r["slug"]}/) | {r["action"]} | {fmt(r["old"])} | {fmt(r["new"])} | `{r["commit"][:12]}` | {r["source"]} |' for r in rows]
+        L.append('')
+    same = [r for r in rep.get('replications', []) if r['action'] == 'same']
+    if same:
+        L += [f'Replication counts unchanged: {", ".join(r["slug"] + " (" + fmt(r["new"]) + ")" for r in same)}.', '']
+    if rep.get('replication_errors'):
+        L += ['<details><summary>Replication sources that could not be read (no change made)</summary>', '']
+        L += [f'- {r["slug"]}: {r["error"]}' for r in rep['replication_errors']] + ['', '</details>', '']
+    return '\n'.join(L) + ('\n' if heading else '')
 
 
 if __name__ == '__main__':

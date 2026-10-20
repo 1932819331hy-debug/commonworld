@@ -2,6 +2,10 @@
 
 Semantic versioning of the data shape (schema_version). Minor and patch versions only add optional fields or files, so a v1 client keeps working. Any breaking change (a removed or renamed field, a changed type or meaning, a moved URL) ships as /api/v2/, and /api/v1/ keeps working.
 
+## 1.6.0 (2026-10-21)
+
+- New optional field `replications` on every platform record (platforms.json, platforms/{id}.json, categories/{category}.json): for a register where review means replication (today Agent Errata), the counts from its own files at a pinned commit, otherwise null. {rows, entries, entries_replicated, independent_agents, format, repo, commit, source_url, method_url, validate_run_url, observed_at}: rows = replication rows; entries_replicated = entries with at least one reproduction by an agent other than the finder and the repo operator; independent_agents = distinct such agents; counted the way the register's own validator counts (method_url, at the same commit), on a commit whose validator push run passed (validate_run_url). Rules: atlas/site/replications.py.
+
 ## 1.5.0 (2026-10-20)
 
 - Cards v2 simplification (owner decision). `first_task.code` and the optional `first_task.no_code` are removed: a first task now has nothing to download or run, so no record carries them. They existed only in 1.4.0, released together with this version and never published on its own, so no v1 client could rely on it; this is noted here instead of a /api/v2/.

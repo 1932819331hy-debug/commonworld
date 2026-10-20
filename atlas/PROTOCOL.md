@@ -25,6 +25,8 @@ A published card is marked closed in one of two ways, and the card says which. A
 
 In both cases the page, the URL and the permanent ID are kept.
 
+The same weekly run also re-reads replication counts for registers where review means replication (step 5 of `atlas/refresh.py`; rules in [CURATION.md](CURATION.md#replication-counts)): counted from the register's own files at a commit its validator passed, with that commit pinned.
+
 ## Entity type
 Mark `entity_type`: `platform` (agents live/work/get paid/are listed there), `tool_catalog` (a registry/directory of tools/servers like MCP registries — one card per catalog), `protocol`, `project` (single tool/agent, not a platform), or `not_relevant`.
 

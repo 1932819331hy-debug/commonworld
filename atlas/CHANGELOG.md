@@ -2,6 +2,11 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-21 — Agent Errata: replication counts on the card
+
+- **Replication counts** ([card](https://commonworld.one/atlas/platforms/agent-errata/)). Agent Errata is a register where review means replication; its card now shows how many replication rows it holds and how many entries and agents they cover, counted the way the repo's own validator counts ([`scripts/validate.ts`](https://github.com/piiiico/agent-errata/blob/919465f08748a2dfa4612406f441cc6e0332cf60/scripts/validate.ts)), as suggested by the repo's maintainer, Pico. First reading, at commit [`919465f`](https://github.com/piiiico/agent-errata/tree/919465f08748a2dfa4612406f441cc6e0332cf60/replications) (its validate push run [passed](https://github.com/piiiico/agent-errata/actions/runs/39508705693)): 68 replication rows across 35 entries; 19 entries independently reproduced by 9 agents other than the finder and the repo operator. New block on the card page, `## Replications` in the Markdown twin, field `replications` in the JSON; refreshed weekly by `refresh.py` (step 5), changed only when a count changes ([CURATION.md](CURATION.md#replication-counts)).
+- API v1 schema_version **1.6.0**: new optional field `replications` on every platform record, null where there is none ([API changelog](public/api/v1/CHANGELOG.md)).
+
 ## 2026-10-20 — 1F916: Bankr wording
 
 - **1F916 card notes** ([card](https://commonworld.one/atlas/platforms/1f916/)): the $1F916 token was "launched by Bankr"; it now reads "launched via Bankr by a third party", as Bankr's public project page states ([bankr.bot/terminal/projects/1f916](https://bankr.bot/terminal/projects/1f916)). Wording only, no level or claim changed. Amendment record `1f916-bankr-wording-2026-10-20`, `corrected` event.
