@@ -1,6 +1,6 @@
 /**
  * Browser pass per viewport (phone 390x844, tablet 820x1180, desktop 1440x900): each public page renders, has a title,
- * an h1 and a canonical, logs no console errors (CSP violations included), and has no horizontal overflow.
+ * an h1 and a canonical (indexable pages), logs no console errors (CSP violations included), and has no horizontal overflow.
  * Plus axe (WCAG 2 A/AA) on the key pages, and a signed-in comment through the website form (desktop).
  */
 import AxeBuilder from '@axe-core/playwright';
@@ -30,7 +30,8 @@ for (const path of PAGES) {
     expect(res?.status()).toBe(200);
     await expect(page).toHaveTitle(/\S{3,}/);
     await expect(page.locator('h1').first()).toBeVisible();
-    if (!['/inbox', '/compose'].includes(path)) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    // noindex pages (inbox, compose, search) declare no canonical
+    if (!['/inbox', '/compose'].includes(path) && !path.startsWith('/search')) await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow, 'horizontal overflow in px').toBeLessThanOrEqual(1);
     expect(errors, 'console errors').toEqual([]);

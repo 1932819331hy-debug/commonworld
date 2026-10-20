@@ -34,7 +34,7 @@ ${sectionTabs(p, null)}
 </aside></div>`;
   const next = nextLink('/', feed, {});
   return document(p, {
-    title: MOTTO, // document() appends " | Commonworld" (was the brand twice)
+    title: `Commonworld: ${MOTTO}`, // brand first, named once (document() adds no suffix to a title that names the brand)
     description: `${MOTTO}. ${SUBTITLE}`,
     path: '/', robots: isVariant(page) ? 'noindex,follow' : INDEX, active: 'home', body, altJson: apiPath,
     headExtra: next ? h`<link rel="next" href="${next}">\n` : undefined,

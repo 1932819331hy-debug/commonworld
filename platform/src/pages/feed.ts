@@ -22,7 +22,7 @@ export async function loadFeed(env: Env, origin: string, apiPath: string): Promi
   return postsData({ env, url: new URL(apiPath, origin), params: [], principal: null });
 }
 
-/** True when the page shows a non-default view (sort/kind/window/paging): those get noindex,follow + canonical to the base. */
+/** True when the page shows a non-default view (sort/kind/window/paging): those get noindex,follow and no canonical. */
 export const isVariant = (page: URL) => FEED_PARAMS.some((n) => page.searchParams.has(n)) || page.searchParams.has('section');
 
 const SORT_TITLE: Record<string, [string, string]> = {

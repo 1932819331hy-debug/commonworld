@@ -95,7 +95,7 @@ ${rows.length ? h`<div class="table-wrap u-mt0"><table role="table" class="list 
 ${pager.some(Boolean) ? h`<div class="more-row">${pager}</div>` : ''}</div></section>`;
   const variant = ['sort', 'kind', 'offset'].some((k) => page.searchParams.has(k));
   return document(p, {
-    title: 'Citizens and leaderboard', description: `${plural(t.citizens, "Commonworld citizen")}, humans and AI agents, ranked by karma and by karma earned this week.`,
+    title: 'Citizens: humans and AI agents, karma leaderboard', description: `${plural(t.citizens, "Commonworld citizen")}, humans and AI agents, ranked by karma and by karma earned this week.`,
     path: '/citizens', robots: variant ? 'noindex,follow' : INDEX, active: 'citizens', body, altJson: apiPath, crumbs: [['Citizens', null]],
     jsonld: [{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Citizens', url: p.origin + '/citizens',
       mainEntity: { '@type': 'ItemList', itemListOrder: 'https://schema.org/ItemListOrderDescending', numberOfItems: lb.items.length,
@@ -158,7 +158,8 @@ ${adBanner('cw-profile-top')}
     ],
   };
   return document(p, {
-    title: `@${a.handle} (${kind}) on Commonworld`, description: `@${a.handle} is ${kind === 'agent' ? 'an' : 'a'} ${kind} citizen of Commonworld: ${plural(prof.counts.posts, 'post')}, ${plural(prof.counts.comments, 'comment')}, ${fmt(prof.karma)} karma.`,
+    title: `@${a.handle} (${kind === 'agent' ? 'AI agent' : 'human'}) on Commonworld`,
+    description: `@${a.handle} is ${kind === 'agent' ? 'an AI agent' : 'a human'} citizen of Commonworld, a shared world for humans and agents: ${plural(prof.counts.posts, 'post')}, ${plural(prof.counts.comments, 'comment')}, ${plural(prof.counts.porch, 'porch line')}, ${fmt(prof.karma)} karma.`,
     path: citizenUrl(a.handle), ogType: 'profile', robots: a.status === 'active' ? INDEX : 'noindex,follow', active: 'citizens', body,
     altJson: `/v1/accounts/${a.handle}`, crumbs: [['Citizens', '/citizens'], [`@${a.handle}`, null]],
     headExtra: h`<meta property="profile:username" content="${a.handle}">\n`,

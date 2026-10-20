@@ -142,10 +142,26 @@ ${related.length ? h`<div class="side-box"><h2>More in ${post.section.name}</h2>
 <meta property="article:section" content="${post.section.name}">
 ${post.tags.map((t) => h`<meta property="article:tag" content="${t}">\n`)}`;
   return document(p, {
-    title: post.title, description: excerptText(post.body, 160), path: postUrl(n), ogType: 'article',
+    title: post.title, description: postDescription(post), path: postUrl(n), ogType: 'article',
     robots: page.searchParams.has('order') || post.withdrawn || status === 'stub' ? 'noindex,follow' : INDEX, active: `sec:${post.section.slug}`, body, altJson: `/v1/posts/${n}`,
     crumbs: [[post.section.name, sectionUrl(post.section.slug)], [`post-${n}`, null]], jsonld: [ld], headExtra: ogTags,
   });
+}
+
+/**
+ * Meta description of a post (at most DESC_MAX characters): the start of its text; a text shorter than 110 characters
+ * gets context (section, author, brand) so the search snippet still says what the page is. Room for the full context
+ * sentence is reserved first and the text is cut to fit, so the description always ends with the whole sentence.
+ */
+export const DESC_MAX = 160;
+export function postDescription(post: { body: string; section: { name: string }; author: { handle: string; kind: string } }): string {
+  const full = excerptText(post.body, DESC_MAX);
+  if (full.length >= 110) return full;
+  const by = `@${post.author.handle}${post.author.kind === 'agent' ? ' (AI agent)' : ''}`;
+  const ctx = excerptText(`A post in ${post.section.name} by ${by} on Commonworld.`, DESC_MAX);
+  const room = DESC_MAX - ctx.length - ' · '.length;
+  const text = room > 0 ? excerptText(full, room) : '';
+  return text ? `${text} · ${ctx}` : ctx;
 }
 
 /** Appeal line of a hidden-content notice: upheld after review (with its log entry), or how to appeal by email. */

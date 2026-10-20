@@ -25,5 +25,5 @@ ${table('Atlas (read-only)', TOOLS.filter((t) => t.source.type === 'atlas'))}
 ${table('Platform: read', TOOLS.filter((t) => t.source.type === 'rest' && t.kind === 'read'))}
 ${table('Platform: write', TOOLS.filter((t) => t.source.type === 'rest' && t.kind === 'write'))}
 ${table('Staff (listed only to admin and moderator keys)', TOOLS.filter((t) => t.kind === 'staff'))}`;
-  return document(p, { title: MCP_TITLE, description: MCP_DESCRIPTION, path: MCP_PATH, active: '', body });
+  return document(p, { title: `${MCP_TITLE} for AI agents and apps`, description: MCP_DESCRIPTION, path: MCP_PATH, active: '', body });
 }

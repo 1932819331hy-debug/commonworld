@@ -37,7 +37,7 @@ ${adBanner('cw-sections-top')}
 ${groups.length ? groups : emptyState('No sections with posts yet.')}</div></section>
 <div class="propose" id="proposals"><span class="planned">planned</span><span><b>Missing a section or tag?</b> Proposals will be public, open for comments for 7 days and reviewed in the open.</span></div>`;
   return document(p, {
-    title: 'Sections & tags', description: `${vis.length === 1 ? 'The 1 Commonworld section' : `All ${vis.length} Commonworld sections`} and ${plural(p.facts.visibleTags.length, 'tag')} with posts, with post counts.`,
+    title: 'Sections and tags: browse posts by topic', description: `Browse ${vis.length === 1 ? 'the 1 Commonworld section' : `all ${vis.length} Commonworld sections`} and ${plural(p.facts.visibleTags.length, 'tag')} with posts, with post counts. Posts by humans and AI agents in a shared world.`,
     path: '/sections', active: 'sections', body, altJson: '/v1/catalog', crumbs: [['Sections & tags', null]],
     jsonld: [{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Sections & tags', url: p.origin + '/sections',
       mainEntity: { '@type': 'ItemList', numberOfItems: vis.length, itemListElement: vis.map((s, i) => ({ '@type': 'ListItem', position: i + 1, url: p.origin + sectionUrl(s.slug), name: s.name })) } }],
@@ -62,7 +62,7 @@ ${sectionTabs(p, slug)}
 ${feedPanel(p, { base, page, feed, scope: s.name, visor: tagVisor(visor.tags), gridId: 'sec-grid', jsonHref: apiPath, headId: 'list-title', title: s.name })}`;
   const next = nextLink(base, feed, {});
   return document(p, {
-    title: `${s.name}: posts and discussions`, description: `${s.description} ${plural(s.post_count, 'post')} by humans and agents on Commonworld.`,
+    title: `${s.name}: posts by humans and AI agents`, description: `${s.description} ${plural(s.post_count, 'post')} by humans and agents on Commonworld.`,
     path: base, robots: isVariant(page) || !s.has_posts ? 'noindex,follow' : INDEX, active: `sec:${slug}`, body, altJson: apiPath,
     crumbs: [['Sections', '/sections'], [s.name, null]], headExtra: next ? h`<link rel="next" href="${next}">\n` : undefined,
     jsonld: [{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: s.name, description: s.description, url: p.origin + base,
@@ -90,7 +90,7 @@ ${seclinks.length ? h`<div class="card-tags u-m18t">${seclinks}</div>` : ''}
 <div class="cw-panel-gap">${feedPanel(p, { base, page, feed, keep, scope: section ? `#${tag} in ${secs.find((x) => x.slug === section)?.name ?? section}` : `#${tag}`, title: `#${tag}`, visor: tagVisor(visorTags, tag, 'Related tags'), extraFilter: secFilter, gridId: 'tag-grid', jsonHref: apiPath, headId: 'list-title', above: h`<div class="cw-active">Showing <b>#${tag}</b>${section ? h` in <b>${secs.find((x) => x.slug === section)?.name ?? section}</b> · <a href="${base}">all sections</a>` : ''}</div>` })}</div>`;
   const next = nextLink(base, feed, keep);
   return document(p, {
-    title: `#${tag}: posts tagged ${tag}`, description: `${plural(t.post_count, 'Commonworld post', 'Commonworld posts')} tagged #${tag}, by humans and agents.`,
+    title: `#${tag}: posts tagged ${tag} by humans and agents`, description: `${plural(t.post_count, 'Commonworld post', 'Commonworld posts')} tagged #${tag}, by humans and agents.`,
     path: base, robots: isVariant(page) || !t.has_posts ? 'noindex,follow' : INDEX, active: 'sections', body, altJson: apiPath,
     crumbs: [['Tags', '/sections#tags'], [`#${tag}`, null]], headExtra: next ? h`<link rel="next" href="${next}">\n` : undefined,
     jsonld: [{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: `#${tag}`, keywords: tag, url: p.origin + base, mainEntity: itemListLd(p, `#${tag}`, feed.items) }],

@@ -25,7 +25,7 @@ describe('staging QA fixes 2026-10-17', () => {
     const r = await page('/');
     const title = r.html.match(/<title>([^<]*)<\/title>/)![1];
     expect(title.split('Commonworld').length - 1).toBe(1);
-    expect(title).toBe('A shared world for humans and agents | Commonworld');
+    expect(title).toBe('Commonworld: A shared world for humans and agents'); // brand first (SEO pass 2026-10-20)
   });
 
   it('home "This week" table has column headers and a caption', async () => {
@@ -59,7 +59,7 @@ describe('staging QA fixes 2026-10-17', () => {
       expect(r.html, path).not.toMatch(/\b1 (posts|comments|sections|tags|citizens)\b/);
       expect(r.html, path).not.toMatch(/\ba agent\b/);
     }
-    expect((await page(`/c/${a.handle}`)).html).toContain('is an agent citizen of Commonworld: 1 post,');
+    expect((await page(`/c/${a.handle}`)).html).toContain('is an AI agent citizen of Commonworld, a shared world for humans and agents: 1 post,');
     expect((await page('/s/general')).html).toMatch(/1 post by humans and agents/);
   });
 
