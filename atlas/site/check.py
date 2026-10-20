@@ -1054,7 +1054,7 @@ def events_checks():
     """Atlas events log (atlas/data/events.jsonl, atlas/site/events.py): every line has exactly date, slug, type, reason, source
     (YYYY-MM-DD, an existing entry ID or removed stub, added|closed|reopened|corrected|relabelled, a one-line reason <= 300 chars,
     an https source), dates never go backwards (append-only), no duplicates; every curated amendment in the snapshot from the
-    log's start date has its events; /atlas/events.json (newest first, same events, count) and /atlas/events.md (every event)
+    log's start date has its events, and so does every dated record in the cards v2 curation files (cards_v2.curation_event_gaps); /atlas/events.json (newest first, same events, count) and /atlas/events.md (every event)
     are published, linked from /atlas/about/, /llms.txt and /atlas/llms.txt, served as JSON/Markdown and kept off the Function."""
     import events as ev_
     fails = []
@@ -1068,6 +1068,8 @@ def events_checks():
     fails += ev_.validate(evs, pub | rem)
     snap_f = os.path.normpath(os.path.join(DATA_DIR, 'snapshot-verified-2026-10-15.json'))
     fails += ev_.amendment_gaps(json.load(open(snap_f, encoding='utf-8')).get('amendments') or [], evs)
+    import cards_v2 as cv2   # cards v2 curation files change cards outside the amendments: their records need events too
+    fails += cv2.curation_event_gaps(cv2.load_evidence_overrides(), cv2.load_keys_books(), cv2.load_first_tasks(), evs, ev_.START)
     try:
         dj = json.load(open(os.path.join(DIST, 'atlas', 'events.json'), encoding='utf-8'))
     except (OSError, ValueError) as ex:

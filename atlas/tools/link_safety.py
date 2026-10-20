@@ -6,7 +6,8 @@
     python3 atlas/tools/link_safety.py --report-in r.json   # use an engine report you already have (tests, re-runs)
 
 1. Every outbound host linked from the published Atlas data (official URLs, claim and QA sources, any other URL in an
-   entry) plus the hosts of removed entries go to the engine, which asks every source (Google Safe Browsing, MetaMask
+   entry, and every URL in the card's slug-keyed cards v2 curation records: first task proposal and download, keys-and-
+   books and evidence-level sources) plus the hosts of removed entries go to the engine, which asks every source (Google Safe Browsing, MetaMask
    eth-phishing-detect, ScamSniffer, CERT Polska) and combines the answers: flagged when ANY one source flags the domain,
    clean when at least one source answered and none flags it, no_data when no source could answer.
 2. A source that could not answer for a host this run keeps its previous answer for that host (marked stale), so a
@@ -15,13 +16,15 @@
    link) and, for Google Safe Browsing, its code and threat names. The site build publishes it as /atlas/safety.json.
 4. With --apply, the rule (atlas/CURATION.md#link-safety): every entry that links to a flagged host is removed at once,
    with a decision in atlas/data/removed.json (actor hark, reason naming the source and what it said, evidence link),
-   its card dropped from the snapshot and the census tags. The slug keeps a noindex stub page (build.py). Hosts listed in
+   its card dropped from the snapshot, the census tags and the cards v2 curation files (first-tasks.json,
+   keys-and-books.json, evidence-levels.json in the snapshot's directory; the old records stay in git history for a
+   restore), so the rebuild check does not fail on curation of a card that is no longer published. The slug keeps a noindex stub page (build.py). Hosts listed in
    atlas/data/trust-hold.json `hold` are reported but not removed (a curator is looking at them).
    --actions-out writes what was removed (for the issue text).
 
 Exit code 1 when a published host is flagged (removed or held), 0 otherwise, 2 when the engine could not run.
 """
-import argparse, json, os, shutil, subprocess, sys, tempfile
+import argparse, json, os, re, shutil, subprocess, sys, tempfile
 from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -34,6 +37,76 @@ CLI = os.path.join(ROOT, 'trust', 'src', 'cli.ts')
 REPORT_NAME = 'Commonworld Atlas link safety report'
 TRUST_URL = 'https://github.com/commonworld-one/commonworld/blob/main/TRUST.md'
 GSB = 'google_safe_browsing'
+
+
+# cards v2 curation files keyed by card slug (atlas/site/cards_v2.py): file name -> top-level key holding {slug: record}
+CURATION = (('first-tasks.json', 'tasks'), ('keys-and-books.json', 'entries'), ('evidence-levels.json', 'overrides'))
+URL_IN_TEXT = re.compile(r'https?://[^\s"\'<>()\[\]`]+')
+
+
+def curation_files(data_dir):
+    return [(os.path.join(data_dir, f), k) for f, k in CURATION]
+
+
+def _write_json(path, doc, ascii_=False):
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(json.dumps(doc, ensure_ascii=ascii_, indent=1) + '\n')
+
+
+def _texts(obj):
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            yield from _texts(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _texts(v)
+
+
+def curation_hosts(slugs, files):
+    """host -> set of slugs, for every URL (whole value or inside a text) in the curation records of the given slugs."""
+    out = {}
+    for path, key in files:
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding='utf-8') as fh:
+            recs = json.load(fh).get(key) or {}
+        for slug, rec in recs.items():
+            if slug not in slugs:
+                continue
+            for t in _texts(rec):
+                for u in URL_IN_TEXT.findall(t):
+                    h = sb.norm_host(u.rstrip('.,;:!?'))
+                    if h and '.' in h and h not in sb.OWN_HOSTS:
+                        out.setdefault(h, set()).add(slug)
+    return out
+
+
+def linked_hosts(snap, files):
+    """host -> sorted slugs: the snapshot's own links plus the cards v2 curation links of its published cards."""
+    out = {h: set(v) for h, v in sb.extract_hosts(snap).items()}
+    for h, v in curation_hosts({c.get('slug') for c in snap.get('platforms') or []}, files).items():
+        out.setdefault(h, set()).update(v)
+    return {h: sorted(v) for h, v in sorted(out.items())}
+
+
+def prune_curation(gone, files):
+    """Drop the records of removed slugs from every curation file. Returns the names of the files that changed."""
+    changed = []
+    for path, key in files:
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding='utf-8') as fh:
+            raw = fh.read()
+        doc = json.loads(raw)
+        recs = doc.get(key)
+        if not isinstance(recs, dict) or not (gone & set(recs)):
+            continue
+        doc[key] = {k: v for k, v in recs.items() if k not in gone}
+        _write_json(path, doc, ascii_=raw.isascii() and '\\u' in raw)
+        changed.append(os.path.basename(path))
+    return changed
 
 
 def utc_now():
@@ -114,7 +187,7 @@ def build_report(linked, removed_hosts, eng, prev_doc):
     }
 
 
-def apply_removals(report, snap_path, removed_path, tags_path, hold, today):
+def apply_removals(report, snap_path, removed_path, tags_path, hold, today, curation=()):
     """Remove every entry linking to a flagged, not-held host. Returns the list of actions."""
     snap = json.load(open(snap_path, encoding='utf-8'))
     removed_doc = json.load(open(removed_path, encoding='utf-8'))
@@ -149,8 +222,11 @@ def apply_removals(report, snap_path, removed_path, tags_path, hold, today):
             tags['tags'].pop(s_, None)
         with open(tags_path, 'w', encoding='utf-8') as f:
             f.write(json.dumps(tags, ensure_ascii=False, indent=1) + '\n')
+    pruned = prune_curation(gone, curation)
+    for a_ in actions:
+        a_['curation_pruned'] = pruned
     # the removed entries' hosts are no longer published: move them under removed_hosts
-    still = {h for c in snap['platforms'] for h in sb.hosts_of_entry(c)}
+    still = set(linked_hosts(snap, curation))
     for hh, rr in list(report['hosts'].items()):
         rr['entries'] = [x for x in rr['entries'] if x not in gone]
         if not rr['entries'] and hh not in still:
@@ -168,13 +244,15 @@ def main(argv=None):
     ap.add_argument('--tags', default=os.path.join(DATA, 'census-tags-2026-10-15.json'))
     ap.add_argument('--hold', default=os.path.join(DATA, 'trust-hold.json'))
     ap.add_argument('--out', default=os.path.join(DATA, 'link-safety.json'))
+    ap.add_argument('--curation-dir', default=None, help='directory of the cards v2 curation files (default: the snapshot\'s)')
     ap.add_argument('--report-in', default=None, help='engine report to use instead of running the engine')
     ap.add_argument('--apply', action='store_true', help='remove the entries of flagged hosts (the link safety rule)')
     ap.add_argument('--actions-out', default=None, help='write the removals of this run as JSON')
     a = ap.parse_args(argv)
 
     snap_path = a.data or sb.snapshot_path()
-    linked = sb.extract_hosts(json.load(open(snap_path, encoding='utf-8')))
+    curation = curation_files(a.curation_dir or os.path.dirname(os.path.abspath(snap_path)))
+    linked = linked_hosts(json.load(open(snap_path, encoding='utf-8')), curation)
     removed = (json.load(open(a.removed)).get('removed') or []) if os.path.exists(a.removed) else []
     removed_hosts = sorted({sb.norm_host('https://' + r['host']) for r in removed if r.get('host')} - set(linked))
     prev_doc = {}
@@ -185,7 +263,7 @@ def main(argv=None):
     report = build_report(linked, removed_hosts, eng, prev_doc)
     hold = set((json.load(open(a.hold)).get('hold') or []) if os.path.exists(a.hold) else [])
     flagged_before = list(report['flagged'])
-    actions = apply_removals(report, snap_path, a.removed, a.tags, hold, report['run_at'][:10]) if a.apply else []
+    actions = apply_removals(report, snap_path, a.removed, a.tags, hold, report['run_at'][:10], curation) if a.apply else []
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, 'w', encoding='utf-8') as f:
         f.write(json.dumps(report, ensure_ascii=False, indent=1) + '\n')

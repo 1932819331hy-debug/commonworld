@@ -501,5 +501,43 @@ class Wording(unittest.TestCase):
         self.assertEqual(cv2.negative_hits('This source is unverified'), ['unverified'])
 
 
+class CurationEvents(unittest.TestCase):
+    """Changes from the cards v2 curation files need their own events (they are not in the snapshot amendments)."""
+    EV = [{'date': '2026-10-20', 'slug': 'a', 'type': 'relabelled'}, {'date': '2026-10-20', 'slug': 'b', 'type': 'corrected'},
+          {'date': '2026-10-21', 'slug': 'c', 'type': 'corrected'}]
+
+    def gaps(self, evo=None, kb=None, ft=None, events=None):
+        return cv2.curation_event_gaps(evo or {}, kb or {}, ft or {}, self.EV if events is None else events, '2026-10-19')
+
+    def test_covered_records_pass(self):
+        self.assertEqual(self.gaps({'a': [{'source_url': 'https://a.example/', 'reviewed_on': '2026-10-20'}]},
+                                   {'b': {'keys': {'value': 'operator', 'reviewed_on': '2026-10-20'}}},
+                                   {'c': {'verified_on': '2026-10-21'}}), [])
+
+    def test_changed_record_without_event_fails(self):
+        g = self.gaps({'a': [{'source_url': 'https://a.example/', 'reviewed_on': '2026-10-22'}]})
+        self.assertEqual(len(g), 1); self.assertIn('"relabelled" event for a on 2026-10-22', g[0])
+        g = self.gaps(kb={'b': {'books': {'value': 'public_dashboard', 'reviewed_on': '2026-10-22'}}})
+        self.assertEqual(len(g), 1); self.assertIn('keys-and-books: b.books', g[0])
+        g = self.gaps(ft={'c': {'verified_on': '2026-10-20'}})
+        self.assertEqual(len(g), 1); self.assertIn('first-tasks: c', g[0])
+
+    def test_event_type_must_match(self):
+        self.assertTrue(self.gaps(kb={'a': {'keys': {'value': 'operator', 'reviewed_on': '2026-10-20'}}}), 'a relabelled event is not a keys-and-books event')
+
+    def test_keys_and_books_value_needs_a_date(self):
+        g = self.gaps(kb={'b': {'keys': {'value': 'operator'}}})
+        self.assertEqual(g, ['keys-and-books: b.keys reviewed_on: needs a YYYY-MM-DD date'])
+
+    def test_records_before_the_log_start_need_no_event(self):
+        self.assertEqual(self.gaps({'z': [{'source_url': 'https://z.example/', 'reviewed_on': '2026-10-18'}]}, events=[]), [])
+
+    def test_published_curation_files_have_their_events(self):
+        sys.path.insert(0, str(ROOT / 'atlas' / 'site'))
+        import events as ev_
+        self.assertEqual(cv2.curation_event_gaps(cv2.load_evidence_overrides(), cv2.load_keys_books(), cv2.load_first_tasks(),
+                                                 ev_.load(), ev_.START), [])
+
+
 if __name__ == '__main__':
     unittest.main()

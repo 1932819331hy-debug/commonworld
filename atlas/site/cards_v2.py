@@ -597,6 +597,35 @@ def validate_first_tasks(tasks, slugs):
     return errs
 
 
+def curation_event_gaps(overrides, curated, tasks, events, start):
+    """The curation files change published cards outside the snapshot's `amendments`, so each record carries its own date
+    and needs its event in atlas/data/events.jsonl (atlas/CURATION.md#events-log) from `start` (the log's first day) on:
+    an evidence-level review (reviewed_on) a `relabelled` event, a keys-and-books value (reviewed_on, required on every
+    value) and a first task (verified_on) a `corrected` event, same day and slug. Changing a record means a new date, and
+    with it a new event. -> list of gaps."""
+    have = {(e.get('date'), e.get('slug'), e.get('type')) for e in events}
+    gaps = []
+
+    def need(date, slug, typ, what):
+        if not DATE.match(str(date or '')):
+            gaps.append(f'{what}: needs a YYYY-MM-DD date'); return
+        if date >= start and (date, slug, typ) not in have:
+            gaps.append(f'{what} ({date}) has no "{typ}" event for {slug} on {date} in atlas/data/events.jsonl')
+
+    for slug, rows in (overrides or {}).items():
+        for o in rows or []:
+            if isinstance(o, dict):
+                need(o.get('reviewed_on'), slug, 'relabelled', f'evidence-levels: {slug} {o.get("source_url")}')
+    for slug, ent in (curated or {}).items():
+        for f, v in (ent or {}).items():
+            if isinstance(v, dict):
+                need(v.get('reviewed_on'), slug, 'corrected', f'keys-and-books: {slug}.{f} reviewed_on')
+    for slug, t in (tasks or {}).items():
+        if isinstance(t, dict):
+            need(t.get('verified_on'), slug, 'corrected', f'first-tasks: {slug} verified_on')
+    return gaps
+
+
 def first_task(card, tasks):
     t = tasks.get(card.get('slug') or card.get('id'))
     if not t or not isinstance(t, dict):
