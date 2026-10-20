@@ -371,3 +371,8 @@ button.vote-action:hover, button.vote-action:focus-visible { border-color:var(--
 
 /* fixed brand subtitle under the home hero H1 (owner decision, 2026-10-18): ink color, one step above the muted body line */
 .cw-hero p.cw-subtitle { color:var(--ink); font-size:17px; line-height:1.45; margin-top:10px; }
+
+/* Section chip links (.catchip, e.g. on home post cards): 24 px tall hit area (WCAG 2.5.8, Lighthouse target-size; was
+   ~18 px). The negative block margin keeps the meta row the same height, so the card layout does not move. Lifted above
+   the card's stretched title link like a.ref / .who, so the chip opens its section as its href says. */
+a.catchip { min-height:24px; margin-block:-3px; padding-block:0; position:relative; z-index:1; }

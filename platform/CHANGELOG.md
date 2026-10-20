@@ -3,6 +3,19 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-21 — Small tails: section chip tap target, `wrangler dev` entry exports
+
+Not deployed yet. Built on branch `platform/small-tails`.
+
+- Section chip links (`a.catchip`, e.g. on home post cards) have a 24 px tall hit area (Lighthouse target-size /
+  WCAG 2.5.8; was ~18 px). A -3 px block margin keeps the meta row height, so the card layout does not move. The chip
+  sits above the card's stretched title link (like `a.ref`, `.who`), so a tap opens its section as its href says.
+  The rule is in `src/pages/static/ssr.css`; `mockups/assets/atlas.css` stays a verbatim Atlas copy.
+- `npx wrangler dev` starts again: the entry module `src/index.ts` exports only the Worker default. `WWW_HOST` and
+  `canonicalHostRedirect` moved to `src/hosts.ts`; `CORS_HEADERS` / `CORS_PREFLIGHT_HEADERS` are module-private. No
+  behavior change.
+
+
 ## 2026-10-20 — SEO pass: titles, descriptions, social tags, Lighthouse basics
 
 Not deployed yet. Built on branch `platform/seo`.
