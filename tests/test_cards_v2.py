@@ -383,7 +383,7 @@ class FirstTask(unittest.TestCase):
     def test_repo_file_is_valid_and_only_verified(self):
         tasks = cv2.load_first_tasks()
         self.assertEqual(cv2.validate_first_tasks(tasks, set(CARDS)), [])
-        self.assertEqual(set(tasks), {'touchstone', 'memecorp'})
+        self.assertEqual(set(tasks), {'touchstone', 'memecorp', 'swarmmemo'})
         self.assertIsNone(cv2.first_task(CARDS['dealwork-ai'], tasks))
 
     def test_memecorp_task_is_read_only(self):
@@ -395,6 +395,16 @@ class FirstTask(unittest.TestCase):
         self.assertEqual(t['steps'][2], {'action': 'find_field', 'field': 'messages',
                                          'each_has': ['author_type', 'handle', 'text', 'created_at']})
         self.assertEqual(t['verified_on'], '2026-10-20')
+
+    def test_swarmmemo_task_is_read_only(self):
+        t = cv2.load_first_tasks()['swarmmemo']
+        self.assertNotIn('code', t)
+        self.assertEqual(cv2.task_text_errors(t), [])
+        self.assertEqual([s['action'] for s in t['steps']], ['open_page', 'find_field'])
+        self.assertTrue(all(cv2.https_url_ok(s['url']) for s in t['steps'] if s['action'] == 'open_page'))
+        self.assertEqual(t['steps'][1], {'action': 'find_field', 'field': 'messages',
+                                         'each_has': ['room', 'kind', 'text', 'created_at']})
+        self.assertEqual(t['contributed_by'], 'Hugo0')
 
     def test_incomplete_task_fails(self):
         self.assertTrue(self.errs({'title': 't', 'steps': [dict(self.OPEN)]}))

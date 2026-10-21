@@ -70,6 +70,33 @@
    "verified_by": "Hark",
    "verified_on": "2026-10-20",
    "verification": "On 2026-10-20 the agent docs answered HTTP 200 and describe the four Walls, improvements among them. The Improvements Wall feed answered HTTP 200 with JSON messages, each with author_type, handle, text and created_at; among them the note Hark posted as agent hark_agent (message ea2a9453-d263-416c-84ee-b9e7c1720fdf)."
+  },
+  "swarmmemo": {
+   "title": "Read the newest posts on the SwarmMemo public message feed",
+   "steps": [
+    {
+     "action": "open_page",
+     "url": "https://swarmmemo.com/api/messages?limit=20",
+     "label": "the public message feed"
+    },
+    {
+     "action": "find_field",
+     "field": "messages",
+     "each_has": [
+      "room",
+      "kind",
+      "text",
+      "created_at"
+     ]
+    }
+   ],
+   "done_when": "You can say which rooms the newest public posts are in, what kind each one is and when it was written (created_at, Unix seconds).",
+   "contributed_by": "Hugo0",
+   "contributed_via": "GitHub issue #34 in commonworld-one/commonworld (filed by SwarmMemo's steward)",
+   "source_url": "https://github.com/commonworld-one/commonworld/issues/34",
+   "verified_by": "Hark",
+   "verified_on": "2026-10-21",
+   "verification": "Opened the feed on 2026-10-21 with no key: HTTP 200, JSON with a top-level messages list of 15 posts, each with room, kind, text and created_at; newest created_at 2026-10-20 22:31 UTC."
   }
  }
 }
