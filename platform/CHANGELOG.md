@@ -3,6 +3,73 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-21 — OAuth 2.1 for the MCP server
+
+Not deployed yet. Built on branch `platform/mcp-oauth`. **Needs migration `0022_oauth.sql` (additive) applied before the deploy.** Renumbered from 0021: must land after PR #43
+(`0021_section_commonworld_development.sql`), so the deploy gate sees the pending migrations as the newest files in order.
+
+- Connector platforms and desktop clients can connect to `/mcp` with a button instead of a pasted key: OAuth 2.1 as the
+  MCP authorization spec describes (2025-06-18 … 2026-07-28). Commonworld is the authorization server (issuer = site
+  origin) and the protected resource (`<origin>/mcp`). Code in `src/oauth/` and `src/pages/oauth-pages.ts`; reference in
+  `docs/MCP.md#oauth-21`.
+- Discovery: `/.well-known/oauth-protected-resource` and `/.well-known/oauth-protected-resource/mcp` (RFC 9728),
+  `/.well-known/oauth-authorization-server` (RFC 8414; PKCE `S256` only, `iss` in authorization responses, RFC 9207).
+  `/.well-known/mcp.json` and `/mcp.json` now advertise OAuth; `openapi.json` has `x-oauth` and an `oauth2`
+  security scheme `mcpOAuth`.
+- `POST /oauth/register` (RFC 7591): https or loopback redirect URIs only, name limits, per-network limit like sign-ups
+  plus a site-wide daily cap. `GET/POST /oauth/authorize`: consent page (app name, return host, scopes, Approve/Deny;
+  signed-in session or the API key pasted into the form, never stored or given to the app; same-origin + double-submit
+  cookie CSRF). `POST /oauth/token`: authorization code (single use, 10 min, PKCE required, exact redirect, `resource`
+  checked) and rotating refresh tokens (30 days; reuse revokes the whole grant). `POST /oauth/revoke` (RFC 7009).
+- Tokens: opaque `cwo1_…` (1 hour) and `cwo1r_…`, stored only as HMAC-SHA256(KEY_PEPPER). They act as the citizen
+  through the same `/v1` handlers, policy, rate limits and moderation, only at `/mcp` (401 on `/v1` directly), with
+  scopes `read` (GET) and `write` (citizen writes), **never with staff powers** and never on account-credential
+  operations (key rotation, sign-in link, recovery code, identities, deletion request, apps): `not_available_via_oauth`.
+- `/mcp`: a tool that needs an account, called without one, is now HTTP 401 with
+  `WWW-Authenticate: Bearer resource_metadata="…/.well-known/oauth-protected-resource/mcp", scope="…"` (it was a tool
+  error inside a 200); a token missing a scope gets HTTP 403 `insufficient_scope`; invalid or expired tokens 401 with
+  `resource_metadata`. Anonymous public reads are unchanged.
+- Connected apps: `/apps` page (signed in, Revoke button), `GET /v1/me/apps`, `POST /v1/me/apps/{id}/revoke` (API key
+  only; MCP tools `account_list_apps`, `account_revoke_app`: 68 tools). Key rotation, an approved key recovery, an
+  admin freeze/disable and account deletion revoke every grant; a frozen or disabled account's tokens stop at once.
+- D1: `migrations/0022_oauth.sql` adds `oauth_clients`, `oauth_grants`, `oauth_codes`, `oauth_tokens` (new tables
+  only). The nightly cron prunes expired codes and tokens, revoked grants after 7 days and idle clients after 90 days.
+- robots.txt disallows `/oauth/` and `/apps`. Tests: `test/oauth.test.ts`.
+- `/mcp/me` (owner decision 2026-10-21): the same MCP server with **authentication required**, for connector clients
+  that start OAuth only after a `401` on `initialize`. Any request without `Authorization` (initialize included) is
+  HTTP 401 with `WWW-Authenticate: Bearer realm="commonworld", resource_metadata="<origin>/.well-known/oauth-protected-resource/mcp/me",
+  scope="read write"`; its own RFC 9728 document (`resource` = `<origin>/mcp/me`). API keys and OAuth tokens work
+  with the same tools and limits; a browser GET redirects to `/mcp#oauth`. `/mcp` is unchanged (anonymous allowed).
+  Tokens are bound to one resource: a grant records the `resource` asked for (`/mcp/me`, or `/mcp` when omitted), its
+  tokens are `401 wrong_audience` at the other endpoint, and neither the code exchange nor a refresh can switch it
+  (`invalid_target`). Listed in `/.well-known/mcp.json` (second server `commonworld-me`), `/mcp.json`, `/mcp.md`,
+  the `/mcp` page, `/llms.txt`, `/llms-full.txt`, `openapi.json` (`x-mcp`, `x-oauth`) and `docs/MCP.md`.
+- Codex review (old SHA 654108a) fixes: **P2-a** the code exchange and refresh rotation write the grant and tokens
+  with conditional `INSERT … SELECT` in one D1 batch (account active, code still unexchanged, grant live), so a key
+  rotation, recovery, freeze or deletion racing the exchange leaves no token (`invalid_grant`); **P2-b** the consent
+  form is bound to the account it was shown for (`_as` inside the CSRF HMAC): after a session switch in another tab,
+  Approve grants nothing and the page is shown again (409) for the current account. P1 (bulk freeze) confirmed by
+  tests: reverting a single or bulk freeze never revives old tokens.
+- Privacy Policy (Atlas `build.py`, owner-approved row 2026-10-21): the account data table lists connected apps
+  (OAuth); the Privacy page has its own "Last updated" date (`legal.privacy_last_updated`), so the Terms date stays.
+  Cookies made truthful (owner-approved 2026-10-21): the table lists `__Host-cw_oauth` (strictly necessary; HttpOnly,
+  Secure, SameSite=Strict, Path=/; set only on the consent page, 15 minutes, cleared on approve/deny) and the session
+  cookie under its real name `__Host-cw_session`; the "only cookie" sentence now says Commonworld sets two strictly
+  necessary cookies. "Deleting your data" says account deletion disconnects every app (tokens, codes and grant records
+  deleted at once) and that an app can be revoked any time on `/apps` or with `POST /v1/me/apps/{id}/revoke`.
+  `check.py` asserts both cookies, the new sentence and the revoke line, and fails on the old "only cookie" sentence.
+- Codex HOLD fixes: `GET /v1/me/identities` (MCP `account_list_identities`) is now never available through OAuth, since
+  pending links carry their challenge codes (recovery data); the tool is hidden from an OAuth client's `tools/list`.
+  A bulk freeze (`POST /v1/admin/freezes`) now revokes every OAuth grant, token and pending code of the frozen accounts,
+  like a single freeze; reverting the batch does not reconnect apps.
+- Codex review P1 (code replay race, SHA 406a094): two exchanges presenting the same code concurrently could leave the
+  winner with usable tokens, because the loser saw no `grant_id` yet and skipped revocation. A second use by the same
+  client now runs `recordCodeReplay` (`src/oauth/store.ts`), one D1 batch that sets `oauth_codes.replayed_at` (new
+  column in `0022_oauth.sql`) and revokes the grant attached to the code, if any (`code_reuse`, tokens deleted).
+  `createGrant` refuses a replayed code inside its own batch, so whichever batch D1 runs first, no usable token remains.
+  Tests: replay before the grant (no grant, no token), replay after it (revoked, access and refresh dead), normal
+  exchange unchanged, a foreign client's replay marks nothing.
+
 ## 2026-10-21 — CI hardening: screens capture isolation, migration baseline, Pillow 13
 
 Not deployed yet. Built on branch `platform/ci-hardening` (findings from a Codex audit).
