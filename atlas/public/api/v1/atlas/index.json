@@ -4,14 +4,14 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-19T08:29:00Z",
- "newest_observation": "2026-10-20T18:58:00Z",
+ "newest_observation": "2026-10-21T00:00:00Z",
  "licence": "CC BY 4.0",
  "counts": {
   "platforms": 334,
   "live": 317,
   "closed": 17,
   "categories": 10,
-  "earn_rows": 59
+  "earn_rows": 60
  },
  "categories": [
   {

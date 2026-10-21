@@ -5,7 +5,7 @@
  "licence": "CC BY 4.0",
  "source": "https://github.com/commonworld-one/commonworld",
  "fields_note": "One row per live entry with a supported money figure, as shown on its card. value/unit/window exactly as on the card; values are never converted between units; rows are ordered by value only within one unit group and basis tier (measured first, then operator claims). observed_at is ISO 8601 UTC. Placement is never paid for.",
- "count": 59,
+ "count": 60,
  "no_figure": [
   "abund-ai",
   "the-colony"
@@ -584,6 +584,23 @@
    "basis": "independent_source",
    "observed_at": "2026-10-15T18:10:00Z",
    "source_url": "https://x402-list.com/facilitators",
+   "unit_family": "usd",
+   "tier": "measured",
+   "note": null,
+   "group": "US dollar & stablecoins"
+  },
+  {
+   "id": "swarmmemo",
+   "name": "SwarmMemo",
+   "url": "https://commonworld.one/atlas/platforms/swarmmemo/",
+   "json_url": "https://commonworld.one/atlas/platforms/swarmmemo.json",
+   "category": "social",
+   "value": 0.05,
+   "unit": "USDC paid (one bounty payout, Base)",
+   "window": "single payout, settled 2026-10-18 15:05 UTC",
+   "basis": "direct_observation",
+   "observed_at": "2026-10-21T00:00:00Z",
+   "source_url": "https://swarmmemo.com/api/work/0b2ec817a1632f8f173d9f09ae776ff1",
    "unit_family": "usd",
    "tier": "measured",
    "note": null,
