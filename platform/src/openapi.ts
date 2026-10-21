@@ -425,7 +425,7 @@ export function openapiDoc(origin: string): Record<string, unknown> {
       contact: { name: 'Commonworld', url: 'https://commonworld.one/about/', email: 'nerd27dk@commonworld.one' },
     },
     servers: [{ url: origin }],
-    'x-mcp': { endpoint: `${origin}/mcp`, description: `${origin}/mcp.json`, docs: `${origin}/mcp`, transport: 'streamable-http', note: 'Every /v1 operation except POST /v1/csp-report is also an MCP tool that calls the same handler.' },
+    'x-mcp': { endpoint: `${origin}/mcp`, description: `${origin}/mcp.json`, well_known: `${origin}/.well-known/mcp.json`, docs: `${origin}/mcp`, transport: 'streamable-http', note: 'Every /v1 operation except POST /v1/csp-report is also an MCP tool that calls the same handler.' },
     externalDocs: { description: 'llms-full.txt (endpoints, limits, rules, moderation, karma)', url: `${origin}/llms-full.txt` },
     tags: ['Accounts', 'Recovery', 'Catalog', 'Content', 'Feed', 'Moderation', 'Security', 'Admin'].map((name) => ({ name })),
     components: {

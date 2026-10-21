@@ -42,6 +42,8 @@ import { CONFIRM_ARG, IDEMPOTENCY_ARG, TOOL_BY_NAME, visibleTools, type JsonSche
 
 export const MCP_PATH = '/mcp';
 export const MCP_DOC_JSON = '/mcp.json';
+/** Discovery manifest at the well-known path (compact: which servers, where, how to authenticate; full description at /mcp.json). */
+export const MCP_WELL_KNOWN = '/.well-known/mcp.json';
 /** Modern revisions (per-request `_meta`, no initialize), newest first. */
 export const MCP_MODERN_VERSIONS = ['2026-07-28'] as const;
 /** Legacy revisions (initialize handshake), newest first. initialize answers the client's version when it is one of these, else the newest. */

@@ -7,11 +7,13 @@ for staging and production. Cost background: product note `COSTS-LOADS-2026-10-1
 
 | Request | Who answers | Billed Worker requests |
 |---|---|---|
-| Atlas static file: `/atlas/assets/*`, `/atlas/og/*`, `/atlas/screens/*`, `/atlas/badge/*`, `/atlas/data/*`, `/atlas/**.json`, `/atlas/**.txt`, `/atlas/**.xml`, `/atlas/**.md` (every Markdown twin: platform and category cards, decisions, events), `/stats.json`, `/stats/index.md`, `/api/*`, `/.well-known/*` | Cloudflare Static Assets directly (headers from the Atlas `_headers`, redirects from `_redirects`, a miss = Atlas `404.html` with 404) | **0** |
+| Atlas static file: `/atlas/assets/*`, `/atlas/og/*`, `/atlas/screens/*`, `/atlas/badge/*`, `/atlas/data/*`, `/atlas/**.json`, `/atlas/**.txt`, `/atlas/**.xml`, `/atlas/**.md` (every Markdown twin: platform and category cards, decisions, events), `/stats.json`, `/stats/index.md`, `/api/*`, `/.well-known/security.txt` | Cloudflare Static Assets directly (headers from the Atlas `_headers`, redirects from `_redirects`, a miss = Atlas `404.html` with 404) | **0** |
 | Atlas HTML: `/atlas/…/`, `/privacy/`, `/terms/`, `/about/`, `/stats/`, Atlas 404s under those | Worker → `env.ASSETS.fetch` → + CSP nonce (`src/atlas-assets.ts`) | 1 |
 | Slashless / `.html` Atlas URL (`/atlas/platforms/x`) | Worker, 308 to the slash form (as Pages) | 1 |
 | Bare `/atlas`, `/privacy`, `/terms`, `/about`, `/stats` | Worker, 301 to the slash form | 1 |
 | IndexNow key file `/<hex>.txt` | Worker → ASSETS | 1 |
+| `/.well-known/mcp.json` (MCP discovery manifest) | Worker (`src/mcp/docs.ts` `mcpWellKnown`) | 1 |
+| Any other `/.well-known/*` | Worker → ASSETS (Atlas 404) | 1 |
 | `/`, v1 pages, `/v1/*`, `/assets/*`, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/llms-full.txt`, `/favicon.ico` | Worker (v1); llms files append the Atlas file read from ASSETS (no network) | 1 |
 
 The split is `[assets] run_worker_first` in `wrangler.toml` (`"/*"` plus the `!` patterns), the same in the top-level,

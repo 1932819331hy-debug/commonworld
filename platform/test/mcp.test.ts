@@ -6,7 +6,7 @@ import { env, exports } from 'cloudflare:workers';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { OPERATIONS, schemaOf } from '../src/openapi';
 import { REST_EXCLUDED, REST_TOOLS, TOOLS, TOOL_BY_NAME, CONFIRM_ARG, IDEMPOTENCY_ARG, UNTRUSTED_TEXT } from '../src/mcp/tools';
-import { MCP_LEGACY_VERSIONS, MCP_LIST_TTL_MS, MCP_MAX_BODY_BYTES, MCP_PROTOCOL_VERSIONS, validateArgs } from '../src/mcp/server';
+import { MCP_LEGACY_VERSIONS, MCP_LIST_TTL_MS, MCP_MAX_BODY_BYTES, MCP_PROTOCOL_VERSIONS, MCP_WELL_KNOWN, validateArgs } from '../src/mcp/server';
 import { resetAtlasCache } from '../src/mcp/atlas';
 import MCP_DOC from '../docs/MCP.md?raw';
 import { api, makeAdmin, register, resetDb, setSetting } from './helpers';
@@ -193,6 +193,50 @@ describe('transport and routing', () => {
     expect(desc.body.endpoint).toBe(`${ORIGIN}/mcp`);
     expect(desc.body.tools.map((t: any) => t.name)).toEqual(TOOLS.map((t) => t.name));
     expect(desc.body.auth.oauth).toMatch(/next phase/);
+  });
+
+  it('/.well-known/mcp.json: compact discovery manifest (servers, bearer auth optional, no OAuth), same headers as /mcp.json', async () => {
+    expect(MCP_WELL_KNOWN).toBe('/.well-known/mcp.json');
+    const wk = await raw({ method: 'GET', path: '/.well-known/mcp.json' });
+    const full = await raw({ method: 'GET', path: '/mcp.json' });
+    expect(wk.status).toBe(200);
+    for (const h of ['content-type', 'access-control-allow-origin', 'cache-control', 'content-security-policy', 'x-content-type-options', 'strict-transport-security']) {
+      expect(wk.headers.get(h), h).toBe(full.headers.get(h));
+    }
+    expect(wk.headers.get('content-type')).toBe('application/json; charset=utf-8');
+    expect(wk.headers.get('access-control-allow-origin')).toBe('*');
+    expect(wk.headers.get('cache-control')).toBe('public, max-age=300, s-maxage=300');
+    expect(wk.body).toEqual({
+      name: 'commonworld',
+      title: 'Commonworld MCP server',
+      description: expect.stringContaining('Model Context Protocol'),
+      homepage: ORIGIN,
+      servers: [{
+        name: 'commonworld', url: `${ORIGIN}/mcp`, transport: 'streamable-http', protocol_versions: [...MCP_PROTOCOL_VERSIONS],
+        auth: { type: 'bearer', optional: true, note: expect.stringMatching(/account_register.*no key.*Authorization: Bearer cw1_/s) },
+      }],
+      links: { self: `${ORIGIN}/.well-known/mcp.json`, mcp_json: `${ORIGIN}/mcp.json`, mcp_md: `${ORIGIN}/mcp.md`, docs: `${ORIGIN}/mcp`, openapi: `${ORIGIN}/openapi.json`, llms_txt: `${ORIGIN}/llms.txt` },
+    });
+    expect(wk.text).not.toMatch(/oauth/i); // not built yet, so never advertised
+    expect(full.body.docs.well_known).toBe(`${ORIGIN}/.well-known/mcp.json`);
+    // every linked document answers
+    for (const url of Object.values(wk.body.links) as string[]) {
+      const r = await raw({ method: 'GET', path: new URL(url).pathname, headers: url.endsWith('/mcp') ? { accept: 'text/html' } : {} });
+      expect(r.status, url).toBe(200);
+    }
+    // GET/HEAD only, like the other discovery documents
+    expect((await raw({ method: 'HEAD', path: '/.well-known/mcp.json' })).status).toBe(200);
+    expect((await raw({ method: 'POST', path: '/.well-known/mcp.json', body: '{}' })).status).toBe(405);
+  });
+
+  it('/.well-known/mcp.json is listed where agents look: llms.txt, /mcp.md, docs/MCP.md, openapi x-mcp', async () => {
+    const llms = await raw({ method: 'GET', path: '/llms.txt' });
+    expect(llms.text).toContain(`${ORIGIN}/.well-known/mcp.json`);
+    const md = await raw({ method: 'GET', path: '/mcp.md' });
+    expect(md.text).toContain(`${ORIGIN}/.well-known/mcp.json`);
+    expect(MCP_DOC).toContain('/.well-known/mcp.json');
+    const oa = await raw({ method: 'GET', path: '/openapi.json' });
+    expect(oa.body['x-mcp'].well_known).toBe(`${ORIGIN}/.well-known/mcp.json`);
   });
 
   it('docs/MCP.md maps every tool to its REST endpoint; llms.txt and openapi point to /mcp', async () => {

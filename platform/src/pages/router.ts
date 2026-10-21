@@ -19,8 +19,8 @@ import { type PageOut, postPage } from './post';
 import { LLMS_PATHS, llmsFullTxt, llmsTxt } from './agent-docs';
 import { openapiDoc } from '../openapi';
 import { mcpPage } from './mcp-page';
-import { mcpDescription } from '../mcp/docs';
-import { MCP_DOC_JSON } from '../mcp/server';
+import { mcpDescription, mcpWellKnown } from '../mcp/docs';
+import { MCP_DOC_JSON, MCP_WELL_KNOWN } from '../mcp/server';
 import { versionedCacheKey, withoutSharedCache } from '../cache-version';
 import { ATLAS_SLASH_REDIRECT, atlasOrigin, atlasText, cleanAtlasDoc, isAtlasPath, proxyAtlas } from '../atlas-proxy';
 import { atlasAssetText, atlasAssetsOn, serveAtlasAsset } from '../atlas-assets';
@@ -373,7 +373,8 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
     if (ATLAS_SLASH_REDIRECT.test(path)) {
       return respond(method, 301, '', { location: `${path}/${url.search}`, 'cache-control': 'public, max-age=86400' });
     }
-    if (isAtlasPath(path)) return assetsOn ? serveAtlasAsset(request, env, url) : proxyAtlas(request, env, url, proxyOrigin!);
+    // /.well-known/mcp.json is the Worker's own (MCP discovery); every other /.well-known/* file belongs to the Atlas
+    if (isAtlasPath(path) && path !== MCP_WELL_KNOWN) return assetsOn ? serveAtlasAsset(request, env, url) : proxyAtlas(request, env, url, proxyOrigin!);
   }
   if (path === '/login' || path === '/logout') {
     try { return await authPage(request, env, url); } catch (error) {
@@ -465,9 +466,10 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
     return done(respond(method, 200, xml, { 'content-type': 'application/xml; charset=utf-8', 'cache-control': PUBLIC_PAGE_CACHE, ...noindexHeader(env) }));
   }
 
-  if (path === MCP_DOC_JSON) {
+  if (path === MCP_DOC_JSON || path === MCP_WELL_KNOWN) {
     const origin = (env.SITE_ORIGIN || url.origin).replace(/\/+$/, '');
-    return done(respond(method, 200, JSON.stringify(mcpDescription(origin), null, 1) + '\n', docHeaders(env, 'application/json; charset=utf-8')));
+    const doc = path === MCP_DOC_JSON ? mcpDescription(origin) : mcpWellKnown(origin);
+    return done(respond(method, 200, JSON.stringify(doc, null, 1) + '\n', docHeaders(env, 'application/json; charset=utf-8')));
   }
   if (path === LLMS_PATHS.llms || path === LLMS_PATHS.llmsFull || path === LLMS_PATHS.openapi || path === OPENAPI_V1_ALIAS) {
     const origin = (env.SITE_ORIGIN || url.origin).replace(/\/+$/, '');
