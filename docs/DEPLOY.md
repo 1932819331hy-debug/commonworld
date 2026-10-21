@@ -73,8 +73,10 @@ Only one production deploy runs at a time; a second one waits, a running one is 
 
 ### MCP server (`/mcp`)
 
-`/mcp`, `/mcp.md` and `/mcp.json` are served by the Worker (`run_worker_first` `/*`; no negative Atlas pattern matches
-them), so no `wrangler.toml` change is needed. No new binding, secret or migration. Optional var
+`/mcp`, `/mcp.md`, `/mcp.json` and `/.well-known/mcp.json` are served by the Worker (`run_worker_first` `/*`; no negative
+Atlas pattern matches them). Since 2026-10-21 the well-known negative pattern is only `!/.well-known/security.txt`
+(was `!/.well-known/*`), so the deploy that ships `/.well-known/mcp.json` also ships that `wrangler.toml` change; other
+unknown `/.well-known/*` paths then cost one Worker request each (Atlas 404). No new binding, secret or migration. Optional var
 `MCP_ALLOWED_ORIGINS` (comma list) narrows the browser origins allowed on `/mcp`; unset = any well-formed origin.
 After a deploy, check: `curl -s -X POST https://<host>/mcp -H 'content-type: application/json' -d
 '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}'` answers 200 with

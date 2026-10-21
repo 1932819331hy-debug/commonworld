@@ -4,7 +4,7 @@
  * to platform/.atlas-dist by scripts/build-atlas-assets.mjs).
  *
  * Who answers what (wrangler.toml `[assets] run_worker_first`, mirrored in ATLAS_RUN_WORKER_FIRST below):
- * - Atlas static files (CSS, JS, images, OG, screens, badges, JSON, /api/v1, /.well-known) are matched by the negative
+ * - Atlas static files (CSS, JS, images, OG, screens, badges, JSON, /api/v1, /.well-known/security.txt) are matched by the negative
  *   patterns: Cloudflare serves them straight from Static Assets. No Worker invocation, free and unlimited. Their
  *   headers come from the Atlas's own `_headers` file (Static Assets applies it), redirects from `_redirects`.
  * - Everything else runs the Worker first: v1 pages and API, and the Atlas HTML pages. For Atlas HTML the Worker reads
@@ -21,7 +21,9 @@ import type { Env } from './env';
  * The exact `run_worker_first` list of wrangler.toml (a test checks all environments use it). It mirrors the Pages
  * `_routes.json` of the Atlas build: what Pages served without its Function is served without the Worker here.
  * Differences from `_routes.json`: /robots.txt, /sitemap.xml, /llms.txt, /llms-full.txt, /favicon.ico, /404.html are
- * v1's (merged) and run the Worker; /.well-known/* is static (it ran the Function on Pages, for no reason).
+ * v1's (merged) and run the Worker; /.well-known/security.txt (the only well-known file the Atlas builds) is static.
+ * Every other /.well-known/* path runs the Worker: /.well-known/mcp.json is the Worker's MCP discovery manifest, and an
+ * unknown well-known path is answered from Static Assets by the Worker (404 page), one cheap Worker request.
  * `*` matches across `/`; negative patterns win; at most 100 entries.
  */
 export const ATLAS_RUN_WORKER_FIRST: readonly string[] = [
@@ -40,7 +42,7 @@ export const ATLAS_RUN_WORKER_FIRST: readonly string[] = [
   '!/stats.json',
   '!/stats/index.md',
   '!/api/*',
-  '!/.well-known/*',
+  '!/.well-known/security.txt',
 ];
 
 /** Same semantics as Cloudflare's run_worker_first: `*` = any characters (deep), a matching negative pattern wins. */

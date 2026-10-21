@@ -165,6 +165,14 @@ describe('A3: the Atlas from Static Assets (ATLAS_SOURCE=assets)', () => {
     expect(key.status).toBe(200);
     expect(key.text.trim()).toBe('fixture-indexnow-key');
     expect((await call('/.well-known/security.txt')).text).toContain('Contact:');
+    // /.well-known/mcp.json is the Worker's own (MCP discovery manifest), never an Atlas file; other unknown
+    // well-known paths are the Atlas 404
+    const wk = await call('/.well-known/mcp.json');
+    expect(wk.status).toBe(200);
+    expect(wk.headers.get('content-type')).toBe('application/json; charset=utf-8');
+    expect(wk.headers.get('x-cw-upstream')).toBeNull();
+    expect(JSON.parse(wk.text).servers[0].transport).toBe('streamable-http');
+    expect((await call('/.well-known/openid-configuration')).status).toBe(404);
     const api = await call('/api/v1/index.json');
     expect(api.status).toBe(200);
     expect(api.headers.get('access-control-allow-origin')).toBe('*');

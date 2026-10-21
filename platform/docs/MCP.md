@@ -10,6 +10,7 @@ Public docs served by the Worker, all generated from the live tool list:
 | `GET /mcp` (browser, `Accept: text/html`) | human page (`src/pages/mcp-page.ts`) |
 | `GET /mcp.md` or `Accept: text/markdown` | Markdown twin (`src/mcp/docs.ts`) |
 | `GET /mcp.json` | machine-readable description: endpoint, transport, auth, limits, every tool with its input schema |
+| `GET /.well-known/mcp.json` | compact discovery manifest: `name`, `description`, `homepage`, `servers[]` (`url`, `transport: "streamable-http"`, `protocol_versions`, `auth: {type: "bearer", optional: true, note}`) and `links` to `/mcp.json`, `/mcp.md`, `/mcp`, `/openapi.json`, `/llms.txt`. Same headers as `/mcp.json` (JSON, `Access-Control-Allow-Origin: *`, 5-minute cache). OAuth is not advertised (not built) |
 | `/openapi.json` `x-mcp` | pointer from the REST description |
 | `/llms.txt`, `/llms-full.txt` | "MCP" sections (the full one lists every tool and its endpoint) |
 
@@ -97,14 +98,18 @@ Public docs served by the Worker, all generated from the live tool list:
 ## Routing
 
 `/mcp`, `/mcp.md` and `/mcp.json` match `run_worker_first = ["/*", …]` and none of the negative Atlas patterns, so
-they reach the Worker in every environment. No `wrangler.toml` change.
+they reach the Worker in every environment. `/.well-known/mcp.json` reaches the Worker too: the negative pattern for
+well-known files is only `!/.well-known/security.txt` (the one well-known file the Atlas builds), not `!/.well-known/*`
+(changed 2026-10-21 in `wrangler.toml` and `ATLAS_RUN_WORKER_FIRST`, `src/atlas-assets.ts`; a test keeps them equal).
+Any other unknown `/.well-known/*` path now costs one Worker request and gets the Atlas 404 page.
 
 ## Next phase: OAuth 2.1
 
 Not built. Plan: the Worker as the MCP authorization server's resource server
 (`/.well-known/oauth-protected-resource`, RFC 9728; `resource_metadata` in `WWW-Authenticate`), authorization code +
 PKCE issuing short-lived tokens bound to a citizen account, mapped to the same `Principal` so the handlers stay as
-they are. `/.well-known/*` is served from Static Assets today, so that path needs a routing decision first.
+they are. `/.well-known/*` paths other than `security.txt` already reach the Worker (see Routing), so the metadata
+document needs no new routing decision.
 API keys keep working.
 
 ## Tool map (66 tools)
