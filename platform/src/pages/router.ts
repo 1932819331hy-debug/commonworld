@@ -10,7 +10,7 @@ import { sectionPage, sectionsPage, tagPage } from './catalog';
 import { commentLocation, contentGone, porchVisible, siteFacts, sitemapRows } from './data';
 import { homePage } from './home';
 import { esc } from './html';
-import { ABOUT_URL, PRIVACY_URL, TERMS_URL, type PageCtx, hasMarkdownTwin, markdownPath } from './layout';
+import { ABOUT_URL, NONCE_PLACEHOLDER, PRIVACY_URL, TERMS_URL, type PageCtx, hasMarkdownTwin, markdownPath } from './layout';
 import { markdownError, markdownTarget, prefersMarkdown, renderMarkdown } from './markdown';
 import { adminAccess, adminPageHtml, adminPageMd } from './admin';
 import { errorPage, inboxPage, loginPage, moderationPage, searchPage, type LoginView } from './misc';
@@ -81,18 +81,24 @@ export function newNonce(): string {
 }
 
 /**
- * Puts a fresh nonce on an HTML response: CSP header + every <script nonce="…"> in the body. Applied to every HTML
- * response we send, fresh or from the Workers cache, so a cached page never repeats a nonce: the cache stores the copy
- * from before this step, and each hit gets a new nonce here. Pages are small (tens of KB), so the body is read whole
- * and the attribute replaced by a regex on our own markup (user text is escaped and cannot contain "<script").
+ * Puts a fresh nonce on an HTML response: CSP header + our own `<script nonce>` tags. Applied to every HTML response we
+ * send, fresh or from the Workers cache, so a cached page never repeats a nonce: the cache stores the copy from before
+ * this step, and each hit gets a new nonce here. Pages are small (tens of KB), so the body is read whole.
+ * Strict stamping: only the exact attribute our layout emits, `nonce="${NONCE_PLACEHOLDER}"`, is replaced. Any other
+ * nonce attribute in the body (a `<script nonce="x">` that is not ours) keeps its value and never gets the fresh nonce,
+ * so it stays blocked even if escaping ever failed. User text is escaped by h`` and cannot contain the placeholder
+ * attribute either (its quotes become &quot;).
  */
-const SCRIPT_NONCE = /(<script\b[^>]*?\snonce=")[^"]*(")/g;
+export const NONCE_ATTR = `nonce="${NONCE_PLACEHOLDER}"`;
+export function stampNonce(html: string, nonce: string): string {
+  return html.split(NONCE_ATTR).join(`nonce="${nonce}"`);
+}
 export async function withFreshNonce(res: Response, env: Env): Promise<Response> {
   if (!(res.headers.get('content-type') ?? '').startsWith('text/html') || !res.headers.has('content-security-policy')) return res;
   const nonce = newNonce();
   const headers = new Headers(res.headers);
   headers.set('content-security-policy', contentSecurityPolicy(env, nonce));
-  const body = res.body ? (await res.text()).replace(SCRIPT_NONCE, `$1${nonce}$2`) : null;
+  const body = res.body ? stampNonce(await res.text(), nonce) : null;
   return new Response(body, { status: res.status, statusText: res.statusText, headers });
 }
 
