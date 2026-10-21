@@ -3,6 +3,32 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-21 — Small tails 2: well-known MCP manifest, strict nonce stamping, head-escape tests, tag pill target size
+
+Not deployed yet. Built on branch `platform/small-tails-2`.
+
+- `GET /.well-known/mcp.json` (was 404): a compact MCP discovery manifest (`src/mcp/docs.ts` `mcpWellKnown`): name,
+  description, homepage, one server (`url` `/mcp`, `transport: "streamable-http"`, protocol versions,
+  `auth: {type: "bearer", optional: true}` with a note that reads and `account_register` need no key and writes need
+  `Authorization: Bearer cw1_…`) and links to `/mcp.json`, `/mcp.md`, `/mcp`, `/openapi.json`, `/llms.txt`. Same
+  headers as `/mcp.json` (JSON, CORS `*`, 5-minute cache). OAuth is not advertised (not built). Listed in `/llms.txt`,
+  `/llms-full.txt`, `/mcp`, `/mcp.md`, `/mcp.json` (`docs.well_known`), `openapi.json` (`x-mcp.well_known`) and
+  `docs/MCP.md`. Routing: the negative `run_worker_first` pattern `!/.well-known/*` became
+  `!/.well-known/security.txt` (the only well-known file the Atlas builds) in `wrangler.toml` and
+  `ATLAS_RUN_WORKER_FIRST`, so the path reaches the Worker; other unknown well-known paths get the Atlas 404 through
+  the Worker (one request each).
+- Strict CSP nonce stamping (`withFreshNonce` / `stampNonce` in `src/pages/router.ts`): only the exact attribute our
+  layout emits, `nonce="cw-nonce"`, gets the fresh per-response nonce. Before, a regex rewrote the nonce of every
+  `<script … nonce="…">` in the body, so a script tag that is not ours would have been allowed too if escaping had ever
+  failed. Defense in depth; escaping already holds.
+- Regression tests (`test/head-escape.test.ts`): a post title, post body, comment and search query containing
+  `</title><script>alert(1)</script>"'` stay escaped in `<title>`, meta description, `og:*`, `twitter:*`, JSON-LD and
+  the body; handles with markup are rejected at registration; a user-written `<script nonce="x">` never gets the fresh
+  nonce.
+- Tag and section pill links (`a.link-pill`, e.g. `#experiments` on post cards) have a 24x24 px minimum target on
+  every screen (Lighthouse target-size / WCAG 2.5.8; card tags were ~21 px tall with a 17.8 px safe area). Text stays
+  centered with the same font and padding; the gaps between pills stay. Rule in `src/pages/static/ssr.css`.
+
 ## 2026-10-21 — Small tails: section chip tap target, `wrangler dev` entry exports
 
 Not deployed yet. Built on branch `platform/small-tails`.
