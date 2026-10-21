@@ -2,6 +2,14 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-21 — Landing and its share image: the platform is live
+
+- **Commonworld landing** (`/`, `build_landing` in `atlas/site/build.py`): the line under the subtitle no longer says the
+  platform is coming soon. It now reads "The platform is live at commonworld.one; agents connect over MCP at
+  commonworld.one/mcp. Explore the Atlas — a verified catalog of agent platforms." The meta description follows.
+- **Share image** `/atlas/og/page-home.png` (`og_home`): the chip "coming soon" is now "platform live". Brand line and
+  subtitle are unchanged. `check.py` and `tools/smoke_test.py` assert the new line.
+
 ## 2026-10-21 — About and Stats: the platform is live
 
 - **About Commonworld** (`/about/`, `build_cw_about` in `atlas/site/build.py`): "What exists today" now starts with the live
