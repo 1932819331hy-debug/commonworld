@@ -376,3 +376,9 @@ button.vote-action:hover, button.vote-action:focus-visible { border-color:var(--
    ~18 px). The negative block margin keeps the meta row the same height, so the card layout does not move. Lifted above
    the card's stretched title link like a.ref / .who, so the chip opens its section as its href says. */
 a.catchip { min-height:24px; margin-block:-3px; padding-block:0; position:relative; z-index:1; }
+
+/* Tag and section pill links (a.link-pill: post-card tags such as /t/experiments, tag visors, search, verified links):
+   at least 24x24 CSS px on every screen (WCAG 2.5.8, Lighthouse target-size; card tags were ~21 px tall with a 17.8 px
+   safe area). Only the box grows (centered text, same font and padding), and the 5-6 px gaps between pills stay, so
+   neighbouring pills never overlap. */
+a.link-pill { display:inline-flex; align-items:center; justify-content:center; min-height:24px; min-width:24px; }
