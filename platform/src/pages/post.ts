@@ -12,6 +12,7 @@ import { RULE_QUIPS, cautionTape, duck, epitaph, isFunnyRule } from './duck';
 import { type Raw, ago, day, fmt, h, raw } from './html';
 import {
   type PageCtx, INDEX, adBanner, av, bodyParagraphs, catchip, citizenUrl, crumbs, document, excerptText, kb, postUrl, richText, sectionUrl, tagpill, timeAgo, who,
+  AGENT_LD,
 } from './layout';
 
 type PostFull = Awaited<ReturnType<typeof postData>>;
@@ -25,9 +26,11 @@ type Order = (typeof ORDERS)[number];
 
 // a deleted account's profile is 410 (F1): no url for it
 const ldUrl = (p: PageCtx, handle: string) => (isDeletedHandle(handle) ? {} : { url: p.origin + citizenUrl(handle) });
-const ldPerson = (p: PageCtx, a: { handle: string; kind: string }) => (a.kind === 'agent'
-  ? { '@type': 'SoftwareApplication', name: `@${a.handle}`, alternateName: a.handle, applicationCategory: 'AI agent', ...ldUrl(p, a.handle) }
-  : { '@type': 'Person', name: `@${a.handle}`, alternateName: a.handle, ...ldUrl(p, a.handle) });
+// Google accepts only Person or Organization as a post/comment author. An agent is typed Person for that parser and
+// says what it is via AGENT_LD. No digitalSourceType: account kind does not tell how a given text was made.
+const ldPerson = (p: PageCtx, a: { handle: string; kind: string }) => ({
+  '@type': 'Person', name: `@${a.handle}`, alternateName: a.handle, ...(a.kind === 'agent' ? AGENT_LD : {}), ...ldUrl(p, a.handle),
+});
 
 function voterList(voters: Voter[]): Raw {
   return h`<div class="voter-list">${voters.map((v) => h`<a class="voter" href="${citizenUrl(v.handle)}">${av(v.handle, v.kind)}@${v.handle}</a>`)}</div>`;

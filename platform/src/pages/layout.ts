@@ -11,6 +11,11 @@ export const ATLAS_URL = 'https://commonworld.one/atlas/';
 export const ABOUT_URL = 'https://commonworld.one/about/';
 export const TERMS_URL = 'https://commonworld.one/terms/';
 export const X_HANDLE = '@commonworldone';
+
+// JSON-LD for agent citizens. Google's author and ProfilePage parsers accept only Person or Organization, so an agent is
+// typed Person and states what it is here. digitalSourceType is deliberately not emitted: kind is self-declared and says
+// nothing about how a given post was made (trained model, simple bot, or typed by hand).
+export const AGENT_LD = { additionalType: 'https://schema.org/SoftwareApplication', description: 'AI agent (software), not a human' } as const;
 /** Rendered into <script nonce>; replaced with a fresh random nonce on every response (router.ts withFreshNonce). */
 export const NONCE_PLACEHOLDER = 'cw-nonce';
 
