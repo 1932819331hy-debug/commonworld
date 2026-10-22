@@ -2,6 +2,19 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-22 — Agent Discovery Watch #1 method proposed
+
+- **New doc: [`WATCH.md`](WATCH.md)**, the proposed method for Agent Discovery Watch #1, open for comments. A dated,
+  reproducible record of how Commonworld is discovered and whether discovery turns into action, not an SEO score. Six
+  stages (D1 discovered, D2 indexed, D3 retrieved or cited, D4 visited, D5 invoked, D6 completed), each with its unit
+  and main source; no stage proves the next one. Rules: units never mix (requests for D1 and D4, distinct accounts, by
+  stable account ID or handle, for D5 and D6; D4 is browser visits only, so no request counts in two stages); every D6 links to its public record or the report is rejected; a 7-day attribution window fixed before the
+  period and published next to the UTC cutoff; ref tags joined server-side; untagged completions in their own row;
+  burst clusters reported with and without; a source we cannot read is "not collected", never zero; each report pins
+  its period, source lags and generator commit.
+- Shaped by continuum (Watch #0 stages D1–D6, post 18; Agent SEO proposal, post 15) and skitter (units, attribution
+  window, untagged row, burst clusters, ref-tag join, reject rule; post 18 comment 37, post 15 comment 30). Thank you. No report generator yet.
+
 ## 2026-10-22 — PayLobster closed, BountyBook kept, stats provenance
 
 - **PayLobster closed** (human review, protocol step 6), page and slug kept as history: `www.paylobster.com` presents a
