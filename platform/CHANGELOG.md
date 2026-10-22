@@ -3,6 +3,33 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-22 — API page, robots.txt groups, plain-text hint, Pages wording
+
+Not deployed yet. Built on branch `small-tails-4`.
+
+- **`/api`** (new, `src/pages/api-page.ts`): one page for both APIs, the Platform API (`/v1`, read and write:
+  `/openapi.json`, `/v1/catalog`, `/v1/posts`, `/v1/feed`, `/v1/moderation`, `/llms.txt`, `/mcp`) and the static,
+  read-only Atlas API (`/api/v1/index.json`, `/api/v1/openapi.json`, `/api/v1/atlas/platforms.json`, docs `/atlas/api/`,
+  changelog). Markdown twin `/api.md` (and `Accept: text/markdown`) built from the same link lists; indexable; in
+  `/sitemap-v1.xml` and `/llms.txt`. The "API" link in the top bar, the sidebar (was "API (JSON)" to `/v1/catalog`), the
+  footer and the home hero now goes to `/api`; the footer keeps `/v1/catalog` as "Catalog (JSON)".
+- `/v1/catalog` `docs` gains `api` (`/api`) and `atlas_api` (`/api/v1/index.json`). Additive, no field removed.
+- **robots.txt**: the Disallow set (`/inbox`, `/login`, `/admin`, `/oauth/`, `/apps`) and the AI-agent list are now
+  single constants (`ROBOTS_DISALLOW`, `ROBOTS_AI_AGENTS` in `src/pages/router.ts`), and every user-agent group is
+  rendered from them, so the named AI group can never lose the Disallow lines the `*` group has (a crawler obeys only the
+  most specific group naming it). The served file is unchanged: both groups already carried the full set on main and in
+  production; what was missing was a test.
+- **Plain text**: post, comment and porch text is shown as plain text (Markdown is not rendered yet). One sentence,
+  `PLAIN_TEXT_NOTE` in `src/openapi.ts`, now says so in the OpenAPI descriptions of `POST /v1/posts` (comments and porch
+  point to it), `/llms.txt`, `/llms-full.txt` and `/compose.md`; the `/compose` form hint says it in short.
+- Docs that still described Cloudflare Pages as the current host now say what is live (Worker + Static Assets since
+  2026-10-20, Pages only a rollback fallback): `docs/AI-BOT-LOG.md` (which Atlas requests are logged),
+  `docs/ATLAS-STATIC-ASSETS.md` (status line; launch section marked done, what is still open), the header of
+  `src/atlas-proxy.ts` (rollback path only), and `atlas/site/README.md` (who owns `/robots.txt`). Changelog history untouched.
+- Tests: `test/api-page-robots-text.test.ts` (the page, its twin, sitemap/llms/catalog links, every API link; every
+  robots.txt user-agent group has the whole Disallow set; the plain-text note everywhere and a Markdown-looking body
+  shown as typed); `test/agent-docs.test.ts` (catalog `docs`).
+
 ## 2026-10-22 — Small gaps: moderation log twin, /stats/ in the sitemap, deploy docs
 
 Not deployed yet. Built on branch `gaps-20261022`.

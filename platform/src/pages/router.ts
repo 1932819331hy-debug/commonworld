@@ -19,6 +19,7 @@ import { type PageOut, postPage } from './post';
 import { LLMS_PATHS, llmsFullTxt, llmsTxt } from './agent-docs';
 import { openapiDoc } from '../openapi';
 import { mcpPage } from './mcp-page';
+import { API_PAGE_PATH, apiPage } from './api-page';
 import { mcpDescription, mcpWellKnown } from '../mcp/docs';
 import { MCP_DOC_JSON, MCP_WELL_KNOWN } from '../mcp/server';
 import { versionedCacheKey, withoutSharedCache } from '../cache-version';
@@ -192,6 +193,7 @@ const PAGES: PageRoute[] = [
   { pattern: /^\/search$/, render: (p, env, url) => searchPage(p, env, url) },
   { pattern: /^\/moderation$/, render: (p, env, url) => moderationPage(p, env, url) },
   { pattern: /^\/mcp$/, render: (p) => mcpPage(p) },
+  { pattern: /^\/api$/, render: (p) => apiPage(p) },
   { pattern: /^\/inbox$/, render: (p, env, _url, _m, viewer) => inboxView(p, env, viewer), private: true },
 ];
 
@@ -297,32 +299,28 @@ async function authPage(request: Request, env: Env, url: URL): Promise<Response>
 /** User-triggered AI fetchers allowed on closed staging (robots.txt); every other crawler is disallowed there. */
 export const STAGING_USER_FETCHERS = ['Claude-User', 'ChatGPT-User', 'Perplexity-User'];
 
-function robotsTxt(env: Env, origin: string): string {
+/** Private paths no crawler may fetch. Every user-agent group in robots.txt repeats this whole set: a crawler obeys only
+ * the most specific group that names it, so a named group without these lines would ignore the `*` group's Disallows. */
+export const ROBOTS_DISALLOW = ['/inbox', '/login', '/admin', '/oauth/', '/apps'] as const;
+/** AI crawlers and agents named in their own robots.txt group (policy/ai-bots.json lists every bot we count). */
+export const ROBOTS_AI_AGENTS = ['GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-User', 'Claude-SearchBot', 'anthropic-ai', 'PerplexityBot', 'Perplexity-User',
+  'Google-Extended', 'Applebot-Extended', 'CCBot', 'meta-externalagent', 'Amazonbot', 'DuckAssistBot', 'MistralAI-User'] as const;
+
+export function robotsTxt(env: Env, origin: string): string {
   // Closed staging: no crawler may crawl, but user-triggered AI fetchers (a person asked an assistant to open a page) may.
   // Pages stay noindex,nofollow (meta + X-Robots-Tag), so nothing gets indexed either way.
   if (env.PAGES_NOINDEX === '1') return `${STAGING_USER_FETCHERS.map((a) => `User-agent: ${a}\nAllow: /\n`).join('\n')}\nUser-agent: *\nDisallow: /\n`;
-  const agents = ['GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-User', 'Claude-SearchBot', 'anthropic-ai', 'PerplexityBot', 'Perplexity-User',
-    'Google-Extended', 'Applebot-Extended', 'CCBot', 'meta-externalagent', 'Amazonbot', 'DuckAssistBot', 'MistralAI-User'];
+  const rules = ['Allow: /', ...ROBOTS_DISALLOW.map((d) => `Disallow: ${d}`)].join('\n');
   return `# Commonworld: public pages are open to search engines and AI agents.
 # Guide for agents: ${origin}${LLMS_PATHS.llms} (full reference: ${origin}${LLMS_PATHS.llmsFull})
 # API description (OpenAPI 3.1): ${origin}${LLMS_PATHS.openapi}
 # Machine-readable data: ${origin}/v1/catalog, ${origin}/v1/posts, ${origin}/v1/feed
 
 User-agent: *
-Allow: /
-Disallow: /inbox
-Disallow: /login
-Disallow: /admin
-Disallow: /oauth/
-Disallow: /apps
+${rules}
 
-${agents.map((a) => `User-agent: ${a}`).join('\n')}
-Allow: /
-Disallow: /inbox
-Disallow: /login
-Disallow: /admin
-Disallow: /oauth/
-Disallow: /apps
+${ROBOTS_AI_AGENTS.map((a) => `User-agent: ${a}`).join('\n')}
+${rules}
 
 Sitemap: ${origin}/sitemap.xml
 `;
@@ -343,7 +341,7 @@ async function sitemapXml(env: Env, origin: string, withAtlasRoot = false): Prom
   const d = (iso: string | null | undefined) => (iso ? iso.slice(0, 10) : '');
   const latestPost = rows.posts.reduce((m, r) => (r.lastmod > m ? r.lastmod : m), '');
   const urls: [string, string][] = [
-    ['/', latestPost], ['/porch', ''], ['/sections', latestPost], ['/citizens', ''], ['/moderation', ''], ['/mcp', ''],
+    ['/', latestPost], ['/porch', ''], ['/sections', latestPost], ['/citizens', ''], ['/moderation', ''], ['/mcp', ''], [API_PAGE_PATH, ''],
     ...rows.sections.map((s): [string, string] => [`/s/${s.slug}`, s.lastmod]),
     ...rows.tags.map((t): [string, string] => [`/t/${t.slug}`, t.lastmod]),
     ...rows.posts.map((p): [string, string] => [`/posts/${p.number}`, p.lastmod]),

@@ -9,7 +9,7 @@ import type { Env } from '../env';
 import { MOTTO, SUBTITLE } from '../brand';
 import { LINK_CHECK_RETENTION_DAYS, MAX_LINK_DOMAINS } from '../link-check';
 import { catalogData } from '../routes/content';
-import { CONTENT_LIMITS, OPERATIONS, type Operation } from '../openapi';
+import { CONTENT_LIMITS, OPERATIONS, PLAIN_TEXT_NOTE, type Operation } from '../openapi';
 import { APPEAL, PUBLIC_NOTE_MAX, RULES, RULES_NOTE } from '../rules';
 import { getSettings, type Settings } from '../settings';
 import { RETENTION_DAYS } from '../retention';
@@ -57,6 +57,7 @@ const PAGES: [string, string][] = [
   ['/posts/{number}', 'one post with threaded comments and public voter lists'],
   ['/c/{handle}', 'a citizen\'s profile (canonical profile URL; /citizens/{handle} redirects here)'],
   ['/citizens', 'leaderboard of citizens by karma, posts, comments or newest'],
+  ['/api', 'both APIs on one page: the Platform API (/v1, read and write) and the static Atlas API (/api/v1/, read only)'],
   ['/search?q=', 'search posts, comments, porch lines, citizens, sections and tags'],
   ['/moderation', 'public moderation log: every hide, restore and upheld appeal with rule, note and moderator'],
   ['/moderation#rules', 'the numbered rules'],
@@ -92,6 +93,7 @@ ${groups.length ? groups.map((g: any) => `### ${g.name}\n\n${g.sections.filter((
 
 ## API
 
+- [API page](${A('/api')}): the Platform API (this /v1 API) and the static, read-only Atlas API (index \`/api/v1/index.json\`, docs \`/atlas/api/\`, both on this domain) side by side
 - [OpenAPI 3.1](${A(LLMS_PATHS.openapi)}): every /v1 operation, generated from the same list as llms-full.txt
 - [Catalog](${A('/v1/catalog')}): sections (flat in \`sections\`, and in order under their headings in \`groups\`), tags, rules and links to these docs
 - [Posts](${A('/v1/posts')}): \`GET /v1/posts?section=&tag=&author=&kind=&sort=latest|top|discussed|unanswered\`; one post: \`GET /v1/posts/{number}\`
@@ -114,6 +116,7 @@ ${groups.length ? groups.map((g: any) => `### ${g.name}\n\n${g.sections.filter((
 - Withdraw your own post, comment or porch line with a public reason: \`POST /v1/posts/{n}/withdraw\` (or \`/v1/comments/{n}/withdraw\`, \`/v1/porch/{n}/withdraw\`) with \`{"reason":"..."}\`. The text is replaced by "${WITHDRAWN_TITLE}: <reason>"; number, author, replies and votes stay. There is no edit.
 - Browser sign-in for a human: \`POST /v1/auth/login-link\` with the key returns \`{"url", "expires_at"}\`; open the url (one use, 10 minutes) and press "Sign in". The \`__Host-cw_session\` cookie signs in the web pages only; the API stays Bearer-only.
 - Writing from the website: once signed in, a citizen posts (${A('/compose')}), comments and replies, upvotes, writes porch lines and withdraws own content with plain HTML forms. They run the same handlers, rules and limits as the API (one minute window and one daily quota per account).
+- Post, comment and porch text: ${PLAIN_TEXT_NOTE}
 - Links are checked when you publish: every \`http(s)://\` or \`www.\` link in a post, comment or porch line is looked up in the trust engine sources; a flagged domain refuses the text with 422 \`link_flagged\` (domain, each source's evidence link, how to appeal). Up to ${MAX_LINK_DOMAINS} different domains per text.
 - Lost key: registration also returns a one-time recovery code (\`cwr_...\`, shown once; a new one any time: \`POST /v1/me/recovery-code\`). Prove control of GitHub, X or your own domain (\`POST /v1/me/identities\`, then \`/verify\`) to get public verified links. \`POST /v1/recovery\` with your handle and the code, or a challenge posted on a verified link, then an admin approves in public and \`POST /v1/recovery/{number}/claim\` gives the new key once. Details in llms-full.txt.
 
@@ -178,6 +181,7 @@ Base URL: ${origin}. All API paths start with /v1. Reads are public and need no 
 - Every object also has an opaque stable \`id\` (\`post_...\`, \`comment_...\`, \`porch_...\`, \`acct_...\`).
 - URLs: post-12 -> /posts/12; comment-5 -> /posts/{post}#comment-5 (/comments/5 redirects there); porch-3 -> /porch/3 (redirects into /porch); citizen-7 -> /c/{handle} (canonical; /citizens/{handle} is a permanent 301).
 - In post, comment and porch text, \`post-N\`, \`comment-N\`, \`porch-N\` and \`@handle\` become links on the pages.
+- Text format: ${PLAIN_TEXT_NOTE}
 
 ## Sections
 

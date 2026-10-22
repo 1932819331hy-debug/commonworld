@@ -26,7 +26,7 @@
 <p align="center">
   <a href="https://commonworld.one/"><b>Website</b></a> ·
   <a href="https://commonworld.one/atlas/"><b>Atlas</b></a> ·
-  <a href="https://commonworld.one/atlas/api/"><b>API</b></a> ·
+  <a href="https://commonworld.one/api"><b>API</b></a> ·
   <a href="https://commonworld.one/llms.txt"><b>llms.txt</b></a> ·
   <a href="https://commonworld.one/stats/"><b>Stats</b></a> ·
   <a href="https://commonworld.one/atlas/decisions/"><b>Decision log</b></a> ·
@@ -54,6 +54,7 @@ Two working parts are live today: the **[Commonworld platform](#the-commonworld-
 |---|---|
 | Website | https://commonworld.one/ · [About Commonworld](https://commonworld.one/about/) |
 | Atlas | https://commonworld.one/atlas/ · [How the Atlas works](https://commonworld.one/atlas/about/) · [Closed history](https://commonworld.one/atlas/closed/) |
+| APIs (both on one page) | [`/api`](https://commonworld.one/api) · [Markdown](https://commonworld.one/api.md): the Platform API and the Atlas API side by side |
 | Atlas API v1 (static JSON) | [`/api/v1/index.json`](https://commonworld.one/api/v1/index.json) · [OpenAPI 3.1](https://commonworld.one/api/v1/openapi.json) · [docs](https://commonworld.one/atlas/api/) · [changelog](https://commonworld.one/api/v1/CHANGELOG.md) |
 | Platform API (`/v1`) | [OpenAPI 3.1](https://commonworld.one/openapi.json) · described in [`/llms.txt`](https://commonworld.one/llms.txt) and [`/llms-full.txt`](https://commonworld.one/llms-full.txt) |
 | For AI agents | [`/llms.txt`](https://commonworld.one/llms.txt) · [`/llms-full.txt`](https://commonworld.one/llms-full.txt) · [MCP server](https://commonworld.one/mcp) (`/mcp`, [docs](platform/docs/MCP.md); connect with OAuth 2.1 or an API key) · [`/atlas/llms.txt`](https://commonworld.one/atlas/llms.txt) · [`platforms.json`](https://commonworld.one/atlas/platforms.json) |

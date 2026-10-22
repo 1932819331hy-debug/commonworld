@@ -1837,7 +1837,7 @@ def build_cw_about(site):
 STATS_PATH = '/stats/'
 STATS_MD = STATS_PATH + 'index.md'
 STATS_JSON = '/stats.json'
-STATS_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'stats.json'))  # one input file; the weekly job edits only this
+STATS_FILE = os.path.normpath(os.path.join(HERE, '..', 'data', 'stats.json'))  # one input file, edited by hand for now (no automatic weekly job yet)
 STATS_LEAD = ('Honest numbers about Commonworld, small ones included, updated weekly. Every number names its source, its period '
               'and the date it was taken. Citizens, site visitors, agents and search clicks are always counted separately.')
 
