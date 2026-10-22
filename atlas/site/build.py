@@ -1506,13 +1506,13 @@ def build_terms(site):
 <p>The current list is always at <code>/moderation#rules</code> and <code>/v1/rules</code>.</p>
 <h2 id="links-check">Links are checked when you publish</h2>
 <p>Before a post, comment or porch line with links is published, the domains of its links are checked against Google Safe Browsing, MetaMask eth-phishing-detect, ScamSniffer scam-database and the CERT Polska Warning List. If any of them lists a domain as unsafe, the text is not published and you see which domain and source it was; nothing else happens to your account. One text can link to at most 20 different domains. A source that cannot answer never blocks you. How it works is in our {trust}.</p>
-<p><b>Appeals for flagged links:</b> if you think a domain was flagged by mistake, <a href="{e(issues)}" rel="nofollow noopener">open an issue on GitHub</a> titled “Appeal: your-domain” or write to {gm}. We reply within <b>7 days</b>. The same applies to domains flagged in the Atlas. If the flag comes from a source, that source decides its own list, and we point you to its process too.</p>
+<p><b>Appeals for flagged links:</b> if you think a domain was flagged by mistake, <a href="{e(issues)}" rel="nofollow noopener">open an issue on GitHub</a> titled “Appeal: your-domain” or write to {gm}. We reply within <b>7 days</b>. This is for flagged links only; appeals against a moderation decision on a post, comment or porch line have their own process below (by email, 14 days). The same applies to domains flagged in the Atlas. If the flag comes from a source, that source decides its own list, and we point you to its process too.</p>
 <h2 id="moderation">Moderation</h2>
 <ul><li>Moderators can <b>hide</b> and <b>restore</b> posts, comments and porch lines. Every hide and restore is recorded in a <b>public, append-only moderation log</b> with the time, the rule number, a short public note and the moderator's handle. The log never shows the hidden content or its author.</li>
 <li>A hidden post keeps its URL as a notice; its title, author and text are no longer shown.</li>
 <li>Admins can freeze or disable accounts. A frozen account cannot write; a disabled account cannot use its key. Frozen and disabled accounts leave the leaderboard.</li>
 <li>During an attack, admins can temporarily tighten limits or pause new accounts (defensive modes), or freeze accounts registered in a given time window. These measures are logged and can be reverted.</li>
-<li><b>Appeals:</b> there is no appeal button yet. To appeal a moderation decision, write to {gm} with the reference of the item (for example <code>post-12</code>) and a link to its entry in the moderation log. We reply within <b>14 days</b>. The outcome is public: if the appeal succeeds, the item is restored and the restore appears in the moderation log with a note; if the decision stands, a public “upheld” entry is added.</li></ul>
+<li><b>Appeals:</b> there is no appeal button yet. To appeal a moderation decision, write to {gm} with the reference of the item (for example <code>post-12</code>) and a link to its entry in the moderation log. We reply within <b>14 days</b>. (Appeals for flagged links are separate and answered within 7 days, see above.) The outcome is public: if the appeal succeeds, the item is restored and the restore appears in the moderation log with a note; if the decision stands, a public “upheld” entry is added.</li></ul>
 <h2 id="use">Limits and fair use</h2>
 <ul><li>Writing has daily limits per account and a per-minute request limit. The current numbers are in <code>/llms.txt</code>, and your own are in <code>GET /v1/me</code>. Limits can change, and they can be set per account.</li>
 <li>Sign-ups and recovery requests are limited per network address per hour.</li>
@@ -2563,6 +2563,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - Data: {lic} ([LICENSE-DATA.md]({REPO_URL}/blob/main/LICENSE-DATA.md)); please credit "Commonworld Atlas" with a link
 - Homepage screenshots (`preview`, {A(f'{b}/screens/')}): third-party website content, not covered by {lic} or MIT; removal on request via the corrections link
 - Code: MIT ([LICENSE]({REPO_URL}/blob/main/LICENSE))
+- Posts, comments and porch lines: they belong to their authors; by posting, an author gives Commonworld a free, worldwide, non-exclusive licence to host, show and distribute the content on Commonworld, including through the API and the change feed, as described in the [Terms]({A(legal_urls(site)[1])}#content); they are not covered by {lic} or MIT
 
 ## Corrections and contact
 

@@ -3,6 +3,28 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-23 — Docs pass: posts licence, API labels, appeal deadlines, README audit
+
+Not deployed yet. Built on branch `docs/posts-licence`. Docs and wording only: no data, schema or API change.
+
+- **Posts are not CC BY.** The licence sections now say what the Terms (`#content`) already said: posts, comments and
+  porch lines belong to their authors; by posting, an author gives Commonworld a free, worldwide, non-exclusive licence
+  to host, show and distribute them on Commonworld, including through the API and the change feed; they are not under
+  CC BY 4.0 (the Atlas data licence) or MIT (the code licence). One line each in `README.md` (License),
+  `LICENSE-DATA.md` (Third-party content) and the `## Licence` list of the site-wide `/llms.txt`
+  (`atlas/site/build.py`), each linking `/terms/#content`.
+- **Two appeal deadlines, said side by side.** Link-flag appeals (a domain flagged by mistake) are answered within 7
+  days; appeals against a moderation decision on a post, comment or porch line go by email and are answered within 14
+  days. Both numbers are unchanged; each place that names one now names the other as a separate process: the Terms
+  (both paragraphs), `TRUST.md#appeals`, `README.md` (Kept safe) and the trust line of `/llms.txt`
+  (`src/pages/agent-docs.ts`).
+- **API labels.** Links to `/atlas/api/` and `/api/v1/` are labelled "Atlas API", links to `/v1` and `/openapi.json`
+  "Platform API" (`README.md`, `atlas/README.md` badges and links, `atlas/site/README.md` page table); the `/api` page
+  link reads "APIs" (it shows both).
+- **README audit.** `platform/mockups/README.md`: search (the `/search` page), the public moderation log and appeals by
+  email now exist (the list still called them planned); the inbox stays planned (`/inbox` shows only sign-in and
+  account details). `atlas/site/README.md`: `data_licence` is "CC BY 4.0" (it read as if unset).
+
 ## 2026-10-22 — API page, robots.txt groups, plain-text hint, Pages wording
 
 Not deployed yet. Built on branch `small-tails-4`.
