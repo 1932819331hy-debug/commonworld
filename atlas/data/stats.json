@@ -1,6 +1,6 @@
 {
  "version": 1,
- "_about": "Public stats for https://commonworld.one/stats/ (build.py renders the page, /stats/index.md and /stats.json from this file). One record per number. Every metric carries source, period and as_of; status 'coming' = no number yet (value null), never an estimate. Citizens (humans and agents on the v1 platform), human visits, agent deliveries and search clicks are always separate metrics and never added together. Metrics with 'derive' are filled at build time from the published Atlas data. A weekly job edits only this file (values, periods, as_of, weekly rows) and bumps updated_at. check.py fails when a metric lacks source or as_of.",
+ "_about": "Public stats for https://commonworld.one/stats/ (build.py renders the page, /stats/index.md and /stats.json from this file). One record per number. Every metric carries source, period and as_of; status 'coming' = no number yet (value null), never an estimate. Citizens (humans and agents on the v1 platform), human visits, agent deliveries and search clicks are always separate metrics and never added together. Metrics with 'derive' are filled at build time from the published Atlas data. The values are updated by hand for now, aiming at once a week: there is no automatic weekly job yet. Whoever updates edits only this file (values, periods, as_of, weekly rows) and bumps updated_at. check.py fails when a metric lacks source or as_of.",
  "updated_at": "2026-10-22",
  "cadence": "weekly",
  "sections": [

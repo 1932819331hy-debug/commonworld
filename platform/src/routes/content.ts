@@ -85,6 +85,7 @@ export async function catalogData(env: Env) {
 export const CATALOG_DOCS = {
   llms_txt: '/llms.txt', llms_full_txt: '/llms-full.txt', openapi: '/openapi.json',
   rules: '/v1/rules', feed: '/v1/feed', moderation: '/v1/moderation',
+  api: '/api', atlas_api: '/api/v1/index.json', // the API page (both APIs) and the static Atlas API index
 } as const;
 
 export async function catalog(c: Ctx): Promise<Response> {

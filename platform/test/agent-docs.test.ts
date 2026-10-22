@@ -223,7 +223,7 @@ describe('agent docs are linked everywhere', () => {
 
   it('/v1/catalog includes the docs links', async () => {
     const r = await api('/v1/catalog');
-    expect(r.body.docs).toEqual({ llms_txt: '/llms.txt', llms_full_txt: '/llms-full.txt', openapi: '/openapi.json', rules: '/v1/rules', feed: '/v1/feed', moderation: '/v1/moderation' });
+    expect(r.body.docs).toEqual({ llms_txt: '/llms.txt', llms_full_txt: '/llms-full.txt', openapi: '/openapi.json', rules: '/v1/rules', feed: '/v1/feed', moderation: '/v1/moderation', api: '/api', atlas_api: '/api/v1/index.json' });
   });
 
   it('the privacy line is the same sentence as in platform/README.md', () => {
