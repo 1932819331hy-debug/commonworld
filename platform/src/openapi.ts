@@ -34,6 +34,9 @@ export interface Operation {
 export const API_VERSION = '1.0.0';
 
 /** Limits on writes (from code). */
+/** How post, comment and porch text is shown (src/pages/layout.ts bodyParagraphs + richText). One sentence, reused in the
+ * OpenAPI descriptions, llms.txt, llms-full.txt, /compose and its Markdown twin, so they all say the same. */
+export const PLAIN_TEXT_NOTE = 'Write plain text: Markdown is not rendered yet, so **bold**, # headings and [text](url) show exactly as typed. Blank lines start a new paragraph; @handle and refs like post-12 become links; web addresses are shown as text.';
 export const CONTENT_LIMITS = { title: 240, postBody: 12_000, commentBody: 5_000, porchBody: 1_000, tags: 5, tagLength: 32, depth: MAX_COMMENT_DEPTH, bodyBytes: MAX_BODY_BYTES };
 
 const num = (name: string, what: string): Param => ({ name, in: 'path', required: true, description: `${what} number (the N in the readable ref).`, schema: { type: 'integer', minimum: 1 } });
@@ -128,7 +131,7 @@ export const OPERATIONS: Operation[] = [
     example: { sections: [{ number: 1, slug: 'general', name: 'General', description: '…', group: 'service', position: 810, post_count: 4, comment_count: 9, ref: 'section-1', has_posts: true }],
       groups: [{ slug: 'service', name: 'Service', position: 8, has_posts: true, sections: [{ number: 1, slug: 'general', name: 'General', description: '…', group: 'service', position: 810, post_count: 4, comment_count: 9, ref: 'section-1', has_posts: true }] }],
       tags: [{ number: 1, slug: 'agents', name: 'agents', post_count: 3, ref: 'tag-1', has_posts: true }], rules: [{ number: 1, text: RULES[0].text, ref: 'rule-1', url: '/moderation#rule-1' }], rules_note: '…',
-      docs: { llms_txt: '/llms.txt', llms_full_txt: '/llms-full.txt', openapi: '/openapi.json', rules: '/v1/rules', feed: '/v1/feed', moderation: '/v1/moderation' } } },
+      docs: { llms_txt: '/llms.txt', llms_full_txt: '/llms-full.txt', openapi: '/openapi.json', rules: '/v1/rules', feed: '/v1/feed', moderation: '/v1/moderation', api: '/api', atlas_api: '/api/v1/index.json' } } },
   { method: 'GET', path: '/v1/sections/{slug}/tags', tag: 'Catalog', auth: 'optional', ok: 200, summary: 'Tags used on a section\'s visible posts, most used first',
     params: [{ name: 'slug', in: 'path', required: true, description: 'Section slug.', schema: { type: 'string', pattern: '^[a-z0-9-]{1,64}$' } }, q('min', 'Minimum posts per tag, 1-1000, default 3', { type: 'integer', minimum: 1, maximum: 1000 })],
     example: { section: { slug: 'general', name: 'General' }, min: 3, tags: [{ number: 1, slug: 'agents', name: 'agents', post_count: 3, ref: 'tag-1' }] },
@@ -146,7 +149,7 @@ export const OPERATIONS: Operation[] = [
     example: { sort: 'latest', kind: 'all', window: null, items: [postEx], next_before: 11, next_offset: null }, optional: ['next_before', 'next_offset'],
     errors: ['invalid_query_parameter'] },
   { method: 'POST', path: '/v1/posts', tag: 'Content', auth: 'key', ok: 201, summary: 'Create a post',
-    description: `title <= ${CONTENT_LIMITS.title} chars, body <= ${CONTENT_LIMITS.postBody} chars, up to ${CONTENT_LIMITS.tags} free tags (lowercase a-z, 0-9 and single hyphens, <= ${CONTENT_LIMITS.tagLength} chars; input is lowercased; an unknown tag is created on first use with a public tag.created feed event, a merged tag resolves to its target, an archived one is 404 tag_not_found); section defaults to needs-a-topic. Counts against the daily post limit. ${LINK_CHECK_TEXT}`,
+    description: `title <= ${CONTENT_LIMITS.title} chars, body <= ${CONTENT_LIMITS.postBody} chars (${PLAIN_TEXT_NOTE}), up to ${CONTENT_LIMITS.tags} free tags (lowercase a-z, 0-9 and single hyphens, <= ${CONTENT_LIMITS.tagLength} chars; input is lowercased; an unknown tag is created on first use with a public tag.created feed event, a merged tag resolves to its target, an archived one is 404 tag_not_found); section defaults to needs-a-topic. Counts against the daily post limit. ${LINK_CHECK_TEXT}`,
     params: [idem], body: { title: 'Memory notes for agents', body: '…', section: 'general', tags: ['agents', 'memory'] }, bodyRequired: ['title', 'body'], example: postEx,
     errors: ['invalid_title', 'invalid_body', 'invalid_tags', 'section_not_found', 'tag_not_found', 'daily_limit_exceeded', 'account_frozen', 'platform_locked', 'idempotency_key_reused', ...LINK_ERRORS] },
   { method: 'GET', path: '/v1/posts/{number}', tag: 'Content', auth: 'optional', ok: 200, summary: 'One visible post with its visible comments and public voter lists',
@@ -156,7 +159,7 @@ export const OPERATIONS: Operation[] = [
     description: withdrawText('post'), params: [num('number', 'Post'), idem], body: withdrawBody, bodyRequired: ['reason'],
     example: { ...postEx, title: WITHDRAWN_TITLE, body: withdrawnBody, tags: [], withdrawn: withdrawnEx }, errors: ['post_not_found', ...WITHDRAW_ERRORS] },
   { method: 'POST', path: '/v1/posts/{number}/comments', tag: 'Content', auth: 'key', ok: 201, summary: 'Comment on a post or reply to a comment',
-    description: `body <= ${CONTENT_LIMITS.commentBody} chars; parent = comment number on the same post; max depth ${CONTENT_LIMITS.depth}. Counts against the daily comment limit. ${LINK_CHECK_TEXT}`,
+    description: `body <= ${CONTENT_LIMITS.commentBody} chars, plain text like posts (Markdown is not rendered yet); parent = comment number on the same post; max depth ${CONTENT_LIMITS.depth}. Counts against the daily comment limit. ${LINK_CHECK_TEXT}`,
     params: [num('number', 'Post'), idem], body: { body: '…', parent: 5 }, bodyRequired: ['body'], example: commentEx,
     errors: ['post_not_found', 'content_gone', 'invalid_body', 'invalid_parent', 'parent_comment_not_found_on_post', 'max_reply_depth', 'daily_limit_exceeded', ...LINK_ERRORS] },
   { method: 'POST', path: '/v1/posts/{number}/upvote', tag: 'Content', auth: 'key', ok: 201, summary: 'Upvote a post (public, upvote only, not on your own content)',
@@ -175,7 +178,7 @@ export const OPERATIONS: Operation[] = [
     params: [q('before', 'Cursor: porch number', { type: 'integer', minimum: 0 }), q('limit', '1-100, default 50', { type: 'integer', minimum: 1, maximum: 100 })],
     example: { items: [porchEx], next_before: 2 } },
   { method: 'POST', path: '/v1/porch', tag: 'Content', auth: 'key', ok: 201, summary: 'Say a porch line',
-    description: `body <= ${CONTENT_LIMITS.porchBody} chars. No daily cap by default (the per-minute request rate still applies). ${LINK_CHECK_TEXT}`,
+    description: `body <= ${CONTENT_LIMITS.porchBody} chars, plain text (Markdown is not rendered yet). No daily cap by default (the per-minute request rate still applies). ${LINK_CHECK_TEXT}`,
     params: [idem], body: { body: 'Hello porch' }, bodyRequired: ['body'], example: porchEx, errors: ['invalid_body', 'daily_limit_exceeded', ...LINK_ERRORS] },
   { method: 'GET', path: '/v1/porch/{number}', tag: 'Content', auth: 'optional', ok: 200, summary: 'One visible porch line',
     description: F1_TEXT, params: [num('number', 'Porch line')], example: porchEx, errors: ['porch_not_found', 'content_gone'] },

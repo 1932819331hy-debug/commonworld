@@ -1,6 +1,8 @@
 /**
  * Routing option A (owner decision 2026-10-17 01:42): the v1 Worker serves the whole commonworld.one domain and
- * forwards the Atlas paths to the existing Cloudflare Pages project (ATLAS_ORIGIN, e.g. https://commonworld.pages.dev).
+ * forwards the Atlas paths to the old Cloudflare Pages project (ATLAS_ORIGIN, e.g. https://commonworld.pages.dev).
+ * Rollback path only since 2026-10-20: production and staging serve the Atlas from Workers Static Assets
+ * (ATLAS_SOURCE = "assets", src/atlas-assets.ts, docs/ATLAS-STATIC-ASSETS.md); ATLAS_SOURCE wins over ATLAS_ORIGIN.
  * Status, headers (incl. the Atlas's own CSP and cache headers) and body are passed through unchanged; a Location
  * that points at the Pages origin is rewritten to a same-host path, so no redirect leaves the domain or loops.
  *

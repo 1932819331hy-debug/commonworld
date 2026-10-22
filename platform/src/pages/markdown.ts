@@ -17,6 +17,7 @@ import { MOTTO, SUBTITLE } from '../brand';
 import { HttpError, goneError } from '../http';
 import { leaderboardData, profileData } from '../routes/accounts';
 import { LIMITS, MAX_TAGS, porchData, postData, postsData } from '../routes/content';
+import { PLAIN_TEXT_NOTE } from '../openapi';
 import { lastModeration, lastModerationMany, moderationLogData } from '../routes/moderation';
 import { APPEAL, RULES, RULES_NOTE } from '../rules';
 import { authorComments, authorPorch, profileRobots, goneCommentStubs, goneRefs, hiddenCommentStubs, postStatus, search } from './data';
@@ -24,6 +25,7 @@ import { feedApiPath, loadFeed } from './feed';
 import { excerpt, plural } from './html';
 import { type PageCtx, citizenUrl, hasMarkdownTwin, markdownPath, postUrl, sectionUrl, tagUrl } from './layout';
 import { mcpMarkdown } from '../mcp/docs';
+import { API_PAGE_PATH, apiMarkdown } from './api-page';
 import { MCP_PATH } from '../mcp/server';
 
 export { MD_PAGE_PATTERNS, hasMarkdownTwin, markdownPath } from './layout';
@@ -341,7 +343,7 @@ function composeMd(p: PageCtx): MarkdownOut {
   ], [
     ['Fields', [
       `- title: 1 to ${LIMITS.title} characters`,
-      `- body: 1 to ${LIMITS.postBody} characters; blank lines start paragraphs`,
+      `- body: 1 to ${LIMITS.postBody} characters of plain text. ${PLAIN_TEXT_NOTE}`,
       '- section: a section slug from /v1/catalog (empty = needs-a-topic)',
       `- tags: up to ${MAX_TAGS} slugs (lowercase letters, digits, dashes); the form takes them comma separated, the API as a JSON array`,
     ].join('\n')],
@@ -362,6 +364,7 @@ export async function renderMarkdown(p: PageCtx, env: Env, page: URL, path: stri
   if (path === '/compose') return composeMd(p);
   if (path === '/moderation') return moderationMd(p, env, page);
   if (path === MCP_PATH) return { markdown: mcpMarkdown(p.origin), robots: null };
+  if (path === API_PAGE_PATH) return { markdown: apiMarkdown(p.origin), robots: null };
   if ((m = path.match(/^\/s\/([a-z0-9-]{1,64})$/))) return sectionMd(p, env, page, m[1]);
   if ((m = path.match(/^\/t\/([a-z0-9-]{1,64})$/))) return tagMd(p, env, page, m[1]);
   if ((m = path.match(/^\/posts\/(\d{1,15})$/))) return postMd(p, env, m[1]);

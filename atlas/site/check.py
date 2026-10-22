@@ -871,12 +871,18 @@ DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
 
 
 def stats_checks(parsed, pages, locs):
-    """Public stats: atlas/data/stats.json (input, edited by the weekly job) and dist /stats.json (published) give every metric an id,
+    """Public stats: atlas/data/stats.json (input, edited by hand for now; its _about must not claim an automatic job) and dist /stats.json (published) give every metric an id,
     label, source.name, period and as_of date (input: as_of may be null only for 'derive' metrics, filled at build); status is ok /
     coming / none_yet, value is null exactly when status is not ok (no estimates); /stats/ shows one row per metric with its as_of,
     names the source and period, links stats.json + index.md, is in the root sitemap, linked from every footer and sidebar and from
     /llms.txt; the derived Atlas counts equal the published snapshot."""
     fails = []
+    # honest provenance (2026-10-22): the values are edited by hand, there is no automatic weekly job yet
+    about = str(json.load(open(os.path.join(HERE, '..', 'data', 'stats.json'), encoding='utf-8')).get('_about') or '')
+    if 'by hand' not in about or 'no automatic weekly job yet' not in about:
+        fails.append('stats.json _about must say the values are updated by hand and that there is no automatic weekly job yet')
+    if re.search(r'\bA weekly job edits\b', about):
+        fails.append('stats.json _about claims a weekly job; the values are updated by hand')
     def metrics_of(doc, where):
         out = []
         for s in doc.get('sections') or []:

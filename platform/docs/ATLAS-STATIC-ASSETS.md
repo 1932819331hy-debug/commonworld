@@ -1,7 +1,8 @@
 # Atlas from the v1 Worker's Static Assets (routing option A3)
 
 Owner decision 2026-10-18 13:45. Replaces "the Worker proxies the Atlas to Pages" (option A as built, `src/atlas-proxy.ts`)
-for staging and production. Cost background: product note `COSTS-LOADS-2026-10-18.md` §5.
+for staging and production. **Status: live in production since 2026-10-20** (`../docs/DEPLOY.md`); the "Pages today" column
+below is the state before the cutover, kept for the record. The old Cloudflare Pages project is only a rollback fallback now. Cost background: product note `COSTS-LOADS-2026-10-18.md` §5.
 
 ## What answers which request
 
@@ -73,6 +74,11 @@ the build's. The Worker only adds `'nonce-…'` after `script-src 'self'` on HTM
 
 ## Launch day and Pages retirement
 
+Done on 2026-10-20 (cutover steps and their record: `../docs/DEPLOY.md`, "First production deploy"). Releases go only through
+the `deploy-platform` workflow; the Pages project has automatic deployments off and is kept as a fallback. Still open: deleting
+the Pages project together with the `ATLAS_ORIGIN` proxy fallback and `functions/_middleware.js` / `_routes.json`.
+
+The steps as planned:
 Owner steps (`../docs/DEPLOY.md`): remove the Pages custom domains, uncomment the production routes, `npm run deploy:production`,
 smoke, then switch off the Pages project's automatic deployments (production off, previews none) and deploy through the
 `deploy-platform` workflow. Keep the Pages project for a week as the rollback target, then delete it together with the

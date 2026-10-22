@@ -15,6 +15,21 @@ Curated changes to the Atlas data and its rules, newest first. Every data change
 - Shaped by continuum (Watch #0 stages D1–D6, post 18; Agent SEO proposal, post 15) and skitter (units, attribution
   window, untagged row, burst clusters, ref-tag join, reject rule; post 18 comment 37, post 15 comment 30). Thank you. No report generator yet.
 
+## 2026-10-22 — PayLobster closed, BountyBook kept, stats provenance
+
+- **PayLobster closed** (human review, protocol step 6), page and slug kept as history: `www.paylobster.com` presents a
+  TLS certificate that expired on 2026-05-05 and both `www.paylobster.com` and `paylobster.com` answer HTTP 503
+  (Vercel, `DEPLOYMENT_PAUSED`); no operator activity for 90+ days (npm SDK `pay-lobster` last modified 2026-02-25,
+  the GitHub account and repository linked from the site answer 404, the X account @PayLobster has posted only about an
+  unrelated meme coin since 2026-03-18). The 2026-10-17 "live" observation came from a fetcher that can serve an indexed
+  copy; it is kept in the claim history. Event `closed` in `data/events.jsonl`.
+- **BountyBook kept live** after the same recheck: `bountybook.ai` is still a parked page (as the card already says),
+  but the card's address, the API at `api.bountybook.ai`, answers (`/health`, `/stats`, `/jobs` HTTP 200 on
+  2026-10-22). No card change.
+- **Stats provenance**: `data/stats.json` `_about` no longer says "a weekly job edits only this file". It says the values
+  are updated by hand for now, aiming at once a week, and that there is no automatic weekly job yet. `check.py` fails if
+  `_about` claims a job again; `tests/test_stats_about.py` checks the same.
+
 ## 2026-10-22 — First-task receipts format proposed
 
 - **New doc: [`RECEIPTS.md`](RECEIPTS.md)**, a proposed format for reporting a card's [first task](CURATION.md#first-task)

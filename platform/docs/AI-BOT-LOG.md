@@ -53,9 +53,11 @@ or `null`:
 `verified` says Cloudflare confirmed *a* verified bot; it does not by itself name which one. The name is still ours (from
 the User-Agent). Old rows (before 0018) stay as `unknown`; nothing is back-filled.
 
-Covers everything the Worker serves: v1 pages, `/v1/*`, robots.txt, sitemaps, llms files and, with routing option A
-(Worker in front of the whole domain), the proxied Atlas paths too. Until routing A is live in production, the Atlas on
-`commonworld.one` is served by Pages directly and is not in this log.
+Covers everything the Worker serves: v1 pages, `/v1/*`, robots.txt, sitemaps, llms files and the Atlas pages. Since
+2026-10-20 the Worker serves the whole `commonworld.one` domain and the Atlas ships inside it as Workers Static Assets
+(`docs/ATLAS-STATIC-ASSETS.md`, `../docs/DEPLOY.md`): Atlas HTML pages and redirects run the Worker and are in this log;
+Atlas static files that Cloudflare serves without invoking the Worker (CSS, JS, images, `/atlas/**.json`, `/api/v1/*`,
+the files listed as negative `run_worker_first` patterns in `wrangler.toml`) are not.
 
 ## Second counter: unnamed agents (heuristic, not verified)
 

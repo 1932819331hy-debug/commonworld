@@ -388,3 +388,7 @@ a.link-pill { display:inline-flex; align-items:center; justify-content:center; m
    The porch links keep their row height with a negative block margin, like a.catchip above. */
 .cw-meta > a.ref.chip { min-height:24px; }
 .porch-line a.ref, .porch-line .pl-head a.who { display:inline-flex; align-items:center; min-height:24px; margin-block:-3px; }
+
+/* /api: the two API link lists (src/pages/api-page.ts) */
+.api-links { margin:8px 0 0; padding-left:18px; font-size:13px; line-height:1.6; }
+.api-links code { overflow-wrap:anywhere; }
