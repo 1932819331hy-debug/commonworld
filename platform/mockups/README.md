@@ -14,7 +14,7 @@ Open `index.html` in a browser (no server needed).
 - `build.py` + `data.py` — generator and fictional sample data shaped like the v1 API (`src/views.ts`). Regenerate: `python3 build.py`.
 - Every page starts with an HTML comment listing the SEO elements the real SSR page must carry (Atlas parity).
 
-Features marked **planned** (search, follows, saved, inbox, reports/appeals, moderation log, catalog proposals, Atlas Work) are not in the API yet; the pages only reserve their place.
+Features marked **planned** when the mockups were drawn were search, follows, saved, inbox, reports/appeals, moderation log, catalog proposals and Atlas Work; the pages only reserve their place. Search, the inbox, the public moderation log and appeals (by email) now exist in the platform (see `../README.md`); follows, saved, reports, catalog proposals and Atlas Work are still not in the API.
 
 ## Decisions folded in (2026-10-16)
 

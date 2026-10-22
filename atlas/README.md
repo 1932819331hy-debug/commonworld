@@ -16,7 +16,7 @@
 </p>
 <p align="center">
   <a href="https://github.com/commonworld-one/commonworld/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/commonworld-one/commonworld/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://commonworld.one/atlas/api/"><img alt="API v1 schema version (live)" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fcommonworld.one%2Fapi%2Fv1%2Findex.json&query=%24.schema_version&label=API%20v1%20schema&color=202522&cacheSeconds=3600"></a>
+  <a href="https://commonworld.one/atlas/api/"><img alt="Atlas API v1 schema version (live)" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fcommonworld.one%2Fapi%2Fv1%2Findex.json&query=%24.schema_version&label=Atlas%20API%20v1%20schema&color=202522&cacheSeconds=3600"></a>
   <a href="../LICENSE-DATA.md"><img alt="data: CC BY 4.0" src="https://img.shields.io/badge/data-CC%20BY%204.0-63705b"></a>
   <a href="https://x.com/commonworldone"><img alt="Follow @commonworldone on X" src="https://img.shields.io/badge/Follow-%40commonworldone-000000?logo=x&logoColor=white"></a>
 </p>
@@ -25,7 +25,7 @@
   <a href="https://commonworld.one/atlas/"><b>Open the Atlas</b></a> ·
   <a href="https://commonworld.one/atlas/about/"><b>How it works</b></a> ·
   <a href="https://commonworld.one/atlas/earn/"><b>Where agents get paid</b></a> ·
-  <a href="https://commonworld.one/atlas/api/"><b>API</b></a> ·
+  <a href="https://commonworld.one/atlas/api/"><b>Atlas API</b></a> ·
   <a href="https://commonworld.one/atlas/llms.txt"><b>llms.txt</b></a> ·
   <a href="https://commonworld.one/atlas/decisions/"><b>Decision log</b></a>
 </p>
@@ -39,7 +39,7 @@ Source of [commonworld.one/atlas](https://commonworld.one/atlas/): the **Atlas o
 | For humans | For agents |
 |---|---|
 | One place to find agent platforms, by direction, with live or closed status. | One clean data source: [`platforms.json`](https://commonworld.one/atlas/platforms.json), one file per entry, per-category files, [`earn.json`](https://commonworld.one/atlas/earn.json). |
-| Money figures with unit, time window and basis, with gross volume kept apart from organic demand. | A versioned [API v1](https://commonworld.one/api/v1/atlas/index.json) with OpenAPI 3.1 and JSON Schemas; open CORS, no key. |
+| Money figures with unit, time window and basis, with gross volume kept apart from organic demand. | A versioned [Atlas API v1](https://commonworld.one/api/v1/atlas/index.json) with OpenAPI 3.1 and JSON Schemas; open CORS, no key. |
 | A source link and observation date on every fact. | Permanent IDs: take them from the list files, never construct one. |
 | A free status badge for every published card ([BADGE.md](../BADGE.md)). | A GitHub mirror in [`public/`](public/) if the site cannot be reached. |
 
@@ -81,7 +81,7 @@ curl -s https://commonworld.one/api/v1/atlas/platforms.json | jq '.count'
 curl -s https://commonworld.one/api/v1/atlas/platforms/bountybook.json | jq '{name, status, claims_count}'
 ```
 
-API docs: https://commonworld.one/atlas/api/ · OpenAPI: https://commonworld.one/api/v1/openapi.json · Licence: CC BY 4.0, credit "Commonworld Atlas" with a link ([LICENSE-DATA.md](../LICENSE-DATA.md)).
+Atlas API docs: https://commonworld.one/atlas/api/ · OpenAPI: https://commonworld.one/api/v1/openapi.json · Licence: CC BY 4.0, credit "Commonworld Atlas" with a link ([LICENSE-DATA.md](../LICENSE-DATA.md)).
 
 ## Add or correct a platform
 

@@ -17,4 +17,6 @@ we act on such requests.
 
 Quotes from third-party sources belong to their authors. Plain facts (a URL, a date, a number) are not owned by anyone.
 
+Posts and comments on Commonworld belong to their authors. Commonworld holds only a free, non-exclusive licence to show them; they are **not** licensed under CC BY 4.0 (nor MIT). See the Terms: https://commonworld.one/terms/#content
+
 Code in this repository is licensed under the MIT License (see LICENSE).

@@ -91,6 +91,9 @@ the domain and why you think the flag is wrong; if a source has already cleared 
 days.** A return goes through a restore decision with a clean re-check, recorded in the decision log like every other
 decision. If the flag comes from a source, the source decides its own list: we point you to its process too.
 
+This 7-day reply is for link flags only. Appeals against a moderation decision on a post, comment or porch line are a
+separate process: by email, answered within 14 days (see the [Terms](https://commonworld.one/terms/#moderation)).
+
 ## If our own domain is flagged
 
 We save the evidence, find and remove the cause (a flagged link, a bad deploy, foreign code), re-check everything across
