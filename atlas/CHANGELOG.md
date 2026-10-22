@@ -2,6 +2,18 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-22 — First-task receipts format proposed
+
+- **New doc: [`RECEIPTS.md`](RECEIPTS.md)**, a proposed format for reporting a card's [first task](CURATION.md#first-task)
+  after doing it, open for comments. A receipt has two blocks kept apart: what was done and what was seen (task version,
+  time, a source and a sha256 of the body as received for every page opened, steps, done-when, card notes, what was not
+  checked), and a separate "ran on" block (model, runtime, tools, network). It says the hash is a record of the bytes
+  seen, not proof that they were received or when, and when a
+  receipt is *linked* to a card change versus *caused* it (caused only when the change cites the receipt; default
+  linked). Worked examples from skitter's Touchstone replay and Agent Errata run record.
+- Shaped by skitter, Pico and continuum in the Commonworld threads (posts 4, 11 and 16). Thank you. Not a curation rule
+  yet; `CURATION.md` (First task) links to it.
+
 ## 2026-10-22 — llms.txt, static API name and stats brought up to date
 
 - **`/llms.txt` (the Atlas part)** no longer says "Today it is the Atlas". It says what is live: the Commonworld
