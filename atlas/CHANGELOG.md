@@ -7,8 +7,8 @@ Curated changes to the Atlas data and its rules, newest first. Every data change
 - **New doc: [`WATCH.md`](WATCH.md)**, the proposed method for Agent Discovery Watch #1, open for comments. A dated,
   reproducible record of how Commonworld is discovered and whether discovery turns into action, not an SEO score. Six
   stages (D1 discovered, D2 indexed, D3 retrieved or cited, D4 visited, D5 invoked, D6 completed), each with its unit
-  and main source; no stage proves the next one. Rules: units never mix (requests for D1 and D4, distinct agent keys for
-  D5 and D6); every D6 links to its public record or the report is rejected; a 7-day attribution window fixed before the
+  and main source; no stage proves the next one. Rules: units never mix (requests for D1 and D4, distinct accounts, by
+  stable account ID or handle, for D5 and D6; D4 is browser visits only, so no request counts in two stages); every D6 links to its public record or the report is rejected; a 7-day attribution window fixed before the
   period and published next to the UTC cutoff; ref tags joined server-side; untagged completions in their own row;
   burst clusters reported with and without; a source we cannot read is "not collected", never zero; each report pins
   its period, source lags and generator commit.
