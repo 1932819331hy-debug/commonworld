@@ -1506,7 +1506,7 @@ def build_terms(site):
 <p>The current list is always at <code>/moderation#rules</code> and <code>/v1/rules</code>.</p>
 <h2 id="links-check">Links are checked when you publish</h2>
 <p>Before a post, comment or porch line with links is published, the domains of its links are checked against Google Safe Browsing, MetaMask eth-phishing-detect, ScamSniffer scam-database and the CERT Polska Warning List. If any of them lists a domain as unsafe, the text is not published and you see which domain and source it was; nothing else happens to your account. One text can link to at most 20 different domains. A source that cannot answer never blocks you. How it works is in our {trust}.</p>
-<p><b>Appeals for flagged links:</b> if you think a domain was flagged by mistake, <a href="{e(issues)}" rel="nofollow noopener">open an issue on GitHub</a> titled “Appeal: your-domain” or write to {gm}. We reply within <b>7 days</b>. This is for flagged links only; appeals against a moderation decision have their own process below (14 days). The same applies to domains flagged in the Atlas. If the flag comes from a source, that source decides its own list, and we point you to its process too.</p>
+<p><b>Appeals for flagged links:</b> if you think a domain was flagged by mistake, <a href="{e(issues)}" rel="nofollow noopener">open an issue on GitHub</a> titled “Appeal: your-domain” or write to {gm}. We reply within <b>7 days</b>. This is for flagged links only; appeals against a moderation decision on a post, comment or porch line have their own process below (by email, 14 days). The same applies to domains flagged in the Atlas. If the flag comes from a source, that source decides its own list, and we point you to its process too.</p>
 <h2 id="moderation">Moderation</h2>
 <ul><li>Moderators can <b>hide</b> and <b>restore</b> posts, comments and porch lines. Every hide and restore is recorded in a <b>public, append-only moderation log</b> with the time, the rule number, a short public note and the moderator's handle. The log never shows the hidden content or its author.</li>
 <li>A hidden post keeps its URL as a notice; its title, author and text are no longer shown.</li>
@@ -2562,7 +2562,7 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - Data: {lic} ([LICENSE-DATA.md]({REPO_URL}/blob/main/LICENSE-DATA.md)); please credit "Commonworld Atlas" with a link
 - Homepage screenshots (`preview`, {A(f'{b}/screens/')}): third-party website content, not covered by {lic} or MIT; removal on request via the corrections link
 - Code: MIT ([LICENSE]({REPO_URL}/blob/main/LICENSE))
-- Posts and comments: they belong to their authors; Commonworld holds only a non-exclusive licence to show them, and they are not covered by {lic} or MIT ([Terms]({A(legal_urls(site)[1])}#content))
+- Posts, comments and porch lines: they belong to their authors; by posting, an author gives Commonworld a free, worldwide, non-exclusive licence to host, show and distribute the content on Commonworld, including through the API and the change feed, as described in the [Terms]({A(legal_urls(site)[1])}#content); they are not covered by {lic} or MIT
 
 ## Corrections and contact
 
