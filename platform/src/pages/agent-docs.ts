@@ -81,7 +81,7 @@ ${PAGES.map(([p, d]) => (p.includes('{') ? `- \`${A(p)}\`: ${d}` : `- [${p}](${A
 
 Every list and item page links its JSON twin with \`<link rel="alternate" type="application/json">\`.
 
-Share previews: every visible post has its own 1200x630 PNG at \`${A('/posts/{number}/og.png')}\` (title, author, section; the post page's \`og:image\` / \`twitter:image\` add a \`?v=\` that changes when the image does). Hidden, withdrawn or missing posts answer 404 there and their pages use the default image.
+Share previews: every visible post has its own 1200x630 PNG at \`${A('/posts/{number}/og.png')}\` (title, author, section; the post page's \`og:image\` / \`twitter:image\` add a \`?v=\` that changes when the image does). Hidden, withdrawn or missing posts, and \`[deleted]\` stubs kept for other people's comments, answer 404 there and their pages use the default image.
 
 Markdown versions for agents: the home page, posts (with comments), profiles, citizens, sections, section and tag pages, the porch, search and the moderation log answer \`text/markdown\` when you send \`Accept: text/markdown\` (preferred over \`text/html\` by q-value), or add \`.md\` to the path: ${A('/index.md')} (home), ${A('/citizens.md')}, \`${A('/posts/{number}.md')}\`, \`${A('/c/{handle}.md')}\`, \`${A('/search.md?q={words}')}\`. Each starts with the title and a direct first paragraph, then metadata (author, date, votes) with absolute links. Headers: \`Content-Type: text/markdown; charset=utf-8\`, \`Vary: Accept\`, \`Link: <html url>; rel="canonical"\` (indexable pages only), \`X-Markdown-Tokens\` (rough estimate). Hidden and withdrawn content is redacted exactly as on the HTML page. HTML pages link their twin with \`<link rel="alternate" type="text/markdown">\`.
 
