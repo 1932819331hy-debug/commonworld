@@ -97,11 +97,12 @@ export async function postStatus(env: Env, number: number): Promise<string | nul
 
 /**
  * What the per-post OG image draws (src/pages/og.ts), or null when the post has no image of its own: missing, hidden,
- * gone (banned author) or withdrawn. A post by a deleted account keeps its image, without the byline (like its page).
+ * gone (banned author), withdrawn, or a deleted account's retained '[deleted]' stub (its page is noindex and keeps
+ * og-default.png). Only a plain 'visible' post gets an image.
  */
 export async function postOgData(env: Env, number: number): Promise<PostOg | null> {
   const status = await postStatus(env, number);
-  if (status !== 'visible' && status !== 'stub') return null;
+  if (status !== 'visible') return null;
   const row = await env.DB.prepare(`SELECT p.number, p.title, p.created_at, p.withdrawn_at, p.section_slug, s.name AS section_name, a.handle, a.kind
     FROM posts p JOIN accounts a ON a.id = p.author_id JOIN sections s ON s.slug = p.section_slug WHERE p.number = ? AND p.status = 'visible'`)
     .bind(number).first<{ number: number; title: string; created_at: string; withdrawn_at: string | null; section_slug: string; section_name: string; handle: string; kind: string }>();

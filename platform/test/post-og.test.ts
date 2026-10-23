@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import worker from '../src/index';
 import { handlePage, OG_CACHE_CURRENT, OG_CACHE_OTHER } from '../src/pages/router';
 import { plainText } from '../src/pages/html';
-import { DESC_MAX, postDescription } from '../src/pages/post';
+import { DESC_MAX, postDescription, wordExcerpt } from '../src/pages/post';
 import { OG_LAYOUT } from '../src/pages/og-assets.gen';
 import { type PostOg, layoutPost, ogVersion, renderPostOg, sectionColor } from '../src/pages/og';
 import { api, makeAdmin, post, register, resetDb, setSetting } from './helpers';
@@ -111,6 +111,50 @@ describe('plainText: Markdown syntax out of meta descriptions', () => {
   });
 });
 
+describe('postDescription: always cut on a word boundary', () => {
+  const ctxOf = (handle = 'a') => `A post in General by @${handle} on Commonworld.`;
+  const desc = (body: string) => postDescription({ body, section: { name: 'General' }, author: { handle: 'a', kind: 'human' } });
+
+  it('wordExcerpt keeps whole words, ends with …, fits max, and gives \'\' when no boundary fits', () => {
+    expect(wordExcerpt('short text', 20)).toBe('short text');
+    expect(wordExcerpt('alpha beta gamma delta', 12)).toBe('alpha beta…');
+    expect(wordExcerpt('alpha beta gamma delta', 11)).toBe('alpha beta…'); // the space right after "beta" is a boundary
+    expect(wordExcerpt('alpha beta gamma delta', 10)).toBe('alpha…');
+    // a word or URL longer than the room is never split
+    expect(wordExcerpt(`https://example.com/${'a'.repeat(300)}`, 160)).toBe('');
+    expect(wordExcerpt(`See https://example.com/${'a'.repeat(300)}`, 160)).toBe('See…');
+    expect(wordExcerpt('x'.repeat(50), 1)).toBe('');
+    for (let max = 2; max < 60; max++) {
+      const out = wordExcerpt('lorem ipsum dolor sit amet consectetur adipiscing elit sed do', max);
+      expect(out.length, String(max)).toBeLessThanOrEqual(max);
+      if (out) expect('lorem ipsum dolor sit amet consectetur adipiscing elit sed do'.startsWith(out.slice(0, -1)), String(max)).toBe(true);
+    }
+  });
+
+  it('a long word or URL past the preferred range is dropped whole, not split', () => {
+    const words = 'Short words here then a link'; // 28 chars, so the old 60% rule would hard-cut the URL
+    const url = `https://example.com/${'p'.repeat(400)}`;
+    const d = desc(`${words} ${url}`);
+    expect(d).toBe(`${words}… · ${ctxOf()}`);
+    expect(d).not.toContain('https://');
+    expect(d.length).toBeLessThanOrEqual(DESC_MAX);
+  });
+
+  it('a body that is one unbroken token gives just the context sentence', () => {
+    expect(desc('y'.repeat(500))).toBe(ctxOf());
+    expect(desc(`https://example.com/${'q'.repeat(500)}`)).toBe(ctxOf());
+  });
+
+  it('every description of a long text ends on a whole word', () => {
+    const body = Array.from({ length: 80 }, (_, i) => `word${i}${i % 7 === 0 ? 'x'.repeat(i) : ''}`).join(' ');
+    const d = desc(body);
+    expect(d.length).toBeLessThanOrEqual(DESC_MAX);
+    expect(d.endsWith('…')).toBe(true);
+    expect(body.startsWith(d.slice(0, -1))).toBe(true);
+    expect(body[d.length - 1]).toBe(' ');
+  });
+});
+
 describe('post page: own og:image, alt = title, plain-text descriptions', () => {
   it('og:image and twitter:image point at /posts/{n}/og.png?v=…, alt is the title, descriptions have no Markdown', async () => {
     const a = await register('og-author', 'agent', 24 * 10);
@@ -196,6 +240,31 @@ describe('GET /posts/{n}/og.png', () => {
     const page = await prodPage(`/posts/${p.number}`);
     expect(meta(page.html, 'og:image')).toMatch(/\/assets\/og-default\.png\?v=/);
     expect((await get(`/posts/${p.number}/og.png`, 'POST')).status).toBe(405);
+  });
+
+  it("404 for a deleted account's retained '[deleted]' stub; its page keeps og-default.png", async () => {
+    const admin = await makeAdmin();
+    const gone = await register('og-leaver', 'human', 24 * 10);
+    const other = await register('og-stayer', 'agent', 24 * 10);
+    const p = (await post(gone.key, 'Busy post by a leaver')).body;
+    // a comment by someone else keeps the post as a '[deleted]' stub after the account is deleted
+    expect((await api(`/v1/posts/${p.number}/comments`, { key: other.key, body: { body: 'keeps the stub' } })).status).toBe(201);
+    expect((await get(`/posts/${p.number}/og.png`)).status).toBe(200);
+    expect((await api('/v1/me/deletion-request', { method: 'POST', key: gone.key })).status).toBe(200);
+    const del = await api(`/v1/admin/accounts/${gone.handle}/delete`, { key: admin.key, body: { confirm_handle: gone.handle, reason: 'test' } });
+    expect(del.status, JSON.stringify(del.body)).toBe(200);
+    expect(del.body.kept_as_placeholders.posts).toBe(1);
+    const r = await get(`/posts/${p.number}/og.png`);
+    expect(r.status).toBe(404);
+    expect(r.headers.get('cache-control')).toBe('no-store');
+    const page = await prodPage(`/posts/${p.number}`);
+    expect(page.status).toBe(200);
+    expect(page.html).toContain('<meta name="robots" content="noindex,follow">');
+    expect(meta(page.html, 'og:image')).toMatch(new RegExp(`^${PROD}/assets/og-default\\.png\\?v=`));
+    expect(meta(page.html, 'twitter:image')).toMatch(/\/assets\/og-default\.png\?v=/);
+    expect(page.html).not.toContain(`/posts/${p.number}/og.png`);
+    const ld = ldOf(page.html).find((x) => x['@type'] === 'DiscussionForumPosting');
+    expect(ld.image).toBeUndefined();
   });
 
   it('edge cache: warm copy is served, a hide drops it at once (content cache version)', async () => {

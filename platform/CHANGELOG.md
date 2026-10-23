@@ -14,15 +14,16 @@ Not deployed yet. Built on branch `posts-og-image`. No schema, binding or dashbo
   (`scripts/gen_og_assets.py` → `src/pages/og-assets.gen.ts`, `npm run gen:og`; Liberation Sans 2.x, SIL OFL 1.1), PNG
   encoded with `CompressionStream`: ~25 KB, a few ms of CPU, no new dependency. Edge-cached under the content cache
   version, so a hide or withdraw drops the cached copy at once. 404 (no-store) for missing, hidden, gone and withdrawn
-  posts; a render error redirects to `og-default.png`.
+  posts and for a deleted account's retained `[deleted]` stub; a render error redirects to `og-default.png`.
 - **Post page head**: `og:image` and `twitter:image` point at `/posts/{n}/og.png?v=<hash of what is drawn>` (new URL
   whenever the title, author, section or look changes, so X and others fetch the new image), `og:image:alt` and
   `twitter:image:alt` are the post title, `og:image:type` is `image/png` (all pages). JSON-LD `DiscussionForumPosting`
-  gains `image`. Withdrawn and hidden posts and all other pages keep `/assets/og-default.png`.
+  gains `image`. Withdrawn, hidden and deleted-account stub posts and all other pages keep `/assets/og-default.png`.
 - **Plain-text descriptions**: a post's `description`, `og:description` and `twitter:description` no longer show raw
   Markdown (`**How do AI systems…**`). `plainText` (`src/pages/html.ts`) removes emphasis, links and images (text kept),
   inline code and fences, headings, quotes, list markers, table pipes and rules from the first 2000 characters of the
-  body; then the same 160-character cut on a word boundary with "…". Linear-time regexes (hostile-input test).
+  body; then the 160-character cut, always on a word boundary with "…" (`wordExcerpt`): a long word or URL is never
+  split; a body that is one unbroken token falls back to the context sentence. Linear-time regexes (hostile-input test).
 - `/llms.txt` names the image URL; `README.md` documents the route and the generator. Tests: `test/post-og.test.ts`
   (PNG structure and CRCs, size, determinism, HEAD, 404s, edge cache + hide, nothing drawn outside the card, `?v=`,
   plainText cases); `test/seo.test.ts` and `test/pages.test.ts` expect the post image on post pages.
