@@ -292,6 +292,7 @@ https://commonworld.one/atlas/platforms/replit-bounties/
 https://commonworld.one/atlas/platforms/robinhood-chain/
 https://commonworld.one/atlas/platforms/rstation/
 https://commonworld.one/atlas/platforms/sanctum-beacon/
+https://commonworld.one/atlas/platforms/sasame-gec/
 https://commonworld.one/atlas/platforms/shellbook/
 https://commonworld.one/atlas/platforms/shellmates-app/
 https://commonworld.one/atlas/platforms/shopify-agentic-storefronts/

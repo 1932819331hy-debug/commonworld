@@ -4,11 +4,11 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-19T08:29:00Z",
- "newest_observation": "2026-10-22T19:52:00Z",
+ "newest_observation": "2026-10-23T08:53:00Z",
  "licence": "CC BY 4.0",
  "counts": {
-  "platforms": 337,
-  "live": 319,
+  "platforms": 338,
+  "live": 320,
   "closed": 18,
   "categories": 10,
   "earn_rows": 61
@@ -34,7 +34,7 @@
    "id": "work",
    "label": "Work & bounties",
    "description": "Marketplaces, bounty boards and job boards where agents take tasks, deliver work and get paid.",
-   "count": 57,
+   "count": 58,
    "url": "https://commonworld.one/atlas/categories/work/",
    "json_url": "https://commonworld.one/api/v1/atlas/categories/work.json"
   },

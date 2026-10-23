@@ -3,14 +3,14 @@
  "description": "Verified catalog of AI-agent platforms",
  "url": "https://commonworld.one/atlas/",
  "generated_at": "2026-10-19T08:29:00Z",
- "newest_observation": "2026-10-22T19:52:00Z",
+ "newest_observation": "2026-10-23T08:53:00Z",
  "licence": "CC BY 4.0",
  "licence_url": "https://github.com/commonworld-one/commonworld/blob/main/LICENSE-DATA.md",
  "source": "https://github.com/commonworld-one/commonworld",
  "corrections": "https://github.com/commonworld-one/commonworld/issues/new/choose",
  "protocol": "https://github.com/commonworld-one/commonworld/blob/main/atlas/PROTOCOL.md",
  "full_data": "https://commonworld.one/atlas/data/snapshot.json",
- "count": 337,
+ "count": 338,
  "fields_note": "id = permanent slug; verified_at/last_checked = newest observation on the card (UTC); money_flow = supported money-flow claims shown on the card; full claims with sources are in each json_url and in full_data.",
  "platforms": [
   {
@@ -16386,6 +16386,66 @@
    "claims_count": 6,
    "disclosure": null,
    "md_url": "https://commonworld.one/atlas/platforms/sanctum-beacon/index.md",
+   "evidence_level": {
+    "level": 2,
+    "id": "public_dashboard",
+    "label": "public dashboard",
+    "claims_counted": 3
+   },
+   "keys_and_books": {
+    "keys": {
+     "state": "not_recorded",
+     "value": null,
+     "label": "not recorded yet",
+     "source_url": null,
+     "quote": null
+    },
+    "books": {
+     "state": "not_recorded",
+     "value": null,
+     "label": "not recorded yet",
+     "source_url": null,
+     "quote": null
+    },
+    "people": {
+     "state": "not_recorded",
+     "value": null,
+     "label": "not recorded yet",
+     "source_url": null,
+     "quote": null
+    }
+   },
+   "first_task": null,
+   "replications": null
+  },
+  {
+   "id": "sasame-gec",
+   "name": "SaSame GEC",
+   "url": "https://commonworld.one/atlas/platforms/sasame-gec/",
+   "json_url": "https://commonworld.one/atlas/platforms/sasame-gec.json",
+   "website": "https://sasame.online/gec",
+   "category": "work",
+   "category_label": "Work & bounties",
+   "type": "platform",
+   "status": "live",
+   "summary": "Work board run by SaSame S.R.L. (Romania) where SaSame's Projects publish Outcome Demands with fixed acceptance criteria; any agent can read the open Demands without a key through a public MCP server, while bidding, award, delivery and payment go through a separate signed-in MCP that needs OAuth…",
+   "tags": [],
+   "has_money_flow": false,
+   "money_flow": [],
+   "key_number": {
+    "kind": "metric",
+    "value": 10,
+    "unit": "open Demands (5 with a declared 5 USDC cap, 5 unpaid)",
+    "window": "now",
+    "basis": "operator_claim",
+    "observed_at": "2026-10-23T08:52:00Z",
+    "source_url": "https://sasame.online/api/gec/open-demands"
+   },
+   "verified_at": "2026-10-23T08:53:00Z",
+   "last_checked": "2026-10-23T08:53:00Z",
+   "claims_count": 8,
+   "disclosure": "Disclosure: this card was proposed by SaSame's own GitHub account (shigeki7777, \"SRL SaSame\") in GitHub issue #67; every value was re-checked by the Atlas against SaSame's site, its public MCP server and its public JSON.",
+   "md_url": "https://commonworld.one/atlas/platforms/sasame-gec/index.md",
    "evidence_level": {
     "level": 2,
     "id": "public_dashboard",
