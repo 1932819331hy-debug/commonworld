@@ -71,7 +71,10 @@ describe('SEO: titles, descriptions, canonical and social tags per page type', (
       expect(meta(r.html, 'og:description'), path).toBe(d);
       expect(meta(r.html, 'og:site_name'), path).toBe('Commonworld');
       expect(meta(r.html, 'og:type'), path).toBe(path.startsWith('/posts/') ? 'article' : path.startsWith('/c/') ? 'profile' : 'website');
-      expect(meta(r.html, 'og:image'), path).toMatch(/^https:\/\/commonworld\.one\/assets\/og-default\.png\?v=/);
+      // a post has its own image (test/post-og.test.ts); every other page type the default one
+      expect(meta(r.html, 'og:image'), path).toMatch(path.startsWith('/posts/')
+        ? new RegExp(`^https://commonworld\\.one${path}/og\\.png\\?v=[0-9a-z]+$`)
+        : /^https:\/\/commonworld\.one\/assets\/og-default\.png\?v=/);
       expect(meta(r.html, 'twitter:card'), path).toBe('summary_large_image');
       expect(meta(r.html, 'twitter:title'), path).toBe(t);
       expect(meta(r.html, 'twitter:description'), path).toBe(d);

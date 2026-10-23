@@ -7,7 +7,8 @@ import { HttpError, goneError } from '../http';
 import { getSettings } from '../settings';
 import { ASSETS, BOOT_SCRIPT_SHA256 } from './assets.gen';
 import { sectionPage, sectionsPage, tagPage } from './catalog';
-import { commentLocation, contentGone, porchVisible, siteFacts, sitemapRows } from './data';
+import { commentLocation, contentGone, porchVisible, postOgData, siteFacts, sitemapRows } from './data';
+import { ogVersion, renderPostOg } from './og';
 import { homePage } from './home';
 import { esc } from './html';
 import { ABOUT_URL, NONCE_PLACEHOLDER, PRIVACY_URL, TERMS_URL, type PageCtx, hasMarkdownTwin, markdownPath } from './layout';
@@ -449,6 +450,7 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
 
   let m: RegExpMatchArray | null;
   if ((m = path.match(/^\/assets\/([a-z0-9.-]{1,64})$/))) return assetResponse(method, m[1], url.searchParams.get('v'));
+  if ((m = path.match(POST_OG_PATH))) return postOgResponse(request, env, exec, url, Number(m[1]));
   if (path === '/favicon.ico') return assetResponse(method, 'favicon.ico', null);
 
   // Markdown twins for agents (src/pages/markdown.ts): `.md` paths or `Accept: text/markdown` preferred over HTML.
@@ -560,6 +562,53 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
     } catch {
       return respond(method, status, `${status} ${code}`, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' });
     }
+  }
+}
+
+// ---------------------------------------------------------------- per-post Open Graph image
+
+export const POST_OG_PATH = /^\/posts\/(\d{1,15})\/og\.png$/;
+/** The current ?v= (the URL the post page links): kept a day by browsers and link-preview caches, edge copy keyed on the
+ *  content version too, so a hide or withdraw drops it at once. Any other ?v= (old or missing): 5 minutes. */
+export const OG_CACHE_CURRENT = 'public, max-age=86400, s-maxage=86400';
+export const OG_CACHE_OTHER = 'public, max-age=300, s-maxage=300';
+
+/**
+ * GET /posts/{n}/og.png: the post's 1200x630 PNG (src/pages/og.ts). Anonymous and the same for everyone, so a session
+ * cookie is not read. 404 (no-store) when the post has no image of its own (missing, hidden, gone, withdrawn): its page
+ * then uses /assets/og-default.png. A render error redirects to that default image (302, no-store) instead of a 500.
+ */
+async function postOgResponse(request: Request, env: Env, exec: ExecutionContext, url: URL, n: number): Promise<Response> {
+  const method = request.method;
+  const v = (url.searchParams.get('v') ?? '').slice(0, 32);
+  let cacheKey: Request | null = null;
+  let versionUnknown = false;
+  if (env.PUBLIC_EDGE_CACHE !== '0' && method === 'GET') {
+    const keyUrl = new URL(url.pathname, url.origin);
+    if (v) keyUrl.searchParams.set('v', v);
+    cacheKey = await versionedCacheKey(env, keyUrl);
+    versionUnknown = cacheKey === null;
+    const hit = cacheKey ? await caches.default.match(cacheKey) : undefined;
+    if (hit) { const out = new Response(hit.body, hit); out.headers.set('x-cw-cache', 'HIT'); return out; }
+  }
+  const notFound = () => respond(method, 404, 'not found', { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store', ...noindexHeader(env) });
+  try {
+    const post = await postOgData(env, n);
+    if (!post) return notFound();
+    const host = new URL(env.SITE_ORIGIN || url.origin).host;
+    const png = await renderPostOg(post, host);
+    const res = respond(method, 200, png, {
+      'content-type': 'image/png',
+      'cache-control': v === ogVersion(post) ? OG_CACHE_CURRENT : OG_CACHE_OTHER,
+      'content-security-policy': "default-src 'none'; frame-ancestors 'none'", 'access-control-allow-origin': '*', ...noindexHeader(env),
+    });
+    if (versionUnknown) return withoutSharedCache(res);
+    if (cacheKey) exec.waitUntil(caches.default.put(cacheKey, res.clone()).catch(() => undefined));
+    return res;
+  } catch (error) {
+    if (error instanceof HttpError && error.status === 404) return notFound();
+    console.error('post og image error', n, error instanceof Error ? error.message : 'unknown');
+    return respond(method, 302, '', { location: `/assets/og-default.png?v=${ASSETS['og-default.png'].hash}`, 'cache-control': 'no-store' });
   }
 }
 
