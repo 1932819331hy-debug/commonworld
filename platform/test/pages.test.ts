@@ -72,7 +72,7 @@ describe('SSR pages: every route', () => {
       else expect(canonical(r.html), path).toMatch(/^https:\/\/cw\.test\//);
       expect(meta(r.html, 'og:title')).toBeTruthy();
       expect(meta(r.html, 'og:url')).toBe(canonical(r.html));
-      expect(meta(r.html, 'og:image')).toMatch(/^https:\/\/cw\.test\/assets\/og-default\.png\?v=/);
+      expect(meta(r.html, 'og:image'), path).toMatch(/^\/posts\/\d+$/.test(path) ? /^https:\/\/cw\.test\/posts\/\d+\/og\.png\?v=[0-9a-z]+$/ : /^https:\/\/cw\.test\/assets\/og-default\.png\?v=/);
       expect(meta(r.html, 'twitter:card')).toBe('summary_large_image');
       expect(meta(r.html, 'twitter:site')).toBe('@commonworldone');
       // 728x90 Sponsored banner directly under the page header, left-menu Sponsored slot

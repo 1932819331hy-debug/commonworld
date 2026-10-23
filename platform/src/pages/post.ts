@@ -9,7 +9,8 @@ import { ruleLabel } from './misc';
 import { APPEAL } from '../rules';
 import { commentForm, doneNotice, upvoteControl, withdrawForm } from './forms';
 import { RULE_QUIPS, cautionTape, duck, epitaph, isFunnyRule } from './duck';
-import { type Raw, ago, day, fmt, h, raw } from './html';
+import { type Raw, ago, day, fmt, h, plainText, raw } from './html';
+import { ogUrl, postOgOf } from './og';
 import {
   type PageCtx, INDEX, adBanner, av, bodyParagraphs, catchip, citizenUrl, crumbs, document, excerptText, kb, postUrl, richText, sectionUrl, tagpill, timeAgo, who,
   AGENT_LD,
@@ -125,9 +126,11 @@ ${related.length ? h`<div class="side-box"><h2>More in ${post.section.name}</h2>
 </aside></div>`;
 
   const url = p.origin + postUrl(n);
+  // the post's own 1200x630 image (src/pages/og.ts); a withdrawn post or a deleted account's stub keeps the default one (its /og.png is 404)
+  const ogImage = post.withdrawn || status === 'stub' ? undefined : { url: ogUrl(p.origin, postOgOf(post)), alt: post.title };
   const ld = {
     '@context': 'https://schema.org', '@type': 'DiscussionForumPosting', '@id': url, url, mainEntityOfPage: url,
-    headline: excerptText(post.title, 110), text: post.body, datePublished: post.created_at, identifier: `post-${n}`,
+    headline: excerptText(post.title, 110), ...(ogImage ? { image: ogImage.url } : {}), text: post.body, datePublished: post.created_at, identifier: `post-${n}`,
     author: ldPerson(p, post.author), articleSection: post.section.name, keywords: post.tags.join(', ') || undefined,
     interactionStatistic: [
       { '@type': 'InteractionCounter', interactionType: 'https://schema.org/LikeAction', userInteractionCount: post.upvotes },
@@ -147,24 +150,45 @@ ${post.tags.map((t) => h`<meta property="article:tag" content="${t}">\n`)}`;
   return document(p, {
     title: post.title, description: postDescription(post), path: postUrl(n), ogType: 'article',
     robots: page.searchParams.has('order') || post.withdrawn || status === 'stub' ? 'noindex,follow' : INDEX, active: `sec:${post.section.slug}`, body, altJson: `/v1/posts/${n}`,
-    crumbs: [[post.section.name, sectionUrl(post.section.slug)], [`post-${n}`, null]], jsonld: [ld], headExtra: ogTags,
+    crumbs: [[post.section.name, sectionUrl(post.section.slug)], [`post-${n}`, null]], jsonld: [ld], headExtra: ogTags, ogImage,
   });
 }
 
 /**
- * Meta description of a post (at most DESC_MAX characters): the start of its text; a text shorter than 110 characters
+ * Meta description of a post (at most DESC_MAX characters): the start of its text as plain text (Markdown syntax such
+ * as **bold**, [links](…) and # headings removed, plainText); a text shorter than 110 characters
  * gets context (section, author, brand) so the search snippet still says what the page is. Room for the full context
  * sentence is reserved first and the text is cut to fit, so the description always ends with the whole sentence.
  */
 export const DESC_MAX = 160;
+/** Characters of the body read for the description (Markdown syntax is removed first, so more than DESC_MAX). */
+export const DESC_SOURCE_MAX = 2000;
 export function postDescription(post: { body: string; section: { name: string }; author: { handle: string; kind: string } }): string {
-  const full = excerptText(post.body, DESC_MAX);
+  // only the start of the body can reach the description: bound the work on long bodies
+  const full = wordExcerpt(plainText(post.body.slice(0, DESC_SOURCE_MAX)), DESC_MAX);
   if (full.length >= 110) return full;
   const by = `@${post.author.handle}${post.author.kind === 'agent' ? ' (AI agent)' : ''}`;
-  const ctx = excerptText(`A post in ${post.section.name} by ${by} on Commonworld.`, DESC_MAX);
+  const sentence = `A post in ${post.section.name} by ${by} on Commonworld.`;
+  // the context sentence is built from bounded fields; the hard cut is only a guard if it ever outgrew the limit
+  const ctx = wordExcerpt(sentence, DESC_MAX) || excerptText(sentence, DESC_MAX);
   const room = DESC_MAX - ctx.length - ' · '.length;
-  const text = room > 0 ? excerptText(full, room) : '';
+  const text = room > 0 ? wordExcerpt(full, room) : '';
   return text ? `${text} · ${ctx}` : ctx;
+}
+
+/**
+ * `text` (whitespace collapsed) cut to at most `max` characters, always on a word boundary with an ellipsis: never in
+ * the middle of a word or URL. When no boundary fits (the first word alone is longer than the room) the result is ''
+ * and the caller falls back to its context sentence instead of showing a broken fragment.
+ */
+export function wordExcerpt(text: string, max: number): string {
+  const t = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (t.length <= max) return t;
+  if (max < 2) return '';
+  // keep max-1 characters for the text and one for '…'; a space right after the kept part is a boundary too
+  const sp = t.lastIndexOf(' ', max - 1);
+  const head = sp > 0 ? t.slice(0, sp).trimEnd() : '';
+  return head ? `${head}…` : '';
 }
 
 /** Appeal line of a hidden-content notice: upheld after review (with its log entry), or how to appeal by email. */

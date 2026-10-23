@@ -69,6 +69,39 @@ export function day(iso: string): string {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
+/**
+ * Markdown -> plain text, for meta descriptions and other places that show text without rendering it (post bodies are
+ * stored as written; authors often use Markdown). Drops the syntax, keeps the words: emphasis (** __ * _ ~~), inline
+ * code and code fences, links and images (their text / alt), autolinks, headings, blockquotes, list markers, table
+ * pipes and separator rows, horizontal rules, backslash escapes. Conservative: snake_case, 2*3, @handles and post-12
+ * refs are left alone. Newlines are kept (the caller collapses whitespace).
+ */
+export function plainText(md: string): string {
+  let t = String(md ?? '').replace(/\r\n?/g, '\n');
+  // backslash escapes (\* \_ \# ...) are set aside first, so the rules below never read them as syntax
+  t = t.replace(/\\([\\`*_{}[\]()#+\-.!|>~])/g, (_m, c: string) => `\uE000${c.charCodeAt(0).toString(16).padStart(2, '0')}\uE001`);
+  t = t.replace(/^[ \t]*(```|~~~).*$/gm, '');  // code fence lines (the code stays)
+  t = t.replace(/^[ \t]{0,3}(?:[-*_][ \t]*){3,}$/gm, '');  // horizontal rules
+  t = t.replace(/^[ \t]*\|?[ \t]*:?-{3,}:?[ \t]*(\|[ \t]*:?-{3,}:?[ \t]*)*\|?[ \t]*$/gm, '');  // table separator rows
+  t = t.replace(/^[ \t]{0,3}(?:>[ \t]?)+/gm, '');  // blockquotes
+  t = t.replace(/^[ \t]*(?:[-*+]|\d{1,9}[.)])[ \t]+(?:\[[ xX]\][ \t]+)?/gm, '');  // list markers (+ task boxes)
+  t = t.replace(/^[ \t]{0,3}#{1,6}[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*$/gm, '$1');  // ATX headings, after list markers ("## 1. Intro" keeps "1."; C# stays)
+  t = t.replace(/^[ \t]*\|(.*)\|[ \t]*$/gm, (_m, row: string) => row.split('|').map((c) => c.trim()).filter(Boolean).join(' · ')); // table rows
+  t = t.replace(/!\[([^[\]\n]*)\]\([^()\n]*\)/g, '$1');  // images -> alt text
+  t = t.replace(/\[([^[\]\n]+)\]\((?:[^()\s]|\([^()\s]*\))*(?:[ \t]+"[^"\n]*")?\)/g, '$1');  // links -> text
+  t = t.replace(/\[([^[\]\n]+)\]\[[^[\]\n]*\]/g, '$1');  // reference links -> text
+  t = t.replace(/<((?:https?|mailto):[^>\s]+)>/g, '$1');  // autolinks
+  t = t.replace(/`+([^`]+?)`+/g, '$1');  // inline code
+  for (let i = 0; i < 2; i++) {  // emphasis, nested once (***x***)
+    t = t.replace(/\*\*(?=\S)([^]*?\S)\*\*/g, '$1');
+    t = t.replace(/(^|[^\w_])__(?=\S)([^]*?\S)__(?![\w_])/g, '$1$2');
+    t = t.replace(/~~(?=\S)([^]*?\S)~~/g, '$1');
+    t = t.replace(/(^|[^\w*])\*([^\s*](?:[^*\n]*?[^\s*])?)\*(?![\w*])/g, '$1$2');
+    t = t.replace(/(^|[^\w_])_([^\s_](?:[^_\n]*?[^\s_])?)_(?![\w_])/g, '$1$2');
+  }
+  return t.replace(/\uE000([0-9a-f]{2})\uE001/g, (_m, hex: string) => String.fromCharCode(parseInt(hex, 16))); // escapes back as plain characters
+}
+
 /** Plain-text excerpt for cards and meta descriptions: collapses whitespace, cuts at a word boundary. */
 export function excerpt(text: string, max: number): string {
   const t = String(text ?? '').replace(/\s+/g, ' ').trim();

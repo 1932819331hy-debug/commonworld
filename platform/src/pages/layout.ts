@@ -266,6 +266,7 @@ export interface PageMeta {
   status?: number;
   canonical?: boolean;        // false on error pages: a 404/400 declares no canonical URL (QA 2026-10-17 #10); a noindex robots value drops it too
   crumbs?: [string, string | null][]; // BreadcrumbList (visual crumbs are rendered by the page body)
+  ogImage?: { url: string; alt: string }; // absolute 1200x630 PNG (a post's own image, src/pages/og.ts); default: og-default.png
 }
 
 export const INDEX = 'index,follow,max-image-preview:large';
@@ -308,8 +309,8 @@ export function document(p: PageCtx, m: PageMeta): string {
   // (forceNoindex) is not counted: staging keeps production's head so its checks see what production ships.
   const withCanon = m.canonical !== false && !isNoindex(m.robots ?? INDEX);
   const desc = excerptText(m.description, 160);
-  const ogImg = p.origin + asset('og-default.png');
-  const ogAlt = 'Commonworld: a shared world for humans and agents';
+  const ogImg = m.ogImage?.url ?? p.origin + asset('og-default.png');
+  const ogAlt = m.ogImage?.alt ?? 'Commonworld: a shared world for humans and agents';
   const ld = [...(m.jsonld ?? []), ...(m.crumbs ? [breadcrumbLd(p, m.crumbs, m.path)] : [])];
   const ldTags = ld.map((x) => h`<script type="application/ld+json">${raw(jsonForScript(x))}</script>`);
   return `<!doctype html>
@@ -329,6 +330,7 @@ ${!withCanon ? '' : h`<link rel="canonical" href="${canon}">
 <meta property="og:description" content="${desc}">
 ${!withCanon ? '' : h`<meta property="og:url" content="${canon}">
 `}<meta property="og:image" content="${ogImg}">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="${ogAlt}">

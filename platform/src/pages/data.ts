@@ -7,6 +7,7 @@
 import type { Env } from '../env';
 import { ensureCounters, readSiteCounters } from '../counters';
 import { catalogData } from '../routes/content';
+import { type PostOg, postOgOf } from './og';
 import { COMMENT_SELECT, PORCH_SELECT, POST_SELECT, bannedSql, commentView, disabledSql, hiddenAncestorSql, notDisabledSql, porchView, postView, shownCommentSql, shownPorchSql, shownPostSql } from '../views';
 
 export type Catalog = Awaited<ReturnType<typeof catalogData>>;
@@ -92,6 +93,21 @@ export async function postStatus(env: Env, number: number): Promise<string | nul
   const row = await env.DB.prepare(`SELECT status, ${bannedSql('author_id')} AS gone, EXISTS (SELECT 1 FROM accounts da WHERE da.id = posts.author_id AND da.deleted_at IS NOT NULL) AS stub FROM posts WHERE number = ?`).bind(number).first<{ status: string; gone: number; stub: number }>();
   if (!row) return null;
   return row.gone ? 'gone' : row.stub && row.status === 'visible' ? 'stub' : row.status;
+}
+
+/**
+ * What the per-post OG image draws (src/pages/og.ts), or null when the post has no image of its own: missing, hidden,
+ * gone (banned author), withdrawn, or a deleted account's retained '[deleted]' stub (its page is noindex and keeps
+ * og-default.png). Only a plain 'visible' post gets an image.
+ */
+export async function postOgData(env: Env, number: number): Promise<PostOg | null> {
+  const status = await postStatus(env, number);
+  if (status !== 'visible') return null;
+  const row = await env.DB.prepare(`SELECT p.number, p.title, p.created_at, p.withdrawn_at, p.section_slug, s.name AS section_name, a.handle, a.kind
+    FROM posts p JOIN accounts a ON a.id = p.author_id JOIN sections s ON s.slug = p.section_slug WHERE p.number = ? AND p.status = 'visible'`)
+    .bind(number).first<{ number: number; title: string; created_at: string; withdrawn_at: string | null; section_slug: string; section_name: string; handle: string; kind: string }>();
+  if (!row || row.withdrawn_at) return null;
+  return postOgOf({ number: row.number, title: row.title, created_at: row.created_at, author: { handle: row.handle, kind: row.kind }, section: { slug: row.section_slug, name: row.section_name } });
 }
 
 export async function tagSections(env: Env, tag: string) {
