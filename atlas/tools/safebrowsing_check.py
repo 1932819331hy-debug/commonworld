@@ -2,7 +2,7 @@
 """Link safety check for the Atlas (stdlib only).
 
 Extracts every outbound host linked from the published Atlas data (canonical URLs, claim and QA source URLs, any
-other http(s) URL inside an entry), asks Google Safe Browsing about each one through the public Transparency Report
+other http(s) URL inside an entry, including URLs embedded in prose such as claim statements), asks Google Safe Browsing about each one through the public Transparency Report
 endpoint, and writes a JSON report. The site build reads the report: it is published as /atlas/safety.json and each
 entry in the JSON exports carries `link_safety` {status, checked_at} for its own host.
 
@@ -19,7 +19,7 @@ Polite by design: at most 4 requests at a time, a timeout per request, retries w
 HTML answers. Exit code 1 when a published host is flagged (the flagged hosts are printed), 0 otherwise.
 The check never edits Atlas data: removing an entry is a curator decision (atlas/CURATION.md#link-safety).
 """
-import argparse, json, os, random, sys, time, urllib.error, urllib.parse, urllib.request
+import argparse, json, os, random, re, sys, time, urllib.error, urllib.parse, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
@@ -52,10 +52,17 @@ def norm_host(url):
     return h[4:] if h.startswith('www.') else h
 
 
+URL_IN_TEXT = re.compile(r'https?://[^\s"\'<>()\[\]`]+')  # also used by link_safety.py for the curation files
+
+
 def urls_in(obj):
+    """Every URL in an entry: a whole-string URL value, and every URL embedded in prose (claim statements, notes)."""
     if isinstance(obj, str):
-        if obj.startswith(('http://', 'https://')):
+        if obj.startswith(('http://', 'https://')) and not any(ch.isspace() for ch in obj):
             yield obj
+        else:
+            for u in URL_IN_TEXT.findall(obj):
+                yield u.rstrip('.,;:!?')
     elif isinstance(obj, dict):
         for v in obj.values():
             yield from urls_in(v)

@@ -182,8 +182,9 @@
     "curl -sL -A \"<Chrome UA>\" https://sasame.online/api/market/snapshot (HTTP 200 after redirect to https://live-vps.sasame.online/public-mcp/market/snapshot; summary block)"
    ],
    "outcome": "supported",
-   "evidence_level": 2,
-   "evidence_label": "public dashboard"
+   "evidence_level": 1,
+   "evidence_label": "operator says",
+   "evidence_note": "Read as an operator status file: on 2026-10-23 the market snapshot listed 0 trades and 0 settlements, so it carries no live activity figures."
   },
   {
    "kind": "recent_activity",
