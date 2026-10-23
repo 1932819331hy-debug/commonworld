@@ -31,6 +31,16 @@ class Hosts(unittest.TestCase):
             {'slug': 'b', 'canonical_url': 'https://a.example', 'claims': [{'source_url': 'https://commonworld.one/atlas/'}]}]}
         self.assertEqual(sb.extract_hosts(snap), {'a.example': ['a', 'b'], 'api.b.example': ['a']})
 
+    def test_urls_embedded_in_prose_are_checked(self):
+        # PR #68 review: a URL inside a claim statement must reach the link safety gate too
+        snap = {'platforms': [{'slug': 'a', 'canonical_url': 'https://a.example/', 'claims': [
+            {'statement': 'Bidding happens on a separate User MCP (https://live.b.example/mcp) after OAuth; see also https://c.example/x.',
+             'quote': '"url": "https://d.example/p", see http://e.example', 'note': 'no link here, just b.example in words'}]}]}
+        self.assertEqual(sb.extract_hosts(snap), {'a.example': ['a'], 'c.example': ['a'], 'd.example': ['a'],
+                                                   'e.example': ['a'], 'live.b.example': ['a']})
+        self.assertEqual(list(sb.urls_in('see https://c.example/x.')), ['https://c.example/x'])
+        self.assertEqual(list(sb.urls_in('https://a.example/p?q=1')), ['https://a.example/p?q=1'])
+
     def test_failed_query_keeps_previous_result(self):
         orig = sb.query
         sb.query = lambda h, t, r: {'status': None, 'error': 'HTTP 429'}

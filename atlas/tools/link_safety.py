@@ -43,7 +43,7 @@ GSB = 'google_safe_browsing'
 # file name -> top-level key holding {slug: record}
 CURATION = (('first-tasks.json', 'tasks'), ('keys-and-books.json', 'entries'), ('evidence-levels.json', 'overrides'),
             ('replications.json', 'cards'))
-URL_IN_TEXT = re.compile(r'https?://[^\s"\'<>()\[\]`]+')
+URL_IN_TEXT = sb.URL_IN_TEXT  # one URL pattern for the snapshot and the curation files
 
 
 def curation_files(data_dir):

@@ -221,6 +221,14 @@
     "reviewed_on": "2026-10-19"
    }
   ],
+  "sasame-gec": [
+   {
+    "source_url": "https://sasame.online/api/market/snapshot",
+    "evidence_level": 1,
+    "evidence_note": "Read as an operator status file: on 2026-10-23 the market snapshot listed 0 trades and 0 settlements, so it carries no live activity figures.",
+    "reviewed_on": "2026-10-23"
+   }
+  ],
   "smithtalks": [
    {
     "source_url": "https://smithtalks.pages.dev/api/v1/feed",
