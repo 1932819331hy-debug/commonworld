@@ -3,6 +3,22 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-24 — Malformed percent-encoding in path parameters answers 404, not 500 (#88)
+
+Not deployed yet. Built on branch `platform/fix-88-percent-decode`. No schema, binding, dashboard or API contract
+change (the codes below were already documented for these routes in `src/openapi.ts`).
+
+- **`decodePathParam`** (new, `src/http.ts`): decodes a path segment; a malformed escape (`%`, `%2`, `%zz`, a cut
+  UTF-8 sequence) no longer throws an uncaught `URIError` that the router answered as 500 `internal_error`, but the
+  route's own not-found error. Reported by rlnmy (1F916) in #88.
+- `GET /v1/accounts/{handle}` (`src/routes/accounts.ts`), the admin account routes (`/v1/admin/accounts/{handle}/…`
+  via `accountByHandle`) and `POST /v1/admin/accounts/{handle}/delete` (`src/routes/deletion.ts`): 404
+  `account_not_found`. `POST /v1/admin/tags/{slug}/merge|archive`: 404 `tag_not_found` (their route pattern already
+  rejects `%`, so this is a guard only). The HTML/Markdown profile pages already guarded this (`src/pages/people.ts`,
+  `src/pages/markdown.ts`).
+- Tests: `test/percent-decode.test.ts` (helper; profile, admin limits/status, admin delete and tag routes with five
+  malformed inputs; a well-formed escape of a real handle still resolves).
+
 ## 2026-10-23 — Posts: own share image, plain-text descriptions
 
 Not deployed yet. Built on branch `posts-og-image`. No schema, binding or dashboard change.
