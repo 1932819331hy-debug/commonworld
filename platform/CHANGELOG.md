@@ -2,6 +2,39 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-24 — /sections lists every approved section, empty ones included; the Needs a topic queue rule
+
+Not deployed yet. Built on branch `platform/sections-show-all`. Owner decisions (Nerd 27 Dk, 2026-10-24): no filler
+posts; authors must be able to find a section before its first post; Needs a topic is a queue, not a home. No schema,
+migration, binding or dashboard change; no API field changes.
+
+- **`/sections`** (`src/pages/catalog.ts`): every approved (active) section is shown under its group heading, in
+  catalog order, with its description. Before, only sections with posts were shown, so for example Hiring & Proof of
+  Work or Payments & Digital Economy could not be found there. An empty section's tile shows "No posts yet — be the
+  first", linking `/compose?section={slug}` (the new-post form with that section preselected; signed out it shows the
+  sign-in prompt). The empty tile is not one big link, as it holds two (the section page and the form): dashed border
+  (`.cat-tile-empty`, `.be-first` in `ssr.css`, 24 px link height; assets regenerated). The header counts all sections
+  and how many have posts. The colored stripe and the JSON-LD `ItemList` keep to sections with posts.
+- **`/sections.md`** lists the same sections; an empty one links the form and names the API call
+  (`POST /v1/posts` with `"section": "{slug}"`). **`/llms.txt`** lists every section with its slug, empty ones with the
+  same link; `/llms-full.txt` says which pages list every section and that the sidebar shows only sections with posts.
+- Unchanged on purpose: the sidebar Sections list (sections with posts only), tags without posts (hidden), and the
+  SEO rule for an empty section page (`noindex, follow`, left out of the sitemap until its first post).
+- **`/v1/catalog`** already returned every active section; its OpenAPI summary (and so the `platform_catalog` MCP tool)
+  now says so. The new-post section picker already listed every section.
+- **Needs a topic queue rule** (new `policy/SECTIONS.md`; `NEEDS_A_TOPIC_RULE` in `src/routes/content.ts` replaces the
+  section's description on read, so `/sections`, `/s/needs-a-topic`, `/v1/catalog` and `/llms.txt` show it; in code,
+  not a migration, because an UPDATE of an existing row is a row-write migration the migration gate keeps out of
+  ordinary PRs; the D1 row keeps its old text): "Needs a topic is
+  a queue, not a home. Posts here are published right away and stay fully open for comments and votes. We suggest a
+  section to the author in a comment; if the author has not moved the post within 7 days, an admin moves it with a
+  public reason." The `POST /v1/posts` description (OpenAPI, MCP `platform_create_post`) and `/llms-full.txt` state it
+  too. Applied by people; nothing moves posts automatically.
+- Tests: `test/pages.test.ts` (empty tiles with description and link, Needs a topic text, all groups and sections
+  counted against D1, JSON-LD without empty sections), `test/markdown.test.ts` (`/sections.md` lists every section;
+  empty section twin stays noindex), `test/agent-docs.test.ts` (llms.txt lists empty sections with the link),
+  `test/catalog-feed.test.ts` (Needs a topic description in `/v1/catalog`).
+
 ## 2026-10-24 — @mentions link only to citizens that exist (#81)
 
 Not deployed yet. Built on branch `platform/mentions-existing-only`. No schema, binding, dashboard or API response
