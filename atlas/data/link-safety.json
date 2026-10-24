@@ -38,8 +38,8 @@
  "run_started_at": "2026-10-24T08:52:44Z",
  "run_at": "2026-10-24T08:52:52Z",
  "summary": {
-  "hosts": 492,
-  "clean": 492,
+  "hosts": 513,
+  "clean": 513,
   "flagged": 0,
   "no_data": 0,
   "query_errors": 0
@@ -166,6 +166,45 @@
    "entries": [
     "402atlas",
     "allium-x402-data"
+   ]
+  },
+  "402rates.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:18Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "no_data",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=402rates.com",
+     "data": {
+      "code": 6,
+      "threats": [],
+      "google_updated_at": null
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "402rates-com"
    ]
   },
   "4claw.org": {
@@ -3484,6 +3523,45 @@
     "x-pay-api-xpay"
    ]
   },
+  "api.402rates.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:19Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "no_data",
+     "checked_at": "2026-10-24T08:14:19Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=api.402rates.com",
+     "data": {
+      "code": 6,
+      "threats": [],
+      "google_updated_at": null
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "402rates-com"
+   ]
+  },
   "api.abund.ai": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:45Z",
@@ -3638,6 +3716,45 @@
    ],
    "entries": [
     "agents-trust"
+   ]
+  },
+  "api.arkm.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:20Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:20Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=api.arkm.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-24T08:07:51Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "arkham"
    ]
   },
   "api.bankr.bot": {
@@ -3832,16 +3949,25 @@
     }
    ],
    "entries": [
+    "402rates-com",
     "agents-trust",
     "agentsvc-io",
+    "arkham",
+    "asterpay",
+    "bags",
     "clawfetch-ai",
     "coinbase-cdp-x402-bazaar",
+    "coingecko",
     "cyberwarex",
     "exa",
+    "forgemesh-labs",
     "glim-sh",
     "gondola-ai",
     "halowerk",
+    "hyperextend",
+    "locus",
     "losbeto",
+    "microtap",
     "mycelia-signal",
     "nansen",
     "netintel",
@@ -3849,6 +3975,7 @@
     "onesource",
     "otto-ai",
     "pocket-network",
+    "rubric-protocol-tenprint",
     "solenrich",
     "stabletravel",
     "strale",
@@ -3856,7 +3983,8 @@
     "twit-sh",
     "vextorium",
     "x402-atlas",
-    "x402node"
+    "x402node",
+    "you-com"
    ]
   },
   "api.centaurxiv.org": {
@@ -4266,6 +4394,45 @@
    ],
    "entries": [
     "gondola-ai"
+   ]
+  },
+  "api.hyperextend.xyz": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:20Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:20Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=api.hyperextend.xyz",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-09-27T01:16:20Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "hyperextend"
    ]
   },
   "api.llama.fi": {
@@ -4814,6 +4981,45 @@
     "x402node"
    ]
   },
+  "api.you.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:20Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:20Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=api.you.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-24T07:40:40Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "you-com"
+   ]
+  },
   "api.youraitools.co": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:46Z",
@@ -5286,6 +5492,45 @@
    "entries": [
     "agents4science-2025",
     "airaxiv"
+   ]
+  },
+  "asterpay.io": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:21Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:21Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=asterpay.io",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-11T16:18:17Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "asterpay"
    ]
   },
   "auth.muse.ai": {
@@ -7828,6 +8073,45 @@
     "coarena"
    ]
   },
+  "coingecko.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:23Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:23Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=coingecko.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-24T07:53:10Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "coingecko"
+   ]
+  },
   "common-room-cckw.onrender.com": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:47Z",
@@ -8689,6 +8973,45 @@
     "coinbase-cdp-x402-bazaar"
    ]
   },
+  "docs.coingecko.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:23Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:23Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=docs.coingecko.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-24T07:53:10Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "coingecko"
+   ]
+  },
   "docs.figment.io": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:47Z",
@@ -8726,6 +9049,45 @@
    ],
    "entries": [
     "figment-x402-facilitator"
+   ]
+  },
+  "docs.getbags.app": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:23Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:23Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=docs.getbags.app",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-18T14:11:34Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "bags"
    ]
   },
   "docs.gittensor.io": {
@@ -8843,6 +9205,45 @@
    ],
    "entries": [
     "paypal-agentic-commerce-services"
+   ]
+  },
+  "docs.paywithlocus.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:24Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:24Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=docs.paywithlocus.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-15T12:32:14Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "locus"
    ]
   },
   "docs.pocket.network": {
@@ -9430,6 +9831,45 @@
     "foragents-site"
    ]
   },
+  "forgemesh.io": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:24Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:24Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=forgemesh.io",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-18T12:23:36Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "forgemesh-labs"
+   ]
+  },
   "forkast.news": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:48Z",
@@ -9586,6 +10026,45 @@
     "fruitflies"
    ]
   },
+  "getbags.app": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:24Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:24Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=getbags.app",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-18T14:11:34Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "bags"
+   ]
+  },
   "getpostingboard.dev": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:48Z",
@@ -9711,12 +10190,14 @@
     "agents-json",
     "agonaut",
     "algora",
+    "asterpay",
     "awesome-agent-native-social",
     "bountyhub",
     "coinbase-cdp-x402-bazaar",
     "cyberarena",
     "daydreams-systems",
     "exa",
+    "forgemesh-labs",
     "gittensor",
     "hal-holistic-agent-leaderboard",
     "hive-rllm",
@@ -9726,6 +10207,7 @@
     "lightning-agent-tools",
     "losbeto",
     "mcpay-frames",
+    "microtap",
     "moltslack",
     "mycelia-signal",
     "nekuda",
@@ -9737,6 +10219,7 @@
     "p2pclaw",
     "pocket-network",
     "polar-issue-funding",
+    "rubric-protocol-tenprint",
     "sasame-gec",
     "solenrich",
     "superteam-earn",
@@ -10492,6 +10975,84 @@
     "open-agent-leaderboard-exgentic"
    ]
   },
+  "hunter.x402.paywithlocus.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:25Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:25Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=hunter.x402.paywithlocus.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-15T12:32:14Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "locus"
+   ]
+  },
+  "hyperextend.xyz": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:25Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:25Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=hyperextend.xyz",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-09-27T01:16:20Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "hyperextend"
+   ]
+  },
   "ilands.ai": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:48Z",
@@ -11076,6 +11637,45 @@
    ],
    "entries": [
     "leviathan-news"
+   ]
+  },
+  "library.forgemesh.io": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:25Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:25Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=library.forgemesh.io",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-18T12:23:36Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "forgemesh-labs"
    ]
   },
   "lightning.engineering": {
@@ -14590,6 +15190,45 @@
     "paysponge"
    ]
   },
+  "paywithlocus.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:28Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:28Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=paywithlocus.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-15T12:32:14Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "locus"
+   ]
+  },
   "perplexity.ai": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:50Z",
@@ -14900,6 +15539,45 @@
    ],
    "entries": [
     "ramp-agent-cards"
+   ]
+  },
+  "pro-api.coingecko.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:28Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:28Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=pro-api.coingecko.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-24T07:53:10Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "coingecko"
    ]
   },
   "producthunt.com": {
@@ -15684,6 +16362,45 @@
    ],
    "entries": [
     "rstation"
+   ]
+  },
+  "rubric-protocol.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:29Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:29Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=rubric-protocol.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-09-05T16:07:50Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "rubric-protocol-tenprint"
    ]
   },
   "saashub.com": {
@@ -18809,6 +19526,45 @@
     "x402-list"
    ]
   },
+  "x402.asterpay.io": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:31Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:31Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=x402.asterpay.io",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-11T16:18:17Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "asterpay"
+   ]
+  },
   "x402.celo.org": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:51Z",
@@ -19282,6 +20038,84 @@
     "x402stats"
    ]
   },
+  "x402tap.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:31Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "no_data",
+     "checked_at": "2026-10-24T08:14:31Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=x402tap.com",
+     "data": {
+      "code": 6,
+      "threats": [],
+      "google_updated_at": null
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "microtap"
+   ]
+  },
+  "you.com": {
+   "status": "clean",
+   "checked_at": "2026-10-24T08:14:31Z",
+   "flagged_by": [],
+   "sources": [
+    {
+     "name": "google_safe_browsing",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:31Z",
+     "evidence_url": "https://transparencyreport.google.com/safe-browsing/search?url=you.com",
+     "data": {
+      "code": 1,
+      "threats": [],
+      "google_updated_at": "2026-10-24T07:40:40Z"
+     }
+    },
+    {
+     "name": "metamask_phishing_detect",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/MetaMask/eth-phishing-detect/blob/main/src/config.json"
+    },
+    {
+     "name": "scamsniffer",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:17Z",
+     "evidence_url": "https://github.com/scamsniffer/scam-database/blob/main/blacklist/domains.json"
+    },
+    {
+     "name": "cert_polska",
+     "verdict": "clean",
+     "checked_at": "2026-10-24T08:14:18Z",
+     "evidence_url": "https://cert.pl/en/warning-list/"
+    }
+   ],
+   "entries": [
+    "you-com"
+   ]
+  },
   "youraitools.co": {
    "status": "clean",
    "checked_at": "2026-10-24T08:52:51Z",
@@ -19318,15 +20152,24 @@
     }
    ],
    "entries": [
+    "402rates-com",
     "agents-trust",
     "agentsvc-io",
+    "arkham",
+    "asterpay",
+    "bags",
     "clawfetch-ai",
+    "coingecko",
     "cyberwarex",
     "exa",
+    "forgemesh-labs",
     "glim-sh",
     "gondola-ai",
     "halowerk",
+    "hyperextend",
+    "locus",
     "losbeto",
+    "microtap",
     "mycelia-signal",
     "nansen",
     "netintel",
@@ -19334,6 +20177,7 @@
     "onesource",
     "otto-ai",
     "pocket-network",
+    "rubric-protocol-tenprint",
     "solenrich",
     "stabletravel",
     "strale",
@@ -19342,6 +20186,7 @@
     "vextorium",
     "x402-atlas",
     "x402node",
+    "you-com",
     "youraitools"
    ]
   },
