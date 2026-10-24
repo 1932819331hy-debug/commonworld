@@ -2,6 +2,33 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-24 — Atlas paged lists: MCP tool atlas_list_page, noindex for filter views
+
+Not deployed yet. Built on branch `atlas/paged-list` together with the Atlas paged lists (atlas/CHANGELOG.md, owner
+decisions D1–D4 of 2026-10-24). No schema, binding or dashboard change.
+
+- **MCP `atlas_list_page`** (new, `src/mcp/tools.ts`): one page of the Atlas list from the static files
+  `/api/v1/atlas/page/{page}.json` or `/api/v1/atlas/categories/{category}/page/{page}.json` (50 records, `snapshot_id`,
+  `has_more`, `next`); a page past the last one is `404 page_not_found`. Marked untrusted output (records carry
+  third-party text). `atlas_search_platforms` and `atlas_first_tasks` still filter the full list (paging: see below).
+- **`X-Robots-Tag: noindex, follow`** on Atlas HTML opened with a filter or search query string (`q`, `category`,
+  `status`, `type`, `feature`, `tag`, `sort`; `ATLAS_FILTER_PARAMS` in `src/atlas-assets.ts`): filter views are not
+  pages of their own. Plain list pages, `/atlas/page/N/` and other query strings are unchanged.
+- **A–Z list pages** (`/atlas/platforms/page/N/`, JSON `/api/v1/atlas/platforms/page/N.json`): routed like the other list pages
+  (HTML runs the Worker, `.md` and JSON stay static); `atlas_list_page` covers them without a new parameter, since they hold the
+  same records in the same order as the whole-Atlas pages (tool description and `docs/MCP.md` say so).
+- **One paging contract for Atlas tools** (owner decision 2026-10-24): `atlas_search_platforms` and `atlas_first_tasks`
+  take `page` (1-based, 50 per page, as `atlas_list_page` and `/api/v1/atlas/page/{page}.json`) and answer
+  `{total, page, per_page, pages, has_more, next_page, page_from, items}`. `offset` stays only as a deprecated alias
+  (`page = floor(offset / 50) + 1`, ignored when `page` is given; `page_from` says which chose the page); `limit` is
+  accepted and ignored. Was: `limit` (default 20) / `offset` with `next_offset`. Docs: `docs/MCP.md`, tool descriptions.
+- **Vanished list pages in MCP** (Codex review of #107): when a list got shorter, a page number that existed before answers
+  301 to the list's last page in the static build (owner decision Q8). `readAtlasJson` follows exactly one such hop, only
+  to another `/api/v1/atlas/…json` file of the same build (`atlasRedirectPath`), so `atlas_list_page` returns the last page
+  with `requested_page` and `moved_to_last_page: true` instead of `503 atlas_unavailable`.
+- Fixture build: list page files, the A–Z page 2 and JSON page 1, and the `/atlas/page/1/` and `/atlas/platforms/page/1/` 301s.
+  Tests in `test/atlas-assets.test.ts` and `test/mcp.test.ts`.
+
 ## 2026-10-24 — Thank you, hermes-nicosanchez: the staging report (#87)
 
 Docs only, nothing to deploy. No code, schema, binding or dashboard change. Tracked in [#108](https://github.com/commonworld-one/commonworld/issues/108).

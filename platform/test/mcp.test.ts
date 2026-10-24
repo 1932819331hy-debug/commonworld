@@ -5,7 +5,7 @@
 import { env, exports } from 'cloudflare:workers';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { OPERATIONS, schemaOf } from '../src/openapi';
-import { REST_EXCLUDED, REST_TOOLS, TOOLS, TOOL_BY_NAME, CONFIRM_ARG, IDEMPOTENCY_ARG, UNTRUSTED_TEXT } from '../src/mcp/tools';
+import { REST_EXCLUDED, REST_TOOLS, TOOLS, TOOL_BY_NAME, CONFIRM_ARG, IDEMPOTENCY_ARG, UNTRUSTED_TEXT, ATLAS_PAGE_SIZE, atlasPaged } from '../src/mcp/tools';
 import { MCP_LEGACY_VERSIONS, MCP_LIST_TTL_MS, MCP_MAX_BODY_BYTES, MCP_PROTOCOL_VERSIONS, MCP_WELL_KNOWN, validateArgs } from '../src/mcp/server';
 import { resetAtlasCache } from '../src/mcp/atlas';
 import MCP_DOC from '../docs/MCP.md?raw';
@@ -88,7 +88,7 @@ describe('tool / REST parity', () => {
   it('tools whose output carries citizen or third-party text are openWorldHint: true and say so', () => {
     const untrusted = ['platform_get_profile', 'platform_leaderboard', 'platform_catalog', 'platform_section_tags', 'platform_list_posts',
       'platform_get_post', 'platform_post_moves', 'platform_get_comment', 'platform_list_porch', 'platform_get_porch_line', 'platform_feed', 'platform_moderation_log',
-      'admin_list_citizens', 'admin_list_recovery', 'admin_list_actions', 'atlas_get_platform', 'atlas_first_tasks', 'account_list_apps'];
+      'admin_list_citizens', 'admin_list_recovery', 'admin_list_actions', 'atlas_get_platform', 'atlas_list_page', 'atlas_first_tasks', 'account_list_apps'];
     for (const name of untrusted) {
       const t = TOOL_BY_NAME.get(name)!;
       expect(t, name).toBeDefined();
@@ -322,7 +322,15 @@ describe('tools/call', () => {
     expect(found.data.items[0].claims).toBeUndefined();
     expect((await call('atlas_search_platforms', { category: 'social', status: 'live' })).data.items.map((p: any) => p.id)).toEqual(['demo']);
     expect((await call('atlas_search_platforms', { tag: 'x402' })).data.items.map((p: any) => p.id)).toEqual(['payhub']);
-    expect((await call('atlas_search_platforms', { limit: 1 })).data.next_offset).toBe(1);
+    // one paging contract (2026-10-24): page, 1-based, 50 per page; offset is an alias (page = floor(offset / 50) + 1); limit is ignored
+    const sp1 = (await call('atlas_search_platforms', {})).data;
+    expect(sp1).toMatchObject({ page: 1, per_page: 50, pages: 1, has_more: false, next_page: null, page_from: 'default' });
+    expect(sp1.items.length).toBe(sp1.total);
+    expect((await call('atlas_search_platforms', { limit: 1 })).data.items.length).toBe(sp1.total);
+    expect((await call('atlas_search_platforms', { offset: 49 })).data).toMatchObject({ page: 1, page_from: 'offset' });
+    expect((await call('atlas_search_platforms', { offset: 50 })).data).toMatchObject({ page: 2, page_from: 'offset', items: [] });
+    expect((await call('atlas_search_platforms', { page: 1, offset: 120 })).data).toMatchObject({ page: 1, page_from: 'page' });
+    expect((await call('atlas_first_tasks', { offset: 100 })).data).toMatchObject({ page: 3, per_page: 50, page_from: 'offset' });
     const card = await call('atlas_get_platform', { id: 'demo' });
     expect(card.data.claims[0].source_url).toBe('https://demo.example');
     const missing = await call('atlas_get_platform', { id: 'nope' });
@@ -332,6 +340,19 @@ describe('tools/call', () => {
     expect(badId.data.error.code).toBe('invalid_arguments');
     expect((await call('atlas_first_tasks')).data.items.map((p: any) => p.id)).toEqual(['demo']);
     expect((await call('atlas_earn')).data.rows[0].id).toBe('payhub');
+    const p1 = await call('atlas_list_page');
+    expect(p1.data).toMatchObject({ page: 1, pages: 1, total: 3, has_more: false, next: null, snapshot_id: '0123456789abcdef' });
+    expect(p1.data.platforms.map((p: any) => p.id)).toEqual(['demo', 'payhub', 'oldtown']);
+    expect((await call('atlas_list_page', { page: 1, category: 'social' })).data.platforms.map((p: any) => p.id)).toEqual(['demo', 'oldtown']);
+    const past = await call('atlas_list_page', { page: 2 });
+    expect(past.isError).toBe(true);
+    expect(past.data).toMatchObject({ status: 404, error: { code: 'page_not_found' } });
+    // page 3 existed before (the fixture _redirects sends it to the last page, as paged_redirects does when a list shrinks)
+    const moved = await call('atlas_list_page', { page: 3 });
+    expect(moved.isError).toBeUndefined();
+    expect(moved.data).toMatchObject({ page: 1, requested_page: 3, moved_to_last_page: true, snapshot_id: '0123456789abcdef' });
+    expect((await call('atlas_list_page', { page: 0 })).data.error.code).toBe('invalid_arguments');
+    expect((await call('atlas_list_page', { category: '../x' })).data.error.code).toBe('invalid_arguments');
     expect((await call('commonworld_stats')).data.metrics[0].status).toBe('coming');
     expect(found.content[0].type).toBe('text');
     expect(JSON.parse(found.content[0].text).total).toBe(1);
@@ -536,5 +557,33 @@ describe('protocol 2026-07-28 (stateless, no handshake)', () => {
     expect((await modern('tools/call', { name: 'atlas_earn', arguments: {} }, {}, c.key)).status).toBe(200);
     expect((await modern('tools/call', { name: 'account_me', arguments: {} }, {}, c.key)).body.result.isError).toBeUndefined();
     expect((await modern('tools/call', { name: 'atlas_earn', arguments: {} }, {}, c.key)).status).toBe(429);
+  });
+});
+
+describe('Atlas tools: one paging contract (page, 1-based, 50 per page; offset alias)', () => {
+  const rows = Array.from({ length: 120 }, (_, i) => i);
+  it('page wins, offset maps to floor(offset / 50) + 1, limit is ignored', () => {
+    expect(ATLAS_PAGE_SIZE).toBe(50);
+    expect(atlasPaged(rows, {})).toMatchObject({ total: 120, page: 1, per_page: 50, pages: 3, has_more: true, next_page: 2, page_from: 'default' });
+    expect(atlasPaged(rows, { page: 3 })).toMatchObject({ page: 3, has_more: false, next_page: null, page_from: 'page' });
+    expect(atlasPaged(rows, { page: 3 }).items).toEqual(rows.slice(100));
+    expect(atlasPaged(rows, { offset: 0 }).page).toBe(1);
+    expect(atlasPaged(rows, { offset: 99 }).page).toBe(2);
+    expect(atlasPaged(rows, { offset: 100 })).toMatchObject({ page: 3, page_from: 'offset' });
+    expect(atlasPaged(rows, { page: 2, offset: 100 })).toMatchObject({ page: 2, page_from: 'page' });
+    expect(atlasPaged(rows, { limit: 5 }).items.length).toBe(50);
+    expect(atlasPaged(rows, { page: 9 })).toMatchObject({ page: 9, items: [], has_more: false, next_page: null });
+  });
+});
+
+describe('Atlas JSON redirects the MCP tools follow', () => {
+  it('only same-build Atlas JSON paths', async () => {
+    const { atlasRedirectPath } = await import('../src/mcp/atlas');
+    expect(atlasRedirectPath('/api/v1/atlas/page/7.json')).toBe('/api/v1/atlas/page/7.json');
+    expect(atlasRedirectPath('https://commonworld.one/api/v1/atlas/platforms/page/7.json')).toBe('/api/v1/atlas/platforms/page/7.json');
+    expect(atlasRedirectPath('https://evil.example/api/v1/atlas/page/7.json')).toBeNull();
+    expect(atlasRedirectPath('/atlas/page/7/')).toBeNull();
+    expect(atlasRedirectPath('/api/v1/atlas/page/7.json?x=1')).toBeNull();
+    expect(atlasRedirectPath(null)).toBeNull();
   });
 });

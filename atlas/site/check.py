@@ -68,7 +68,7 @@ X_HANDLE, X_URL = '@commonworldone', 'https://x.com/commonworldone'  # official 
 REPO_URL, GITHUB_ORG_URL = 'https://github.com/commonworld-one/commonworld', 'https://github.com/commonworld-one'
 OFFICIAL_URLS = {X_URL, REPO_URL}  # own accounts: linked with rel="me noopener" (no nofollow)
 MAX = 150 * 1024          # raw HTML per page
-MAX_INDEX = 360 * 1024    # the catalog index and the A-Z list server-render every entry (SEO, works without JS) + a screenshot band per card
+PAGE_SIZE = 50            # cards per list page (D4); build.py and api_v1.py use the same value (api_v1.PAGE_SIZE, checked below)
 MAX_GZ = 60 * 1024        # what actually goes over the wire, every page
 MAX_OG = 100 * 1024       # per OG image (target < 80 KB)
 SHARE_ON = json.load(open(os.path.join(HERE, 'site-config.json'))).get('share', {}).get('enabled', True)
@@ -302,7 +302,9 @@ def growth_guard(locs, update=False):
         fails.append(f'missing URL baseline {os.path.relpath(BASELINE, HERE)} (run check.py --update-baseline once)')
     stubs = {f"/atlas/platforms/{r['slug']}/" for r in load_removed()}  # link-safety removals keep a noindex stub instead
     stubs = {x for x in stubs if os.path.isfile(os.path.join(DIST, x.lstrip('/'), 'index.html'))}
-    removed = sorted(u for u in base - locs if u[len(ORIGIN):] not in red and u[len(ORIGIN):] not in stubs)
+    # a paged list URL that no longer exists because its list got shorter answers 301 to the new last page (build.py paged_redirects)
+    paged301 = {l.split()[0] for l in redfile.splitlines() if len(l.split()) == 3 and l.split()[2] == '301' and PAGED_HTML_RE.match(l.split()[0])}
+    removed = sorted(u for u in base - locs if u[len(ORIGIN):] not in red and u[len(ORIGIN):] not in stubs and u[len(ORIGIN):] not in paged301)
     if removed:
         fails.append(f'{len(removed)} published URL(s) disappeared from the sitemap (pages are never removed; add a 301 in atlas/data/redirects.json if moved): {removed[:10]}')
     cur = {c['slug'] for c in json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']}
@@ -316,6 +318,55 @@ def growth_guard(locs, update=False):
             f.write('# Published URL baseline for check.py: the sitemap may only grow (removals need atlas/data/redirects.json).\n')
             f.write(''.join(u + '\n' for u in sorted(base | locs)))
         print(f'baseline updated: {len(base | locs)} URLs')
+    return fails
+
+
+PAGED_RECORD = os.path.join(DATA_DIR, 'paged-lists.json')
+
+
+def paged_record_checks(update=False):
+    """Q8 (owner decision 2026-10-24): a page number that ever existed never 404s. atlas/data/paged-lists.json records the
+    highest page ever built per list (whole Atlas, A-Z, each category); it must cover every list as built now (else run
+    check.py --update-baseline, which raises it and never lowers it) and every paged URL of the sitemap baseline. Every page
+    past a list's last page, up to that record, answers 301 to the last page in _redirects for /page/N/, /page/N,
+    /page/N/index.md and its JSON page; nothing above the record is redirected (it never existed: 404)."""
+    sys.path.insert(0, HERE)
+    import api_v1
+    fails = []
+    ai = json.load(open(os.path.join(DIST, 'api', 'v1', 'atlas', 'index.json'), encoding='utf-8'))
+    now = {'/atlas/': (None, ai['counts']['pages']), '/atlas/platforms/': (api_v1.AZ_LIST, ai['counts']['pages'])}
+    now |= {f"/atlas/categories/{c['id']}/": (c['id'], c['pages']) for c in ai['categories']}
+    doc = json.load(open(PAGED_RECORD, encoding='utf-8')) if os.path.exists(PAGED_RECORD) else {'lists': {}}
+    rec = {k: int(v) for k, v in (doc.get('lists') or {}).items()}
+    low = {f: m for f, (_, m) in now.items() if rec.get(f, 0) < m}
+    if low and update:
+        rec |= low
+        doc['lists'] = dict(sorted(rec.items()))
+        with open(PAGED_RECORD, 'w', encoding='utf-8') as fh:
+            fh.write(json.dumps(doc, indent=1, ensure_ascii=False) + '\n')
+        print(f'paged-lists record raised: {low}')
+    elif low:
+        fails.append(f'atlas/data/paged-lists.json is below the pages built now {low} (run check.py --update-baseline)')
+    base = {l.strip() for l in open(BASELINE) if l.strip() and not l.startswith('#')} if os.path.exists(BASELINE) else set()
+    for u in base:
+        m = PAGED_HTML_RE.match(u[len(ORIGIN):]) if u.startswith(ORIGIN) else None
+        if m and rec.get(m.group(1), 0) < int(m.group(2)): fails.append(f'paged-lists.json: {m.group(1)} records {rec.get(m.group(1), 0)} pages but {u} was published')
+    red = open(os.path.join(DIST, '_redirects')).read().splitlines() if os.path.exists(os.path.join(DIST, '_redirects')) else []
+    lines = set(red)
+    n_red = 0
+    for first, top in rec.items():
+        k, last = now.get(first, (first[len('/atlas/categories/'):].rstrip('/') if first.startswith('/atlas/categories/') else None, 0))
+        to = html_list_path(first, last) if first in now else '/atlas/'
+        to_json = '/api/v1' + (api_v1.page_json(last, k) if first in now else api_v1.page_json(1))
+        for n in range(max(last, 1) + 1, top + 1):
+            for want in (f'{first}page/{n}/ {to} 301', f'{first}page/{n} {to} 301', f'{first}page/{n}/index.md {to}index.md 301',
+                         f'/api/v1{api_v1.page_json(n, k)} {to_json} 301'):
+                n_red += 1
+                if want not in lines: fails.append(f'_redirects lacks {want} (page {n} of {first} existed before)')
+        for l in red:
+            m = re.match(re.escape(first) + r'page/([0-9]+)[/ ]', l)
+            if m and int(m.group(1)) > max(top, 1): fails.append(f'_redirects redirects a page that never existed: {l}')
+    print(f'paged record: {len(rec)} lists, {n_red} redirect lines for vanished pages')
     return fails
 
 
@@ -398,6 +449,292 @@ def badge_checks(parsed, pages, locs):
 REFRESH_TOOL = 'atlas/refresh.py'
 
 
+PAGED_JSON_RE = re.compile(r'^/atlas/(?:categories/([a-z0-9-]+)/)?page/([1-9][0-9]*)\.json$')  # under /api/v1 (open question Q6: location)
+PAGED_HTML_RE = re.compile(r'^(/atlas/(?:categories/[a-z0-9-]+/|platforms/)?)page/([1-9][0-9]*)/$')
+AZ_JSON_RE = re.compile(r'^/atlas/platforms/page/([1-9][0-9]*)\.json$')  # the A-Z list /atlas/platforms/ (under /api/v1)
+AZ_LETTERS = ['#'] + [chr(c) for c in range(ord('A'), ord('Z') + 1)]
+
+
+def az_letter(name):
+    import unicodedata
+    ch = unicodedata.normalize('NFKD', (name or ' ').strip()[:1] or ' ')[:1].upper()
+    return ch if 'A' <= ch <= 'Z' else '#'
+
+
+def is_card_url(u):
+    """/atlas/platforms/<slug>/ (a card page), not the A-Z list /atlas/platforms/ or its pages /atlas/platforms/page/N/."""
+    return bool(re.fullmatch(r'/atlas/platforms/[a-z0-9][a-z0-9-]*/', u)) and u != '/atlas/platforms/page/'
+
+
+def html_list_path(first, n):
+    return first if n == 1 else f'{first}page/{n}/'
+
+
+def paged_json_checks(docs, legacy_list, cats):
+    """JSON list pages (D3): for the whole list and each category, pages 1..M exist with no gap and nothing after M;
+    each has at most PAGE_SIZE records equal to the records of platforms.json, correct page/pages/total/count/has_more/
+    next/prev/first, its HTML url and Markdown twin; walking every page covers every id exactly once; one snapshot_id
+    for the whole build (also in atlas/index.json paging and in search-index.json)."""
+    sys.path.insert(0, HERE)
+    import api_v1
+    fails, A = [], ORIGIN + '/api/v1'
+    rec = {r['id']: r for r in legacy_list['platforms']}
+    order_all = [r['id'] for r in legacy_list['platforms']]
+    ai = docs.get('/atlas/index.json') or {}
+    snaps = set()
+    for k in [None] + cats:
+        got = sorted(((int(m.group(2)), p) for p, m in ((p, PAGED_JSON_RE.match(p)) for p in docs) if m and m.group(1) == k), key=lambda x: x[0])
+        where = 'all' if k is None else k
+        if not got: fails.append(f'paged json {where}: no pages'); continue
+        nums = [n for n, _ in got]
+        if nums != list(range(1, len(nums) + 1)): fails.append(f'paged json {where}: page numbers {nums[:12]} not 1..{len(nums)}')
+        m = len(nums)
+        want_ids = order_all if k is None else [r['id'] for r in legacy_list['platforms'] if r['category'] == k]
+        want_m = max(1, -(-len(want_ids) // PAGE_SIZE))
+        if m != want_m: fails.append(f'paged json {where}: {m} pages, expected {want_m} for {len(want_ids)} entries')
+        want_pages = (ai.get('counts') or {}).get('pages') if k is None else next((c.get('pages') for c in ai.get('categories', []) if c['id'] == k), None)
+        if want_pages != m: fails.append(f'paged json {where}: atlas/index.json says {want_pages} pages, files {m}')
+        walked = []
+        first_html = '/atlas/' if k is None else f'/atlas/categories/{k}/'
+        for n, p in got:
+            d = docs[p]
+            items = d.get('platforms') or []
+            walked += [r.get('id') for r in items]
+            snaps.add(d.get('snapshot_id'))
+            exp = {'page': n, 'per_page': PAGE_SIZE, 'pages': m, 'total': len(want_ids), 'count': len(items), 'has_more': n < m,
+                   'next': A + api_v1.page_json(n + 1, k) if n < m else None, 'prev': A + api_v1.page_json(n - 1, k) if n > 1 else None,
+                   'first': A + api_v1.page_json(1, k), 'url': ORIGIN + html_list_path(first_html, n), 'md_url': ORIGIN + html_list_path(first_html, n) + 'index.md'}
+            if k is not None: exp |= {'category': k}
+            bad = {f: (d.get(f), v) for f, v in exp.items() if d.get(f) != v}
+            if bad: fails.append(f'paged json {p}: {bad}')
+            if not 0 < len(items) <= PAGE_SIZE: fails.append(f'paged json {p}: {len(items)} records (allowed 1..{PAGE_SIZE})')
+            if not os.path.isfile(os.path.join(DIST, html_list_path(first_html, n).lstrip('/'), 'index.md')): fails.append(f'paged json {p}: md_url missing in dist')
+            for r in items:
+                if rec.get(r.get('id')) != r: fails.append(f'paged json {p}: record {r.get("id")} differs from platforms.json'); break
+        if k is None and walked != order_all: fails.append('paged json all: walking pages 1..M does not give platforms.json in order')
+        if sorted(walked) != sorted(want_ids) or len(set(walked)) != len(walked):
+            fails.append(f'paged json {where}: walk does not cover every id exactly once ({len(walked)} walked, {len(want_ids)} expected)')
+        if A[len(ORIGIN):] + api_v1.page_json(m + 1, k) in docs: fails.append(f'paged json {where}: page {m + 1} exists past the last page')
+    si = json.load(open(os.path.join(DIST, 'atlas', 'data', 'search-index.json'), encoding='utf-8'))  # the index or its manifest
+    snaps |= {(ai.get('paging') or {}).get('snapshot_id'), si.get('snapshot_id')}
+    if len(snaps) != 1 or not re.fullmatch(r'[0-9a-f]{16}', str(next(iter(snaps)))):
+        fails.append(f'paged json: snapshot_id differs between pages / atlas/index.json / search-index.json: {sorted(map(str, snaps))[:4]}')
+    if (ai.get('paging') or {}).get('page_size') != PAGE_SIZE: fails.append('atlas/index.json: paging.page_size != PAGE_SIZE')
+    print(f"paged json: {sum(1 for p in docs if PAGED_JSON_RE.match(p))} list pages (whole list + {len(cats)} categories), {PAGE_SIZE} per page, snapshot_id {next(iter(snaps))}")
+    return fails
+
+
+SEARCH_GZ_BUDGET = 60 * 1024  # owner decision 2026-10-24: every search-index file under 60 KB gzipped (build.py shards past it)
+
+
+def load_search_index():
+    """The catalog search index as one document (rows joined from the shards when it is sharded), plus budget failures:
+    every file of it (the index or manifest and each shard) at most SEARCH_GZ_BUDGET gzipped; shards in order, one
+    snapshot_id, counts right."""
+    fails = []
+    p = os.path.join(DIST, 'atlas', 'data', 'search-index.json')
+    files = [p]
+    si = json.load(open(p, encoding='utf-8'))
+    if si.get('shards'):
+        rows = []
+        for sh in si['shards']:
+            fp = os.path.join(DIST, sh['path'].lstrip('/'))
+            files.append(fp)
+            if not os.path.isfile(fp): fails.append(f'search index shard {sh["path"]} missing'); continue
+            d = json.load(open(fp, encoding='utf-8'))
+            if d.get('snapshot_id') != si.get('snapshot_id') or d.get('count') != len(d.get('cards') or []) or sh.get('count') != d.get('count'):
+                fails.append(f'search index shard {sh["path"]}: snapshot_id or count wrong')
+            rows += d.get('cards') or []
+        si = si | {'cards': rows}
+    for fp in files:
+        gz = len(gzip.compress(open(fp, 'rb').read(), 6))
+        if gz > SEARCH_GZ_BUDGET: fails.append(f'{os.path.relpath(fp, DIST)}: {gz} bytes gzipped > {SEARCH_GZ_BUDGET // 1024} KB search-index budget')
+    print(f"search index: {len(si.get('cards', []))} rows in {len(files)} file(s), largest {max(len(gzip.compress(open(f, 'rb').read(), 6)) for f in files if os.path.isfile(f))} bytes gzipped (budget {SEARCH_GZ_BUDGET})")
+    return si, fails
+
+
+def paged_list_checks(parsed, pages, locs):
+    """HTML list pages (D1, D3, D4): /atlas/ and every category page 1, then /page/N/ up to the last page and nothing
+    after it; each page shows at most PAGE_SIZE cards, exactly its slice of the list in order (so every card is
+    reachable by plain links); head <link rel=prev/next> and the pager's <a rel=prev/next> point to the neighbours;
+    titles of pages 2.. say "page N of M"; each page is in the sitemap, self-canonical (main loop), under the size caps,
+    links its Markdown twin and its JSON page; /page/1/ is never built and answers 301 to the list; filters stay
+    out of the sitemap; the catalog search index covers the whole Atlas."""
+    fails, n_pages = [], 0
+    snap = json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']
+    by_name = sorted(snap, key=lambda c: c['name'].lower())
+    lists = {'/atlas/': [c['slug'] for c in by_name]}
+    for c in sorted(snap, key=lambda c: (c['status'] != 'live', c['name'].lower())):
+        lists.setdefault(f"/atlas/categories/{c['category']}/", []).append(c['slug'])
+    red = open(os.path.join(DIST, '_redirects')).read() if os.path.exists(os.path.join(DIST, '_redirects')) else ''
+    card_re = re.compile(r'<article class="cw-card(?: is-closed)?"[^>]*data-slug="([a-z0-9-]+)"')
+    plain_card_re = re.compile(r'<article class="cw-card(?: is-closed)?"[^>]*>.*?<h3><a href="/atlas/platforms/([a-z0-9-]+)/">', re.S)
+    reached = set()
+    for first, slugs in lists.items():
+        m = max(1, -(-len(slugs) // PAGE_SIZE))
+        if f'{first}page/1/ {first} 301' not in red: fails.append(f'_redirects lacks {first}page/1/ -> {first} 301')
+        if os.path.exists(os.path.join(DIST, first.lstrip('/'), 'page', '1')): fails.append(f'{first}page/1/ is built (page 1 is {first})')
+        if os.path.exists(os.path.join(DIST, first.lstrip('/'), 'page', str(m + 1))): fails.append(f'{first}page/{m + 1}/ is built past the last page')
+        for n in range(1, m + 1):
+            u = html_list_path(first, n)
+            if u not in pages: fails.append(f'{u}: list page missing'); continue
+            n_pages += 1
+            h = open(pages[u], encoding='utf-8').read()
+            grid = h[h.find('<main'):h.find('</main>')]
+            shown = card_re.findall(grid) if first == '/atlas/' and n == 1 else plain_card_re.findall(grid)
+            want = slugs[(n - 1) * PAGE_SIZE:n * PAGE_SIZE]
+            if len(shown) > PAGE_SIZE: fails.append(f'{u}: {len(shown)} cards > {PAGE_SIZE}')
+            if shown != want: fails.append(f'{u}: cards {shown[:3]}… are not slice {n} of the list ({want[:3]}…)')
+            reached |= set(shown)
+            pp = parsed.get(u)
+            if not pp: continue
+            heads = {r: hr for t, hr, r in pp.links if t == 'link' and r in ('prev', 'next')}
+            anchors = {r: hr for t, hr, r in pp.links if t == 'a' and r in ('prev', 'next')}
+            want_rel = {**({'prev': html_list_path(first, n - 1)} if n > 1 else {}), **({'next': html_list_path(first, n + 1)} if n < m else {})}
+            if heads != want_rel: fails.append(f'{u}: <link rel=prev/next> {heads} != {want_rel}')
+            if anchors != want_rel: fails.append(f'{u}: pager <a rel=prev/next> {anchors} != {want_rel}')
+            if m > 1 and f'Page {n} of {m}' not in h: fails.append(f'{u}: pager lacks "Page {n} of {m}"')
+            if n > 1 and f'page {n} of {m}' not in pp.title: fails.append(f'{u}: title lacks "page {n} of {m}": {pp.title!r}')
+            if n > 1 and f'page {n} of {m}' not in (pp.meta.get('description') or '').lower(): fails.append(f'{u}: description lacks "page {n} of {m}"')
+            if ORIGIN + u not in locs: fails.append(f'{u}: not in the sitemap')
+            if 'noindex' in (pp.meta.get('robots') or ''): fails.append(f'{u}: list page is noindex (D1: paged pages are indexable)')
+            alts = [(hr, r) for t, hr, r in pp.links if t == 'link' and r == 'alternate']
+            cat = None if first == '/atlas/' else first.rstrip('/').rsplit('/', 1)[1]
+            want_json = '/api/v1' + (f'/atlas/page/{n}.json' if cat is None else f'/atlas/categories/{cat}/page/{n}.json')
+            if (want_json, 'alternate') not in alts: fails.append(f'{u}: no <link rel=alternate> to its JSON page {want_json}')
+            if (u + 'index.md', 'alternate') not in alts: fails.append(f'{u}: no <link rel=alternate> to its Markdown twin {u}index.md')
+            if n > 1:
+                lds = [json.loads(x) for x in pp.ld]
+                cp = next((x for x in lds if x.get('@type') == 'CollectionPage'), None)
+                pos = [li.get('position') for li in ((cp or {}).get('mainEntity') or {}).get('itemListElement', [])]
+                if pos != list(range((n - 1) * PAGE_SIZE + 1, (n - 1) * PAGE_SIZE + len(want) + 1)):
+                    fails.append(f'{u}: CollectionPage ItemList positions {pos[:3]}… do not continue the list')
+    if reached != {c['slug'] for c in snap}:
+        fails.append(f'cards reachable through list pages: {len(reached)} of {len(snap)} (missing {sorted({c["slug"] for c in snap} - reached)[:5]})')
+    for u in pages:
+        mm = PAGED_HTML_RE.match(u)
+        if mm and mm.group(1) not in lists and mm.group(1) != '/atlas/platforms/': fails.append(f'{u}: paged page of an unknown list')
+    if any(re.search(r'[?&](q|tag|status|type|feature|category|sort)=', l) for l in locs): fails.append('sitemap lists a filter / search URL (D1: noindex, not in the sitemap)')
+    si, si_fails = load_search_index()
+    fails += si_fails
+    if [r[0] for r in si.get('cards', [])] != lists['/atlas/']: fails.append('search-index.json: cards are not the whole Atlas in list order')
+    if si.get('total') != len(snap) or si.get('page_size') != PAGE_SIZE: fails.append('search-index.json: total / page_size wrong')
+    idx = open(pages['/atlas/'], encoding='utf-8').read()
+    # a card rendered from its index row (atlas.js renderCard mirrors build.card_from_row) is the same card as on page 1
+    sys.path.insert(0, HERE)
+    import build
+    head = {k: si.get(k) for k in ('card_base', 'tag_href', 'thumb', 'cat_labels', 'reach_text', 'tag_limit')}
+    grid = idx[idx.find('id="grid"'):]
+    for r in si.get('cards', [])[:PAGE_SIZE]:
+        if len(r) != len(build.SEARCH_FIELDS): fails.append(f'search-index.json: row {r[:1]} has {len(r)} fields, expected {len(build.SEARCH_FIELDS)}'); break
+        if build.card_from_row(head, r) not in grid: fails.append(f'search-index.json: the row of {r[0]} does not render the card shown on /atlas/'); break
+    if f'data-total="{len(snap)}"' not in idx: fails.append('/atlas/: catalog lacks data-total (counters come from the search index)')
+    print(f'paged lists: {n_pages} HTML list pages in {len(lists)} lists, at most {PAGE_SIZE} cards each, {len(reached)} cards reachable by plain links')
+    return fails
+
+
+def az_list_checks(parsed, pages, locs):
+    """The A-Z list /atlas/platforms/ (paged since #107, like the other lists): page 1 is /atlas/platforms/, then
+    /atlas/platforms/page/N/ up to the last page and nothing after it; each page is a table of at most PAGE_SIZE rows, exactly
+    its slice of the list (every entry reachable once by plain links); rel prev/next in head and pager; "page N of M" in title
+    and description; self-canonical, indexable, in the sitemap; Markdown twin and JSON page linked; ItemList positions continue
+    across pages; the A-Z jump bar on every page links each letter to the page (and row) where that letter starts, letters with
+    no entry are not links; /page/1/ answers 301; the JSON pages /api/v1/atlas/platforms/page/N.json walk platforms.json once,
+    in order, with has_more / next / prev / total / count / url and the build's snapshot_id; atlas/index.json links them."""
+    fails, first, A = [], '/atlas/platforms/', ORIGIN + '/api/v1'
+    snap = json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))['platforms']
+    order = sorted(snap, key=lambda c: c['name'].lower())
+    slugs = [c['slug'] for c in order]
+    m = max(1, -(-len(slugs) // PAGE_SIZE))
+    starts = {}
+    for i, c in enumerate(order):
+        starts.setdefault(az_letter(c['name']), (i // PAGE_SIZE + 1, c['slug']))
+    red = open(os.path.join(DIST, '_redirects')).read() if os.path.exists(os.path.join(DIST, '_redirects')) else ''
+    if f'{first}page/1/ {first} 301' not in red: fails.append(f'_redirects lacks {first}page/1/ -> {first} 301')
+    for n_bad in (1, m + 1):
+        if os.path.exists(os.path.join(DIST, 'atlas', 'platforms', 'page', str(n_bad))): fails.append(f'{first}page/{n_bad}/ is built')
+    row_re = re.compile(r'<tr(?: id="(az-[0-9a-z])")?><td><a href="/atlas/platforms/([a-z0-9-]+)/">')
+    bar_re = re.compile(r'<nav class="cw-azbar"[^>]*><ol>(.*?)</ol></nav>', re.S)
+    reached = []
+    for n in range(1, m + 1):
+        u = html_list_path(first, n)
+        if u not in pages: fails.append(f'{u}: A-Z list page missing'); continue
+        h = open(pages[u], encoding='utf-8').read()
+        main_ = h[h.find('<main'):h.find('</main>')]
+        rows = row_re.findall(main_)
+        shown = [sl for _, sl in rows]
+        want = slugs[(n - 1) * PAGE_SIZE:n * PAGE_SIZE]
+        if shown != want: fails.append(f'{u}: rows {shown[:3]}… are not slice {n} of the A-Z list ({want[:3]}…)')
+        reached += shown
+        want_ids = {('az-0' if l == '#' else 'az-' + l.lower()): sl for l, (pn, sl) in starts.items() if pn == n}
+        got_ids = {i: sl for i, sl in rows if i}
+        if got_ids != want_ids: fails.append(f'{u}: letter anchors {sorted(got_ids)} != {sorted(want_ids)}')
+        if m > 1:
+            bar = bar_re.search(main_)
+            if not bar: fails.append(f'{u}: no A-Z jump bar')
+            else:
+                links = dict((t, hr) for hr, t in re.findall(r'<a href="([^"]+)"[^>]*>([^<]+)</a>', bar.group(1)))
+                want_links = {('#' if l == '#' else l): f"{html_list_path(first, pn)}#{'az-0' if l == '#' else 'az-' + l.lower()}" for l, (pn, _) in starts.items()}
+                if links != want_links:
+                    diff = sorted(l for l in set(links) | set(want_links) if links.get(l) != want_links.get(l))
+                    fails.append(f'{u}: A-Z jump bar letters {diff[:5]} link {[links.get(l) for l in diff[:5]]}, expected {[want_links.get(l) for l in diff[:5]]}')
+                plain = re.findall(r'<span aria-hidden="true">([^<]+)</span>', bar.group(1))
+                if sorted(plain + list(links)) != sorted(AZ_LETTERS): fails.append(f'{u}: A-Z jump bar does not show every letter once')
+        pp = parsed.get(u)
+        if not pp: continue
+        heads = {r: hr for t, hr, r in pp.links if t == 'link' and r in ('prev', 'next')}
+        anchors = {r: hr for t, hr, r in pp.links if t == 'a' and r in ('prev', 'next')}
+        want_rel = {**({'prev': html_list_path(first, n - 1)} if n > 1 else {}), **({'next': html_list_path(first, n + 1)} if n < m else {})}
+        if heads != want_rel: fails.append(f'{u}: <link rel=prev/next> {heads} != {want_rel}')
+        if anchors != want_rel: fails.append(f'{u}: pager <a rel=prev/next> {anchors} != {want_rel}')
+        if m > 1 and f'page {n} of {m}' not in pp.title: fails.append(f'{u}: title lacks "page {n} of {m}": {pp.title!r}')
+        if m > 1 and f'page {n} of {m}' not in (pp.meta.get('description') or '').lower(): fails.append(f'{u}: description lacks "page {n} of {m}"')
+        if pp.canon != ORIGIN + u: fails.append(f'{u}: canonical {pp.canon} is not self')
+        if 'noindex' in (pp.meta.get('robots') or ''): fails.append(f'{u}: A-Z list page is noindex')
+        if ORIGIN + u not in locs: fails.append(f'{u}: not in the sitemap')
+        alts = [(hr, r) for t, hr, r in pp.links if t == 'link' and r == 'alternate']
+        if (f'/api/v1/atlas/platforms/page/{n}.json', 'alternate') not in alts: fails.append(f'{u}: no <link rel=alternate> to its JSON page')
+        if (u + 'index.md', 'alternate') not in alts: fails.append(f'{u}: no <link rel=alternate> to its Markdown twin')
+        lds = [json.loads(x) for x in pp.ld]
+        cp = next((x for x in lds if x.get('@type') == 'CollectionPage'), None)
+        pos = [li.get('position') for li in ((cp or {}).get('mainEntity') or {}).get('itemListElement', [])]
+        if pos != list(range((n - 1) * PAGE_SIZE + 1, (n - 1) * PAGE_SIZE + len(want) + 1)):
+            fails.append(f'{u}: ItemList positions {pos[:3]}… do not continue the list')
+        md = os.path.join(DIST, u.lstrip('/'), 'index.md')
+        if not os.path.isfile(md) or any(f'/atlas/platforms/{sl}/)' not in open(md, encoding='utf-8').read() for sl in want):
+            fails.append(f'{u}: Markdown twin missing or lacks its rows')
+    if reached != slugs: fails.append(f'A-Z list: {len(reached)} rows over {m} pages, expected every entry once in order ({len(slugs)})')
+    # JSON pages
+    legacy = json.load(open(os.path.join(DIST, 'api', 'v1', 'atlas', 'platforms.json'), encoding='utf-8'))
+    rec = {r['id']: r for r in legacy['platforms']}
+    ai = json.load(open(os.path.join(DIST, 'api', 'v1', 'atlas', 'index.json'), encoding='utf-8'))
+    sid = (ai.get('paging') or {}).get('snapshot_id')
+    walked, url, n = [], (ai.get('paging') or {}).get('az_first'), 0
+    if url != A + '/atlas/platforms/page/1.json': fails.append(f'atlas/index.json paging.az_first {url!r}')
+    if (ai.get('links') or {}).get('az_page') != A + '/atlas/platforms/page/{page}.json': fails.append('atlas/index.json links.az_page wrong')
+    while url and n <= m:
+        n += 1
+        fp = os.path.join(DIST, url[len(ORIGIN):].lstrip('/'))
+        if not os.path.isfile(fp): fails.append(f'A-Z json: {url} missing'); break
+        d = json.load(open(fp, encoding='utf-8'))
+        items = d.get('platforms') or []
+        exp = {'page': n, 'per_page': PAGE_SIZE, 'pages': m, 'total': len(slugs), 'count': len(items), 'has_more': n < m, 'snapshot_id': sid,
+               'next': f'{A}/atlas/platforms/page/{n + 1}.json' if n < m else None, 'prev': f'{A}/atlas/platforms/page/{n - 1}.json' if n > 1 else None,
+               'first': f'{A}/atlas/platforms/page/1.json', 'url': ORIGIN + html_list_path(first, n), 'md_url': ORIGIN + html_list_path(first, n) + 'index.md',
+               'full_list': f'{A}/atlas/platforms.json'}
+        bad = {f: (d.get(f), v) for f, v in exp.items() if d.get(f) != v}
+        if bad: fails.append(f'A-Z json page {n}: {bad}')
+        if any(rec.get(r.get('id')) != r for r in items): fails.append(f'A-Z json page {n}: a record differs from platforms.json')
+        walked += [r.get('id') for r in items]
+        url = d.get('next') if d.get('has_more') else None
+    if walked != slugs: fails.append(f'A-Z json: walking next gives {len(walked)} ids, not platforms.json once in order')
+    if os.path.exists(os.path.join(DIST, 'api', 'v1', 'atlas', 'platforms', 'page', f'{m + 1}.json')): fails.append(f'A-Z json: page {m + 1} exists past the last page')
+    if os.path.isfile(os.path.join(DIST, 'atlas', 'platforms', 'page', 'index.html')):
+        fails.append('/atlas/platforms/page/ exists: the slug "page" is reserved for the A-Z list pages')
+    print(f'A-Z list: {m} pages, {len(reached)} rows reachable by plain links, {len(starts)} letters in the jump bar, JSON walk {len(walked)} ids')
+    return fails
+
+
 def api_checks(parsed, locs):
     """Static API v1 (/api/v1/): every JSON file in dist parses; every path promised by openapi.json exists; every API data
     document validates against its JSON Schema and equals its legacy /atlas/*.json twin (+ schema_version); counts agree
@@ -426,7 +763,9 @@ def api_checks(parsed, locs):
     legacy_list = json.load(open(os.path.join(DIST, 'atlas', 'platforms.json')))
     ids = [r['id'] for r in legacy_list['platforms']]
     cats = [r['id'] for r in (docs.get('/atlas/index.json') or {}).get('categories', [])]
-    for p in api_v1.expand_paths(spec, ids, cats) if spec else []:
+    pages_of = {None: ((docs.get('/atlas/index.json') or {}).get('counts') or {}).get('pages', 1)}
+    pages_of |= {c['id']: c.get('pages', 1) for c in (docs.get('/atlas/index.json') or {}).get('categories', [])}
+    for p in api_v1.expand_paths(spec, ids, cats, pages_of) if spec else []:
         if p not in docs: fails.append(f'api: openapi path {p} not in dist')
     for p, op in (spec.get('paths') or {}).items():
         for code, r in op['get']['responses'].items():
@@ -458,6 +797,8 @@ def api_checks(parsed, locs):
         errs = _std_validate(std, sch, obj) if std else api_v1.validate(obj, reg[sch], reg, sch, limit=5)
         n_valid += 1
         if errs: fails.append(f'api: {p} fails {sch}: {errs[:3]}')
+        if PAGED_JSON_RE.match(p) or AZ_JSON_RE.match(p):
+            continue  # paged lists are new in /api/v1 (1.8.0) and have no legacy /atlas/*.json twin; paged_json_checks covers them
         twin = os.path.join(DIST, p.lstrip('/'))
         if not os.path.isfile(twin):
             fails.append(f'api: {p} has no legacy twin'); continue
@@ -467,7 +808,10 @@ def api_checks(parsed, locs):
     want = {'/atlas/platforms.json', '/atlas/earn.json'} | {f'/atlas/platforms/{i}.json' for i in ids} | {f'/atlas/categories/{k}.json' for k in cats}
     missing = [p for p in want if p not in docs]
     if missing: fails.append(f'api: data documents missing: {sorted(missing)[:5]}')
-    if n_valid != len(want): fails.append(f'api: validated {n_valid} data documents, expected {len(want)}')
+    n_paged = sum(1 for p in docs if PAGED_JSON_RE.match(p) or AZ_JSON_RE.match(p))
+    if n_valid != len(want) + n_paged: fails.append(f'api: validated {n_valid} data documents, expected {len(want)} + {n_paged} list pages')
+    if api_v1.PAGE_SIZE != PAGE_SIZE: fails.append(f'api_v1.PAGE_SIZE {api_v1.PAGE_SIZE} != check.py PAGE_SIZE {PAGE_SIZE}')
+    fails += paged_json_checks(docs, legacy_list, cats)
     # counts equal across old and new endpoints
     ai, root = docs.get('/atlas/index.json') or {}, docs.get('/index.json') or {}
     n = len(ids)
@@ -512,7 +856,7 @@ def api_checks(parsed, locs):
     readme = os.path.normpath(os.path.join(HERE, '..', '..', 'README.md'))
     if os.path.exists(readme) and ORIGIN + D not in open(readme, encoding='utf-8').read(): fails.append(f'README.md: no link to {D}')
     print(f'api: {len(docs)} JSON files under /api/v1, {n_valid} data documents schema-valid ({"jsonschema" if std else "built-in validator"}) and equal to their legacy twins, '
-          f'{len(api_v1.expand_paths(spec, ids, cats)) if spec else 0} OpenAPI paths resolved')
+          f'{len(api_v1.expand_paths(spec, ids, cats, pages_of)) if spec else 0} OpenAPI paths resolved')
     return fails
 
 
@@ -1294,7 +1638,7 @@ def main():
                 pages[url_of(rel)] = os.path.join(root, f)
     for u, fp in pages.items():
         size = os.path.getsize(fp)
-        lim = MAX_INDEX if u in ('/atlas/', '/atlas/platforms/') else MAX
+        lim = MAX  # every page, list pages included (the A-Z list is paged too since #107; no special cap)
         if size > lim:
             fails.append(f'{u}: {size} bytes > {lim // 1024} KB')
         gz = len(gzip.compress(open(fp, 'rb').read()))
@@ -1378,7 +1722,7 @@ def main():
                     sz = os.path.getsize(fp); og_sizes.append(sz)
                     if sz > MAX_OG: fails.append(f'{u}: og:image {sz} bytes > {MAX_OG // 1024} KB')
             # --- share bar: links carry the canonical URL
-            need_share = SHARE_ON and (u.startswith('/atlas/platforms/') and u != '/atlas/platforms/' or u in ('/atlas/', '/', '/about/'))
+            need_share = SHARE_ON and (is_card_url(u) or u in ('/atlas/', '/', '/about/'))
             if need_share and not p.share_bars: fails.append(f'{u}: no share bar')
             for burl, btext in p.share_bars:
                 if burl != p.canon: fails.append(f'{u}: share bar url {burl} != canonical')
@@ -1578,7 +1922,7 @@ def main():
     if CFG['contact']['general'] != CFG['contact']['privacy'] and CFG['contact']['general'] in _pv: fails.append('privacy page shows contact.general; privacy page must use contact.privacy only')
     # share bar sits in the platform header (entry-head), once
     for u, p in parsed.items():
-        if u.startswith('/atlas/platforms/') and u != '/atlas/platforms/' and SHARE_ON:
+        if is_card_url(u) and SHARE_ON:
             h = open(pages[u], encoding='utf-8').read()
             head = h[h.find('<header class="entry-head"'):h.find('</header>', h.find('<header class="entry-head"'))]
             if 'cw-share cw-share-head' not in head: fails.append(f'{u}: share bar not in header')
@@ -1601,6 +1945,7 @@ def main():
     if f'Sitemap: {ORIGIN}/atlas/sitemap.xml' not in robots: fails.append('robots.txt lacks sitemap')
     if f'Sitemap: {ORIGIN}/sitemap.xml' not in robots: fails.append('robots.txt lacks the site-level sitemap')
     fails += growth_guard(locs, update='--update-baseline' in sys.argv)
+    fails += paged_record_checks(update='--update-baseline' in sys.argv)
     try:
         json.load(open(os.path.join(DIST, 'atlas', 'data', 'snapshot.json')))
     except Exception as ex:
@@ -1628,6 +1973,8 @@ def main():
     fails += stats_checks(parsed, pages, locs)
     fails += badge_checks(parsed, pages, locs)
     fails += api_checks(parsed, locs)
+    fails += paged_list_checks(parsed, pages, locs)
+    fails += az_list_checks(parsed, pages, locs)
     fails += a11y_checks(pages)
     fails += csp_checks(pages)
     fails += closure_checks(pages)

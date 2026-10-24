@@ -13,7 +13,7 @@ Output (default atlas/site/dist/) is a plain static tree with clean URLs as dire
   /api/v1/ (static API: index.json, openapi.json, changelog, schemas/, atlas/{index,platforms,earn}.json, atlas/platforms|categories/<id>.json; docs /atlas/api/)
 It ships unchanged as Workers Static Assets inside the platform Worker (production since 2026-10-20; the old Cloudflare Pages project is only a legacy fallback).
 """
-import argparse, base64, hashlib, html, json, os, re, shutil, sys
+import argparse, base64, hashlib, html, json, os, re, shutil, sys, unicodedata
 from collections import Counter, defaultdict
 from html.parser import HTMLParser
 from datetime import datetime, timedelta, timezone
@@ -293,7 +293,8 @@ CW_ABOUT = '/about/'  # About Commonworld (site-wide); /atlas/about/ stays "How 
 SEARCH_PLACEHOLDER = 'Search: name, category, description, numbers…'
 
 
-def page(site, *, path, title, description, body, active, ld=(), og_type='website', noindex=False, lastmod=None, index_search=False, og=None, alt_json=None, alt_md=None):
+def page(site, *, path, title, description, body, active, ld=(), og_type='website', noindex=False, lastmod=None, index_search=False, og=None, alt_json=None, alt_md=None,
+         alt_json_title='This entry (JSON: claims and sources)', prev=None, nxt=None):
     """og: (image name, spec dict, alt text) -> /atlas/og/<name>.png rendered by og_images.py (static og-atlas.png without Pillow)."""
     cfg = site.cfg
     canon = site.abs(path)
@@ -348,8 +349,10 @@ def page(site, *, path, title, description, body, active, ld=(), og_type='websit
 <link rel="apple-touch-icon" href="{b}/assets/apple-touch-icon.png?v={site.img_v}">
 <link rel="alternate" type="application/json" href="{b}/data/snapshot.json" title="Atlas data (JSON)">
 <link rel="alternate" type="application/json" href="{b}/platforms.json" title="Atlas platforms (JSON, for agents)">
-{f'<link rel="alternate" type="application/json" href="{e(alt_json)}" title="This entry (JSON: claims and sources)">' if alt_json else ''}
+{f'<link rel="alternate" type="application/json" href="{e(alt_json)}" title="{e(alt_json_title)}">' if alt_json else ''}
 {f'<link rel="alternate" type="text/markdown" href="{e(alt_md)}" title="This page (Markdown)">' if alt_md else ''}
+{f'<link rel="prev" href="{e(prev)}">' if prev else ''}
+{f'<link rel="next" href="{e(nxt)}">' if nxt else ''}
 {cw.boot_script(cfg)}
 <link rel="stylesheet" href="{b}/assets/atlas.css?v={site.asset_v}">
 {head_ld}
@@ -542,10 +545,79 @@ def cat_tabs_links(site, active):
     return cw.tabs(items, label='Directions', tag='a')
 
 
+# ---------------------------------------------------------------- paged lists (ADR-0001: D1 indexable pages, D2 static, D3 /page/N/, D4 50 cards)
+RESERVED_SLUGS = {'page'}  # /atlas/platforms/page/N/ are pages of the A-Z list, so no entry may take the slug 'page'
+PAGE_SIZE = api_v1.PAGE_SIZE  # cards per list page: /atlas/, /atlas/page/N/, category pages and the JSON pages (one constant)
+
+
+def chunks(cs):
+    """A list split into pages of PAGE_SIZE (an empty list is one empty page, so page 1 always exists)."""
+    return [cs[i:i + PAGE_SIZE] for i in range(0, len(cs), PAGE_SIZE)] or [[]]
+
+
+def list_path(first, n):
+    """URL of page n of a list whose page 1 is `first` (e.g. /atlas/ -> /atlas/page/2/). Page 1 is the list URL itself;
+    /page/1/ is never built and answers 301 to it (_redirects)."""
+    return first if n == 1 else f'{first}page/{n}/'
+
+
+def page_range(n, total):
+    """(first, last) 1-based positions of the cards on page n."""
+    a = (n - 1) * PAGE_SIZE + 1
+    return a, min(n * PAGE_SIZE, total)
+
+
+def pager_html(first, n, m):
+    """Plain links between the pages of a list (crawlable without JS): previous / numbered window / next."""
+    if m < 2:
+        return ''
+    keep = sorted({1, m} | set(range(max(1, n - 2), min(m, n + 2) + 1)))
+    items, last = [], 0
+    for i in keep:
+        if last and i - last > 1:
+            items.append('<li class="gap" aria-hidden="true">…</li>')
+        cur = ' aria-current="page"' if i == n else ''
+        items.append(f'<li><a href="{e(list_path(first, i))}"{cur} aria-label="Page {i}">{i}</a></li>')
+        last = i
+    prv = (f'<a class="cw-pager-step" rel="prev" href="{e(list_path(first, n - 1))}">← Previous</a>' if n > 1
+           else '<span class="cw-pager-step is-off" aria-hidden="true">← Previous</span>')
+    nxt = (f'<a class="cw-pager-step" rel="next" href="{e(list_path(first, n + 1))}">Next →</a>' if n < m
+           else '<span class="cw-pager-step is-off" aria-hidden="true">Next →</span>')
+    return (f'<nav class="cw-pager" id="pager" aria-label="Pages of this list"><span class="cw-pager-info">Page {n} of {m}</span>'
+            f'{prv}<ol>{"".join(items)}</ol>{nxt}</nav>')
+
+
+def page_item_list(site, cs, name, n):
+    """schema.org ItemList of the cards on one page; positions count from the start of the whole list."""
+    off = (n - 1) * PAGE_SIZE
+    return {'@type': 'ItemList', 'name': name, 'numberOfItems': len(cs),
+            'itemListElement': [{'@type': 'ListItem', 'position': off + i + 1, 'url': site.abs(c['_url'])} for i, c in enumerate(cs)]}
+
+
+def list_md(site, *, title, path, intro, cs, n, m, first, json_path, total):
+    """Markdown twin of one list page (HTML stays canonical): the same cards in the same order, with links to the
+    previous / next page and to the JSON page."""
+    A = site.abs
+    a, z = page_range(n, total)
+    rows = '\n'.join(f"| {a + i} | [{md_cell(c['name'])}]({A(c['_url'])}) | {md_cell(CAT_LABEL[c['category']])} | {c['status']} | "
+                     f"{md_cell(trim(c['_desc'], 160))} | [Markdown]({A(c['_url'] + 'index.md')}) |" for i, c in enumerate(cs))
+    nav = ' · '.join(x for x in (f'Previous page: {A(list_path(first, n - 1))}' if n > 1 else '',
+                                 f'Next page: {A(list_path(first, n + 1))}' if n < m else '') if x)
+    return (f'# {title}\n\nCanonical page: {A(path)}\n\n{intro}\n\n'
+            f'Page {n} of {m} · entries {a}–{z} of {total} · {PAGE_SIZE} per page · JSON of this page: {A(api_v1.API_BASE + json_path)}\n\n'
+            '| # | Entry | Direction | Status | Summary | Card as Markdown |\n|---|---|---|---|---|---|\n'
+            f'{rows}\n' + (f'\n{nav}\n' if nav else ''))
+
+
 # ---------------------------------------------------------------- pages
 def build_index(site):
+    """/atlas/ = page 1 of the whole list (hub: stats, filters, categories) with the first PAGE_SIZE cards; the rest are
+    on /atlas/page/N/ (build_index_page). Filters, search, sort and every counter work on the whole Atlas: atlas.js reads
+    them from /atlas/data/search-index.json, never from the cards in this page."""
     b, cards, cfg = site.base, site.cards, site.cfg
     n = len(cards)
+    pages = chunks(cards)
+    m = len(pages)
     live = sum(1 for c in cards if c['status'] == 'live')
     money = sum(1 for c in cards if c['_money'])
     nums = sum(1 for c in cards if c['_num'])
@@ -566,6 +638,7 @@ def build_index(site):
     hero = cw.hero(f'Commonworld · Atlas · verified {verified}', 'Atlas of Agent Platforms',
                    '<p>Where AI agents talk, work, get paid, compete and publish research. Every card is checked against its own sources: '
                    'what it is, whether it’s live, and dated numbers you can trace.</p>', box)
+    default_count = f'Showing 1–{len(pages[0])} of {n}' if m > 1 else f'{n} of {n}'
     tabs = cw.tabs([('All', n, {'data-cat': ''}, True)] + [(CAT_LABEL[k], len(site.by_cat[k]), {'data-cat': k}, False) for k in site.cats])
     st = Counter(c['status'] for c in cards)
     ty = Counter(c['entity_type'] for c in cards)
@@ -584,8 +657,8 @@ def build_index(site):
 {cw.share_bar(cfg, site.abs(f'{b}/'), share_text_index(site), cls='cw-share-index')}
 {cw.ad_slot(cfg, 'atlas-index-top', 'cw-ad-banner')}
 <div id="catalog-top">{tabs}</div>
-<section class="cw-panel atlas-catalog" id="catalog" aria-labelledby="list-title" data-search-index="{b}/data/search-index.json">
-<div class="cw-panel-head"><h2 id="list-title">All platforms</h2><span class="muted" id="list-count" aria-live="polite">{n} of {n}</span><span class="spacer"></span><button class="text-btn" id="f-reset" type="button">Reset filters</button></div>
+<section class="cw-panel atlas-catalog" id="catalog" aria-labelledby="list-title" data-search-index="{b}/data/search-index.json" data-total="{n}">
+<div class="cw-panel-head"><h2 id="list-title">All platforms</h2><span class="muted" id="list-count" aria-live="polite">{default_count}</span><span class="spacer"></span><button class="text-btn" id="f-reset" type="button">Reset filters</button></div>
 <div class="cw-panel-body">
 <div class="cw-filterbar">
 <div class="cw-filtergroup" role="group" aria-label="Status"><span class="lbl">Status</span>{status_pills}</div>
@@ -595,7 +668,8 @@ def build_index(site):
 </div>
 {shelf}
 <div class="cw-active" id="active"><span>Click tags, statuses or tabs to narrow the list. Tags combine with AND.</span></div>
-<div class="cw-grid" id="grid">{cards_with_ads(site, cards, data=True)}<p class="cw-empty" id="f-empty" hidden>Nothing found. Remove a tag or clear the search.</p></div>
+<div class="cw-grid" id="grid">{cards_with_ads(site, pages[0], data=True)}<p class="cw-empty" id="f-empty" hidden>Nothing found. Remove a tag or clear the search.</p></div>
+{pager_html(f'{b}/', 1, m)}
 </div>
 </section>
 <script type="application/json" id="cat-labels">{json.dumps(CAT_LABEL, ensure_ascii=False)}</script>
@@ -623,12 +697,64 @@ def build_index(site):
                                 (DECISIONS_JSON, 'application/json', 'Link safety decision log: every removal and return with who, why and evidence (decisions.json)'),
                                 ('/llms-full.txt', 'text/plain', 'One line per entry (llms-full.txt)')])]
     return page(site, path=f'{b}/', title='Atlas of Agent Platforms: verified catalog | Commonworld',
+                alt_json=api_v1.API_BASE + api_v1.page_json(1), alt_json_title='This list page (JSON)', alt_md=f'{b}/index.md',
+                nxt=list_path(f'{b}/', 2) if m > 1 else None,
                 description=f'{n} places where AI agents talk, work, get paid, compete and publish research, each checked against its own sources, with dated numbers you can trace.',
                 body=body, active='index', ld=ld, index_search=True,
                 og=og_generic(site, 'atlas', 'Atlas of Agent Platforms',
                               'Where AI agents talk, work, get paid, compete and publish research. Every card is checked against its own sources.',
                               [(f'{n} entries', 'olive'), (f'{live} live', 'live'), (f'{n - live} closed', 'closed'), (f'{len(site.cats)} directions', None)],
                               kicker='VERIFIED CATALOG', alt=f'Commonworld Atlas of Agent Platforms: {n} verified entries, {live} live'))
+
+
+def index_page_text(site, n, m, cs):
+    """(h1, title, description, lead text) of /atlas/page/N/ (N >= 2); the same words in the HTML page and its Markdown twin."""
+    total = len(site.cards)
+    a, z = page_range(n, total)
+    h1 = f'All entries, page {n} of {m}'
+    title = f'Atlas of Agent Platforms: page {n} of {m} | Commonworld'
+    desc = (f'Page {n} of {m} of the Commonworld Atlas: entries {a}–{z} of {total}, A to Z ({cs[0]["name"]} to {cs[-1]["name"]}), '
+            f'each checked against its own sources.')
+    lead = f'Entries {a}–{z} of {total}, A to Z: {cs[0]["name"]} to {cs[-1]["name"]}. Every card is checked against its own sources.'
+    return h1, title, desc, lead
+
+
+def build_index_page(site, n, pages):
+    """/atlas/page/N/ (N >= 2): the next PAGE_SIZE cards of the whole list, A to Z, with plain previous / next links.
+    Indexable and self-canonical (D1); a page number past the last one is never built, so it answers 404."""
+    b = site.base
+    m, cs = len(pages), pages[n - 1]
+    path = list_path(f'{b}/', n)
+    h1, title, desc, lead = index_page_text(site, n, m, cs)
+    crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), (f'Page {n}', path)])
+    body = f"""{crumbs}
+{cw.hero('Atlas · all entries', h1, f'<p>{e(lead)} To search and filter the whole Atlas, use the <a href="{b}/">Atlas home</a>.</p>', small=True, kicker_href=f'{b}/')}
+{cat_tabs_links(site, '')}
+<div class="cw-grid">{cards_with_ads(site, cs)}</div>
+{pager_html(f'{b}/', n, m)}"""
+    ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': h1 + ' | Commonworld Atlas', 'url': site.abs(path),
+                     'inLanguage': 'en', 'isPartOf': {'@type': 'CollectionPage', 'name': 'Atlas of Agent Platforms', 'url': site.abs(f'{b}/')},
+                     'mainEntity': page_item_list(site, cs, f'Atlas entries, page {n} of {m}', n)}]
+    return page(site, path=path, title=title, description=desc, body=body, active='index', ld=ld,
+                alt_json=api_v1.API_BASE + api_v1.page_json(n), alt_json_title='This list page (JSON)', alt_md=path + 'index.md',
+                prev=list_path(f'{b}/', n - 1), nxt=list_path(f'{b}/', n + 1) if n < m else None,
+                og=og_generic(site, f'atlas-page-{n}', f'All entries, page {n} of {m}', lead,
+                              [(f'{len(site.cards)} entries', 'olive'), (f'page {n} of {m}', None)], kicker='ATLAS',
+                              alt=f'Commonworld Atlas, page {n} of {m}: {cs[0]["name"]} to {cs[-1]["name"]}'))
+
+
+def build_index_md(site, n, pages):
+    b = site.base
+    m, cs = len(pages), pages[n - 1]
+    if n == 1:
+        title = 'Atlas of Agent Platforms'
+        intro = ('Where AI agents talk, work, get paid, compete and publish research. Every card is checked against its own sources: what it is, '
+                 f'whether it is live, and dated numbers you can trace. {len(site.cards)} entries, A to Z. Search and filters: {site.abs(b + "/")} '
+                 f'(HTML). Categories: {site.abs(b + "/categories/")}.')
+    else:
+        title, intro = index_page_text(site, n, m, cs)[0], index_page_text(site, n, m, cs)[3]
+    return list_md(site, title=title, path=list_path(f'{b}/', n), intro=intro, cs=cs, n=n, m=m, first=f'{b}/',
+                   json_path=api_v1.page_json(n), total=len(site.cards))
 
 
 def build_platform(site, c):
@@ -951,38 +1077,88 @@ def qa_labels_for(c, claims, curated):
 
 
 
-def build_category(site, k):
+def category_cards(site, k):
+    return sorted(site.by_cat[k], key=lambda c: (c['status'] != 'live', c['name'].lower()))
+
+
+def category_page_text(k, n, m, cs, total):
+    """(h1, title, description, lead) of category page n (n >= 2)."""
+    a, z = page_range(n, total)
+    h1 = f'{CAT_LABEL[k]}, page {n} of {m}'
+    title = fit_title(f'{CAT_LABEL[k]}: page {n} of {m} | Commonworld Atlas', f'{CAT_SHORT[k]}: page {n} of {m} | Commonworld Atlas')
+    desc = trim(f'{CAT_LABEL[k]}, page {n} of {m}: entries {a}–{z} of {total} in the Commonworld Atlas, live first, then A to Z. {CAT_DESC[k]}', 160)
+    lead = f'Entries {a}–{z} of {total} in this direction, live first, then A to Z: {cs[0]["name"]} to {cs[-1]["name"]}.'
+    return h1, title, desc, lead
+
+
+def build_category(site, k, n=1):
+    """Category page n: page 1 is /atlas/categories/<k>/ (hero, Dataset JSON-LD), pages 2.. are /atlas/categories/<k>/page/N/."""
     b = site.base
-    cs = sorted(site.by_cat[k], key=lambda c: (c['status'] != 'live', c['name'].lower()))
-    crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), ('Categories', f'{b}/categories/'), (CAT_LABEL[k], f'{b}/categories/{k}/')])
-    live = sum(1 for c in cs if c['status'] == 'live')
-    lm = max((c['_verified'] for c in cs if c['_verified']), default=None)
-    box = cw.info_box('live', f'{len(cs)} entries', f'{live} live',
-                      f'{len(cs) - live} closed, kept as history. Last verified {time_tag(lm)}. '
+    allcs = category_cards(site, k)
+    pages = chunks(allcs)
+    m, cs = len(pages), pages[n - 1]
+    first = f'{b}/categories/{k}/'
+    path = list_path(first, n)
+    trail = [('Atlas', f'{b}/'), ('Categories', f'{b}/categories/'), (CAT_LABEL[k], first)] + ([(f'Page {n}', path)] if n > 1 else [])
+    crumbs, crumb_ld = breadcrumbs(site, trail)
+    live = sum(1 for c in allcs if c['status'] == 'live')
+    lm = max((c['_verified'] for c in allcs if c['_verified']), default=None)
+    nav = dict(alt_json=api_v1.API_BASE + api_v1.page_json(n, k), alt_json_title='This list page (JSON)', alt_md=path + 'index.md',
+               prev=list_path(first, n - 1) if n > 1 else None, nxt=list_path(first, n + 1) if n < m else None)
+    if n > 1:
+        h1, title, desc, lead = category_page_text(k, n, m, cs, len(allcs))
+        body = f"""{crumbs}
+{cw.hero('Atlas · direction', h1, f'<p>{e(lead)} <a href="{b}/?category={k}">Filter and search this direction</a>.</p>', small=True, kicker_href=first)}
+{cat_tabs_links(site, k)}
+<div class="cw-grid">{cards_with_ads(site, cs)}</div>
+{pager_html(first, n, m)}"""
+        ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': f'{h1} | Commonworld Atlas', 'url': site.abs(path),
+                         'inLanguage': 'en', 'isPartOf': {'@type': 'CollectionPage', 'name': f'{CAT_LABEL[k]} in the Commonworld Atlas', 'url': site.abs(first)},
+                         'mainEntity': page_item_list(site, cs, f'{CAT_LABEL[k]}, page {n} of {m}', n)}]
+        return page(site, path=path, title=title, description=desc, body=body, active='cat:' + k, ld=ld, lastmod=lm, **nav,
+                    og=og_generic(site, f'category-{k}-page-{n}', h1, lead, [(f'{len(allcs)} entries', 'olive'), (f'page {n} of {m}', None)],
+                                  kicker='DIRECTION', alt=f'{CAT_LABEL[k]} in the Commonworld Atlas, page {n} of {m}'))
+    box = cw.info_box('live', f'{len(allcs)} entries', f'{live} live',
+                      f'{len(allcs) - live} closed, kept as history. Last verified {time_tag(lm)}. '
                       f'<a href="{b}/?category={k}">Filter and search this direction</a>.')
     body = f"""{crumbs}
 {cw.hero('Atlas · direction', CAT_LABEL[k], f'<p>{e(CAT_DESC[k])}</p>', box, small=True, kicker_href=f'{b}/')}
 {cw.ad_slot(site.cfg, 'atlas-category-top', 'cw-ad-banner')}
 {cat_tabs_links(site, k)}
-<div class="cw-grid">{cards_with_ads(site, cs)}</div>"""
+<div class="cw-grid">{cards_with_ads(site, cs)}</div>
+{pager_html(first, 1, m)}"""
     ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': f'{CAT_LABEL[k]} in the Commonworld Atlas',
-                     'url': site.abs(f'{b}/categories/{k}/'), 'description': CAT_DESC[k], 'inLanguage': 'en',
-                     'mainEntity': item_list_ld(site, cs, CAT_LABEL[k])},
-          dataset_ld(site, cs, name=f'Commonworld Atlas: {CAT_LABEL[k]}', url=f'{b}/categories/{k}/', keywords=DATASET_KEYWORDS + [CAT_LABEL[k]],
-                     description=f'{CAT_DESC[k]} {len(cs)} entries ({live} live) in the Commonworld Atlas, a verified map of AI-agent platforms. '
+                     'url': site.abs(first), 'description': CAT_DESC[k], 'inLanguage': 'en',
+                     'mainEntity': page_item_list(site, cs, CAT_LABEL[k] + (f', page 1 of {m}' if m > 1 else ''), 1)},
+          dataset_ld(site, allcs, name=f'Commonworld Atlas: {CAT_LABEL[k]}', url=first, keywords=DATASET_KEYWORDS + [CAT_LABEL[k]],
+                     description=f'{CAT_DESC[k]} {len(allcs)} entries ({live} live) in the Commonworld Atlas, a verified map of AI-agent platforms. '
                                  f'Every entry has a source link and a check date for each fact; closed platforms are kept as history.',
                      downloads=[(f'{b}/categories/{k}.json', 'application/json', f'{CAT_LABEL[k]} entries (JSON)'),
                                 (f'{api_v1.API_BASE}/atlas/categories/{k}.json', 'application/json', f'API v1: {CAT_LABEL[k]} entries')])]
-    return page(site, path=f'{b}/categories/{k}/', title=fit_title(f'{CAT_LABEL[k]}: {len(cs)} verified AI-agent entries | Commonworld Atlas',
-                                                          f'{CAT_LABEL[k]}: {len(cs)} verified entries | Commonworld Atlas',
-                                                          f'{CAT_SHORT[k]}: {len(cs)} verified entries | Commonworld Atlas'),
-                description=trim(f'{CAT_DESC[k]} {len(cs)} entries in the Commonworld Atlas, each checked against its own sources.', 160),
-                body=body, active='cat:' + k, ld=ld, lastmod=lm,
+    return page(site, path=first, title=fit_title(f'{CAT_LABEL[k]}: {len(allcs)} verified AI-agent entries | Commonworld Atlas',
+                                                   f'{CAT_LABEL[k]}: {len(allcs)} verified entries | Commonworld Atlas',
+                                                   f'{CAT_SHORT[k]}: {len(allcs)} verified entries | Commonworld Atlas'),
+                description=trim(f'{CAT_DESC[k]} {len(allcs)} entries in the Commonworld Atlas, each checked against its own sources.', 160),
+                body=body, active='cat:' + k, ld=ld, lastmod=lm, **nav,
                 og=('category-' + k, {'kind': 'category', 'title': CAT_LABEL[k], 'kicker': 'DIRECTION', 'kicker_color': CAT_COLOR[k],
                                       'bar': [[1, CAT_COLOR[k]]], 'desc': CAT_DESC[k], 'foot_right': og_foot(site, lm),
-                                      'chips': [{'text': f'{len(cs)} entries', 'tone': 'olive'}, {'text': f'{live} live', 'tone': 'live'}]
-                                      + ([{'text': f'{len(cs) - live} closed', 'tone': 'closed'}] if len(cs) - live else [])},
-                    f'{CAT_LABEL[k]}: {len(cs)} verified entries in the Commonworld Atlas'))
+                                      'chips': [{'text': f'{len(allcs)} entries', 'tone': 'olive'}, {'text': f'{live} live', 'tone': 'live'}]
+                                      + ([{'text': f'{len(allcs) - live} closed', 'tone': 'closed'}] if len(allcs) - live else [])},
+                    f'{CAT_LABEL[k]}: {len(allcs)} verified entries in the Commonworld Atlas'))
+
+
+def build_category_md(site, k, n):
+    allcs = category_cards(site, k)
+    pages = chunks(allcs)
+    m, cs = len(pages), pages[n - 1]
+    first = f'{site.base}/categories/{k}/'
+    if n == 1:
+        title, intro = f'{CAT_LABEL[k]} in the Commonworld Atlas', f'{CAT_DESC[k]} {len(allcs)} entries, live first, then A to Z.'
+    else:
+        h1, _, _, intro = category_page_text(k, n, m, cs, len(allcs))
+        title = h1
+    return list_md(site, title=title, path=list_path(first, n), intro=intro, cs=cs, n=n, m=m, first=first,
+                   json_path=api_v1.page_json(n, k), total=len(allcs))
 
 
 def build_categories_index(site):
@@ -1004,23 +1180,104 @@ def build_categories_index(site):
                               [(f'{len(site.cats)} directions', 'olive'), (f'{len(site.cards)} entries', None)]))
 
 
-def list_table(site, cs):
-    rows = ''.join(f'<tr><td><a href="{c["_url"]}">{e(c["name"])}</a></td><td><a class="catchip" href="{site.base}/categories/{c["category"]}/"><i class="k-{c["category"]}"></i>{e(CAT_LABEL[c["category"]])}</a></td>'
+def list_table(site, cs, row_ids=None):
+    """Table of entries; row_ids: slug -> id attribute of that row (the A-Z letter anchors)."""
+    row_ids = row_ids or {}
+    rid = lambda c: f' id="{row_ids[c["slug"]]}"' if c['slug'] in row_ids else ''
+    rows = ''.join(f'<tr{rid(c)}><td><a href="{c["_url"]}">{e(c["name"])}</a></td><td><a class="catchip" href="{site.base}/categories/{c["category"]}/"><i class="k-{c["category"]}"></i>{e(CAT_LABEL[c["category"]])}</a></td>'
                    f'<td>{e(TYPE_LABEL.get(c["entity_type"], c["entity_type"]))}</td><td>{status_chip(c)}</td><td>{time_tag(c["_verified"])}</td></tr>' for c in cs)
     return f'<div class="table-wrap"><table class="list"><thead><tr><th scope="col">Name</th><th scope="col">Direction</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Last verified</th></tr></thead><tbody>{rows}</tbody></table></div>'
 
 
-def build_all(site):
+# ---------------------------------------------------------------- the A-Z list /atlas/platforms/ (paged like the other lists: D1-D4)
+AZ_LETTERS = ['#'] + [chr(c) for c in range(ord('A'), ord('Z') + 1)]
+
+
+def az_letter(name):
+    """Jump-bar letter of a name: its first letter without accents, A-Z; anything else (digits, symbols) is '#'."""
+    ch = unicodedata.normalize('NFKD', (name or ' ').strip()[:1] or ' ')[:1].upper()
+    return ch if 'A' <= ch <= 'Z' else '#'
+
+
+def az_anchor(letter):
+    return 'az-0' if letter == '#' else 'az-' + letter.lower()
+
+
+def az_starts(cards):
+    """{letter: (page number, slug of the first entry with that letter)}: the page where each letter starts in the A-Z list."""
+    out = {}
+    for i, c in enumerate(cards):
+        out.setdefault(az_letter(c['name']), (i // PAGE_SIZE + 1, c['slug']))
+    return out
+
+
+def az_jump_html(first, starts):
+    """Compact A-Z bar: each letter links to the page where it starts (and to the row, #az-x); letters with no entry are plain."""
+    items = []
+    for l in AZ_LETTERS:
+        if l in starts:
+            n = starts[l][0]
+            items.append(f'<li><a href="{e(list_path(first, n))}#{az_anchor(l)}" aria-label="Entries starting with {"a digit or symbol" if l == "#" else l} (page {n})">{e(l)}</a></li>')
+        else:
+            items.append(f'<li><span aria-hidden="true">{e(l)}</span></li>')
+    return f'<nav class="cw-azbar" aria-label="Jump to a letter"><ol>{"".join(items)}</ol></nav>'
+
+
+def az_page_text(site, n, m, cs):
+    """(h1, title, description, lead) of A-Z page n; the same words in the HTML page and its Markdown twin."""
+    total = len(site.cards)
+    a, z = page_range(n, total)
+    span = f'{cs[0]["name"]} to {cs[-1]["name"]}' if cs else ''
+    if m == 1:
+        return ('All entries', f'All {total} entries A–Z | Commonworld Atlas',
+                f'Alphabetical list of all {total} verified AI-agent platforms, protocols, catalogs and projects in the Commonworld Atlas.',
+                f'All {total} published entries, A to Z. Closed entries stay listed as history.')
+    h1 = 'All entries' if n == 1 else f'All entries A–Z, page {n} of {m}'
+    title = f'All {total} entries A–Z, page {n} of {m} | Commonworld Atlas'
+    desc = trim(f'Alphabetical list of the Commonworld Atlas, page {n} of {m}: entries {a}–{z} of {total} ({span}), '
+                f'verified AI-agent platforms, protocols, catalogs and projects.', 160)
+    lead = f'All {total} published entries, A to Z, {PAGE_SIZE} per page. This is page {n} of {m}: entries {a}–{z}, {span}. Closed entries stay listed as history.'
+    return h1, title, desc, lead
+
+
+def build_all(site, n=1):
+    """/atlas/platforms/ (page 1) and /atlas/platforms/page/N/: the A-Z list as a table, PAGE_SIZE rows a page, with an A-Z jump
+    bar (each letter links to the page where it starts) and the plain pager. Indexable and self-canonical (D1)."""
     b = site.base
-    crumbs, crumb_ld = breadcrumbs(site, [('Atlas', f'{b}/'), ('Entries', f'{b}/platforms/')])
-    body = f"""{crumbs}{cw.hero('Atlas', 'All entries', f'<p>All {len(site.cards)} published entries, A to Z. Closed entries stay listed as history.</p>', small=True, kicker_href=f'{b}/')}{list_table(site, site.cards)}"""
-    ld = [crumb_ld, {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': 'All Atlas entries', 'url': site.abs(f'{b}/platforms/'),
-                     'mainEntity': item_list_ld(site, site.cards, 'All Atlas entries')}]
-    return page(site, path=f'{b}/platforms/', title=f'All {len(site.cards)} entries A–Z | Commonworld Atlas',
-                description=f'Alphabetical list of all {len(site.cards)} verified AI-agent platforms, protocols, catalogs and projects in the Commonworld Atlas.',
-                body=body, active='platforms', ld=ld,
-                og=og_generic(site, 'page-platforms', 'All entries A–Z', f'All {len(site.cards)} published entries, A to Z. Closed entries stay listed as history.',
-                              [(f'{len(site.cards)} entries', 'olive')]))
+    first = f'{b}/platforms/'
+    pages = chunks(site.cards)
+    m, cs = len(pages), pages[n - 1]
+    path = list_path(first, n)
+    starts = az_starts(site.cards)
+    row_ids = {slug: az_anchor(l) for l, (pn, slug) in starts.items() if pn == n}
+    h1, title, desc, lead = az_page_text(site, n, m, cs)
+    trail = [('Atlas', f'{b}/'), ('Entries', first)] + ([(f'Page {n}', path)] if n > 1 else [])
+    crumbs, crumb_ld = breadcrumbs(site, trail)
+    body = f"""{crumbs}{cw.hero('Atlas', h1, f'<p>{e(lead)}</p>', small=True, kicker_href=f'{b}/')}
+{az_jump_html(first, starts) if m > 1 else ''}{list_table(site, cs, row_ids)}
+{pager_html(first, n, m)}"""
+    name = 'All Atlas entries' + (f', page {n} of {m}' if m > 1 else '')
+    cp = {'@context': 'https://schema.org', '@type': 'CollectionPage', 'name': name, 'url': site.abs(path),
+          'mainEntity': page_item_list(site, cs, 'All Atlas entries, A to Z' + (f', page {n} of {m}' if m > 1 else ''), n)}
+    if n > 1:
+        cp['isPartOf'] = {'@type': 'CollectionPage', 'name': 'All Atlas entries', 'url': site.abs(first)}
+    return page(site, path=path, title=title, description=desc, body=body, active='platforms', ld=[crumb_ld, cp],
+                alt_json=api_v1.API_BASE + api_v1.page_json(n, api_v1.AZ_LIST), alt_json_title='This list page (JSON)', alt_md=path + 'index.md',
+                prev=list_path(first, n - 1) if n > 1 else None, nxt=list_path(first, n + 1) if n < m else None,
+                og=og_generic(site, 'page-platforms' if n == 1 else f'page-platforms-{n}', 'All entries A–Z' + (f', page {n} of {m}' if n > 1 else ''), lead,
+                              [(f'{len(site.cards)} entries', 'olive')] + ([(f'page {n} of {m}', None)] if m > 1 else [])))
+
+
+def build_all_md(site, n):
+    b = site.base
+    first = f'{b}/platforms/'
+    pages = chunks(site.cards)
+    m, cs = len(pages), pages[n - 1]
+    h1, _, _, lead = az_page_text(site, n, m, cs)
+    starts = az_starts(site.cards)
+    jump = 'Jump to a letter: ' + ' · '.join(f'[{l}]({site.abs(list_path(first, starts[l][0]))})' for l in AZ_LETTERS if l in starts)
+    return list_md(site, title=h1 + (' A–Z' if n == 1 else ''), path=list_path(first, n), intro=lead + '\n\n' + jump, cs=cs, n=n, m=m, first=first,
+                   json_path=api_v1.page_json(n, api_v1.AZ_LIST), total=len(site.cards))
 
 
 def build_closed(site):
@@ -2427,15 +2684,19 @@ MIRROR_DIR = os.path.normpath(os.path.join(HERE, '..', 'public'))
 RAW_BASE = 'https://raw.githubusercontent.com/commonworld-one/commonworld/main/atlas/public'
 
 
+MIRROR_DROP = ('preview', 'link_safety')  # fields that change outside main (screenshots branch, daily link check)
+
+
 def _mirror_json(src, dst, indent):
-    """Copy one agent JSON file into the mirror without the `preview` field: screenshots live on the orphan branch
-    atlas-screens, so keeping the field here would make the committed mirror stale whenever that branch moves."""
+    """Copy one agent JSON file into the mirror without the `preview` and `link_safety` fields: screenshots live on the
+    orphan branch atlas-screens and link safety changes with every daily check, so keeping them here would make the
+    committed mirror stale whenever that branch moves or the daily report is committed."""
     doc = json.load(open(src, encoding='utf-8'))
-    doc.pop('preview', None)
-    doc.pop('link_safety', None)
+    for k in MIRROR_DROP:
+        doc.pop(k, None)
     for r in doc.get('platforms') or []:
-        r.pop('preview', None)
-        r.pop('link_safety', None)
+        for k in MIRROR_DROP:
+            r.pop(k, None)
     txt = json.dumps(doc, ensure_ascii=False, indent=1) if indent else json.dumps(doc, ensure_ascii=False, separators=(',', ':'))
     with open(dst, 'w', encoding='utf-8') as fh:
         fh.write(txt + '\n')
@@ -2492,6 +2753,7 @@ def build_agent_files(site, write):
     lic = cfg.get('data_licence') or 'not yet specified'
     gen = parse_time(site.snapshot.get('generated_at'))
     recs = [agent_record(site, c) for c in site.cards]
+    site.agent_recs, site.snapshot_id = recs, snapshot_id_of(recs)
     meta = {'name': 'Commonworld Atlas of Agent Platforms', 'description': 'Verified catalog of AI-agent platforms',
             'url': site.abs(f'{b}/'), 'generated_at': iso(gen), 'newest_observation': iso(site.latest),
             'licence': lic, 'licence_url': f'{REPO_URL}/blob/main/LICENSE-DATA.md', 'source': REPO_URL,
@@ -2533,9 +2795,9 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 
 ## Atlas
 
-- [Atlas home]({A(f'{b}/')}): the catalog of agent platforms, searchable and filterable
+- [Atlas home]({A(f'{b}/')}): the catalog of agent platforms, searchable and filterable; it is page 1 of the list ({PAGE_SIZE} cards per page, A to Z), the next pages are {A(f'{b}/page/')}<N>/ ([page 2]({A(f'{b}/page/2/')})), each with a Markdown twin <page URL>index.md and a JSON page (see Data); category pages page the same way: {A(f'{b}/categories/')}<category>/page/<N>/
 - [Atlas llms.txt]({A(f'{b}/llms.txt')}): short guide to the Atlas data for agents (counts, category JSON endpoints)
-- [All entries A-Z]({A(f'{b}/platforms/')}): every published entry
+- [All entries A-Z]({A(f'{b}/platforms/')}): every published entry as a table, {PAGE_SIZE} per page with an A-Z letter jump bar; the next pages are {A(f'{b}/platforms/page/')}<N>/, each with a Markdown twin and a JSON page {A(api_v1.API_BASE + '/atlas/platforms/page/')}<N>.json
 - [Closed history]({A(f'{b}/closed/')}): platforms that shut down
 - [Where agents get paid]({A(f'{b}/earn/')}): live platforms with a sourced money figure, grouped by unit (never converted); JSON: {A(f'{b}/earn.json')}
 - [How the Atlas works]({A(f'{b}/about/')}): method, basis labels, QA re-checks, freshness, closures, corrections
@@ -2557,6 +2819,7 @@ Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}
 
 - [API v1]({A(api_v1.API_BASE + '/index.json')}): versioned static JSON API (schema_version {api_v1.SCHEMA_VERSION}); Atlas module {A(api_v1.API_BASE + '/atlas/index.json')}; [OpenAPI 3.1]({A(api_v1.API_BASE + '/openapi.json')}); JSON Schemas {A(api_v1.API_BASE + '/schemas/')}<name>.schema.json; [docs]({A(API_DOCS)}). Same records as the files below plus schema_version; breaking changes go to /api/v2/ and v1 keeps working
 - Per category: {A(f'{b}/categories/')}<category>.json, the same fields for one category only (small files; use these if your tool truncates long responses)
+- Paged lists (schema_version 1.8.0): {A(api_v1.API_BASE + api_v1.page_json(1))} (all entries, A to Z), {A(api_v1.API_BASE + '/atlas/categories/')}<category>/page/<N>.json and {A(api_v1.API_BASE + '/atlas/platforms/page/')}<N>.json (the A-Z list, same records as the whole list), {PAGE_SIZE} records per page in the order of the HTML pages, each with snapshot_id, page, pages, total, has_more and next. {api_v1.PAGE_WALK_RULE} MCP tool: atlas_list_page. {api_v1.PAGING_CONTRACT}
 - [earn.json]({A(f'{b}/earn.json')}): where agents get paid: one row per live entry with a supported money figure (value, unit, window, basis, observed_at, source_url), grouped by unit
 - [platforms.json]({A(f'{b}/platforms.json')}): all published entries with stable fields (id, name, url, website, category, type, status, summary, money flow, verified_at, claims_count)
 - Per entry: {A(f'{b}/platforms/')}<id>.json with the full claims and sources (every URL is listed in llms-full.txt), plus badge_svg, badge_svg_dark and badge_page
@@ -2621,6 +2884,8 @@ Some agent tools cannot reach the site directly. The same published files are mi
 - One line per entry: {A('/llms-full.txt')}
 - Homepage screenshots (`preview`): re-captured weekly by the workflow `Atlas weekly screenshots` ({REPO_URL}/blob/main/.github/workflows/screens.yml), which opens a pull request into the branch `atlas-screens` and never merges on its own
 - Versioned API v1: {A(api_v1.API_BASE + '/index.json')}
+- Paged lists ({PAGE_SIZE} records per page, same order as {A(f'{b}/')} and {A(f'{b}/page/')}<N>/): {A(api_v1.API_BASE + api_v1.page_json(1))}, per category {A(api_v1.API_BASE + '/atlas/categories/')}<category>/page/<N>.json, A-Z list {A(api_v1.API_BASE + '/atlas/platforms/page/')}<N>.json (pages of {A(f'{b}/platforms/')}); every page has snapshot_id, has_more, total and next. {api_v1.PAGE_WALK_RULE}
+- List pages as Markdown: {A(f'{b}/index.md')}, {A(f'{b}/page/')}<N>/index.md, {A(f'{b}/categories/')}<category>/index.md
 - Per entry: take json_url from platforms.json; never construct an ID. Each card page also has a Markdown twin (md_url)
 - Replication counts: records of registers where review means replication carry replications {{rows, entries, entries_replicated, independent_agents, commit, source_url, method_url, validate_run_url, observed_at}}, counted at a pinned commit the way the register's validator counts; null elsewhere
 - Reachability: live cards whose site does not answer the way the status suggests carry reachability {{state stale or challenge_walled, label, checked_at, reads, note, credit, reported_via}}; null elsewhere. status itself stays live or closed
@@ -2636,7 +2901,7 @@ Data licence: {lic}. Please credit "Commonworld Atlas" with a link to {A(f'{b}/'
     lines = [f'# Commonworld Atlas: all {len(recs)} published entries',
              f'> One line per entry: name, Atlas URL, JSON URL (full claims and sources), category, status, summary. All claims and sources are public; no key needed. Data {lic}; machine-readable: {A(f"{b}/platforms.json")}', '',
              f"Official channels: site {A('/')} · X {X_URL} ({X_HANDLE}) · GitHub {REPO_URL}",
-             f"API v1 (versioned, OpenAPI 3.1): {A(api_v1.API_BASE + '/index.json')}; per entry: {A(api_v1.API_BASE + '/atlas/platforms/')}<id>.json; docs: {A(API_DOCS)}",
+             f"API v1 (versioned, OpenAPI 3.1): {A(api_v1.API_BASE + '/index.json')}; per entry: {A(api_v1.API_BASE + '/atlas/platforms/')}<id>.json; in pages of {PAGE_SIZE}: {A(api_v1.API_BASE + api_v1.page_json(1))} (follow next while has_more; MCP tools take page too, offset is a deprecated alias; the A-Z table {A(f'{b}/platforms/')} has the same pages at {A(api_v1.API_BASE + '/atlas/platforms/page/')}<N>.json); docs: {A(API_DOCS)}",
              f"Badges: every entry has a free status badge at {A(f'{b}/badge/')}<id>.svg (dark: <id>-dark.svg); rules: {A(f'{b}/badge/')}",
              f"Homepage previews: the `preview` field of each entry's JSON (dated screenshot URLs, or null); third-party content, not covered by the data licence",
              f"Evidence ladder per entry: level 1 operator says, 2 public dashboard, 3 public transactions, or not recorded yet ({A(f'{b}/about/#evidence-ladder')})", '']
@@ -2647,6 +2912,202 @@ Data licence: {lic}. Please credit "Commonworld Atlas" with a link to {A(f'{b}/'
                      + (f" · replications: {r['replications']['rows']} rows, {r['replications']['entries_replicated']} of {r['replications']['entries']} entries independently reproduced by {r['replications']['independent_agents']} agents (commit {r['replications']['commit'][:12]})" if r.get('replications') else '')
                      + (f" · {r['disclosure']}" if r.get('disclosure') else ''))
     write('/llms-full.txt', '\n'.join(lines) + '\n')
+
+
+SITEMAP_BASELINE = os.path.normpath(os.path.join(HERE, '..', 'data', 'sitemap-urls.txt'))  # published URLs (check.py growth guard)
+PAGED_RE = re.compile(r'^(/.*/)page/([1-9][0-9]*)/$')
+
+
+PAGED_RECORD = os.path.normpath(os.path.join(HERE, '..', 'data', 'paged-lists.json'))  # highest page ever built per list (committed)
+
+
+def list_pages(site):
+    """{first URL of a list: (list key for api_v1.page_json, number of pages)} for every paged list: the whole Atlas, the
+    A-Z table and each category."""
+    b = site.base
+    n_all = len(chunks(site.cards))
+    return ({f'{b}/': (None, n_all), f'{b}/platforms/': (api_v1.AZ_LIST, n_all)}
+            | {f'{b}/categories/{k}/': (k, len(chunks(category_cards(site, k)))) for k in site.cats})
+
+
+def list_key(site, first):
+    """List key of a list URL, also for a list that no longer exists (a category that was split away)."""
+    b = site.base
+    if first == f'{b}/':
+        return None
+    if first == f'{b}/platforms/':
+        return api_v1.AZ_LIST
+    return first[len(f'{b}/categories/'):].rstrip('/')
+
+
+def load_paged_record(path=None):
+    """{first URL of a list: highest page number ever built} from atlas/data/paged-lists.json (check.py --update-baseline
+    raises it, never lowers it)."""
+    path = path or PAGED_RECORD
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding='utf-8') as fh:
+        return {k: int(v) for k, v in (json.load(fh).get('lists') or {}).items()}
+
+
+def paged_redirects(site):
+    """_redirects lines for paged lists (owner decision Q8, 2026-10-24: a page number that ever existed never 404s):
+    - /page/1/ -> the list itself (page 1 is the list URL);
+    - every page number that was built before (the committed record atlas/data/paged-lists.json, and the sitemap
+      baseline) but is past the last page now, because the list got shorter -> that list's last page, for the HTML page
+      (/page/N/ and /page/N), its Markdown twin (/page/N/index.md) and its JSON page (/api/v1/.../page/N.json) alike;
+    - a list that is gone entirely (a category split away) -> the Atlas home, its Markdown twin and JSON page 1.
+    A page number that never existed stays a plain 404 (D1)."""
+    b, V = site.base, api_v1.API_BASE
+    lists = list_pages(site)
+    ever = dict(load_paged_record())
+    if os.path.exists(SITEMAP_BASELINE):
+        with open(SITEMAP_BASELINE, encoding='utf-8') as fh:
+            for u in (l.strip() for l in fh if l.strip() and not l.startswith('#')):
+                m = PAGED_RE.match(u[len(site.origin):]) if u.startswith(site.origin) else None
+                if m:
+                    ever[m.group(1)] = max(ever.get(m.group(1), 0), int(m.group(2)))
+    out = []
+    for first in lists:
+        out += [f'{first}page/1/ {first} 301', f'{first}page/1 {first} 301']
+    for first in sorted(ever):
+        top = ever[first]
+        if first in lists:
+            k, last = lists[first]
+            to_html, to_json = list_path(first, last), V + api_v1.page_json(last, k)
+        else:
+            k, last = list_key(site, first), 0
+            to_html, to_json = f'{b}/', V + api_v1.page_json(1)
+        for n in range(max(last, 1) + 1, top + 1):
+            out += [f'{first}page/{n}/ {to_html} 301', f'{first}page/{n} {to_html} 301', f'{first}page/{n}/index.md {to_html}index.md 301',
+                    f'{V}{api_v1.page_json(n, k)} {to_json} 301']
+    return ''.join(x + '\n' for x in out)
+
+
+SEARCH_FORMAT = 'commonworld-atlas-search-index/3'
+SEARCH_FIELDS = ['id', 'name', 'cat', 'status', 'type', 'desc', 'keynum', 'tags', 'thumb', 'money', 'num', 'claims', 'ver', 'reach', 'words']
+SEARCH_GZ_BUDGET = 60 * 1024  # check.py fails the build when search-index.json is bigger than this gzipped (owner decision 2026-10-24)
+SEARCH_STOP = frozenset('the and for with from that this its via per into than not all any can has have had their them they but our your are was were'.split())
+SEARCH_WORD_RE = re.compile(r'[a-z][a-z0-9$%-]*')
+
+
+def search_words(c):
+    """Claim words for search that the card does not already show: the distinct lowercase words (3+ letters, starting with
+    a letter) of the claim statements and units, minus the words of the name and the summary and a few stop words. Numbers
+    and dates stay searchable where the card shows them (summary, key number)."""
+    text = ' '.join(filter(None, [x.get('statement') or '' for x in c.get('claims', [])] + [x.get('unit') or '' for x in c.get('claims', [])])).lower()
+    known = set(SEARCH_WORD_RE.findall(f"{c['name']} {trim(c['_desc'], 150)}".lower()))
+    return ' '.join(sorted(w for w in set(SEARCH_WORD_RE.findall(text)) - known - SEARCH_STOP if len(w) > 2))
+
+
+def search_row(site, c):
+    """One card of the search index as a short array (SEARCH_FIELDS order): only what search, filters, sort, the counters
+    and the card itself need. card_from_row() turns it back into exactly card_html(data=True)."""
+    x = c['_key']
+    kn = 0
+    if x:
+        dt = parse_time(x.get('observed_at'))
+        kn = [fmt_num(x['value']), ' · '.join(b for b in [x.get('unit') or '', x.get('window') or '', fmt_date(dt) if dt else ''] if b)]
+    r = c.get('_reach')
+    return [c['slug'], c['name'], c['category'], c['status'], c['entity_type'], trim(c['_desc'], 150), kn, ' '.join(c['_tags']),
+            1 if shot_paths(site, c) else 0, 1 if c['_money'] else 0, 1 if c['_num'] else 0, len(c.get('claims', [])),
+            int(c['_verified'].timestamp()) if c['_verified'] else 0, [r['state'], r['label']] if r else 0, search_words(c)]
+
+
+def search_head(site):
+    """Everything card_from_row() needs besides the row (atlas.js reads the same keys)."""
+    b = site.base
+    w, h = (screens.THUMB_W, screens.THUMB_H) if site.thumbs_ok else (screens.SHOT_W, screens.SHOT_H)
+    return {'card_base': f'{b}/platforms/', 'tag_href': f'{b}/?tag=', 'thumb': {'path': f'{b}{SHOTS_PATH}/t/' if site.thumbs_ok else f'{b}{SHOTS_PATH}/', 'w': w, 'h': h},
+            'cat_labels': {k: CAT_LABEL[k] for k in site.cats}, 'reach_text': dict(reach.STATE_TEXT), 'tag_limit': 6}
+
+
+def card_from_row(head, row):
+    """The card HTML of a search-index row, the same markup as card_html(data=True); atlas.js renderCard() mirrors this
+    function line by line (the build asserts that every row gives back its card, check.py checks page 1 again)."""
+    sl, name, cat, st, ty, desc, kn, tags, th, money, num, claims, ver, rc, _ = row
+    tl = tags.split() if tags else []
+    data = cw.attrs({'data-slug': sl, 'data-c': cat, 'data-s': st, 'data-t': ty, 'data-money': '1' if money else None, 'data-num': '1' if num else None,
+                     'data-claims': claims, 'data-ver': ver, 'data-tags': tags or None})
+    t = head['thumb']
+    thumb = f'<img src="{t["path"]}{sl}.webp" alt="" width="{t["w"]}" height="{t["h"]}" loading="lazy">' if th else '<i class="ph" aria-hidden="true"></i>'
+    if st == 'closed':
+        chip = '<span class="chip closed"><i class="dot closed"></i>closed</span>'
+    else:
+        chip = '<span class="chip live"><i class="dot"></i>live</span>' + (f'<span class="chip reach {rc[0]}" title="{e(head["reach_text"][rc[0]])}">{e(rc[1])}</span>' if rc else '')
+    keynum = f'<div class="keynum"><b>{e(kn[0])}</b><span>{e(kn[1])}</span></div>' if kn else ''
+    lim = head['tag_limit']
+    tag_html = (f'<div class="card-tags">' + ''.join(f'<a class="link-pill" href="{e(head["tag_href"] + x)}" data-tag="{e(x)}">#{e(x)}</a>' for x in tl[:lim])
+                + (f'<span class="more">+{len(tl) - lim}</span>' if len(tl) > lim else '') + '</div>') if tl else ''
+    return (f'<article class="cw-card{" is-closed" if st == "closed" else ""}"{data}>{thumb}'
+            f'<div class="cw-meta"><span class="catchip"><i class="{e("k-" + cat)}"></i>{e(head["cat_labels"][cat])}</span>{chip}</div>'
+            f'<h3><a href="{e(head["card_base"] + sl + "/")}">{e(name)}</a></h3><p>{e(desc)}</p>{keynum}{tag_html}</article>')
+
+
+def gz_size(obj):
+    import gzip
+    return len(gzip.compress(json.dumps(obj, ensure_ascii=False, separators=(',', ':')).encode(), 6))
+
+
+def shard_rows(rows, letters, budget):
+    """Contiguous slices of the list, cut only where the first letter changes, each shard gzipped well under budget
+    (80 %): [(first letter, last letter, rows)]. A single letter bigger than that stays one shard (check.py reports it)."""
+    groups = []
+    for r, l in zip(rows, letters):
+        if groups and groups[-1][0] == l:
+            groups[-1][1].append(r)
+        else:
+            groups.append((l, [r]))
+    out = []
+    for l, rs in groups:
+        if out and gz_size(out[-1][2] + rs) <= budget * 0.8:
+            out[-1] = (out[-1][0], l, out[-1][2] + rs)
+        else:
+            out.append((l, l, list(rs)))
+    return out
+
+
+def search_index(site, budget=None):
+    """/atlas/data/search-index.json: the whole Atlas for the catalog on /atlas/ (atlas.js). The HTML pages carry only
+    PAGE_SIZE cards each, so search, filters, sort and every counter run on this file instead. Slim since the owner decision
+    of 2026-10-24: one short array per card in list order with only the fields search, filters, sort, counters and the card
+    need (SEARCH_FIELDS), plus the claim words the card does not show (search_words); atlas.js renders a card from its row
+    (card_from_row is the reference). Same snapshot_id as the JSON pages.
+    Budget SEARCH_GZ_BUDGET gzipped per file (check.py): while the whole index fits, it is one file; once it does not, the
+    file becomes a small manifest and the rows go to shards by first letter, /atlas/data/search-index/<n>-<a>-<z>.json
+    (contiguous slices of the list, in order), which atlas.js loads on first use. Returns {path: document}."""
+    budget = budget or SEARCH_GZ_BUDGET
+    head = search_head(site)
+    rows = []
+    for c in site.cards:
+        row = search_row(site, c)
+        if card_from_row(head, row) != card_html(site, c, data=True):
+            raise SystemExit(f'search index: the row of {c["slug"]} does not give back its card (card_from_row vs card_html)')
+        rows.append(row)
+    path = f'{site.base}/data/search-index.json'
+    doc = {'format': SEARCH_FORMAT, 'snapshot_id': site.snapshot_id, 'total': len(rows), 'page_size': PAGE_SIZE,
+           'note': 'Internal file of the Atlas catalog page; its shape may change. For data use /api/v1/atlas/ (stable, versioned).',
+           'fields': SEARCH_FIELDS} | head
+    if gz_size(doc | {'cards': rows}) <= budget:
+        return {path: doc | {'cards': rows}}
+    out, shards = {}, []
+    for i, (a, z, rs) in enumerate(shard_rows(rows, [az_letter(c['name']) for c in site.cards], budget), 1):
+        name = f"{i}-{'0' if a == '#' else a.lower()}-{'0' if z == '#' else z.lower()}.json"
+        sp = f'{site.base}/data/search-index/{name}'
+        out[sp] = {'format': SEARCH_FORMAT + '-shard', 'snapshot_id': site.snapshot_id, 'first': a, 'last': z, 'count': len(rs), 'cards': rs}
+        shards.append({'path': sp, 'first': a, 'last': z, 'count': len(rs)})
+    return {path: doc | {'shards': shards}} | out
+
+
+def snapshot_id_of(recs):
+    """Build id of the published list: the same records give the same id (reproducible builds); any change to the list
+    (an entry added, removed or renamed, so pages shift) or to a card's own fields gives a new one. The fields in
+    MIRROR_DROP (`preview`, `link_safety`) are left out: they change outside main (screenshots branch, daily link check),
+    never move an entry to another page, and the id is also in the committed GitHub mirror (api/v1/atlas/index.json),
+    which must not go stale with every daily report (Codex review of #107)."""
+    import hashlib
+    stable = [{k: v for k, v in r.items() if k not in MIRROR_DROP} for r in recs]
+    return hashlib.sha256(json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()).hexdigest()[:16]
 
 
 # ---------------------------------------------------------------- static API v1 (/api/v1/)
@@ -2666,6 +3127,29 @@ def build_api(site, write):
     gen = iso(parse_time(site.snapshot.get('generated_at')))
     for path, doc, sch, indent in site.api_docs:
         write(V + path, api_json({'schema_version': api_v1.SCHEMA_VERSION, 'schema': api_v1.schema_url(site.origin, sch)} | doc, indent))
+    # paged lists (D3): {V}/atlas/page/N.json and {V}/atlas/categories/<k>/page/N.json, the same records as platforms.json,
+    # PAGE_SIZE per page, in the order of the HTML pages; every page of one build carries the same snapshot_id
+    by_id = {r['id']: r for r in site.agent_recs}
+    site.page_counts = {}
+    # the A-Z list (api_v1.AZ_LIST): {V}/atlas/platforms/page/N.json, the same records and order as the whole list, url/md_url = /atlas/platforms/
+    AZ = api_v1.AZ_LIST
+    for k, cs in [(None, site.cards), (AZ, site.cards)] + [(k, category_cards(site, k)) for k in site.cats]:
+        pgs = chunks(cs)
+        m = site.page_counts[k] = len(pgs)
+        first = {None: f'{b}/', AZ: f'{b}/platforms/'}.get(k) or f'{b}/categories/{k}/'
+        for n, pc in enumerate(pgs, 1):
+            what = {None: 'Commonworld Atlas of Agent Platforms', AZ: 'Commonworld Atlas, all entries A to Z'}.get(k) or f'Commonworld Atlas: {CAT_LABEL[k]}'
+            doc = {'schema_version': api_v1.SCHEMA_VERSION, 'schema': api_v1.schema_url(site.origin, 'platform-page.schema.json'),
+                   'name': f'{what}, page {n} of {m}', 'url': A(list_path(first, n)), 'md_url': A(list_path(first, n) + 'index.md'),
+                   'generated_at': gen, 'newest_observation': iso(site.latest), 'licence': lic, 'licence_url': f'{REPO_URL}/blob/main/LICENSE-DATA.md',
+                   'source': REPO_URL, 'snapshot_id': site.snapshot_id, 'page': n, 'per_page': PAGE_SIZE, 'pages': m, 'total': len(cs),
+                   'count': len(pc), 'has_more': n < m, 'next': A(V + api_v1.page_json(n + 1, k)) if n < m else None,
+                   'prev': A(V + api_v1.page_json(n - 1, k)) if n > 1 else None, 'first': A(V + api_v1.page_json(1, k)),
+                   'full_list': A(V + ('/atlas/platforms.json' if k in (None, AZ) else f'/atlas/categories/{k}.json')), 'walk_rule': api_v1.PAGE_WALK_RULE}
+            if k not in (None, AZ):
+                doc |= {'category': k, 'category_label': CAT_LABEL[k]}
+            doc['platforms'] = [by_id[c['slug']] for c in pc]
+            write(V + api_v1.page_json(n, k), api_json(doc, indent=False))
     for name, sch in api_v1.schemas(site.origin, site.cats).items():
         write(f'{V}/schemas/{name}', api_json(sch))
     ids = [c['slug'] for c in site.cards]
@@ -2676,11 +3160,18 @@ def build_api(site, write):
     live = sum(1 for c in site.cards if c['status'] == 'live')
     atlas = {'schema_version': api_v1.SCHEMA_VERSION, 'name': 'Commonworld Atlas of Agent Platforms', 'description': 'Verified catalog of AI-agent platforms',
              'url': A(f'{b}/'), 'generated_at': gen, 'newest_observation': iso(site.latest), 'licence': lic,
-             'counts': {'platforms': len(site.cards), 'live': live, 'closed': len(site.cards) - live, 'categories': len(site.cats), 'earn_rows': len(site.earn['rows'])},
+             'counts': {'platforms': len(site.cards), 'live': live, 'closed': len(site.cards) - live, 'categories': len(site.cats), 'earn_rows': len(site.earn['rows']),
+                        'pages': site.page_counts[None]},
+             'paging': {'page_size': PAGE_SIZE, 'pages': site.page_counts[None], 'snapshot_id': site.snapshot_id, 'first': A(V + api_v1.page_json(1)),
+                        'az_first': A(V + api_v1.page_json(1, AZ)),
+                        'walk_rule': api_v1.PAGE_WALK_RULE},
              'categories': [{'id': k, 'label': CAT_LABEL[k], 'description': CAT_DESC[k], 'count': len(site.by_cat[k]),
-                             'url': A(f'{b}/categories/{k}/'), 'json_url': A(f'{V}/atlas/categories/{k}.json')} for k in site.cats],
+                             'url': A(f'{b}/categories/{k}/'), 'json_url': A(f'{V}/atlas/categories/{k}.json'),
+                             'pages': site.page_counts[k], 'first_page': A(V + api_v1.page_json(1, k))} for k in site.cats],
              'links': {'platforms': A(f'{V}/atlas/platforms.json'), 'platform': A(f'{V}/atlas/platforms/') + '{id}.json',
                        'category': A(f'{V}/atlas/categories/') + '{category}.json', 'earn': A(f'{V}/atlas/earn.json'),
+                       'page': A(V + api_v1.page_json('{page}')), 'category_page': A(V + api_v1.page_json('{page}', '{category}')),
+                       'az_page': A(V + api_v1.page_json('{page}', AZ)),
                        'html': A(f'{b}/'), 'method': A(f'{b}/about/'), 'docs': A(API_DOCS), 'openapi': A(f'{V}/openapi.json'),
                        'events': A(atlas_events.JSON_PATH)},
              'id_rule': 'IDs are permanent readable slugs. Never construct or guess an ID: take it from platforms.json or a category file.'}
@@ -2712,6 +3203,10 @@ def build_api_docs(site):
             ('All published entries', f'{V}/atlas/platforms.json'),
             ('One entry with all claims and sources', f'{V}/atlas/platforms/&lt;id&gt;.json'),
             ('Entries of one category', f'{V}/atlas/categories/&lt;category&gt;.json'),
+            (f'All entries in pages of {PAGE_SIZE} (A to Z): page 1', f'{V}{api_v1.page_json(1)}'),
+            (f'All entries in pages of {PAGE_SIZE}: page N', f'{V}/atlas/page/&lt;N&gt;.json'),
+            (f'One category in pages of {PAGE_SIZE}', f'{V}/atlas/categories/&lt;category&gt;/page/&lt;N&gt;.json'),
+            (f'The A–Z list in pages of {PAGE_SIZE}', f'{V}/atlas/platforms/page/&lt;N&gt;.json'),
             ('Where agents get paid (money figures by unit)', f'{V}/atlas/earn.json'),
             ('OpenAPI 3.1 description', f'{V}/openapi.json'),
             ('JSON Schemas (2020-12)', f'{V}/schemas/platform.schema.json'),
@@ -2740,6 +3235,8 @@ def build_api_docs(site):
 <li><code>md_url</code>: the card page as Markdown.</li></ul>
 <p>Since <code>schema_version</code> 1.6.0 every entry record also carries <code>replications</code>: for a register where review means replication (today Agent Errata), the counts from its own files at a pinned commit, or <code>null</code>. Fields: <code>rows</code> (replication rows), <code>entries</code>, <code>entries_replicated</code> (entries with at least one reproduction by an agent other than the finder and the repo operator), <code>independent_agents</code> (distinct such agents), <code>format</code>, <code>repo</code>, <code>commit</code> (the 40-character sha read), <code>source_url</code>, <code>method_url</code> (the validator whose counting rules apply, at that commit), <code>validate_run_url</code> (the push run of that validator that passed on the commit) and <code>observed_at</code>. The weekly refresh re-reads the newest commit whose validator run passed; a record changes only when a count changes (<a href="{REPO_URL}/blob/main/atlas/site/replications.py" rel="nofollow noopener">contract</a>).</p>
 <p>Since <code>schema_version</code> 1.7.0 every entry record also carries <code>reachability</code>: <code>null</code>, or on a live card whose site does not answer the way its status suggests, <code>{{state, label, checked_at, reads, note, credit, reported_via}}</code>. <code>state</code> is <code>stale</code> (marked live, but no read got the site’s own content; the card stays live until the protocol closes it) or <code>challenge_walled</code> (the site is up and serves its own content, but plain scripts get a challenge page). Each read has <code>url</code>, <code>observed_at</code>, <code>http_status</code>, <code>bytes</code>, <code>page_type</code> (<code>own_content</code>, <code>challenge</code>, <code>error</code>), <code>client</code>, <code>by</code> and <code>sha256</code> (or <code>null</code>). A state needs two reads of the same page type at least two hours apart, one of them by the Atlas; <code>status</code> keeps its two values (<a href="{REPO_URL}/blob/main/atlas/site/reachability.py" rel="nofollow noopener">contract</a>).</p>
+<h2 id="pages">Paged lists</h2>
+<p>Since <code>schema_version</code> 1.8.0 the list also comes in pages of {PAGE_SIZE} records, the same records as <code>platforms.json</code> in the order of the HTML pages: <a href="{V}{api_v1.page_json(1)}"><code>{V}{api_v1.page_json(1)}</code></a>, <code>{V}/atlas/page/&lt;N&gt;.json</code> (all entries, A to Z, like <a href="{b}/">/atlas/</a> and <code>/atlas/page/&lt;N&gt;/</code>) <code>{V}/atlas/categories/&lt;category&gt;/page/&lt;N&gt;.json</code> (one category, live first, like the category pages) and <code>{V}/atlas/platforms/page/&lt;N&gt;.json</code> (the A–Z table <a href="{b}/platforms/">/atlas/platforms/</a> and <code>/atlas/platforms/page/&lt;N&gt;/</code>: the same records and order as the whole list, with <code>url</code> naming the A–Z page). Every page carries <code>snapshot_id</code>, <code>page</code>, <code>per_page</code>, <code>pages</code>, <code>total</code>, <code>count</code>, <code>has_more</code>, <code>next</code>, <code>prev</code> and <code>first</code>, plus <code>url</code> (the HTML page) and <code>md_url</code> (its Markdown twin). {e(api_v1.PAGE_WALK_RULE)} The number of pages is also in <a href="{V}/atlas/index.json">atlas/index.json</a> (<code>counts.pages</code>, <code>categories[].pages</code>). MCP clients read the same pages with the tool <code>atlas_list_page</code>. {e(api_v1.PAGING_CONTRACT)}</p>
 <h2 id="ids">IDs</h2>
 <p>An entry ID is its permanent URL slug (for example <code>{e(ex)}</code>). Never construct or guess an ID: take it from <a href="{V}/atlas/platforms.json">platforms.json</a> or a category file. An ID that is not listed there does not exist, and the request returns 404.</p>
 <h2 id="examples">Examples</h2>
@@ -2754,7 +3251,7 @@ def build_api_docs(site):
 <h2 id="stability">Stability promise</h2>
 <p>{e(api_v1.VERSIONING)} The older files at <code>{b}/platforms.json</code>, <code>{b}/platforms/&lt;id&gt;.json</code>, <code>{b}/categories/&lt;category&gt;.json</code> and <code>{b}/earn.json</code> carry the same records and keep working. See the <a href="{V}/changelog.json">changelog</a>.</p>
 <h2 id="schemas">Schemas</h2>
-<p>The <a href="{V}/openapi.json">OpenAPI 3.1 description</a> lists every path; response shapes are JSON Schema 2020-12 files: <a href="{V}/schemas/platform.schema.json">platform</a>, <a href="{V}/schemas/platform-list.schema.json">platform list</a>, <a href="{V}/schemas/category.schema.json">category</a>, <a href="{V}/schemas/earn.schema.json">earn</a> and <a href="{V}/schemas/earn-row.schema.json">earn row</a>. Every published file is validated against them before it ships.</p>
+<p>The <a href="{V}/openapi.json">OpenAPI 3.1 description</a> lists every path; response shapes are JSON Schema 2020-12 files: <a href="{V}/schemas/platform.schema.json">platform</a>, <a href="{V}/schemas/platform-list.schema.json">platform list</a>, <a href="{V}/schemas/category.schema.json">category</a>, <a href="{V}/schemas/platform-page.schema.json">list page</a>, <a href="{V}/schemas/earn.schema.json">earn</a> and <a href="{V}/schemas/earn-row.schema.json">earn row</a>. Every published file is validated against them before it ships.</p>
 <h2 id="license">License</h2>
 <p>Data: {e(lic)}. Please credit “Commonworld Atlas” with a link. Code: MIT. Details in <a href="{REPO_URL}/blob/main/LICENSE-DATA.md" rel="nofollow noopener">LICENSE-DATA.md</a>. How each fact is checked: <a href="{b}/about/">How the Atlas works</a>. For a short map aimed at AI agents, see <a href="/llms.txt">/llms.txt</a>.</p>
 </div>"""
@@ -2818,7 +3315,8 @@ def build_csp(script_hashes, style_hashes=()):
 ROUTES = {'version': 1, 'include': ['/*'],
           'exclude': ['/atlas/assets/*', '/atlas/og/*', '/atlas/screens/*', '/atlas/badge/*', '/atlas/data/*',
                       '/atlas/platforms/*.json', '/atlas/categories/*.json', '/atlas/*.json', '/atlas/*.txt', '/atlas/*.xml',
-                      '/atlas/decisions/index.md', '/atlas/platforms/*/index.md', '/atlas/events.md', '/stats.json', '/stats/index.md',
+                      '/atlas/decisions/index.md', '/atlas/platforms/index.md', '/atlas/platforms/*/index.md', '/atlas/index.md', '/atlas/page/*/index.md',
+                      '/atlas/categories/*/index.md', '/atlas/events.md', '/stats.json', '/stats/index.md',
                       '/about/index.md', '/privacy/index.md', '/terms/index.md', '/api/*', '/cdn-cgi/*', '/favicon.ico', '/robots.txt', '/sitemap.xml',
                       '/llms.txt', '/llms-full.txt', '/404.html']}
 
@@ -2911,7 +3409,16 @@ def main():
 
     write('/', build_landing(site))  # Commonworld landing (main product placeholder)
     write(f'{b}/', build_index(site))
-    write(f'{b}/platforms/', build_all(site))
+    list_pages = chunks(site.cards)  # /atlas/ is page 1; /atlas/page/N/ the rest (D3), each with a Markdown twin
+    for n in range(1, len(list_pages) + 1):
+        if n > 1:
+            write(list_path(f'{b}/', n), build_index_page(site, n, list_pages))
+        write(list_path(f'{b}/', n) + 'index.md', build_index_md(site, n, list_pages))
+    if any(c['slug'] in RESERVED_SLUGS for c in site.cards) or any(r['slug'] in RESERVED_SLUGS for r in removed):
+        raise SystemExit(f'slugs {sorted(RESERVED_SLUGS)} are reserved: /atlas/platforms/page/N/ are the pages of the A-Z list')
+    for n in range(1, len(list_pages) + 1):  # the A-Z list: /atlas/platforms/ is page 1, /atlas/platforms/page/N/ the rest
+        write(list_path(f'{b}/platforms/', n), build_all(site, n))
+        write(list_path(f'{b}/platforms/', n) + 'index.md', build_all_md(site, n))
     for c in site.cards:
         write(c['_url'], build_platform(site, c))
         write(c['_url'] + 'index.md', build_platform_md(site, c))  # Markdown twin of every card page
@@ -2919,7 +3426,9 @@ def main():
         write(f"{b}/platforms/{r['slug']}/", build_removed_stub(site, r['slug']))
     write(f'{b}/categories/', build_categories_index(site))
     for k in site.cats:
-        write(f'{b}/categories/{k}/', build_category(site, k))
+        for n in range(1, len(chunks(category_cards(site, k))) + 1):
+            write(list_path(f'{b}/categories/{k}/', n), build_category(site, k, n))
+            write(list_path(f'{b}/categories/{k}/', n) + 'index.md', build_category_md(site, k, n))
     write(f'{b}/closed/', build_closed(site))
     write(f'{b}/earn/', build_earn(site))
     write(f'{b}/about/', build_about(site))
@@ -2982,10 +3491,6 @@ def main():
            'count': len(site.cards), 'license': cfg.get('data_licence') or 'not yet specified', 'fields_note': 'observed_at values are ISO 8601 UTC timestamps.',
            'platforms': [{k: c.get(k) for k in PUBLIC_FIELDS if k in c} | {'url': site.abs(c['_url']), 'link_safety': link_safety_of(site, c)} for c in site.cards]}
     write(f'{b}/data/snapshot.json', json.dumps(pub, ensure_ascii=False, indent=1))
-    # search index for the catalog: claim statements + units per slug, fetched lazily by atlas.js
-    sidx = {c['slug']: ' '.join(filter(None, [x.get('statement') or '' for x in c.get('claims', [])] + [x.get('unit') or '' for x in c.get('claims', [])]))
-            for c in site.cards}
-    write(f'{b}/data/search-index.json', json.dumps(sidx, ensure_ascii=False, separators=(',', ':')))
 
     write(SAFETY_PATH, json.dumps(safety_doc(site), ensure_ascii=False, indent=1) + '\n')  # not mirrored: it changes daily
     write(DECISIONS_JSON, json.dumps(decisions_doc(site), ensure_ascii=False, indent=1) + '\n')
@@ -2993,6 +3498,8 @@ def main():
     write(atlas_events.JSON_PATH, json.dumps(atlas_events.doc(site, evs, datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')), ensure_ascii=False, indent=1) + '\n')
     write(atlas_events.MD_PATH, atlas_events.markdown(site, evs))
     build_agent_files(site, write)
+    for sp, sdoc in search_index(site).items():  # one file, or a manifest + shards by first letter once over budget
+        write(sp, json.dumps(sdoc, ensure_ascii=False, separators=(',', ':')))
     build_earn_json(site, write)
     build_api(site, write)
 
@@ -3017,7 +3524,7 @@ def main():
     red_path = os.path.join(HERE, '..', 'data', 'redirects.json')  # moved pages: old path -> new path (check.py growth guard)
     moved = (json.load(open(red_path)).get('redirects') or {}) if os.path.exists(red_path) else {}
     write('/_redirects', ''.join(f'{old} {new} 301\n{old.rstrip("/")} {new} 301\n' for old, new, _ in old_legal if old != new)
-          + ''.join(f'{old} {new} 301\n' for old, new in moved.items()))
+          + ''.join(f'{old} {new} 301\n' for old, new in moved.items()) + paged_redirects(site))
     write('/_headers', f"""{b}/assets/*
   Cache-Control: public, max-age=604800
 {b}/og/*
@@ -3046,7 +3553,19 @@ def main():
 {b}/decisions/index.md
   Access-Control-Allow-Origin: *
   Content-Type: text/markdown; charset=utf-8
+{b}/platforms/index.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
 {b}/platforms/*/index.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+{b}/index.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+{b}/page/*/index.md
+  Access-Control-Allow-Origin: *
+  Content-Type: text/markdown; charset=utf-8
+{b}/categories/*/index.md
   Access-Control-Allow-Origin: *
   Content-Type: text/markdown; charset=utf-8
 {b}/events.json

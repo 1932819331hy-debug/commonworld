@@ -1,6 +1,6 @@
 /**
  * Read access to the Atlas for the MCP tools (src/mcp/tools.ts). The Atlas is a static build: its JSON API lives at
- * /api/v1/atlas/ (index, platforms, one card per platform, categories, earn) and /stats.json. In staging and production
+ * /api/v1/atlas/ (index, platforms, one card per platform, categories, list pages, earn) and /stats.json. In staging and production
  * those files are this Worker's Static Assets (routing option A3, src/atlas-assets.ts), so they are read from the ASSETS
  * binding without a network hop. Without the binding, the Pages origin (ATLAS_ORIGIN, rollback path) is used; with
  * neither, the tools answer 503 atlas_unavailable. Locally (tests, wrangler dev) ASSETS is the small fixture build.
@@ -18,6 +18,8 @@ export const ATLAS_FILES = {
   platforms: '/api/v1/atlas/platforms.json',
   platform: (id: string) => `/api/v1/atlas/platforms/${id}.json`,
   earn: '/api/v1/atlas/earn.json',
+  /** One page of the list (50 records, the order of /atlas/page/N/), whole Atlas or one category (schema_version 1.8.0). */
+  page: (n: number, category?: string) => (category ? `/api/v1/atlas/categories/${category}/page/${n}.json` : `/api/v1/atlas/page/${n}.json`),
   stats: '/stats.json',
 } as const;
 
@@ -38,6 +40,16 @@ async function fetchAtlas(env: Env, path: string): Promise<Response | null> {
   return null;
 }
 
+/** The path of a same-build Atlas JSON redirect target (/api/v1/atlas/...json, relative or on the assets / Atlas host), else null. */
+export function atlasRedirectPath(location: string | null): string | null {
+  if (!location) return null;
+  let u: URL;
+  try { u = new URL(location, 'https://assets.local'); } catch { return null; }
+  if (u.search || u.hash || !/^\/api\/v1\/atlas\/[a-z0-9/-]+\.json$/.test(u.pathname)) return null;
+  if (u.hostname !== 'assets.local' && !/^(www\.)?commonworld\.one$/.test(u.hostname) && !u.hostname.endsWith('.workers.dev')) return null;
+  return u.pathname;
+}
+
 /** One Atlas JSON file, parsed; 404 atlas_not_found when the build has no such file. */
 export async function readAtlasJson<T = any>(env: Env, path: string, notFound = 'atlas_not_found'): Promise<T> {
   const hit = cache.get(path);
@@ -45,6 +57,14 @@ export async function readAtlasJson<T = any>(env: Env, path: string, notFound = 
   let res: Response | null;
   try { res = await fetchAtlas(env, path); } catch { throw new HttpError(503, 'atlas_unavailable'); }
   if (!res) throw new HttpError(503, 'atlas_unavailable');
+  // A list page that was published before but is past the end now answers 301 to that list's last page (atlas/site/build.py
+  // paged_redirects, owner decision Q8). Follow exactly one such hop, only to another Atlas JSON file of the same build.
+  const to = res.status >= 301 && res.status <= 308 ? atlasRedirectPath(res.headers.get('location')) : null;
+  if (to) {
+    await res.body?.cancel();
+    try { res = await fetchAtlas(env, to); } catch { throw new HttpError(503, 'atlas_unavailable'); }
+    if (!res) throw new HttpError(503, 'atlas_unavailable');
+  }
   if (res.status === 404) { await res.body?.cancel(); throw new HttpError(404, notFound); }
   if (res.status !== 200 || !(res.headers.get('content-type') ?? 'application/json').includes('json')) { await res.body?.cancel(); throw new HttpError(503, 'atlas_unavailable'); }
   const text = await res.text();
