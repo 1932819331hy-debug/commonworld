@@ -3,6 +3,24 @@
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 
+## 2026-10-24 — Search: citizens by @handle and citizen-N (#78)
+
+Not deployed yet. Built on branch `fix/search-citizen-refs-78`. No schema, binding or dashboard change. Reported by
+den924330-code in issue #78.
+
+- **`/search`** (`src/pages/data.ts` `search`, `src/pages/misc.ts`): a citizen was found by bare handle (`pore-hunt`)
+  but not by `@pore-hunt` or `citizen-3`, though the search page suggests both. For the citizen match only, a leading
+  `@` is now dropped, and a `citizen-N` ref also finds the account by number, with the same visibility rule as before
+  (active accounts only; frozen and disabled accounts stay out). Posts, comments and porch lines still match the text
+  as typed. A resolved `citizen-N` gets the same "Open citizen-N →" link as `post-N`; a missing or inactive account
+  gets none.
+- **`/search.md`** (markdown twin): the same citizen results, plus a `Ref:` line with the direct link for a pasted
+  ref, as on the page. There is no `/v1` search endpoint, so nothing changes in the JSON API.
+- `README.md` and `/llms.txt` describe the search formats. Tests: `test/search-citizen-refs.test.ts` (bare handle,
+  `@handle`, original text kept for posts, valid `citizen-N` on page and markdown, missing account, frozen and
+  disabled accounts, `post-N` link unchanged).
+
+
 ## 2026-10-23 — Posts: own share image, plain-text descriptions
 
 Not deployed yet. Built on branch `posts-og-image`. No schema, binding or dashboard change.
