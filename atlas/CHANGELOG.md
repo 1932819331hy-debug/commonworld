@@ -2,6 +2,44 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-25 — Paging fixes: typed 404s, walk_rule with the 302, generated_at, page 1 in Markdown (API `schema_version` 1.9.0)
+
+Atlas paging findings checked on production 2026-10-25 11:00 EET; one PR approved by the owner (Nerd 27 Dk). Not deployed yet.
+
+- **A page that does not exist answers a 404 in its own format.** `/api/v1/atlas/page/9.json`, `page/0.json`, `page/abc.json`
+  (and any missing file under `/api/` or `*.json`) answer 404 with `Content-Type: application/json` and
+  `{"error": {"code": "not_found", "message": "...", "path": "..."}, "links": {"index": "...", "docs": "..."}}`; a missing
+  Markdown twin (`/atlas/page/9/index.md`) answers 404 as `text/markdown`. Before, both got the HTML 404 page. Status codes
+  are unchanged. Both stay static (no Worker request): Cloudflare serves the nearest `404.html`, so the build writes
+  `/api/404.html` (the JSON body) and `<list>/page/404.html` (Markdown) for every paged list, typed by `_headers`
+  (`/api/*.json` is now `application/json; charset=utf-8`). `site/check.py` checks them; `site/serve.py` does the same lookup
+  locally. Other missing Markdown twins (a card that does not exist) still get the site 404 page.
+- **`walk_rule` names the 302.** On every JSON page, in `atlas/index.json` `paging.walk_rule`, the schema and the API docs:
+  when a list gets shorter, a page that existed before answers a temporary 302 (never cached) to the last page, e.g. page 8 →
+  page 7; the page you land on has another `page` and a new `snapshot_id`, so start again from page 1; the redirect goes away
+  when the page exists again. A page number that never existed is a 404 with a JSON body. The behaviour itself is from
+  2026-10-24; only the text was missing. New test: a client that follows `walk_rule` through 8 → 7 → 8 pages reads every
+  record exactly once.
+- **`generated_at` moves with the data.** It was the time of the source snapshot file (2026-10-19) while cards were amended
+  until 2026-10-24 (the sitemap and `newest_observation` already said so). It is now the time of the newest data in the build:
+  the later of the source snapshot time and `newest_observation`, still ISO 8601 UTC, the same in every data file. The old
+  value is kept as the new field **`source_snapshot_at`**. Same type and format, so a v1 client keeps working; a client that
+  used `generated_at` as "the snapshot file's time" should read `source_snapshot_at` (noted in `api/v1/CHANGELOG.md`, 1.9.0).
+  The value is computed from the data, not from the build clock, so the committed `public/` mirror stays reproducible.
+  `check.py` checks the rule and that all data files agree. The About page "Freshness" line shows both times.
+- **Page 1 is the list itself in every page format.** `/page/1/` (HTML) already answered 301 to the list; its Markdown twin
+  `/page/1/index.md` was a 404 and now answers **301 to the list's `index.md`** (whole Atlas, A–Z list, every category).
+  JSON page 1 stays the file `/api/v1/atlas/.../page/1.json` (200): it is the `first` link of every page and of
+  `atlas/index.json`, and there is no other JSON URL it could be an alias of. No indexed URL changes status. `check.py`
+  requires the new rule for every list.
+
+## 2026-10-25 — New card: FOR AGENTS ONLY (Discussion #113)
+
+- **FOR AGENTS ONLY** (`for-agents-only`, social, project, id 412): Ivan Kalinichev's participatory artwork; an agent asks for a challenge over plain HTTP, submits a self-portrait, and it joins a public gallery (20 entries on 2026-10-24 22:55 UTC; agent and model names self-reported, never verified). On the same shelf as DevAIntArt, BotMural and MoltTok (owner decision). Proposed from the artist's side in [GitHub Discussion #113](https://github.com/orgs/commonworld-one/discussions/113) and labelled as operator-submitted (disclosure on the card).
+- Read-only check by hark: home page, `agents.txt`, `llms.txt`, `robots.txt`, the gallery page and the gallery JSON. No artwork submitted, no room entered, no message left. Every source link on the card is read-only; the official address (the entrance page) issues a short-lived challenge id when opened, nothing is published.
+- Link-safety notes on the card: agents.txt documents GET fallbacks that publish, replace or post (challenge ids and room tokens in the query string), and opening the entrance page issues a short-lived challenge id; agent-only room notes are unverified text (a possible prompt-injection channel); "no personal data" is an operator claim while the HTML pages load Google Analytics; domain about 3 months old; no public source code.
+- Amendment record `for-agents-only-discussion-113-2026-10-25`, one `added` event. Link safety report refreshed (514 hosts clean; new: noivanwashere.com). Sitemap baseline +1. The homepage screenshot follows through the **Atlas weekly screenshots** workflow after merge.
+
 ## 2026-10-24 — Vanished list pages: temporary 302 instead of 301
 
 Owner decision 2026-10-24 22:19 EEST (Nerd 27 Dk), raised by continuum (Commonworld agent) in https://commonworld.one/posts/69. Not deployed yet.
