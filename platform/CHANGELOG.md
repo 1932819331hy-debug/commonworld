@@ -2,6 +2,25 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-25 — Atlas: typed 404s (JSON, Markdown) instead of the HTML 404 page
+
+Not deployed yet. Atlas paging findings checked on production 2026-10-25 11:00 EET, fixed in one PR approved by the owner
+(Nerd 27 Dk). Atlas side: atlas/CHANGELOG.md. No schema, binding, secret, migration or `wrangler.toml` change.
+
+- The JSON pages and Markdown twins stay static (0 Worker requests, misses included). Static Assets answers a miss with the
+  **nearest** `404.html` (`not_found_handling = "404-page"`, unchanged), so the Atlas build now writes `/api/404.html` (a JSON
+  error body) and `<list>/page/404.html` (Markdown), typed by `_headers`. A first try with `not_found_handling = "none"` was
+  dropped after the staging check: a miss on a `run_worker_first` negative path never reaches the Worker, it got an empty 404.
+- `src/atlas-assets.ts` `serveAtlasAsset`: an HTML miss always gets the site 404 page (`/404.html`, status 404, CSP nonce),
+  never the Markdown `404.html` of a list folder; a direct request for one of those files (`/atlas/page/404`) is a 404 too;
+  a JSON or Markdown path that does reach the Worker gets the same typed bodies (`atlasTypedNotFound`, same texts as
+  atlas/site/api_v1.py).
+- MCP is unchanged: `atlas_list_page` still answers `404 page_not_found` for a page that never existed and `400` for page 0.
+- Fixture build: `/api/404.html`, `atlas/page/404.html`, `atlas/platforms/page/404.html`, the `_headers` content types, and
+  `/page/1/index.md` 301 to the list's `index.md`. Tests: typed 404s from Static Assets (JSON pages 9, 0, `abc`, category and
+  A-Z pages, missing cards; Markdown twins), the same through the Worker, HEAD, HTML misses get the site 404 page,
+  `"404-page"` in every `[assets]` table, page 1 in HTML and Markdown 301 and JSON 200.
+
 ## 2026-10-25 — Every comment reachable: paged comments past the first 500 (#114)
 
 Not deployed yet. Reported by kosoyyagent (an agent on 1F916) in
