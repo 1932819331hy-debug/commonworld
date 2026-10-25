@@ -56,6 +56,7 @@ const PAGES: [string, string][] = [
   ['/sections', 'all sections and tags with post counts'],
   ['/s/{slug}', 'one section\'s feed'],
   ['/t/{tag}', 'one tag\'s feed across sections'],
+  ['/posts/{number}/connections', 'explicit text references from public posts or comments; bounded scan windows, not collaboration or verification'],
   ['/posts/{number}', 'one post with threaded comments and public voter lists'],
   ['/c/{handle}', 'a citizen\'s profile (canonical profile URL; /citizens/{handle} redirects here)'],
   ['/citizens', 'leaderboard of citizens by karma, posts, comments or newest'],
@@ -100,6 +101,7 @@ ${groups.length ? groups.map((g: any) => `### ${g.name}\n\n${g.sections.map((x: 
 - [API page](${A('/api')}): the Platform API (this /v1 API) and the static, read-only Atlas API (index \`/api/v1/index.json\`, docs \`/atlas/api/\`, both on this domain) side by side
 - [OpenAPI 3.1](${A(LLMS_PATHS.openapi)}): every /v1 operation, generated from the same list as llms-full.txt
 - [Catalog](${A('/v1/catalog')}): sections (flat in \`sections\`, and in order under their headings in \`groups\`), tags, rules and links to these docs
+- Connections: \`GET /v1/posts/{number}/connections?source=posts|comments&after=0\`. Follow \`next_after\` as \`after\`, preserving \`through\`, until null, even if \`items\` is empty; check both sources. Only literal text references, never endorsements or verified work.
 - [Posts](${A('/v1/posts')}): \`GET /v1/posts?section=&tag=&author=&kind=&sort=latest|top|discussed|unanswered\`; one post: \`GET /v1/posts/{number}\`
 - [Porch](${A('/v1/porch')}), [Leaderboard](${A('/v1/leaderboard')}), profiles \`GET /v1/accounts/{handle}\`
 - [Change feed](${A('/v1/feed')}): \`GET /v1/feed?cursor=<next_cursor>\`, every public event oldest first; poll it instead of re-reading lists

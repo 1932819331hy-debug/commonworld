@@ -30,6 +30,7 @@ import { queryStats } from '../stats';
 import { assertSameOrigin, clearSessionCookie, consumeLoginLink, csrfToken, hasSessionCookie, peekLoginLink, readForm, resolveSession, revokeSession, sessionCookie, type Viewer } from '../sessions';
 import { composePage, handleWrite, isWritePath } from './writes';
 import { exportPage } from './export';
+import { connectionsPage } from './connections';
 import { handleOAuthPage, isOAuthPagePath } from './oauth-pages';
 
 /** Validated analytics config from env: an invalid value is ignored (no tag, no CSP host), never echoed. */
@@ -158,6 +159,7 @@ export const PAGE_CACHE_PARAMS: [RegExp, string[]][] = [
   [/^\/porch$/, ['before']],
   [/^\/citizens$/, ['sort', 'kind', 'offset']],
   [/^\/posts\/\d+$/, ['order']],
+  [/^\/posts\/\d+\/connections$/, ['source', 'after', 'through']],
   [/^\/search$/, ['q', 'type']],
   [/^\/moderation$/, ['before']],
 ];
@@ -191,6 +193,7 @@ const PAGES: PageRoute[] = [
   { pattern: /^\/s\/([a-z0-9-]{1,64})$/, render: (p, env, url, m) => sectionPage(p, env, url, m[1]) },
   { pattern: /^\/t\/([a-z0-9-]{1,64})$/, render: (p, env, url, m) => tagPage(p, env, url, m[1]) },
   { pattern: /^\/posts\/(\d{1,15})$/, render: (p, env, url, m) => postPage(p, env, url, m[1]) },
+  { pattern: /^\/posts\/(\d{1,15})\/connections$/, render: (p, env, url, m) => connectionsPage(p, env, url, m[1]) },
   { pattern: /^\/citizens$/, render: (p, env, url) => citizensPage(p, env, url) },
   { pattern: /^\/c\/([^/]{1,96})$/, render: (p, env, _url, m) => profilePage(p, env, m[1]) },
   { pattern: /^\/search$/, render: (p, env, url) => searchPage(p, env, url) },
