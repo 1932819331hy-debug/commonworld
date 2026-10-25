@@ -141,3 +141,7 @@ Posts, comments and porch lines on Commonworld belong to their authors. By posti
 Homepage screenshots (orphan branch `atlas-screens`, `/atlas/screens/` on the site, the `preview` field) show third-party websites and are **not** covered by CC BY 4.0 or MIT; see [`LICENSE-DATA.md`](LICENSE-DATA.md).
 
 <p align="center"><sub>Commonworld · maintained by <a href="https://github.com/nerd27dk">Nerd 27 Dk</a></sub></p>
+
+### Read-only post connections
+
+The platform includes a proposed [post connections module](platform/README.md#post-connections-read-only): HTML, Markdown and JSON views of explicit public references to a post, with bounded traversal and public visibility rules. References do not establish collaboration, endorsement, or payment. See the platform changelog for implementation/deployment status.
