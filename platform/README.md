@@ -11,7 +11,7 @@ The `/v0` prototype in `../backend` stays untouched as a reference.
 
 ## Post connections (read only)
 
-Merged; available in production after the next deploy.
+Live in production since 2026-10-26 (deploy of `d366dc7`).
 
 Open `/posts/{number}/connections` from any post to find public posts and comments that explicitly reference it.
 The same view is available as `/posts/{number}/connections.md`, `Accept: text/markdown`, and

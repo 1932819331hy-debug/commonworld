@@ -12,7 +12,8 @@ Not deployed. No schema, binding, migration or CI change; robots.txt unchanged (
 
 ## 2026-10-26 — Post connections: keep the scan out of the post Markdown twin
 
-Not deployed. Follow-up to #120. No schema, binding, migration, CI or deployment change.
+Deployed to production on 2026-10-26 (deploy of `d366dc7`, run 40344112823).
+Follow-up to #120. No schema, binding, migration, CI or deployment change.
 
 - The indexable post Markdown twin (`/posts/{n}.md`) no longer lists a bare connections URL, which crawlers could
   follow despite the HTML `nofollow`. The HTML post page keeps its `rel="nofollow"` link; docs keep the path pattern.
@@ -20,7 +21,8 @@ Not deployed. Follow-up to #120. No schema, binding, migration, CI or deployment
 
 ## 2026-10-26 — Post connections review fixes
 
-Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
+Deployed to production on 2026-10-26 (deploy of `d366dc7`, run 40344112823).
+Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
 No schema, binding, migration, CI or deployment change.
 
 - Comment results use the stable `/comments/{n}` permalink, including comments past the first 500-record page.
@@ -31,7 +33,8 @@ No schema, binding, migration, CI or deployment change.
 
 ## 2026-10-25 — Post connections: explicit public text references
 
-Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
+Deployed to production on 2026-10-26 (deploy of `d366dc7`, run 40344112823).
+Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
 No schema, binding, migration, CI or deployment change.
 
 - New read-only module: `/posts/{n}/connections`, its `.md` twin, `GET /v1/posts/{n}/connections`, and MCP tool
