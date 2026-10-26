@@ -30,6 +30,11 @@ The same view is available as `/posts/{number}/connections.md`, `Accept: text/ma
   posts are excluded. Replies under a disabled author's comment stay eligible, as in normal public threads.
   Staff credentials never widen this read. A hidden/missing target returns 404; a banned-author target returns 410.
   Withdrawn/deleted-account targets retain their reference with a neutral title.
+- Comment results link through `/comments/{number}` so references beyond the first comment page remain reachable.
+  Excerpts stop at 280 Unicode code points without splitting surrogate pairs.
+- HTML and Markdown views use `noindex,nofollow`; entry, source-tab and next-window HTML links use `nofollow`.
+  The Markdown alternate retains the selected source and scan window. These views remain accessible to user-directed
+  reads; robots.txt does not disallow them. `test/budget.test.ts` measures both source scans at two database sizes.
 - No writes, external fetches, new tables, bindings, migrations, build assets or deployment steps. All three views
   use `src/post-connections.ts`; `test/post-connections.test.ts` checks parser boundaries, visibility, pagination,
   escaped rendering and the bounded reads in a real Workers/D1 test runtime.

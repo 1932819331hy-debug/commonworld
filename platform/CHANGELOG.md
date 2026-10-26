@@ -2,6 +2,17 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-26 — Post connections review fixes
+
+Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
+No schema, binding, migration, CI or deployment change.
+
+- Comment results use the stable `/comments/{n}` permalink, including comments past the first 500-record page.
+- HTML Markdown alternates preserve source and cursor parameters in both the document and HTTP Link header.
+- HTML and Markdown views use noindex/nofollow; navigation into and across scan windows uses nofollow.
+  No robots.txt disallow was added. Both JSON source scans have measured D1 read budgets.
+- Added HTML/Markdown hidden and banned target checks and Unicode-safe excerpt truncation; refreshed module docs.
+
 ## 2026-10-25 — Post connections: explicit public text references
 
 Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
