@@ -17,7 +17,7 @@ async function addComment(author: string, post: number, body: string, parent: nu
   return Number(r.meta.last_row_id);
 }
 const refs = (response: any) => response.body.items.map((x: any) => x.ref);
-const fetchPage = (path: string, headers: Record<string, string> = {}) => (exports as any).default.fetch(new Request(`https://cw.test${path}`, { headers })) as Promise<Response>;
+const fetchPage = (path: string, headers: Record<string, string> = {}) => (exports as any).default.fetch(new Request(`https://cw.test${path}`, { headers, redirect: 'manual' })) as Promise<Response>;
 
 describe('exact reference parsing', () => {
   it.each([
@@ -89,7 +89,7 @@ describe('public connections in the Workers D1 runtime', () => {
     ]);
     const result = await api(`/v1/posts/${target}/connections?source=comments`);
     expect(refs(result)).toEqual([visible, reply].map((n) => `comment-${n}`));
-    expect(result.body.items[1].url).toBe(`/posts/${other}#comment-${reply}`);
+    expect(result.body.items[1].url).toBe(`/comments/${reply}`);
   });
 
   it('returns 404 for missing/hidden targets and 410 for banned targets, with neutral withdrawn/deleted titles', async () => {
@@ -132,6 +132,79 @@ describe('public connections in the Workers D1 runtime', () => {
     expect(refs(first).length).toBe(100); expect([...refs(first), ...refs(second)]).toEqual(expected); expect(second.body.next_after).toBeNull();
   });
 
+  it('links a comment past the first 500 comments to its reachable permalink window', async () => {
+    const a = await register(); const target = await addPost(a.id, 'Target'); const other = await addPost(a.id, 'Other');
+    await env.DB.prepare(`WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM n WHERE x < 500)
+      INSERT INTO comments (id, author_id, post_number, body, depth, status, created_at)
+      SELECT 'filler-' || x, ?, ?, 'No reference', 1, 'visible', '2026-10-25T00:00:00.000Z' FROM n`).bind(a.id, other).run();
+    const late = await addComment(a.id, other, `Late reference to post-${target}`);
+    const path = `/posts/${target}/connections`;
+    const query = `?source=comments&after=${late - 1}&through=${late}`;
+    const result = await api(`/v1${path}${query}`);
+    expect(refs(result)).toEqual([`comment-${late}`]);
+    expect(result.body.items[0].url).toBe(`/comments/${late}`);
+    expect(await (await fetchPage(path + query)).text()).toContain(`href="/comments/${late}"`);
+    expect(await (await fetchPage(path + '.md' + query)).text()).toContain(`](https://cw.test/comments/${late})`);
+    const redirect = await fetchPage(`/comments/${late}`);
+    expect(redirect.status).toBe(302);
+    const location = new URL(redirect.headers.get('location')!, 'https://cw.test');
+    expect(location.pathname).toBe(`/posts/${other}`);
+    expect(location.searchParams.get('after')).toBe(String(late - 1));
+    expect(location.hash).toBe(`#comment-${late}`);
+    const destination = await fetchPage(location.pathname + location.search);
+    expect(destination.status).toBe(200);
+    expect(await destination.text()).toContain(`id="comment-${late}"`);
+  });
+
+  it('keeps the selected scan in Markdown alternates and discourages crawl traversal without blocking reads', async () => {
+    const a = await register(); const target = await addPost(a.id, 'Target');
+    const skipped = await addComment(a.id, target, 'Outside the selected window');
+    for (let i = 0; i < 101; i++) await addComment(a.id, target, `Reference post-${target}`);
+    const path = `/posts/${target}/connections`;
+    const through = skipped + 101;
+    const query = `?source=comments&after=${skipped}&through=${through}`;
+    const html = await fetchPage(path + query); const text = await html.text();
+    expect(html.status).toBe(200);
+    expect(text).toContain('<meta name="robots" content="noindex,nofollow">');
+    expect(html.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+    const alternate = text.match(/<link rel="alternate" type="text\/markdown" href="([^"]+)"/)![1].replace(/&amp;/g, '&');
+    expect(alternate).toBe(`https://cw.test${path}.md${query}`);
+    expect(html.headers.get('link')).toBe(`<${alternate}>; rel="alternate"; type="text/markdown"`);
+    const md = await fetchPage(path + '.md' + query); const markdown = await md.text();
+    expect(md.status).toBe(200);
+    expect(md.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+    expect(markdown).toContain(`Source: comments. Scan after ${skipped}, through ${through}.`);
+    expect(markdown).not.toContain('Outside the selected window');
+    for (const source of ['posts', 'comments']) expect(text).toContain(`rel="nofollow" href="${path}?source=${source}"`);
+    expect(text).toContain('rel="next nofollow"');
+    expect(await (await fetchPage(`/posts/${target}`)).text()).toContain(`rel="nofollow" href="${path}"`);
+    expect(await (await fetchPage('/robots.txt')).text()).not.toMatch(/Disallow:[^\n]*connections/i);
+  });
+
+  it.each(['', '.md'])('applies hidden 404 and banned 410 to the %s public view', async (suffix) => {
+    const a = await register(); const target = await addPost(a.id, 'Private body', 'Private title');
+    const path = `/posts/${target}/connections${suffix}`;
+    await env.DB.prepare("UPDATE posts SET status = 'hidden' WHERE number = ?").bind(target).run();
+    const hidden = await fetchPage(path);
+    expect(hidden.status).toBe(404); expect(await hidden.text()).not.toContain('Private title');
+    await env.DB.prepare("UPDATE posts SET status = 'visible' WHERE number = ?").bind(target).run();
+    await env.DB.prepare("UPDATE accounts SET status = 'disabled' WHERE id = ?").bind(a.id).run();
+    const banned = await fetchPage(path);
+    expect(banned.status).toBe(410); expect(await banned.text()).not.toContain('Private title');
+  });
+
+  it('truncates excerpts by Unicode code point without splitting an emoji at the boundary', async () => {
+    const a = await register(); const target = await addPost(a.id, 'Target');
+    const prefix = 'a'.repeat(279) + '😀';
+    const source = await addPost(a.id, prefix + ` post-${target}`);
+    const exact = await addPost(a.id, prefix, `post-${target}`);
+    const result = await api(`/v1/posts/${target}/connections`);
+    expect(refs(result)).toEqual([`post-${source}`, `post-${exact}`]);
+    expect(result.body.items.map((x: any) => x.excerpt)).toEqual([prefix + '…', prefix]);
+    expect(await (await fetchPage(`/posts/${target}/connections`)).text()).toContain(prefix + '…');
+    expect(await (await fetchPage(`/posts/${target}/connections.md`)).text()).toContain(prefix + '…');
+  });
+
   it('rejects invalid cursors/source before interpolating SQL', async () => {
     const a = await register(); const target = await addPost(a.id, 'Target');
     for (const query of ['source=posts%3BDROP%20TABLE%20posts', 'source=', 'after=-1', 'after=1e2', 'after=1%20OR%201=1', 'through=1000000000000000', 'through=0&after=1']) {
@@ -147,7 +220,7 @@ describe('public connections in the Workers D1 runtime', () => {
     const html = await fetchPage(path); const text = await html.text();
     expect(html.status).toBe(200); expect(text).toContain(`post-${source}`); expect(text).toContain('&lt;script&gt;bad');
     expect(text).not.toContain('<img src=x'); expect(text).toContain(`href="https://cw.test/v1${path}"`);
-    expect(text).toContain('noindex,follow'); expect(text).toContain(`${path}.md`);
+    expect(text).toContain('noindex,nofollow'); expect(text).toContain(`${path}.md`);
     const md = await fetchPage(`${path}.md`); const markdown = await md.text();
     expect(md.status).toBe(200); expect(markdown).toContain(`post-${source}`); expect(markdown).toContain('\\[click\\]');
     expect(markdown).not.toContain('<script>'); expect(markdown).toContain('&lt;img');
