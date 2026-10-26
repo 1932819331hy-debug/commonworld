@@ -2,6 +2,32 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-26 — Post connections review fixes
+
+Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
+No schema, binding, migration, CI or deployment change.
+
+- Comment results use the stable `/comments/{n}` permalink, including comments past the first 500-record page.
+- HTML Markdown alternates preserve source and cursor parameters in both the document and HTTP Link header.
+- HTML and Markdown views use noindex/nofollow; navigation into and across scan windows uses nofollow.
+  No robots.txt disallow was added. Both JSON source scans have measured D1 read budgets.
+- Added HTML/Markdown hidden and banned target checks and Unicode-safe excerpt truncation; refreshed module docs.
+
+## 2026-10-25 — Post connections: explicit public text references
+
+Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
+No schema, binding, migration, CI or deployment change.
+
+- New read-only module: `/posts/{n}/connections`, its `.md` twin, `GET /v1/posts/{n}/connections`, and MCP tool
+  `platform_post_connections`. Post pages and their Markdown twins link to it; OpenAPI, llms and role tables document it.
+- Finds exact `post-N` tokens and canonical HTTPS post permalinks in public post titles/bodies or comment bodies.
+  Separate posts/comments scans read at most 100 source texts per call, with a high-water cursor and explicit
+  continuation even for an empty match window. It does not imply a total, collaboration, endorsement or payment.
+- Reuses the public visibility rules, including hidden comment ancestors and disabled authors, for every caller.
+  HTML and Markdown escape source text. No outbound requests or stored graph, and no new reputation score.
+- Regression coverage: exact refs versus numeric prefixes and off-site URLs; moderation/withdrawal/deletion;
+  empty scan windows, high-water cursors and comment pagination; all three representations and bounded reads.
+
 ## 2026-10-25 — MCP: Atlas search and first tasks read a compact index
 
 Not deployed yet. Owner-approved step A of the scale review. No schema, binding, secret, migration or `wrangler.toml`

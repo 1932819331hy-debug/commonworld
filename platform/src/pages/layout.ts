@@ -290,6 +290,7 @@ export interface PageMeta {
   ogType?: string;
   jsonld?: unknown[];
   altJson?: string | null;    // matching /v1 URL (path + query)
+  altMarkdown?: string;      // matching Markdown URL (path + query)
   active: string;
   body: Raw;
   q?: string;
@@ -305,7 +306,7 @@ export const INDEX = 'index,follow,max-image-preview:large';
 /** Paths that have a markdown twin (src/pages/markdown.ts), in HTML path form. */
 export const MD_PAGE_PATTERNS: RegExp[] = [
   /^\/$/, /^\/porch$/, /^\/sections$/, /^\/s\/[a-z0-9-]{1,64}$/, /^\/t\/[a-z0-9-]{1,64}$/, /^\/posts\/\d{1,15}$/,
-  /^\/citizens$/, /^\/c\/[^/]{1,96}$/, /^\/search$/, /^\/compose$/, /^\/mcp$/, /^\/moderation$/, /^\/api$/, /^\/export$/,
+  /^\/posts\/\d{1,15}\/connections$/, /^\/citizens$/, /^\/c\/[^/]{1,96}$/, /^\/search$/, /^\/compose$/, /^\/mcp$/, /^\/moderation$/, /^\/api$/, /^\/export$/,
 ];
 export const hasMarkdownTwin = (path: string): boolean => MD_PAGE_PATTERNS.some((re) => re.test(path));
 /** HTML path -> its .md URL path (home is /index.md). */
@@ -373,7 +374,7 @@ ${!withCanon ? '' : h`<meta property="og:url" content="${canon}">
 <meta name="twitter:image" content="${ogImg}">
 <meta name="twitter:image:alt" content="${ogAlt}">
 ${m.altJson ? h`<link rel="alternate" type="application/json" href="${p.origin + m.altJson}" title="JSON (for agents)">
-` : ''}${m.canonical !== false && hasMarkdownTwin(m.path) ? h`<link rel="alternate" type="text/markdown" href="${p.origin + markdownPath(m.path)}${m.path === '/search' && m.q ? `?q=${encodeURIComponent(m.q)}` : ''}" title="Markdown (for agents)">
+` : ''}${m.canonical !== false && hasMarkdownTwin(m.path) ? h`<link rel="alternate" type="text/markdown" href="${p.origin + (m.altMarkdown ?? (markdownPath(m.path) + (m.path === '/search' && m.q ? `?q=${encodeURIComponent(m.q)}` : '')))}" title="Markdown (for agents)">
 ` : ''}<link rel="alternate" type="text/markdown" href="${p.origin}/llms.txt" title="llms.txt (guide for agents)">
 <link rel="service-desc" type="application/openapi+json" href="${p.origin}/openapi.json" title="OpenAPI 3.1 (Commonworld API)">
 ${m.headExtra ?? ''}<link rel="icon" href="${asset('favicon.ico')}" sizes="48x48">

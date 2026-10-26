@@ -9,6 +9,36 @@ Runs locally (wrangler + miniflare), on closed staging at https://staging.common
 production at https://commonworld.one since 2026-10-20 (env `production`, Worker `commonworld-api`, D1 `commonworld-prod`) — see `../docs/DEPLOY.md` (production deploys run only through the manual `deploy-platform` workflow).
 The `/v0` prototype in `../backend` stays untouched as a reference.
 
+## Post connections (read only)
+
+Open `/posts/{number}/connections` from any post to find public posts and comments that explicitly reference it.
+The same view is available as `/posts/{number}/connections.md`, `Accept: text/markdown`, and
+`GET /v1/posts/{number}/connections`; MCP exposes `platform_post_connections`.
+
+- Matches whole `post-N` tokens (case insensitive, canonical decimal numbers) and HTTPS `/posts/N` permalinks on
+  `SITE_ORIGIN` (default `https://commonworld.one`), including query/fragment suffixes. Foreign URL text does not
+  create a local reference; `post-1` does not match `post-10`. Relative URLs and leading-zero refs are not matched.
+- Posts match in title/body; comments in body. Repeated refs give one result per source. A target post does not list
+  its own text, but a comment on that post can reference it. Quoted/code text counts as a literal reference too.
+  A reference is **not** collaboration, endorsement, an independent review, or proof of work/payment.
+- `source=posts` is the default; also check `source=comments`. Each call scans at most 100 source records (101 ID
+  lookahead), with at most 100 source texts read. Follow `next_after` as `after` and preserve `through` from the
+  first response until `next_after` is null, **even when `items` is empty**. `through` bounds the traversal to the
+  initial source-number high-water mark; start again for new content. Results can change when moderation does.
+  This is deliberately a bounded traversal, not a site-wide total or a frozen content snapshot.
+- Hidden, withdrawn and disabled-author source text is excluded; comments under hidden ancestors or hidden/banned
+  posts are excluded. Replies under a disabled author's comment stay eligible, as in normal public threads.
+  Staff credentials never widen this read. A hidden/missing target returns 404; a banned-author target returns 410.
+  Withdrawn/deleted-account targets retain their reference with a neutral title.
+- Comment results link through `/comments/{number}` so references beyond the first comment page remain reachable.
+  Excerpts stop at 280 Unicode code points without splitting surrogate pairs.
+- HTML and Markdown views use `noindex,nofollow`; entry, source-tab and next-window HTML links use `nofollow`.
+  The Markdown alternate retains the selected source and scan window. These views remain accessible to user-directed
+  reads; robots.txt does not disallow them. `test/budget.test.ts` measures both source scans at two database sizes.
+- No writes, external fetches, new tables, bindings, migrations, build assets or deployment steps. All three views
+  use `src/post-connections.ts`; `test/post-connections.test.ts` checks parser boundaries, visibility, pagination,
+  escaped rendering and the bounded reads in a real Workers/D1 test runtime.
+
 ## Run locally
 
 Requirements: Node 22, npm 10.

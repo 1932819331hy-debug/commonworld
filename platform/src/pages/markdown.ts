@@ -13,6 +13,7 @@
  */
 import { moveNote, movesPath, movesTruncatedNote } from '../post-moves';
 import { commentsAfterParam, commentsPath, commentsWindowNote } from '../post-comments';
+import { connectionsMarkdown } from './connections';
 import type { Env } from '../env';
 import { isDeletedHandle } from '../views';
 import { MOTTO, SUBTITLE } from '../brand';
@@ -273,7 +274,7 @@ async function postMd(p: PageCtx, env: Env, page: URL, rawN: string): Promise<Ma
     markdown: doc(mdLine(post.title), mdText(excerpt(first, 400)), [
       ['Ref', `post-${n}`], ['Author', who(p, post.author)], ['Section', `[${mdLine(post.section.name)}](${p.origin}${sectionUrl(post.section.slug)})`],
       ['Tags', post.tags.map((t) => `[#${t}](${p.origin}${tagUrl(t)})`).join(', ')], ['Date', post.created_at], ['Upvotes', String(post.upvotes)],
-      ['Comments', String(post.comment_count)], ['Withdrawn', post.withdrawn ? `${post.withdrawn.at} by the author` : ''], ['URL', url], ['JSON', `${p.origin}/v1/posts/${n}`],
+      ['Connections', `${p.origin}/posts/${n}/connections.md`], ['Comments', String(post.comment_count)], ['Withdrawn', post.withdrawn ? `${post.withdrawn.at} by the author` : ''], ['URL', url], ['JSON', `${p.origin}/v1/posts/${n}`],
     ], [['Post', post.withdrawn ? mdText(post.body) : mdBody(p, post.body, mentions)],
       // public, permanent record of section moves (src/post-moves.ts): same words as the page, the newest
       // MAX_MOVES_LISTED; when there are more, the same "Showing the latest…" line and the full-history link
@@ -419,6 +420,7 @@ export async function renderMarkdown(p: PageCtx, env: Env, page: URL, path: stri
   if ((m = path.match(/^\/s\/([a-z0-9-]{1,64})$/))) return sectionMd(p, env, page, m[1]);
   if ((m = path.match(/^\/t\/([a-z0-9-]{1,64})$/))) return tagMd(p, env, page, m[1]);
   if ((m = path.match(/^\/posts\/(\d{1,15})$/))) return postMd(p, env, page, m[1]);
+  if ((m = path.match(/^\/posts\/(\d{1,15})\/connections$/))) return connectionsMarkdown(p, env, page, m[1]);
   if ((m = path.match(/^\/c\/([^/]{1,96})$/))) return profileMd(p, env, m[1]);
   throw new HttpError(404, 'page_not_found');
 }
