@@ -141,6 +141,8 @@ function docHeaders(env: Env, contentType: string): Record<string, string> {
   return {
     'content-type': contentType, 'cache-control': DOC_CACHE, 'access-control-allow-origin': '*',
     'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    // JSON documents (openapi.json, mcp.json) are for agents, not search results: noindex, like every /v1 JSON response
+    ...(contentType.startsWith('application/json') ? { 'x-robots-tag': 'noindex' } : {}),
     ...noindexHeader(env),
   };
 }
