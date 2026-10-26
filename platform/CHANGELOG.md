@@ -2,16 +2,20 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
-## 2026-10-26 — Portable seed:local for Windows and non-POSIX shells
+## 2026-10-27 — Portable seed:local for Windows and non-POSIX shells (#151)
 
-Not deployed. Outside contribution by Artur Barszcz (arturbarszcz78).
-Fixes #151. No schema, binding, migration, CI or deployment change.
+Not deployed yet (local development script only; nothing in the Worker changes). Outside contribution by Artur Barszcz
+(arturbarszcz78), #152, finished by the maintainers. Fixes #151. No schema, binding, migration, CI or deployment change.
 
-- Moved `seed:local` orchestration from shell pipeline to `platform/scripts/seed-local.mjs`.
-- Cross-platform directory creation (`fs.mkdirSync(..., { recursive: true })`) avoids stray `-p/` on Windows `cmd.exe`.
-- Auto-detects available Python 3.10+ interpreter across `PYTHON`, `python3`, `python`, and `py`.
-- Generates `.local/seed.sql` safely into memory, verifying exit status before writing to disk, preventing zero-byte SQL files on generator errors.
-- Ignored `.local/` in `platform/.gitignore`.
+- `npm run seed:local` runs `scripts/seed-local.mjs` instead of a POSIX shell pipeline (`mkdir -p` made a stray `-p`
+  folder under Windows `cmd.exe`). Same generator, same `wrangler d1 execute commonworld-dev --local --file
+  .local/seed.sql`, run from `platform/`.
+- Finds a Python 3.10+ as `$PYTHON`, `python3`, `python` or `py -3`; Python and wrangler run without a shell (wrangler
+  is the pinned devDependency run through Node), so arguments and paths with spaces reach them intact.
+- `.local/seed.sql` is written only after the generator succeeds, byte for byte (UTF-8); generator and wrangler exit
+  codes are passed through. `.local/` is git-ignored.
+- Test: `tests/test_seed_local.py` (stub generator and wrangler). README updated.
+
 ## 2026-10-26 — Production release 26c6754
 
 Docs only: release record, no code change. Production deploy of commit `26c67543e3b45744350184d47998a519539e708d` on
