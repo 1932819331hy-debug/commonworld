@@ -2,6 +2,14 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-26 — SEO: JSON API responses are noindex, HTML links to them are nofollow
+
+Not deployed. No schema, binding, migration or CI change; robots.txt unchanged (nothing is disallowed).
+
+- Every JSON response (`/v1/*`, `/health`, `/openapi.json`, `/v1/openapi.json`, `/mcp.json`, the static Atlas `/api/*.json`
+  and the `/atlas/` JSON files) carries `X-Robots-Tag: noindex`; HTML links to the JSON API carry `rel="nofollow"` (existing
+  rel values kept). Reason: Search Console, 2026-10-26: 56 of 100 sampled "crawled - currently not indexed" URLs were API JSON.
+
 ## 2026-10-26 — Post connections: keep the scan out of the post Markdown twin
 
 Not deployed. Follow-up to #120. No schema, binding, migration, CI or deployment change.

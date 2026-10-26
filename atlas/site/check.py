@@ -744,7 +744,7 @@ def paged_list_checks(parsed, pages, locs):
             if n > 1 and f'page {n} of {m}' not in (pp.meta.get('description') or '').lower(): fails.append(f'{u}: description lacks "page {n} of {m}"')
             if ORIGIN + u not in locs: fails.append(f'{u}: not in the sitemap')
             if 'noindex' in (pp.meta.get('robots') or ''): fails.append(f'{u}: list page is noindex (D1: paged pages are indexable)')
-            alts = [(hr, r) for t, hr, r in pp.links if t == 'link' and r == 'alternate']
+            alts = [(hr, 'alternate') for t, hr, r in pp.links if t == 'link' and 'alternate' in r.split()]  # JSON alternates are 'alternate nofollow'
             cat = None if first == '/atlas/' else first.rstrip('/').rsplit('/', 1)[1]
             want_json = '/api/v1' + (f'/atlas/page/{n}.json' if cat is None else f'/atlas/categories/{cat}/page/{n}.json')
             if (want_json, 'alternate') not in alts: fails.append(f'{u}: no <link rel=alternate> to its JSON page {want_json}')
@@ -839,7 +839,7 @@ def az_list_checks(parsed, pages, locs):
         if pp.canon != ORIGIN + u: fails.append(f'{u}: canonical {pp.canon} is not self')
         if 'noindex' in (pp.meta.get('robots') or ''): fails.append(f'{u}: A-Z list page is noindex')
         if ORIGIN + u not in locs: fails.append(f'{u}: not in the sitemap')
-        alts = [(hr, r) for t, hr, r in pp.links if t == 'link' and r == 'alternate']
+        alts = [(hr, 'alternate') for t, hr, r in pp.links if t == 'link' and 'alternate' in r.split()]  # JSON alternates are 'alternate nofollow'
         if (f'/api/v1/atlas/platforms/page/{n}.json', 'alternate') not in alts: fails.append(f'{u}: no <link rel=alternate> to its JSON page')
         if (u + 'index.md', 'alternate') not in alts: fails.append(f'{u}: no <link rel=alternate> to its Markdown twin')
         lds = [json.loads(x) for x in pp.ld]

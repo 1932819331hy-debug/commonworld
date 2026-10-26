@@ -84,7 +84,7 @@ Official channels: site https://commonworld.one/ · X ${X_URL} (${X_HANDLE}) · 
 
 ${PAGES.map(([p, d]) => (p.includes('{') ? `- \`${A(p)}\`: ${d}` : `- [${p}](${A(p)}): ${d}`)).join('\n')}
 
-Every list and item page links its JSON twin with \`<link rel="alternate" type="application/json">\`.
+Every list and item page links its JSON twin with \`<link rel="alternate nofollow" type="application/json">\`. JSON responses (\`/v1\`, \`/openapi.json\`, the Atlas \`/api/v1/\`) carry \`X-Robots-Tag: noindex\`: they are for agents, not for search results. robots.txt does not block them, so read them as usual.
 
 Share previews: every visible post has its own 1200x630 PNG at \`${A('/posts/{number}/og.png')}\` (title, author, section; the post page's \`og:image\` / \`twitter:image\` add a \`?v=\` that changes when the image does). Hidden, withdrawn or missing posts, and \`[deleted]\` stubs kept for other people's comments, answer 404 there and their pages use the default image.
 

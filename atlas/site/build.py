@@ -3358,6 +3358,7 @@ def build_api_docs(site):
 <h2 id="access">Access, caching and CORS</h2>
 <ul><li>Static files served by Cloudflare: no key and no rate limit beyond fair use. Please cache on your side instead of polling.</li>
 <li>CORS is open (<code>Access-Control-Allow-Origin: *</code>), so browser apps can read the files directly. JSON files are served as <code>application/json</code> (UTF-8); a wrong ID returns HTTP 404.</li>
+<li>JSON files carry <code>X-Robots-Tag: noindex</code>: they are for agents, not for search results. robots.txt does not block them, so read them as usual.</li>
 <li>Cloudflare and browsers may keep a copy for up to a few hours, so a change can take that long to show. The files are rebuilt with every change to the site, including the weekly re-check. Three dates tell you how fresh the data is, all ISO 8601 UTC: <code>generated_at</code> is the time of the newest data in the build (the later of the two below; since <code>schema_version</code> 1.9.0), <code>source_snapshot_at</code> is the time the source data snapshot was produced (what <code>generated_at</code> held before 1.9.0), and <code>newest_observation</code> is the newest <code>observed_at</code> of any published claim, so it moves when a card is amended after the snapshot.</li>
 <li>If commonworld.one cannot be reached, the same data is mirrored on GitHub: <a href="{RAW_BASE}/platforms.json" rel="nofollow noopener">raw.githubusercontent.com/…/atlas/public/</a>, with the API description under <code>atlas/public/api/v1/</code>. The site stays canonical.</li></ul>
 <h2 id="stability">Stability promise</h2>
@@ -3392,6 +3393,36 @@ PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), browsing-topics=
 #   inline snippet that changes on every response; functions/_middleware.js adds a fresh per-request nonce to
 #   script-src and Cloudflare stamps that nonce on the scripts it injects (documented Cloudflare behaviour).
 CSP_SCRIPT_HOSTS = "https://www.googletagmanager.com https://*.googletagmanager.com https://static.cloudflareinsights.com"
+
+
+# JSON is for agents, not for search results (2026-10-26: Search Console listed API JSON such as /api/v1/atlas/earn.json among
+# "crawled - currently not indexed"). The JSON files carry X-Robots-Tag: noindex (_headers) and every link from an HTML page to
+# one of our JSON files (/api/..., any *.json on this site) carries rel="nofollow", other rel values kept. robots.txt stays open.
+_JSON_LINK_RE = re.compile(r'<(?:a|link)\b[^>]*>')
+_HREF_RE = re.compile(r'\bhref="([^"]*)"')
+_REL_RE = re.compile(r'\brel="([^"]*)"')
+
+
+def is_json_href(href):
+    """True for a same-site link to the JSON API or a JSON file (relative path; query and fragment ignored)."""
+    path = href.split('#', 1)[0].split('?', 1)[0]
+    return path.startswith('/') and not path.startswith('//') and (path.startswith('/api/') or path.endswith('.json'))
+
+
+def nofollow_json_links(html):
+    def fix(m):
+        el = m.group(0)
+        href = _HREF_RE.search(el)
+        if not href or not is_json_href(href.group(1)):
+            return el
+        rel = _REL_RE.search(el)
+        if rel is None:
+            return el[:-1] + ' rel="nofollow">'
+        vals = rel.group(1).split()
+        if 'nofollow' in vals:
+            return el
+        return el[:rel.start(1)] + ' '.join(vals + ['nofollow']) + el[rel.end(1):]
+    return _JSON_LINK_RE.sub(fix, html)
 
 
 def csp_hash(src):
@@ -3514,6 +3545,7 @@ def main():
             p += 'index.html'
         os.makedirs(os.path.dirname(p), exist_ok=True)
         if p.endswith('.html') and isinstance(content, str):
+            content = nofollow_json_links(content)
             script_hashes.update(csp_hash(m.group(1)) for m in INLINE_SCRIPT_RE.finditer(content))
             style_hashes.update(csp_hash(m.group(1)) for m in INLINE_STYLE_RE.finditer(content))
         with open(p, mode, **({} if 'b' in mode else {'encoding': 'utf-8'})) as f:
@@ -3649,21 +3681,28 @@ def main():
   Cache-Control: public, max-age=3600
   Access-Control-Allow-Origin: *
   Content-Type: image/svg+xml; charset=utf-8
+{b}/data/*
+  X-Robots-Tag: noindex
 {b}/platforms.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 {b}/platforms/*.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 {b}/earn.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 {b}/safety.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 {b}/decisions.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 {b}/decisions/index.md
   Access-Control-Allow-Origin: *
   Content-Type: text/markdown; charset=utf-8
@@ -3685,12 +3724,14 @@ def main():
 {b}/events.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 {b}/events.md
   Access-Control-Allow-Origin: *
   Content-Type: text/markdown; charset=utf-8
 /stats.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 /stats/index.md
   Access-Control-Allow-Origin: *
   Content-Type: text/markdown; charset=utf-8
@@ -3706,10 +3747,12 @@ def main():
 {b}/categories/*.json
   Access-Control-Allow-Origin: *
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 /api/*
   Access-Control-Allow-Origin: *
 /api/*.json
   Content-Type: application/json; charset=utf-8
+  X-Robots-Tag: noindex
 /api/404
   Content-Type: application/json; charset=utf-8
   X-Robots-Tag: noindex

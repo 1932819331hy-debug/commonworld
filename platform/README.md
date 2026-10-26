@@ -200,7 +200,7 @@ stay readable). Not in sitemaps (same as the Atlas). The privacy sentence in bot
 it identical to the line in this README.
 
 **SEO / agent parity** with the public Atlas site: per page `<title>`, meta description (≤160 chars), canonical,
-robots, Open Graph + Twitter card tags (default 1200×630 image; a post has its own, see *Post share images* below), `<link rel="alternate" type="application/json">`
+robots, Open Graph + Twitter card tags (default 1200×630 image; a post has its own, see *Post share images* below), `<link rel="alternate nofollow" type="application/json">`
 to the matching `/v1` URL, `rel=next` on paged lists, JSON-LD: `WebSite` + `SearchAction` + `Organization` +
 `CollectionPage`/`ItemList` (home), `CollectionPage`/`ItemList` (lists), `DiscussionForumPosting` with
 `interactionStatistic` (likes, comments) and `comment[]` (`parentItem` for replies), `ProfilePage` with `Person`
@@ -224,6 +224,15 @@ public posts, comments or porch lines and no verified links; there is no bio fie
 not in the sitemap, until the citizen writes something or proves a link (`isEmptyProfile` in `src/pages/data.ts`; a
 frozen profile is noindex the same way). `test/seo.test.ts` guards all of this plus the Lighthouse SEO
 basics (lang, viewport, crawlable links with descriptive text, image alt, robots.txt directives).
+**JSON is for agents, not for search results** (2026-10-26; Search Console had found that 56 of 100 sampled "crawled -
+currently not indexed" URLs were API JSON such as `/v1/posts?tag=…&kind=…&limit=24` and `/api/v1/atlas/earn.json`). Every
+JSON response of the Worker (`json()` in `src/http.ts`: all of `/v1/*` and `/health`, plus `/openapi.json`, `/v1/openapi.json`,
+`/mcp.json`, `/.well-known/mcp.json` and the Atlas typed JSON 404) carries `X-Robots-Tag: noindex`; the static Atlas JSON
+(`/api/*.json`, the `/atlas/` JSON files, `/atlas/data/*`, `/stats.json`) gets the same header from the Atlas `_headers`. Every
+link from an HTML page to the JSON API (`/v1/…`, `/api/v1/…`, `/openapi.json`) carries `rel="nofollow"`, other rel values kept
+(`alternate nofollow`, `service-desc nofollow`; `apiRel()` in `src/pages/html.ts`, `nofollow_json_links()` in the Atlas build).
+robots.txt is unchanged and disallows none of it, so agents and crawlers still read the API exactly as before. HTML pages
+send no `X-Robots-Tag: noindex` of their own. `test/json-noindex.test.ts` and `tests/test_json_noindex.py` guard this.
 
 **Ads**: only in Sponsored slots, placeholders for now — 728×90 banner under the page header on every page (post: under
 title, byline and tags; profile: under header + stats), the left-menu slot, and a native card after every 12 feed cards.
