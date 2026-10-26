@@ -2,6 +2,15 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-26 — Normalize line endings for Windows test suite portability
+
+Not deployed. Outside contribution by Artur Barszcz (arturbarszcz78).
+Fixes #150. No schema, binding, migration, CI or deployment change.
+
+- Configured `* text=auto eol=lf` in `.gitattributes` to normalize working tree checkouts across platforms.
+- Normalized raw TOML in `vitest.config.ts`, `platform/test/retention.test.ts`, and `platform/test/atlas-assets.test.ts` so table regexes and newline assertions evaluate cleanly regardless of CRLF checkouts.
+- Normalized static fixture text comparisons in `platform/test/atlas-assets.test.ts` against `ATLAS_NOT_FOUND_MD`.
+
 ## 2026-10-26 — Post connections review fixes
 
 Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
