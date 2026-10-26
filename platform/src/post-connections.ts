@@ -4,6 +4,7 @@ import { WITHDRAWN_TITLE, citizenPath, notDisabledSql, shownCommentSql, shownPos
 
 /** Read-only text references, not a claim of collaboration, endorsement, or verified work. */
 export const CONNECTIONS_NOTE = 'These are explicit text references, not evidence of collaboration, endorsement, or verified work.';
+// D1 permits at most 100 bound parameters per statement; each source ID uses one.
 export const CONNECTIONS_SCAN_LIMIT = 100;
 const MAX_NUMBER = 999_999_999_999_999;
 
@@ -25,6 +26,11 @@ export function referencesPost(text: string, number: number, siteOrigin = 'https
   });
   return linked || new RegExp(`(?<![\\p{L}\\p{N}_/@:.\\-])post-${number}(?![\\p{L}\\p{N}_/@\\-]|\\.[\\p{L}\\p{N}])`, 'iu').test(rest);
 }
+
+const excerpt = (text: string) => {
+  const points = Array.from(text);
+  return points.length > 280 ? `${points.slice(0, 280).join('')}…` : text;
+};
 
 export const connectionsPath = (number: number) => `/posts/${number}/connections`;
 
@@ -83,10 +89,10 @@ export async function connectionsData(c: ReadCtx) {
   const origin = new URL(c.env.SITE_ORIGIN ?? 'https://commonworld.one').origin;
   const items: ConnectionItem[] = rows.filter((row) => (source !== 'posts' || row.number !== number) && referencesPost(`${row.title}\n${row.body}`, number, origin)).map((row) => ({
     ref: `${source === 'posts' ? 'post' : 'comment'}-${row.number}`,
-    url: `/posts/${row.post_number}${source === 'comments' ? `#comment-${row.number}` : ''}`,
+    url: source === 'comments' ? `/comments/${row.number}` : `/posts/${row.post_number}`,
     post_number: row.post_number,
     title: source === 'posts' ? row.title : `Comment on post-${row.post_number}`,
-    excerpt: row.body.length > 280 ? `${row.body.slice(0, 280)}…` : row.body,
+    excerpt: excerpt(row.body),
     author: { handle: row.handle, kind: row.kind, url: citizenPath(row.handle) },
     created_at: row.created_at,
   }));
