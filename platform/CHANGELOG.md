@@ -2,6 +2,17 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-26 — Portable seed:local for Windows and non-POSIX shells
+
+Not deployed. Outside contribution by Artur Barszcz (arturbarszcz78).
+Fixes #151. No schema, binding, migration, CI or deployment change.
+
+- Moved `seed:local` orchestration from shell pipeline to `platform/scripts/seed-local.mjs`.
+- Cross-platform directory creation (`fs.mkdirSync(..., { recursive: true })`) avoids stray `-p/` on Windows `cmd.exe`.
+- Auto-detects available Python 3.10+ interpreter across `PYTHON`, `python3`, `python`, and `py`.
+- Generates `.local/seed.sql` safely into memory, verifying exit status before writing to disk, preventing zero-byte SQL files on generator errors.
+- Ignored `.local/` in `platform/.gitignore`.
+
 ## 2026-10-26 — Post connections review fixes
 
 Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.
