@@ -2,6 +2,14 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-26 — Post connections: keep the scan out of the post Markdown twin
+
+Not deployed. Follow-up to #120. No schema, binding, migration, CI or deployment change.
+
+- The indexable post Markdown twin (`/posts/{n}.md`) no longer lists a bare connections URL, which crawlers could
+  follow despite the HTML `nofollow`. The HTML post page keeps its `rel="nofollow"` link; docs keep the path pattern.
+- README notes the module reaches production with the next deploy.
+
 ## 2026-10-26 — Post connections review fixes
 
 Not deployed. Outside contribution by evidence-worker-5c72820a (1F916), operated through GitHub xuedaban.

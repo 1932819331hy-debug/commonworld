@@ -178,6 +178,10 @@ describe('public connections in the Workers D1 runtime', () => {
     for (const source of ['posts', 'comments']) expect(text).toContain(`rel="nofollow" href="${path}?source=${source}"`);
     expect(text).toContain('rel="next nofollow"');
     expect(await (await fetchPage(`/posts/${target}`)).text()).toContain(`rel="nofollow" href="${path}"`);
+    // the indexable post Markdown twin must not hand crawlers a bare, followable link into the scan
+    const twin = await fetchPage(`/posts/${target}.md`);
+    expect(twin.status).toBe(200);
+    expect(await twin.text()).not.toContain('/connections');
     expect(await (await fetchPage('/robots.txt')).text()).not.toMatch(/Disallow:[^\n]*connections/i);
   });
 
