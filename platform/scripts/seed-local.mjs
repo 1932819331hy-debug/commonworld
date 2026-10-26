@@ -7,7 +7,8 @@
 // 4. Executes wrangler d1 execute commonworld-dev --local --file .local/seed.sql.
 
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -69,25 +70,33 @@ mkdirSync(localDir, { recursive: true });
 writeFileSync(seedSqlPath, genResult.stdout);
 console.log(`[seed:local] Written ${genResult.stdout.length} bytes to ${path.relative(platformDir, seedSqlPath)}`);
 
-// Execute Wrangler
-console.log('[seed:local] Executing SQL via Wrangler D1...');
-const wranglerCmd = process.platform === 'win32' ? 'wrangler.cmd' : 'wrangler';
-const wranglerArgs = ['d1', 'execute', 'commonworld-dev', '--local', '--file', seedSqlPath];
+// Execute Wrangler: the project's own devDependency (pinned in package-lock.json), run through Node itself, so no
+// shell and no wrangler.cmd / npx.cmd are involved on Windows. Without `npm ci`, fall back to a wrangler on PATH,
+// as the old `npm run seed:local` did. Never `npx --yes wrangler`: that would download an unpinned version.
+const wranglerArgs = ['d1', 'execute', 'commonworld-dev', '--local', '--file', '.local/seed.sql'];
 
-let wranglerResult = spawnSync(wranglerCmd, wranglerArgs, {
-  cwd: platformDir,
-  stdio: 'inherit',
-  shell: process.platform === 'win32'
-});
-
-// Fallback to npx --yes wrangler if wrangler binary is not directly in PATH
-if (wranglerResult.error && wranglerResult.error.code === 'ENOENT') {
-  const npxCmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  wranglerResult = spawnSync(npxCmd, ['--yes', 'wrangler', ...wranglerArgs], {
-    cwd: platformDir,
-    stdio: 'inherit',
-    shell: process.platform === 'win32'
-  });
+function localWranglerBin() {
+  try {
+    const pkgPath = createRequire(path.join(platformDir, 'package.json')).resolve('wrangler/package.json');
+    const bin = JSON.parse(readFileSync(pkgPath, 'utf-8')).bin;
+    const rel = typeof bin === 'string' ? bin : bin && bin.wrangler;
+    return rel ? path.join(path.dirname(pkgPath), rel) : null;
+  } catch {
+    return null;
+  }
 }
 
-process.exit(wranglerResult.status ?? 0);
+console.log('[seed:local] Executing SQL via Wrangler D1...');
+const localBin = localWranglerBin();
+const wranglerResult = localBin
+  ? spawnSync(process.execPath, [localBin, ...wranglerArgs], { cwd: platformDir, stdio: 'inherit' })
+  // fixed arguments only (no user input), so the Windows shell needed for wrangler.cmd is safe here
+  : spawnSync('wrangler', wranglerArgs, { cwd: platformDir, stdio: 'inherit', shell: process.platform === 'win32' });
+
+if (wranglerResult.error || wranglerResult.status !== 0) {
+  const why = wranglerResult.error
+    ? (wranglerResult.error.code === 'ENOENT' ? 'wrangler not found; run `npm ci` in platform/' : wranglerResult.error.message)
+    : wranglerResult.signal ? `signal ${wranglerResult.signal}` : `exit code ${wranglerResult.status}`;
+  console.error(`[seed:local] wrangler d1 execute failed (${why}).`);
+  process.exit(wranglerResult.status || 1);
+}
