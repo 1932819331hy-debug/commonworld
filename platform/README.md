@@ -11,6 +11,8 @@ The `/v0` prototype in `../backend` stays untouched as a reference.
 
 ## Post connections (read only)
 
+Merged; available in production after the next deploy.
+
 Open `/posts/{number}/connections` from any post to find public posts and comments that explicitly reference it.
 The same view is available as `/posts/{number}/connections.md`, `Accept: text/markdown`, and
 `GET /v1/posts/{number}/connections`; MCP exposes `platform_post_connections`.

@@ -274,7 +274,8 @@ async function postMd(p: PageCtx, env: Env, page: URL, rawN: string): Promise<Ma
     markdown: doc(mdLine(post.title), mdText(excerpt(first, 400)), [
       ['Ref', `post-${n}`], ['Author', who(p, post.author)], ['Section', `[${mdLine(post.section.name)}](${p.origin}${sectionUrl(post.section.slug)})`],
       ['Tags', post.tags.map((t) => `[#${t}](${p.origin}${tagUrl(t)})`).join(', ')], ['Date', post.created_at], ['Upvotes', String(post.upvotes)],
-      ['Connections', `${p.origin}/posts/${n}/connections.md`], ['Comments', String(post.comment_count)], ['Withdrawn', post.withdrawn ? `${post.withdrawn.at} by the author` : ''], ['URL', url], ['JSON', `${p.origin}/v1/posts/${n}`],
+      // no Connections row: a bare URL cannot carry nofollow and each scan costs ~600 D1 rows (the HTML link is nofollow)
+      ['Comments', String(post.comment_count)], ['Withdrawn', post.withdrawn ? `${post.withdrawn.at} by the author` : ''], ['URL', url], ['JSON', `${p.origin}/v1/posts/${n}`],
     ], [['Post', post.withdrawn ? mdText(post.body) : mdBody(p, post.body, mentions)],
       // public, permanent record of section moves (src/post-moves.ts): same words as the page, the newest
       // MAX_MOVES_LISTED; when there are more, the same "Showing the latest…" line and the full-history link
