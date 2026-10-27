@@ -228,6 +228,7 @@ describe('A3: the Atlas from Static Assets (ATLAS_SOURCE=assets)', () => {
       const r = await assets(p);
       expect(r.status, p).toBe(404);
       expect(r.headers.get('content-type'), p).toBe('text/markdown; charset=utf-8');
+      // the fixture 404.html is a checked-out file (CRLF in an older Windows autocrlf checkout); the Worker body below is the constant itself
       expect(r.text.replace(/\r\n/g, '\n'), p).toBe(ATLAS_NOT_FOUND_MD);
     }
     // the same bodies when a JSON or Markdown path reaches the Worker (HEAD: no body)
@@ -237,7 +238,7 @@ describe('A3: the Atlas from Static Assets (ATLAS_SOURCE=assets)', () => {
       links: { index: `${PROD}/api/v1/atlas/index.json`, docs: `${PROD}/atlas/api/` } });
     expect(w.headers.get('cache-control')).toBe(ATLAS_NOT_FOUND_CACHE);
     const wm = await call('/atlas/page/9/index.md');
-    expect([wm.status, wm.headers.get('content-type'), wm.text.replace(/\r\n/g, '\n')]).toEqual([404, 'text/markdown; charset=utf-8', ATLAS_NOT_FOUND_MD]);
+    expect([wm.status, wm.headers.get('content-type'), wm.text]).toEqual([404, 'text/markdown; charset=utf-8', ATLAS_NOT_FOUND_MD]);
     const head = await call('/api/v1/atlas/page/9.json', VARS, { method: 'HEAD' });
     expect([head.status, head.text]).toEqual([404, '']);
     // HTML misses run the Worker and always get the site 404 page, never the Markdown 404.html of a list folder
