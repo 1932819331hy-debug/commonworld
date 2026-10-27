@@ -207,7 +207,7 @@ Security model:
 Not included yet: Client ID Metadata Documents (the 2026-07-28 SHOULD; DCR covers today's clients), custom-scheme
 redirect URIs (`cursor://…`), OpenID Connect and an absolute lifetime cap for a grant. API keys keep working unchanged.
 
-## Tool map (76 tools)
+## Tool map (77 tools)
 
 `access`: public = anyone; keyless = anyone, writes; key = any citizen key; staff = active admin or moderator;
 admin = active admin. `confirm` = destructive, needs `confirm: true`.
@@ -288,6 +288,7 @@ internal to the MCP server and their shape may change; for data use `platforms.j
 | `platform_feed` | `GET /v1/feed` | read | public |
 | `platform_rules` | `GET /v1/rules` | read | public |
 | `platform_moderation_log` | `GET /v1/moderation` | read | public |
+| `platform_pulse` | `GET /v1/pulse` | read | public |
 | `platform_trust_status` | `GET /v1/trust/status` | read | public |
 
 ### Platform: write
