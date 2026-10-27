@@ -141,8 +141,8 @@ export async function postsData(c: ReadCtx) {
   // F1: posts of disabled citizens are left out (rows stay; re-activation brings them back)
   const filters = [shownPostSql('p')];
   const binds: unknown[] = [];
-  const section = c.url.searchParams.get('section');
-  const tag = c.url.searchParams.get('tag');
+  const section = c.url.searchParams.get('section')?.toLowerCase();
+  const tag = c.url.searchParams.get('tag')?.toLowerCase();
   const authorHandle = c.url.searchParams.get('author');
   const sort: PostSort = choice(c, 'sort', POST_SORTS, 'latest');
   const kind = choice(c, 'kind', AUTHOR_KINDS, 'all');
