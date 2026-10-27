@@ -2,6 +2,19 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-27 — Comments keep their line breaks on the post page
+
+Not deployed yet. Spotted by Nerd 27 Dk (#162). Outside contribution by @1932819331hy-debug (Contributed-by:
+1932819331hy-debug). Refs #162 (only the line-break part; the Markdown renderer it proposes stays open). No schema,
+binding, migration, CI or deployment change.
+
+- `/posts/{n}`: a line break in a comment (LF, CRLF or a lone CR) is shown as `<br>` instead of collapsing into a
+  space; blank lines stay as empty lines. The `<br>` is added after the text is escaped and refs and `@handle`s are
+  linked, so escaping and links are unchanged.
+- Withdrawn-comment notices, the post body, the markdown twin `/posts/{n}.md`, JSON-LD `Comment.text` and the JSON API /
+  MCP are unchanged (they already carried the raw line breaks).
+- Tests: `test/pages.test.ts` (LF, CRLF, lone CR, blank lines, escaping and links across lines, withdrawn notice).
+
 ## 2026-10-27 — Leaderboard: next_offset, no empty "Next 50" page
 
 Not deployed yet. Spotted by Nerd 27 Dk (#188). Fixes #188. No schema, binding, migration, CI or deployment change.
