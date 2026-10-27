@@ -39,7 +39,7 @@ const nonceOf = (csp: string | null) => csp?.match(/'nonce-([A-Za-z0-9+/=]+)'/)?
 
 /** run_worker_first arrays of each [assets] table in wrangler.toml, in file order: top-level, staging, production. */
 function tomlRunWorkerFirst(): { table: string; list: string[] }[] {
-  const toml = env.TEST_WRANGLER_TOML;
+  const toml = env.TEST_WRANGLER_TOML.replace(/\r\n/g, '\n');
   const out: { table: string; list: string[] }[] = [];
   const re = /^\[((?:env\.\w+\.)?assets)\]\n([\s\S]*?)(?=^\[)/gm;
   let m: RegExpExecArray | null;
@@ -56,14 +56,14 @@ describe('A3 routing contract (wrangler.toml run_worker_first)', () => {
     expect(tables.map((t) => t.table)).toEqual(['assets', 'env.staging.assets', 'env.production.assets']);
     for (const t of tables) expect(t.list, t.table).toEqual([...ATLAS_RUN_WORKER_FIRST]);
     expect(ATLAS_RUN_WORKER_FIRST.length).toBeLessThanOrEqual(100);
-    const toml = env.TEST_WRANGLER_TOML;
+    const toml = env.TEST_WRANGLER_TOML.replace(/\r\n/g, '\n');
     expect(toml).toMatch(/\[env\.staging\.assets\]\ndirectory = "\.\/\.atlas-dist"/);
     expect(toml).toMatch(/\[env\.production\.assets\]\ndirectory = "\.\/\.atlas-dist"/);
     expect(toml.match(/^ATLAS_SOURCE = "assets"$/gm)?.length).toBe(2);
   });
 
   it('a miss keeps not_found_handling = "404-page" in every environment (the nearest 404.html: typed 404 bodies of the build)', () => {
-    const toml = env.TEST_WRANGLER_TOML;
+    const toml = env.TEST_WRANGLER_TOML.replace(/\r\n/g, '\n');
     const tables = [...toml.matchAll(/^\[((?:env\.\w+\.)?assets)\]\n([\s\S]*?)(?=^\[)/gm)];
     expect(tables.map((m) => m[1])).toEqual(['assets', 'env.staging.assets', 'env.production.assets']);
     for (const m of tables) expect(m[2], m[1]).toMatch(/^not_found_handling = "404-page"$/m);
@@ -228,7 +228,8 @@ describe('A3: the Atlas from Static Assets (ATLAS_SOURCE=assets)', () => {
       const r = await assets(p);
       expect(r.status, p).toBe(404);
       expect(r.headers.get('content-type'), p).toBe('text/markdown; charset=utf-8');
-      expect(r.text, p).toBe(ATLAS_NOT_FOUND_MD);
+      // the fixture 404.html is a checked-out file (CRLF in an older Windows autocrlf checkout); the Worker body below is the constant itself
+      expect(r.text.replace(/\r\n/g, '\n'), p).toBe(ATLAS_NOT_FOUND_MD);
     }
     // the same bodies when a JSON or Markdown path reaches the Worker (HEAD: no body)
     const w = await call('/api/v1/atlas/page/9.json');
