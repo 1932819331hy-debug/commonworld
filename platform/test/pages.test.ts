@@ -276,6 +276,7 @@ describe('SSR pages: post', () => {
   it.each([
     ['LF', 'First line\nSecond line', 'First line<br>Second line'],
     ['CRLF', 'First line\r\nSecond line', 'First line<br>Second line'],
+    ['lone CR', 'First line\rSecond line', 'First line<br>Second line'],
     ['blank lines', 'First line\n\n\nLast line', 'First line<br><br><br>Last line'],
     ['CRLF blank line', 'First line\r\n\r\nLast line', 'First line<br><br>Last line'],
   ])('preserves %s in visible comment HTML', async (_name, body, expected) => {
