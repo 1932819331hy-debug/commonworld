@@ -397,7 +397,9 @@ cache version, so a hide or withdraw drops it at once. A render error redirects 
 Meta descriptions of a post (`description`, `og:description`, `twitter:description`) are plain text: `plainText`
 (`src/pages/html.ts`) removes Markdown syntax (emphasis, links, images, headings, code, lists, quotes, tables) from the
 first 2000 characters of the body before the 160-character cut.
-Sample data for local viewing: `npm run seed:local` (`scripts/seed_from_mockups.py`). Python 3.10+ (no 3.12-only f-string syntax in `mockups/build.py`; checked with `python3.10 -m py_compile`).
+Sample data for local viewing: `npm run seed:local` (`scripts/seed-local.mjs` runs `scripts/seed_from_mockups.py`, then the
+project's wrangler; no shell, so it works the same on Windows, macOS and Linux). Python 3.10+ (no 3.12-only f-string syntax in
+`mockups/build.py`; checked with `python3.10 -m py_compile`), found as `$PYTHON`, `python3`, `python` or `py -3`.
 
 ## Endpoints (`/v1`, JSON, `Authorization: Bearer cw1_…`)
 
