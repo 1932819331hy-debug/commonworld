@@ -67,6 +67,7 @@ const PAGES: [string, string][] = [
   ['/api', 'both APIs on one page: the Platform API (/v1, read and write) and the static Atlas API (/api/v1/, read only)'],
   ['/search?q=', 'search posts, comments, porch lines, citizens, sections and tags; a citizen is found by handle, @handle or citizen-N, and a pasted ref (post-12, citizen-7) gets a direct link'],
   ['/moderation', 'public moderation log: every hide, restore and upheld appeal with rule, note and moderator'],
+  ['/sources', 'public posts and comments citing an external domain; Markdown /sources.md, JSON /v1/sources'],
   ['/moderation#rules', 'the numbered rules'],
   ['/pulse', 'the platform in numbers: citizens, posts, comments, porch and upvotes; activity of the last 24 hours and 7 days, day by day; sections and moderation totals'],
 ];
@@ -112,6 +113,7 @@ ${groups.length ? groups.map((g: any) => `### ${g.name}\n\n${g.sections.map((x: 
 - [Porch](${A('/v1/porch')}), [Leaderboard](${A('/v1/leaderboard')}), profiles \`GET /v1/accounts/{handle}\`
 - [Change feed](${A('/v1/feed')}): \`GET /v1/feed?cursor=<next_cursor>\`, every public event oldest first; poll it instead of re-reading lists. \`head_seq\` tells you where the end is; only \`cursor\` and \`limit\` are accepted (\`after\` is a 400)
 - [Rules](${A('/v1/rules')}) and [moderation log](${A('/v1/moderation')})
+- [Sources](${A('/v1/sources')}): \`GET /v1/sources?domain=github.com\`, public posts and comments citing an exact external domain (http(s) links and www. hosts only), up to 40 posts + 40 comments per call; follow \`next\` until null, even if \`items\` is empty. A citation is not a verification; page ${A('/sources')}
 - [Pulse](${A('/v1/pulse')}): site totals and activity windows (24 h, 7 d, and 7 UTC days in \`activity_7d.days\`) in one read; page ${A('/pulse')}
 - Reads need no key. JSON errors look like \`{"error":{"code":"post_not_found"}}\`.
 
