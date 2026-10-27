@@ -1,5 +1,14 @@
 # Changelog (v1)
 
+## 2026-10-27 — Citizens: reliable continuation at full-page boundaries
+
+Not deployed yet. Fixes #188, reported by Nerd 27 Dk.
+
+- `/v1/leaderboard` fetches one extra matching active citizen and returns additive `next_offset` (integer or null), without exposing the lookahead row or changing item order, limits or filters.
+- HTML and Markdown `/citizens` only link onward when that cursor exists; HTML also advertises the same destination with `link rel="next"`. Exactly 50 or 100 citizens no longer lead to an empty final page. Paged/filtered variants stay noindex.
+- The existing maximum request offset remains 10000. A next page beyond that cap is not advertised (`next_offset: null`, ranking truncated); offset 10000 itself remains valid.
+- README, OpenAPI / full agent reference, short agent map and pagination regression tests document the contract. No migration, dependencies, binding, CI or deployment change.
+
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
 ## 2026-10-27 — Posts API: unknown section or tag filter is 400

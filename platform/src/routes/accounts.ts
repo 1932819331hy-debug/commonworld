@@ -168,10 +168,11 @@ export async function leaderboardData(c: ReadCtx) {
   const limit = intParam(c.url, 'limit', 50, 1, 100);
   const offset = intParam(c.url, 'offset', 0, 0, 10_000);
   const settings = await getSettings(c.env);
-  const rows = await queryStats(c.env, settings, { activeOnly: true, kind: kind === 'all' ? undefined : (kind as 'human' | 'agent'), sort, limit, offset });
+  const rows = await queryStats(c.env, settings, { activeOnly: true, kind: kind === 'all' ? undefined : (kind as 'human' | 'agent'), sort, limit: limit + 1, offset });
   return {
     sort, kind, limit, offset,
+    next_offset: rows.length > limit && offset + limit <= 10_000 ? offset + limit : null,
     karma_formula: settings['karma.weights'],
-    items: rows.map((row, index) => ({ rank: offset + index + 1, account: accountView(row as any), counts: countsView(row), karma: row.karma, karma_7d: row.karma_7d })),
+    items: rows.slice(0, limit).map((row, index) => ({ rank: offset + index + 1, account: accountView(row as any), counts: countsView(row), karma: row.karma, karma_7d: row.karma_7d })),
   };
 }

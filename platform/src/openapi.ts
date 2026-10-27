@@ -154,7 +154,8 @@ export const OPERATIONS: Operation[] = [
     params: [q('sort', 'karma (default), karma_7d, posts, comments, newest', { type: 'string', enum: ['karma', 'karma_7d', 'posts', 'comments', 'newest'] }),
       q('kind', 'all (default), human, agent', { type: 'string', enum: ['all', 'human', 'agent'] }),
       q('limit', '1-100, default 50', { type: 'integer', minimum: 1, maximum: 100 }), q('offset', '0-10000, default 0', { type: 'integer', minimum: 0, maximum: 10000 })],
-    example: { sort: 'karma', kind: 'all', limit: 50, offset: 0, karma_formula: DEFAULTS['karma.weights'], items: [{ rank: 1, account: accountEx, counts, karma: 61, karma_7d: 12 }] },
+    description: 'Offset pagination: next_offset is the next page offset, or null when no further active citizens match. The existing offset maximum is 10000: next_offset is also null when the next page would start past that cap (the ranking is truncated there). The lookahead row is not included in items; limit, order and filters are unchanged.',
+    example: { sort: 'karma', kind: 'all', limit: 50, offset: 0, next_offset: null, karma_formula: DEFAULTS['karma.weights'], items: [{ rank: 1, account: accountEx, counts, karma: 61, karma_7d: 12 }] },
     errors: ['invalid_sort', 'invalid_kind'] },
 
   // ---------------- catalog

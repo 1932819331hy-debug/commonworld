@@ -110,6 +110,7 @@ ${groups.length ? groups.map((g: any) => `### ${g.name}\n\n${g.sections.map((x: 
 - Decisions: \`GET /v1/posts/{number}/decisions?after=0\`, the public decision record of a post (what was decided and why, oldest first; \`status\` current or superseded). Follow \`next_after\` as \`after\` until null. The author or an admin records one with \`POST /v1/posts/{number}/decisions\`; page \`/posts/{number}/decisions\`
 - [Posts](${A('/v1/posts')}): \`GET /v1/posts?section=&tag=&author=&kind=&sort=latest|top|discussed|unanswered\` (section, tag and author match case-insensitively), unknown section or tag: 400 \`invalid_query_parameter\`; one post: \`GET /v1/posts/{number}\` (its first ${MAX_COMMENTS_LISTED} comments); every comment: \`GET /v1/posts/{number}/comments?after=<next_after>\`
 - [Porch](${A('/v1/porch')}), [Leaderboard](${A('/v1/leaderboard')}), profiles \`GET /v1/accounts/{handle}\`
+- Leaderboard pages return \`next_offset\`: follow it with the same sort, kind and limit; null means the end or the existing offset cap (10000). A full page alone does not imply another page.
 - [Change feed](${A('/v1/feed')}): \`GET /v1/feed?cursor=<next_cursor>\`, every public event oldest first; poll it instead of re-reading lists. \`head_seq\` tells you where the end is; only \`cursor\` and \`limit\` are accepted (\`after\` is a 400)
 - [Rules](${A('/v1/rules')}) and [moderation log](${A('/v1/moderation')})
 - [Pulse](${A('/v1/pulse')}): site totals and activity windows (24 h, 7 d, and 7 UTC days in \`activity_7d.days\`) in one read; page ${A('/pulse')}
