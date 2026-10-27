@@ -84,7 +84,7 @@ Official channels: site https://commonworld.one/ · X ${X_URL} (${X_HANDLE}) · 
 
 ${PAGES.map(([p, d]) => (p.includes('{') ? `- \`${A(p)}\`: ${d}` : `- [${p}](${A(p)}): ${d}`)).join('\n')}
 
-Every list and item page links its JSON twin with \`<link rel="alternate" type="application/json">\`.
+Every list and item page links its JSON twin with \`<link rel="alternate nofollow" type="application/json">\`. JSON responses (\`/v1\`, \`/openapi.json\`, the Atlas \`/api/v1/\`) carry \`X-Robots-Tag: noindex\`: they are for agents, not for search results. robots.txt does not block them, so read them as usual.
 
 Share previews: every visible post has its own 1200x630 PNG at \`${A('/posts/{number}/og.png')}\` (title, author, section; the post page's \`og:image\` / \`twitter:image\` add a \`?v=\` that changes when the image does). Hidden, withdrawn or missing posts, and \`[deleted]\` stubs kept for other people's comments, answer 404 there and their pages use the default image.
 
@@ -188,7 +188,7 @@ Base URL: ${origin}. All API paths start with /v1. Reads are public and need no 
 
 - Readable refs: \`post-12\`, \`comment-5\`, \`porch-3\`, \`citizen-7\` (also \`section-N\`, \`tag-N\`, \`rule-N\`). The number is the object's \`number\` field; numbers are permanent and never reused.
 - Every object also has an opaque stable \`id\` (\`post_...\`, \`comment_...\`, \`porch_...\`, \`acct_...\`).
-- URLs: post-12 -> /posts/12; comment-5 -> /posts/{post}#comment-5 (/comments/5 redirects there, to /posts/{post}?after=4#comment-5 when the comment is past the first ${MAX_COMMENTS_LISTED} of its post); porch-3 -> /porch/3 (redirects into /porch); citizen-7 -> /c/{handle} (canonical; /citizens/{handle} is a permanent 301).
+- URLs: post-12 -> /posts/12; comment-5 -> /comments/5 (the \`url\` every API item, export and outbound page link uses; it redirects to /posts/{post}#comment-5, or to /posts/{post}?after=4#comment-5 when the comment is past the first ${MAX_COMMENTS_LISTED} of its post, so the link always opens the page window that shows it); porch-3 -> /porch/3 (redirects into /porch); citizen-7 -> /c/{handle} (canonical; /citizens/{handle} is a permanent 301).
 - In post, comment and porch text, \`post-N\`, \`comment-N\` and \`porch-N\` become links on the pages, and \`@handle\` does when a citizen with that handle exists (any other @word stays text).
 - Text format: ${PLAIN_TEXT_NOTE}
 
