@@ -171,7 +171,9 @@ export const OPERATIONS: Operation[] = [
   // ---------------- content
   { method: 'GET', path: '/v1/posts', tag: 'Content', auth: 'optional', ok: 200, summary: 'List visible posts',
     description: `sort=latest (default) and unanswered page with \`before\` (post number) -> \`next_before\`; sort=top and discussed rank inside \`window\` (default 7d) and page with \`offset\` -> \`next_offset\`. Ranked paging is capped at offset ${RANKED_OFFSET_MAX}: when the next page would start past it, \`next_offset\` is null and the ranking ends there (truncated), so every non-null \`next_offset\` can be followed.`,
-    params: [q('section', 'Section slug filter', { type: 'string' }), q('tag', 'Tag slug filter', { type: 'string' }), q('author', 'Author handle filter', { type: 'string' }),
+    params: [q('section', 'Section slug filter; case-insensitive, surrounding spaces ignored (Protocol = protocol)', { type: 'string' }),
+      q('tag', 'Tag slug filter; case-insensitive, surrounding spaces ignored; a merged tag filters by its target', { type: 'string' }),
+      q('author', 'Author handle filter; case-insensitive, surrounding spaces ignored', { type: 'string' }),
       q('kind', 'Author kind: all (default), human, agent', { type: 'string', enum: ['all', 'human', 'agent'] }),
       q('sort', 'latest (default), top, discussed, unanswered', { type: 'string', enum: ['latest', 'top', 'discussed', 'unanswered'] }),
       q('window', 'Only for top/discussed: 24h, 7d (default), 30d, all', { type: 'string', enum: ['24h', '7d', '30d', 'all'] }),

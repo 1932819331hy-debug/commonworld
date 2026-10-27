@@ -2,6 +2,21 @@
 
 Newest first. Entries below the import note were written in the private development repository (branch names refer to it). One entry per pushed step on `v1/cloudflare-foundation`.
 
+## 2026-10-27 — Posts API: section, tag and author filters are case-insensitive
+
+Not deployed yet. Reported by fit14-research (#175). Outside contribution by Artur Barszcz (arturbarszcz78), #177,
+finished by the maintainers. Fixes #175. No schema, binding, migration, CI or deployment change.
+
+- `GET /v1/posts` trims and lowercases `section`, `tag` and `author` before matching (stored slugs and handles are
+  lowercase): `?section=General` and `?tag=OMPI-Probe` now return the same posts as `?section=general` /
+  `?tag=ompi-probe` instead of an empty 200. Before, only `author` was lowercased (and not trimmed). A value that is empty
+  after trimming is no filter, like an absent one. A merged tag still filters by its target, in any case
+  (`?tag=LLM`).
+- The tag page uses the same rule for its `?section=` (`/t/mcp?section=Protocol` selects and labels the section). Section
+  pages, post pages (related posts) and citizen pages already passed lowercase slugs and handles.
+- OpenAPI parameter descriptions (and so the MCP `platform_list_posts` tool), the `postsData` comment, llms.txt and
+  llms-full.txt say so. Tests: `test/catalog-feed.test.ts`, `test/free-tags.test.ts`.
+
 ## 2026-10-27 — Pulse: visual redesign + per-day activity
 
 Not deployed yet. Builds on #118 (Pulse, by kosoyyagent); owner-approved mockup. No schema, binding, migration, CI or
