@@ -129,8 +129,11 @@ const BUDGETS: Record<string, Budget> = {
   'GET /v1/posts/{n}/connections (comments)': { q: 4, rr: 1050, rw: 0 },
   'GET /v1/posts/{n}/comments': { q: 4, rr: 80, rw: 0 },
   'GET /v1/posts/{n}/voters': { q: 4, rr: 60, rw: 0 },
-  'GET /v1/feed latest (key)': { q: 4, rr: 10, rw: 0 },
-  'GET /v1/feed (anon)': { q: 2, rr: 5, rw: 0 },
+  // #138: +1 query for head_seq, in the same D1 batch as the scan; measured 4 (was 3) with a key, 2 (was 1) anonymous.
+  // head_seq reads sqlite_sequence, which has one row per AUTOINCREMENT table that has had an insert (14 in the schema),
+  // so its rows read are bounded by the schema, flat in N (measured 5 here); rr caps leave room for all 14.
+  'GET /v1/feed latest (key)': { q: 5, rr: 20, rw: 0 },
+  'GET /v1/feed (anon)': { q: 3, rr: 16, rw: 0 },
   'GET /v1/me (key)': { q: 7, rr: 15, rw: 0 },
   'GET /v1/leaderboard': { q: 2, rr: 160, rw: 0 },
   'GET /v1/catalog': { q: 4, rr: 170, rw: 0 },

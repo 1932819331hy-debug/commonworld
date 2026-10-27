@@ -617,6 +617,11 @@ const EVENT_OBJECT_GONE = `CASE e.object_type
 /** Events a disabled actor's own writing produced: dropped for public readers (F1). Other events by them (tag.created) keep, with actor null. */
 const ACTOR_WRITING_EVENTS = new Set(['post.created', 'comment.created', 'porch.created', 'vote.created', 'content.withdrawn', 'post.moved']);
 
+/** The only query parameters GET /v1/feed accepts (#138). */
+const FEED_PARAMS = ['cursor', 'limit'];
+/** Names other APIs use for paging: refused with reason use_cursor; any other unknown name gets unknown_parameter. */
+const FEED_CURSOR_LIKE = new Set(['after', 'since', 'offset', 'before', 'page']);
+
 /**
  * Events strictly after `cursor` (an event seq), oldest first. Poll with the returned next_cursor.
  *
@@ -625,18 +630,39 @@ const ACTOR_WRITING_EVENTS = new Set(['post.created', 'comment.created', 'porch.
  * Moderation markers (`content.hidden` / `content.restored` / `content.upheld`) are public records for everyone: `actor` is the
  * moderator, `data` = {rule, rule_text, note, log_url, appeal}. They never carry the hidden content or its author.
  * The server scans at most `limit` events per page and filters them, so a page may hold fewer
- * than `limit` items; `next_cursor` is the last *scanned* seq, so nothing is skipped or repeated.
+ * than `limit` items; `next_cursor` is the last *scanned* seq, so nothing is skipped or repeated; once the scan is
+ * exhausted (`has_more` false) it is `head_seq`, so a future cursor or one behind a deleted tail comes back usable.
  * Admins/moderators see every event, with `object.hidden` on content objects.
+ * `head_seq` is the global event-log high-water mark (sqlite_sequence for `events`, read in the same batch as the scan and
+ * never below the last scanned seq): it never decreases and may exceed the newest visible item, since it counts filtered events.
+ * Only `cursor` and `limit` are accepted; any other query parameter is a 400 invalid_query_parameter with reason
+ * `use_cursor` (after, since, offset, before, page) or `unknown_parameter`, and `allowed`.
  */
 export async function feed(c: Ctx): Promise<Response> {
+  for (const p of c.url.searchParams.keys()) {
+    if (!FEED_PARAMS.includes(p)) {
+      throw new HttpError(400, 'invalid_query_parameter', {
+        parameter: p.slice(0, 64),
+        reason: FEED_CURSOR_LIKE.has(p.toLowerCase()) ? 'use_cursor' : 'unknown_parameter',
+        allowed: FEED_PARAMS,
+      });
+    }
+  }
   const raw = c.url.searchParams.get('cursor') ?? '0';
   if (!/^\d{1,15}$/.test(raw)) throw new HttpError(400, 'invalid_cursor');
   const cursor = Number(raw);
   const limit = intParam(c.url, 'limit', 100, 1, 500);
   const staff = isActiveStaff(c.principal);
-  const { results } = await c.env.DB.prepare(`SELECT e.seq, e.type, e.object_type, e.object_number, e.data_json, e.created_at,
-      a.handle AS actor_handle, a.kind AS actor_kind, a.status = 'disabled' AS actor_disabled, ${EVENT_OBJECT_HIDDEN} AS object_hidden, ${EVENT_OBJECT_GONE} AS object_gone
-    FROM events e LEFT JOIN accounts a ON a.id = e.actor_id WHERE e.seq > ? ORDER BY e.seq LIMIT ?`).bind(cursor, limit + 1).all<any>();
+  // One D1 batch = one implicit transaction: the scan and head_seq see the same snapshot (#173 review P2-2).
+  // head_seq is the AUTOINCREMENT high-water mark (sqlite_sequence), which never goes down, even when the newest
+  // events are deleted (account deletion); MAX(seq) is only the fallback for a table that has no sequence row yet.
+  const [scan, headRes] = await c.env.DB.batch([
+    c.env.DB.prepare(`SELECT e.seq, e.type, e.object_type, e.object_number, e.data_json, e.created_at,
+        a.handle AS actor_handle, a.kind AS actor_kind, a.status = 'disabled' AS actor_disabled, ${EVENT_OBJECT_HIDDEN} AS object_hidden, ${EVENT_OBJECT_GONE} AS object_gone
+      FROM events e LEFT JOIN accounts a ON a.id = e.actor_id WHERE e.seq > ? ORDER BY e.seq LIMIT ?`).bind(cursor, limit + 1),
+    c.env.DB.prepare(`SELECT COALESCE((SELECT seq FROM sqlite_sequence WHERE name = 'events'), (SELECT MAX(seq) FROM events), 0) AS head_seq`),
+  ]);
+  const results = scan.results as any[];
   const scanned = results.slice(0, limit);
   const visible = staff ? scanned : scanned.filter((e) => (e.object_hidden !== 1 || e.type === 'content.hidden' || e.type === 'content.upheld')
     && (MODERATION_EVENTS.has(e.type) || (e.object_gone !== 1 && !(e.actor_disabled === 1 && ACTOR_WRITING_EVENTS.has(e.type)))));
@@ -661,7 +687,15 @@ export async function feed(c: Ctx): Promise<Response> {
       created_at: e.created_at,
     };
   });
-  return json(200, { items, next_cursor: String(scanned.length ? scanned[scanned.length - 1].seq : cursor), has_more: results.length > limit });
+  const lastSeq = scanned.length ? scanned[scanned.length - 1].seq : 0;
+  const hasMore = results.length > limit;
+  // never below what this page scanned
+  const headSeq = Math.max(Number((headRes.results[0] as { head_seq: number } | undefined)?.head_seq ?? 0), lastSeq);
+  // Once the scan is exhausted, nothing exists in (cursor, head_seq] (seqs are never reused), so next_cursor jumps to
+  // head_seq: a cursor from the future, or one behind a deleted tail, is pulled back to a usable point and
+  // next_cursor <= head_seq holds on every response (#173 review P1).
+  const nextCursor = hasMore ? lastSeq : headSeq;
+  return json(200, { items, next_cursor: String(nextCursor), has_more: hasMore, head_seq: headSeq });
 }
 
 export async function announcement(c: Ctx): Promise<Response> {
