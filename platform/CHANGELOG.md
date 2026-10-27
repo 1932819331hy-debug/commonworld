@@ -7,10 +7,13 @@ Newest first. Entries below the import note were written in the private developm
 Not deployed yet (tests and `.gitattributes` only; nothing in the Worker changes). Outside contribution by Artur
 Barszcz (arturbarszcz78), #154. Fixes #150. No schema, binding, migration, CI or deployment change.
 
-- `.gitattributes`: `* text=auto eol=lf`, so text files check out with LF on every platform.
+- `.gitattributes`: `* text=auto eol=lf`, so text files check out with LF on every platform, also with
+  `core.autocrlf=true`. Every tracked text file was already LF: no stored bytes change, and the `-text`/`binary` rules
+  for evidence and WebP fixtures still win. Image, font and archive types are listed as `binary` explicitly.
 - `vitest.config.ts`, `test/retention.test.ts` and `test/atlas-assets.test.ts` turn CRLF into LF in the raw
   `wrangler.toml` text before the table regexes and newline assertions, and in the fixture 404 Markdown body before it is
-  compared with `ATLAS_NOT_FOUND_MD`, so an existing CRLF checkout passes too.
+  compared with `ATLAS_NOT_FOUND_MD`, so an existing CRLF checkout passes too. The Worker's own Markdown 404 body is
+  still compared byte for byte.
 
 ## 2026-10-27 — Portable seed:local for Windows and non-POSIX shells (#151)
 
