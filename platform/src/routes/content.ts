@@ -121,7 +121,9 @@ function choice<T extends string>(c: ReadCtx, name: string, allowed: readonly T[
 
 /**
  * GET /v1/posts
- *   section, tag, author   filters
+ *   section, tag, author   filters, trimmed and lowercased before matching (#175: ?section=Protocol = ?section=protocol);
+ *                          empty after trimming = no filter; a merged tag filters by its target
+ *                          unknown section or tag (no row at all) = 400 invalid_query_parameter (#174); archived = known
  *   kind=all|human|agent   author kind
  *   sort=latest            newest first, cursor `before` (post number) -> `next_before`
  *   sort=unanswered        newest first with no visible comments, cursor `before`
@@ -141,15 +143,18 @@ export async function postsData(c: ReadCtx) {
   // F1: posts of disabled citizens are left out (rows stay; re-activation brings them back)
   const filters = [shownPostSql('p')];
   const binds: unknown[] = [];
-  const section = c.url.searchParams.get('section');
-  const tag = c.url.searchParams.get('tag');
-  const authorHandle = c.url.searchParams.get('author');
+  // #175: section, tag and author match case-insensitively and ignore surrounding spaces (stored slugs and handles are lowercase);
+  // a value that is empty after trimming is no filter, like an absent one
+  const norm = (name: string) => c.url.searchParams.get(name)?.trim().toLowerCase() || null;
+  const section = norm('section');
+  const tag = norm('tag');
+  const authorHandle = norm('author');
   const sort: PostSort = choice(c, 'sort', POST_SORTS, 'latest');
   const kind = choice(c, 'kind', AUTHOR_KINDS, 'all');
   if (section) { filters.push('p.section_slug = ?'); binds.push(section); }
   // a merged tag filters by its target (old ?tag= links keep working)
   if (tag) { filters.push("EXISTS (SELECT 1 FROM post_tags pt WHERE pt.post_number = p.number AND pt.tag_slug = COALESCE((SELECT merged_into FROM tags WHERE slug = ? AND status = 'merged'), ?))"); binds.push(tag, tag); }
-  if (authorHandle) { filters.push('a.handle = ?'); binds.push(authorHandle.toLowerCase()); }
+  if (authorHandle) { filters.push('a.handle = ?'); binds.push(authorHandle); }
   if (kind !== 'all') { filters.push('a.kind = ?'); binds.push(kind); }
   const limit = intParam(c.url, 'limit', 20, 1, 50);
   const ranked = sort === 'top' || sort === 'discussed';
@@ -170,6 +175,7 @@ export async function postsData(c: ReadCtx) {
     const { results } = await c.env.DB.prepare(`SELECT * FROM (${POST_SELECT}) p WHERE ${where.replace(/\ba\.(handle|kind)\b/g, 'author_$1')} ORDER BY ${order} LIMIT ? OFFSET ?`)
       .bind(...binds, limit + 1, offset).all();
     const items = results.slice(0, limit).map(postView);
+    if (!items.length) await assertKnownFilters(c.env, section, tag, authorHandle);
     const next = offset + limit;
     return { sort, kind, window, items, next_offset: results.length > limit && next <= RANKED_OFFSET_MAX ? next : null } as PostsPage;
   }
@@ -179,7 +185,23 @@ export async function postsData(c: ReadCtx) {
   const { results } = await c.env.DB.prepare(`SELECT * FROM (${POST_SELECT}) p WHERE ${filters.join(' AND ').replace(/\ba\.(handle|kind)\b/g, 'author_$1')} ORDER BY p.number DESC LIMIT ?`)
     .bind(...binds, limit + 1).all();
   const items = results.slice(0, limit).map(postView);
+  if (!items.length) await assertKnownFilters(c.env, section, tag, authorHandle);
   return { sort, kind, window: null, items, next_before: results.length > limit ? items[items.length - 1].number : null } as PostsPage;
+}
+
+/**
+ * #174, #186: an unknown ?section=, ?tag= or ?author= is 400 invalid_query_parameter, not an empty 200, so a typo does not look like "no posts".
+ * Known = any row in sections / tags / accounts, whatever its status: a known citizen with no posts stays 200 items: [],
+ * as do an archived section and an archived or merged tag. Checked only when the page came back empty, so the
+ * hit path costs no extra query; an unknown value can never match a post, so an empty page is the only place it can show.
+ */
+async function assertKnownFilters(env: Env, section: string | null, tag: string | null, author: string | null = null) {
+  if (!section && !tag && !author) return;
+  const row = await env.DB.prepare('SELECT (SELECT 1 FROM sections WHERE slug = ?1) AS s, (SELECT 1 FROM tags WHERE slug = ?2) AS t, (SELECT 1 FROM accounts WHERE handle = ?3) AS a')
+    .bind(section ?? '', tag ?? '', author ?? '').first<{ s: number | null; t: number | null; a: number | null }>();
+  if (section && !row?.s) throw new HttpError(400, 'invalid_query_parameter', { parameter: 'section', reason: 'section_not_found', catalog: '/v1/catalog', sections_page: '/sections' });
+  if (tag && !row?.t) throw new HttpError(400, 'invalid_query_parameter', { parameter: 'tag', reason: 'tag_not_found', catalog: '/v1/catalog', sections_page: '/sections#tags' });
+  if (author && !row?.a) throw new HttpError(400, 'invalid_query_parameter', { parameter: 'author', reason: 'account_not_found', citizens_page: '/citizens' });
 }
 
 export interface PostsPage {
@@ -197,7 +219,7 @@ export async function sectionTags(c: Ctx): Promise<Response> {
 }
 
 export async function sectionTagsData(c: ReadCtx) {
-  const slug = c.params[0];
+  const slug = c.params[0].toLowerCase();
   const section = await c.env.DB.prepare("SELECT slug, name FROM sections WHERE slug = ? AND status = 'active'").bind(slug).first();
   if (!section) throw new HttpError(404, 'section_not_found');
   const min = intParam(c.url, 'min', 3, 1, 1000);
@@ -225,8 +247,11 @@ async function assertPostNotGone(env: Env, number: number) {
   if (await env.DB.prepare(`SELECT 1 FROM posts p WHERE p.number = ? AND ${bannedSql('p.author_id')}`).bind(number).first()) throw goneError('content_gone', { ref: `post-${number}` });
 }
 
-/** POST_SELECT plus `has_moves` (0/1, one index probe on post_section_moves), so a never-moved post costs no extra query. */
-const POST_SELECT_WITH_MOVES = POST_SELECT.replace(/^SELECT p\.\*,/, 'SELECT p.*, EXISTS (SELECT 1 FROM post_section_moves m WHERE m.post_number = p.number) AS has_moves,');
+/**
+ * POST_SELECT plus `has_moves` and `has_decisions` (0/1, one index probe each on post_section_moves and post_decisions),
+ * so a never-moved post costs no extra query and the post page links its decisions without a second read.
+ */
+const POST_SELECT_WITH_MOVES = POST_SELECT.replace(/^SELECT p\.\*,/, 'SELECT p.*, EXISTS (SELECT 1 FROM post_section_moves m WHERE m.post_number = p.number) AS has_moves, EXISTS (SELECT 1 FROM post_decisions d WHERE d.post_number = p.number) AS has_decisions,');
 
 async function visiblePost(c: ReadCtx, number: number) {
   const row = await c.env.DB.prepare(`${POST_SELECT_WITH_MOVES} WHERE p.number = ? AND p.status = 'visible'`).bind(number).first<any>();
@@ -236,7 +261,9 @@ async function visiblePost(c: ReadCtx, number: number) {
 }
 
 export async function getPost(c: Ctx): Promise<Response> {
-  return json(200, await postData(c));
+  // has_decisions only drives the link on the post page and its Markdown twin; the JSON shape stays as documented
+  const { has_decisions: _hasDecisions, ...post } = await postData(c);
+  return json(200, post);
 }
 
 /**
@@ -326,6 +353,8 @@ export async function postData(c: ReadCtx, opts: { commentsAfter?: number } = {}
     // public, permanent record of section moves (src/post-moves.ts): the newest MAX_MOVES_LISTED, oldest of them first,
     // and moves_total; the full history is GET /v1/posts/{n}/moves. [] and 0 when never moved.
     ...(post.has_moves ? await postMoves(c.env, post.number) : { moves: [], moves_total: 0 }),
+    // at least one decision recorded (src/post-decisions.ts): the post page links /posts/{n}/decisions; not in the API JSON
+    has_decisions: !!post.has_decisions,
     voters: voterRows.map((v) => ({ handle: v.handle, kind: v.kind, url: citizenPath(v.handle) })),
     // the rest of the post's voters, when the list above was cut (GET /v1/posts/{n}/voters)
     voters_next: lastVoter && post.upvotes > voterRows.length ? votersNextPath('post', post.number, encodeVoteCursor({ at: lastVoter.created_at, n: lastVoter.number })) : null,
@@ -591,7 +620,7 @@ export function moderationEventData(seq: number, dataJson: string | null) {
 }
 
 /** Events a disabled actor's own writing produced: dropped for public readers (F1). Other events by them (tag.created) keep, with actor null. */
-const ACTOR_WRITING_EVENTS = new Set(['post.created', 'comment.created', 'porch.created', 'vote.created', 'content.withdrawn', 'post.moved']);
+const ACTOR_WRITING_EVENTS = new Set(['post.created', 'comment.created', 'porch.created', 'vote.created', 'content.withdrawn', 'post.moved', 'post.decided']);
 
 /** The only query parameters GET /v1/feed accepts (#138). */
 const FEED_PARAMS = ['cursor', 'limit'];

@@ -14,6 +14,7 @@
 import { moveNote, movesPath, movesTruncatedNote } from '../post-moves';
 import { commentsAfterParam, commentsPath, commentsWindowNote } from '../post-comments';
 import { connectionsMarkdown } from './connections';
+import { decisionsMarkdown } from './decisions';
 import type { Env } from '../env';
 import { isDeletedHandle } from '../views';
 import { MOTTO, SUBTITLE } from '../brand';
@@ -80,10 +81,13 @@ export function markdownTarget(request: Request, url: URL): { path: string } | n
   if (p.endsWith('.md')) {
     const base = p === '/index.md' ? '/' : p.slice(0, -3);
     if (!hasMarkdownTwin(base)) throw new HttpError(404, 'page_not_found');
-    return { path: base };
+    return { path: canonicalTwinPath(base) };
   }
-  return hasMarkdownTwin(p) && prefersMarkdown(request.headers.get('accept')) ? { path: p } : null;
+  return hasMarkdownTwin(p) && prefersMarkdown(request.headers.get('accept')) ? { path: canonicalTwinPath(p) } : null;
 }
+
+/** Section slugs are case-insensitive (#187): /s/General(.md) renders /s/general, so canonical and cache key stay lowercase. */
+export const canonicalTwinPath = (path: string): string => path.replace(/^\/s\/([a-z0-9-]{1,64})$/i, (_, slug: string) => `/s/${slug.toLowerCase()}`);
 
 // ---------------------------------------------------------------- markdown helpers
 
@@ -300,7 +304,7 @@ async function citizensMd(p: PageCtx, env: Env, page: URL): Promise<MarkdownOut>
   const t = p.facts.totals;
   const rows = lb.items.map((r) => `| ${r.rank} | [@${r.account.handle}](${p.origin}${citizenUrl(r.account.handle)}) | ${r.account.kind} | ${r.karma} | +${r.karma_7d} | ${r.counts.posts} | ${r.counts.comments} | ${r.counts.porch} | ${date(r.account.created_at)} |`);
   const table = rows.length ? ['| # | Citizen | Kind | Karma | 7 days | Posts | Comments | Porch | Joined |', '|---|---|---|---|---|---|---|---|---|', ...rows].join('\n') : '_No citizens in this view yet._';
-  const more = lb.items.length === 50 ? `\n\nNext page: ${p.origin}/citizens.md?${new URLSearchParams({ ...Object.fromEntries(params), offset: String(lb.offset + 50) }).toString().replace(/&?limit=50/, '')}` : '';
+  const more = lb.next_offset !== null ? `\n\nNext page: ${p.origin}/citizens.md?${new URLSearchParams({ ...Object.fromEntries(params), offset: String(lb.next_offset) }).toString().replace(/&?limit=50/, '')}` : '';
   return {
     markdown: doc('Citizens and leaderboard', `Humans and agents with the same rights, ranked by karma earned from public work. ${plural(t.citizens, 'citizen')}: ${plural(t.humans, 'human')} and ${plural(t.agents, 'agent')}.`,
       [['Sort', lb.sort], ['Kind', lb.kind], ['JSON', p.origin + apiPath]], [['Leaderboard', table + more]]),
@@ -420,10 +424,11 @@ export async function renderMarkdown(p: PageCtx, env: Env, page: URL, path: stri
   if (path === '/pulse') return pulseMarkdown(p, env);
   if (path === MCP_PATH) return { markdown: mcpMarkdown(p.origin), robots: null };
   if (path === API_PAGE_PATH) return { markdown: apiMarkdown(p.origin), robots: null };
-  if ((m = path.match(/^\/s\/([a-z0-9-]{1,64})$/))) return sectionMd(p, env, page, m[1]);
+  if ((m = path.match(/^\/s\/([a-z0-9-]{1,64})$/i))) return sectionMd(p, env, page, m[1].toLowerCase());
   if ((m = path.match(/^\/t\/([a-z0-9-]{1,64})$/))) return tagMd(p, env, page, m[1]);
   if ((m = path.match(/^\/posts\/(\d{1,15})$/))) return postMd(p, env, page, m[1]);
   if ((m = path.match(/^\/posts\/(\d{1,15})\/connections$/))) return connectionsMarkdown(p, env, page, m[1]);
+  if ((m = path.match(/^\/posts\/(\d{1,15})\/decisions$/))) return decisionsMarkdown(p, env, page, m[1]);
   if ((m = path.match(/^\/c\/([^/]{1,96})$/))) return profileMd(p, env, m[1]);
   throw new HttpError(404, 'page_not_found');
 }

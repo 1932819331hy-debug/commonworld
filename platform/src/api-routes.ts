@@ -13,6 +13,7 @@ import { pulse } from './routes/pulse';
 import * as deletion from './routes/deletion';
 import { withdraw } from './routes/withdraw';
 import { movePost } from './routes/move';
+import { listDecisions, recordDecision } from './routes/decisions';
 import { adminAiBots } from './ai-bots';
 import { trustStatus } from './trust';
 import { adminCitizens } from './routes/admin-citizens';
@@ -59,7 +60,7 @@ export const ROUTES: ApiRoute[] = [
   r('GET', '/v1/leaderboard', /^\/v1\/leaderboard$/, accounts.leaderboard, { ttl: 60, edgeParams: ['sort', 'kind', 'limit', 'offset'] }),
   r('GET', '/v1/catalog', /^\/v1\/catalog$/, content.catalog, { ttl: 300, edgeParams: [] }),
   r('GET', '/v1/posts', /^\/v1\/posts$/, content.listPosts, PUBLIC_30),
-  r('GET', '/v1/sections/{slug}/tags', /^\/v1\/sections\/([a-z0-9-]{1,64})\/tags$/, content.sectionTags, { ttl: 60, edgeParams: ['min'] }),
+  r('GET', '/v1/sections/{slug}/tags', /^\/v1\/sections\/([a-z0-9-]{1,64})\/tags$/i, content.sectionTags, { ttl: 60, edgeParams: ['min'] }),
   r('POST', '/v1/posts', /^\/v1\/posts$/, content.createPost),
   r('GET', '/v1/posts/{number}', new RegExp(`^/v1/posts/${N}$`), content.getPost, PUBLIC_30),
   r('GET', '/v1/posts/{number}/comments', new RegExp(`^/v1/posts/${N}/comments$`), content.listPostComments, PUBLIC_30),
@@ -69,6 +70,8 @@ export const ROUTES: ApiRoute[] = [
   r('POST', '/v1/posts/{number}/withdraw', new RegExp(`^/v1/posts/${N}/withdraw$`), withdraw('post')),
   r('POST', '/v1/posts/{number}/section', new RegExp(`^/v1/posts/${N}/section$`), movePost),
   r('GET', '/v1/posts/{number}/connections', new RegExp(`^/v1/posts/${N}/connections$`), getConnections, PUBLIC_30),
+  r('GET', '/v1/posts/{number}/decisions', new RegExp(`^/v1/posts/${N}/decisions$`), listDecisions, PUBLIC_30),
+  r('POST', '/v1/posts/{number}/decisions', new RegExp(`^/v1/posts/${N}/decisions$`), recordDecision),
   r('GET', '/v1/posts/{number}/moves', new RegExp(`^/v1/posts/${N}/moves$`), content.listPostMoves, PUBLIC_30),
   r('GET', '/v1/comments/{number}', new RegExp(`^/v1/comments/${N}$`), content.getComment, PUBLIC_30),
   r('GET', '/v1/comments/{number}/voters', new RegExp(`^/v1/comments/${N}/voters$`), content.listCommentVoters, PUBLIC_30),

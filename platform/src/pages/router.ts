@@ -12,7 +12,7 @@ import { ogVersion, renderPostOg } from './og';
 import { homePage } from './home';
 import { esc } from './html';
 import { ABOUT_URL, NONCE_PLACEHOLDER, PRIVACY_URL, TERMS_URL, type PageCtx, hasMarkdownTwin, markdownPath } from './layout';
-import { markdownError, markdownTarget, prefersMarkdown, renderMarkdown } from './markdown';
+import { canonicalTwinPath, markdownError, markdownTarget, prefersMarkdown, renderMarkdown } from './markdown';
 import { adminAccess, adminPageHtml, adminPageMd } from './admin';
 import { errorPage, inboxPage, loginPage, moderationPage, searchPage, type LoginView } from './misc';
 import { citizensPage, porchPage, profilePage } from './people';
@@ -32,6 +32,7 @@ import { composePage, handleWrite, isWritePath } from './writes';
 import { exportPage } from './export';
 import { pulsePage } from './pulse';
 import { connectionsPage } from './connections';
+import { decisionsPage } from './decisions';
 import { handleOAuthPage, isOAuthPagePath } from './oauth-pages';
 
 /** Validated analytics config from env: an invalid value is ignored (no tag, no CSP host), never echoed. */
@@ -163,6 +164,7 @@ export const PAGE_CACHE_PARAMS: [RegExp, string[]][] = [
   [/^\/citizens$/, ['sort', 'kind', 'offset']],
   [/^\/posts\/\d+$/, ['order', 'after']],
   [/^\/posts\/\d+\/connections$/, ['source', 'after', 'through']],
+  [/^\/posts\/\d+\/decisions$/, ['after']],
   [/^\/search$/, ['q', 'type']],
   [/^\/moderation$/, ['before']],
 ];
@@ -193,10 +195,11 @@ const PAGES: PageRoute[] = [
   { pattern: /^\/compose$/, render: (p, env, url) => composePage(p, env, url) },
   { pattern: /^\/export$/, render: (p) => exportPage(p) },
   { pattern: /^\/sections$/, render: (p, env) => sectionsPage(p, env) },
-  { pattern: /^\/s\/([a-z0-9-]{1,64})$/, render: (p, env, url, m) => sectionPage(p, env, url, m[1]) },
+  { pattern: /^\/s\/([a-z0-9-]{1,64})$/i, render: (p, env, url, m) => sectionPage(p, env, url, m[1].toLowerCase()) },
   { pattern: /^\/t\/([a-z0-9-]{1,64})$/, render: (p, env, url, m) => tagPage(p, env, url, m[1]) },
   { pattern: /^\/posts\/(\d{1,15})$/, render: (p, env, url, m) => postPage(p, env, url, m[1]) },
   { pattern: /^\/posts\/(\d{1,15})\/connections$/, render: (p, env, url, m) => connectionsPage(p, env, url, m[1]) },
+  { pattern: /^\/posts\/(\d{1,15})\/decisions$/, render: (p, env, url, m) => decisionsPage(p, env, url, m[1]) },
   { pattern: /^\/citizens$/, render: (p, env, url) => citizensPage(p, env, url) },
   { pattern: /^\/c\/([^/]{1,96})$/, render: (p, env, _url, m) => profilePage(p, env, m[1]) },
   { pattern: /^\/search$/, render: (p, env, url) => searchPage(p, env, url) },
@@ -220,7 +223,7 @@ export const ATLAS_PAGE_REDIRECTS: Record<string, string> = { privacy: PRIVACY_U
 async function redirectFor(env: Env, path: string): Promise<string | null> {
   let m: RegExpMatchArray | null;
   if ((m = path.match(/^\/(privacy|terms|about)\/?$/))) return ATLAS_PAGE_REDIRECTS[m[1]];
-  if ((m = path.match(/^\/sections\/([a-z0-9-]{1,64})\/?$/))) return `/s/${m[1]}`;
+  if ((m = path.match(/^\/sections\/([a-z0-9-]{1,64})\/?$/i))) return `/s/${m[1].toLowerCase()}`;
   if ((m = path.match(/^\/tags\/([a-z0-9-]{1,64})\/?$/))) return `/t/${m[1]}`;
   if ((m = path.match(/^\/citizens\/([^/]{1,96})\/?$/))) return `/c/${m[1]}`;
   if ((m = path.match(/^\/comments\/(\d{1,15})$/))) {
@@ -558,7 +561,7 @@ async function handlePageInner(request: Request, env: Env, exec: ExecutionContex
     const html = typeof out === 'string' ? out : out.html;
     const extra = typeof out === 'string' ? {} : out.headers;
     // pages with a markdown twin: the same URL answers text/markdown to `Accept: text/markdown`, so caches must key on Accept
-    const twin: Record<string, string> = hasMarkdownTwin(path) ? { vary: 'Accept', link: `<${p.origin}${markdownPath(path)}>; rel="alternate"; type="text/markdown"` } : {};
+    const twin: Record<string, string> = hasMarkdownTwin(path) ? { vary: 'Accept', link: `<${p.origin}${markdownPath(canonicalTwinPath(path))}>; rel="alternate"; type="text/markdown"` } : {};
     return withSession(done(respond(method, 200, html, { ...htmlHeaders(env, url, route.private || signedIn ? 'private, no-store' : PUBLIC_PAGE_CACHE), ...twin, ...extra })));
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 500;
