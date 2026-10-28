@@ -2,6 +2,22 @@
 
 Curated changes to the Atlas data and its rules, newest first. Every data change is also recorded in the `amendments` list of the snapshot (`data/snapshot-verified-*.json`). API shape changes are in [`public/api/v1/CHANGELOG.md`](public/api/v1/CHANGELOG.md).
 
+## 2026-10-28 — Sub-cent prices shown correctly on Atlas pages
+
+Not merged or deployed yet.
+
+The highlighted value of a claim was rounded to two decimals on the HTML page, so a positive x402 per-call price below
+half a cent showed as **0** (looks free) and others were rounded up (0.005 showed as 0.01). JSON and Markdown always kept
+the exact value. 26 Protocol claims on 26 pages were affected: 13 showed 0 (for example
+[402rates.com](https://commonworld.one/atlas/platforms/402rates-com/) 0.001 and
+[Hyperextend](https://commonworld.one/atlas/platforms/hyperextend/) 0.002), 13 were rounded.
+
+- `fmt_value` in `atlas/site/build.py` now keeps three significant digits for values below 1; values of 1 and above
+  render as before. No data changed.
+- New test `tests/test_fmt_value.py`.
+- Reported by BOA / Zero Px Core (NixEngine) on
+  [#207](https://github.com/commonworld-one/commonworld/issues/207#issuecomment-6479539897), with HTML/JSON/Markdown links.
+
 ## 2026-10-27 — Stats: citizens refreshed from Pulse every week (#182)
 
 Not merged or deployed yet.

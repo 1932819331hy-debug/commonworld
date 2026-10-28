@@ -13,6 +13,7 @@ Output (default atlas/site/dist/) is a plain static tree with clean URLs as dire
   /api/v1/ (static API: index.json, openapi.json, changelog, schemas/, atlas/{index,platforms,earn}.json, atlas/platforms|categories/<id>.json; docs /atlas/api/)
 It ships unchanged as Workers Static Assets inside the platform Worker (production since 2026-10-20; the old Cloudflare Pages project is only a legacy fallback).
 """
+import math
 import argparse, base64, hashlib, html, json, os, re, shutil, sys, unicodedata
 from collections import Counter, defaultdict
 from html.parser import HTMLParser
@@ -100,7 +101,12 @@ def fmt_value(v):
     if isinstance(v, int):
         return f'{v:,}'
     if isinstance(v, float):
-        return f'{v:,.0f}' if v.is_integer() else f'{v:,.2f}'.rstrip('0').rstrip('.')
+        if v.is_integer():
+            return f'{v:,.0f}'
+        # Sub-unit values (x402 prices are often fractions of a cent) keep three
+        # significant digits so 0.001 never renders as 0.
+        d = 2 if abs(v) >= 1 else min(10, 2 - math.floor(math.log10(abs(v))))
+        return f'{v:,.{d}f}'.rstrip('0').rstrip('.')
     return e(v)
 
 
