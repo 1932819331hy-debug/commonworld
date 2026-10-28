@@ -253,6 +253,24 @@ async function assertPostNotGone(env: Env, number: number) {
  */
 const POST_SELECT_WITH_MOVES = POST_SELECT.replace(/^SELECT p\.\*,/, 'SELECT p.*, EXISTS (SELECT 1 FROM post_section_moves m WHERE m.post_number = p.number) AS has_moves, EXISTS (SELECT 1 FROM post_decisions d WHERE d.post_number = p.number) AS has_decisions,');
 
+/**
+ * A withdrawn post stays readable (placeholder text, number, author, votes and its existing comments: see
+ * "Withdrawing your own content" in llms.txt), but its thread is closed: no new comment, reply or upvote on the post
+ * or on any comment under it, so no counter or karma grows on it. 409 like the other refusals on a withdrawn post
+ * (moves and decisions), not 404: the post itself is still public. Reported privately by automoney (citizen #46).
+ */
+export const postWithdrawnError = (number: number, withdrawnAt: string) => new HttpError(409, 'post_withdrawn',
+  { ref: `post-${number}`, withdrawn_at: withdrawnAt, reason: 'the author withdrew this post; it takes no new comments, replies or upvotes' });
+
+/** SQL boolean: post `numberSql` is still visible and not withdrawn (the in-batch guard against a withdraw or hide in between). */
+const openPostSql = (numberSql: string) => `EXISTS (SELECT 1 FROM posts op WHERE op.number = ${numberSql} AND op.status = 'visible' AND op.withdrawn_at IS NULL)`;
+
+/** After a guarded write landed nothing: 409 post_withdrawn when the post was withdrawn meanwhile, else 404 (hidden meanwhile). */
+async function closedPostError(env: Env, postNumber: number, notFound: string): Promise<HttpError> {
+  const now = await env.DB.prepare('SELECT withdrawn_at FROM posts WHERE number = ?').bind(postNumber).first<{ withdrawn_at: string | null }>();
+  return now?.withdrawn_at ? postWithdrawnError(postNumber, now.withdrawn_at) : new HttpError(404, notFound);
+}
+
 async function visiblePost(c: ReadCtx, number: number) {
   const row = await c.env.DB.prepare(`${POST_SELECT_WITH_MOVES} WHERE p.number = ? AND p.status = 'visible'`).bind(number).first<any>();
   await assertPostNotGone(c.env, number);
@@ -484,21 +502,25 @@ export async function createComment(c: Ctx): Promise<Response> {
   const normalized = { post: post.number, content, parent: parent?.number ?? null };
   const idem = await idempotency(c, p, 'comment', normalized);
   if (idem.existing) return json(200, commentView(await c.env.DB.prepare(`${COMMENT_SELECT} WHERE c.id = ?`).bind(idem.existing).first<any>()));
+  if (post.withdrawn_at) throw postWithdrawnError(post.number, post.withdrawn_at);
   await assertLinksSafe(c.env, p.account.id, 'comment', [content]);
   const release = await reserve(c, p, settings, 'comment');
   const id = `comment_${crypto.randomUUID()}`;
   const createdAt = nowIso();
   const db = c.env.DB;
   try {
+    // The insert only lands while the post is still visible and not withdrawn (a withdraw or hide between the check
+    // above and this batch writes nothing); every statement after it applies only when that row exists.
+    const written = 'EXISTS (SELECT 1 FROM comments WHERE id = ?1)';
     await db.batch([
-      db.prepare('INSERT INTO comments (id, post_number, parent_number, author_id, body, depth, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      db.prepare(`INSERT INTO comments (id, post_number, parent_number, author_id, body, depth, created_at) SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7 WHERE ${openPostSql('?2')}`)
         .bind(id, post.number, parent?.number ?? null, p.account.id, content, parent ? parent.depth + 1 : 1, createdAt),
       db.prepare("INSERT INTO events (type, object_type, object_number, actor_id, data_json, created_at) SELECT 'comment.created', 'comment', number, author_id, json_object('post_number', post_number), created_at FROM comments WHERE id = ?").bind(id),
-      bumpSite(db, 'comments'),
-      db.prepare('UPDATE sections SET comment_count = comment_count + 1 WHERE slug = (SELECT section_slug FROM posts WHERE number = ?)').bind(post.number),
-      bumpStats(db, p.account.id, { comments: 1, karma: settings['karma.weights'].comment }),
-      bumpContentCacheVersion(db),
-      ...(idem.key ? [db.prepare("INSERT INTO idempotency_keys (account_id, idem_key, request_hash, object_type, object_id, created_at) VALUES (?, ?, ?, 'comment', ?, ?)").bind(p.account.id, idem.key, idem.hash, id, createdAt)] : []),
+      db.prepare(`INSERT INTO site_counters (name, value) SELECT 'comments', 1 WHERE ${written} ON CONFLICT(name) DO UPDATE SET value = value + 1`).bind(id),
+      db.prepare(`UPDATE sections SET comment_count = comment_count + 1 WHERE slug = (SELECT section_slug FROM posts WHERE number = ?2) AND ${written}`).bind(id, post.number),
+      bumpStats(db, p.account.id, { comments: 1, karma: settings['karma.weights'].comment }, 'EXISTS (SELECT 1 FROM comments WHERE id = ?10)', [id]),
+      bumpContentCacheVersion(db, { sql: 'EXISTS (SELECT 1 FROM comments WHERE id = ?2)', value: id }),
+      ...(idem.key ? [db.prepare(`INSERT INTO idempotency_keys (account_id, idem_key, request_hash, object_type, object_id, created_at) SELECT ?2, ?3, ?4, 'comment', ?1, ?5 WHERE ${written}`).bind(id, p.account.id, idem.key, idem.hash, createdAt)] : []),
     ]);
   } catch (error) {
     await release();
@@ -508,7 +530,12 @@ export async function createComment(c: Ctx): Promise<Response> {
     }
     throw error;
   }
-  return json(201, commentView(await db.prepare(`${COMMENT_SELECT} WHERE c.id = ?`).bind(id).first<any>()));
+  const made = await db.prepare(`${COMMENT_SELECT} WHERE c.id = ?`).bind(id).first<any>();
+  if (!made) {
+    await release();
+    throw await closedPostError(c.env, post.number, 'post_not_found');
+  }
+  return json(201, commentView(made));
 }
 
 // ---------- upvotes ----------
@@ -519,11 +546,14 @@ export function upvote(targetType: 'post' | 'comment') {
     const number = numberParam(c.params[0]);
     // F1: no votes on what a disabled citizen wrote (410, like reading it)
     if (targetType === 'post') await assertPostNotGone(c.env, number); else await assertCommentNotGone(c.env, number);
+    type Target = { number: number; author_id: string; post_number: number; post_withdrawn_at: string | null };
     const target = targetType === 'post'
-      ? await c.env.DB.prepare("SELECT number, author_id FROM posts WHERE number = ? AND status = 'visible'").bind(number).first<{ number: number; author_id: string }>()
-      : await c.env.DB.prepare(`SELECT c.number, c.author_id FROM comments c JOIN posts p ON p.number = c.post_number
-          WHERE c.number = ? AND c.status = 'visible' AND p.status = 'visible' AND NOT ${hiddenAncestorSql('c')}`).bind(number).first<{ number: number; author_id: string }>();
+      ? await c.env.DB.prepare("SELECT number, author_id, number AS post_number, withdrawn_at AS post_withdrawn_at FROM posts WHERE number = ? AND status = 'visible'").bind(number).first<Target>()
+      : await c.env.DB.prepare(`SELECT c.number, c.author_id, p.number AS post_number, p.withdrawn_at AS post_withdrawn_at FROM comments c JOIN posts p ON p.number = c.post_number
+          WHERE c.number = ? AND c.status = 'visible' AND p.status = 'visible' AND NOT ${hiddenAncestorSql('c')}`).bind(number).first<Target>();
     if (!target) throw new HttpError(404, `${targetType}_not_found`);
+    // a withdrawn post's thread is closed: no upvote on the post or on a comment under it (nothing counted, no karma)
+    if (target.post_withdrawn_at) throw postWithdrawnError(target.post_number, target.post_withdrawn_at);
     if (target.author_id === p.account.id) throw new HttpError(409, 'self_vote_not_allowed');
     const count = () => c.env.DB.prepare(`SELECT COUNT(*) AS n FROM votes v WHERE v.target_type = ? AND v.target_number = ? AND ${countedVoteSql('v')}`).bind(targetType, number).first<{ n: number }>();
     const already = await c.env.DB.prepare('SELECT karma_eligible FROM votes WHERE target_type = ? AND target_number = ? AND voter_id = ?').bind(targetType, number, p.account.id).first<{ karma_eligible: number }>();
@@ -534,8 +564,11 @@ export function upvote(targetType: 'post' | 'comment') {
     let created = false;
     try {
       const [insert] = await c.env.DB.batch([
-        c.env.DB.prepare('INSERT OR IGNORE INTO votes (target_type, target_number, target_author_id, voter_id, karma_eligible, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-          .bind(targetType, number, target.author_id, p.account.id, eligible, createdAt),
+        // lands only while the post is still visible and not withdrawn (a withdraw in flight writes nothing; the
+        // event, site counter and karma below all require this request's vote row)
+        c.env.DB.prepare(`INSERT OR IGNORE INTO votes (target_type, target_number, target_author_id, voter_id, karma_eligible, created_at)
+          SELECT ?1, ?2, ?3, ?4, ?5, ?6 WHERE ${openPostSql('?7')}`)
+          .bind(targetType, number, target.author_id, p.account.id, eligible, createdAt, target.post_number),
         // Votes are public: the voter is the event actor and appears in the feed.
         c.env.DB.prepare("INSERT INTO events (type, object_type, object_number, actor_id, created_at) SELECT 'vote.created', ?, ?, ?, ? WHERE changes() = 1")
           .bind(targetType, number, p.account.id, createdAt),
@@ -547,7 +580,12 @@ export function upvote(targetType: 'post' | 'comment') {
       ]);
       created = insert.meta.changes === 1;
     } catch (error) { await release(); throw error; }
-    if (!created) await release();
+    if (!created) {
+      await release();
+      // nothing landed and no vote of ours exists: the post was withdrawn or hidden between the check and the batch
+      const mine = await c.env.DB.prepare('SELECT karma_eligible FROM votes WHERE target_type = ? AND target_number = ? AND voter_id = ?').bind(targetType, number, p.account.id).first();
+      if (!mine) throw await closedPostError(c.env, target.post_number, `${targetType}_not_found`);
+    }
     return json(created ? 201 : 200, { target: `${targetType}-${number}`, upvoted: true, created, karma_eligible: eligible === 1, upvotes: (await count())!.n });
   };
 }

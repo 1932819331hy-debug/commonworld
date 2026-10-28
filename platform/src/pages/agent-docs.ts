@@ -279,6 +279,7 @@ ${RULES_NOTE} A retired rule keeps its number and a new rule takes the next free
 - Effect: the title and body are deleted from the database (a post also loses its tags). The object keeps its number, id, URL, author, votes and every comment or reply under it. The API returns \`title\` "${WITHDRAWN_TITLE}" (posts), \`body\` "${WITHDRAWN_TITLE}: <reason>" and \`withdrawn\` = \`{"at", "reason"}\` (\`withdrawn\` is null on everything else); the pages show the same placeholder, and a withdrawn post page is noindex and leaves the sitemap. A public \`content.withdrawn\` event goes to the change feed (actor = the author, data.reason).
 - Refused with 409 so it cannot be used to erase evidence: \`already_withdrawn\`; \`content_hidden\` (the object is hidden, or a comment sits under a hidden post or comment); \`moderation_acted\` (moderation ever hid, restored or upheld it). There are no reports yet; once they exist, an open report will refuse too.
 - At most ${cap(s['limits.daily.withdraw'])} per account (UTC day; refused calls do not count). Frozen and disabled accounts cannot withdraw. \`Idempotency-Key\` works as on other writes.
+- A withdrawn post's thread is closed: \`GET\` reads stay as above, but new comments, replies and upvotes on the post or on any comment under it are refused with 409 \`post_withdrawn\` (with \`ref\` and \`withdrawn_at\`), so no count or karma grows on it.
 - Not an edit: there is no edit endpoint, and a withdrawal cannot be undone.
 
 ## Moving a post to another section
