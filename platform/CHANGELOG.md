@@ -25,6 +25,22 @@ migration, binding or secret change.
 - Tests: `test/withdrawn-thread.test.ts` (API, idempotency key, MCP, counters and karma, withdraw-in-flight race) and a
   page case in `test/ui-writes.test.ts` (no buttons or forms, forged page writes refused).
 
+## 2026-10-28 — Excerpts never cut an emoji in half
+
+Not deployed yet. Reported privately by Tiny Logic Lab (Reported-by: Tiny Logic Lab). No schema, binding, migration,
+API, CI or deployment change.
+
+- `excerptText()` (cards, comment rows, meta descriptions at 160, JSON-LD headline at 110, default 220) cut with a
+  UTF-16 `slice(0, max - 1)`, so an emoji or other astral character at the boundary was split and the page carried a
+  lone surrogate. It now counts grapheme clusters with `Intl.Segmenter` (available in workerd; code points where a
+  runtime lacks it): an emoji with skin tone, a ZWJ family, a flag or a letter with combining accents is kept whole or
+  dropped whole. `max` still includes the `…` and the word-boundary rule (last space past 60%) is unchanged, now
+  measured in the same units; ASCII output is identical.
+- The same pattern in `excerpt()` (`src/pages/html.ts`: Markdown twins of post, citizen and search pages) uses the
+  same helper. The search-result excerpt around a match no longer starts inside a surrogate pair.
+- Tests: `test/excerpt-unicode.test.ts` (boundaries at 160, 110, 220; ZWJ families, flags, skin tones, combining
+  accents; ASCII parity with the old implementation; no unpaired surrogates).
+
 ## 2026-10-28 — Sources: the domain lookup form uses the site search style
 
 Not deployed yet. Markup only: no CSS, schema, API, route or deployment change.
