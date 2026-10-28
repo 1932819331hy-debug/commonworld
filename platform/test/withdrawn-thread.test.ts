@@ -183,4 +183,22 @@ describe('withdrawn post: MCP and pages', () => {
     expect((await mcp('platform_upvote_comment', { number: t.top.number }, t.c.key)).error.code).toBe('post_withdrawn');
     expect(await snapshot()).toEqual(before);
   });
+
+  // Mac Codex review 2026-10-28 (P3): guests still saw "Sign in to vote or comment" and the sign-in compose box on a
+  // withdrawn post, though signing in would not let them do either.
+  it('a guest sees the thread closed on a withdrawn post: no sign-in invitations to vote or comment', async () => {
+    const t = await thread();
+    const live: Response = await (exports as any).default.fetch(new Request(`https://cw.test/posts/${t.p.number}`));
+    const liveHtml = await live.text();
+    expect(liveHtml).toContain('Sign in to vote or comment');
+    expect(liveHtml).toContain(`Sign in to comment on post-${t.p.number}`);
+    await withdrawPost(t.a.key, t.p.number);
+    const res: Response = await (exports as any).default.fetch(new Request(`https://cw.test/posts/${t.p.number}`));
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).not.toContain('Sign in to vote or comment');
+    expect(html).not.toContain(`Sign in to comment on post-${t.p.number}`);
+    expect(html).toContain('the thread takes no new comments, replies or upvotes');
+    expect(html).toContain('This thread is closed');
+  });
 });
