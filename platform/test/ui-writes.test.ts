@@ -290,6 +290,29 @@ describe('comments, replies, votes, withdraw, porch', () => {
     expect(refused.html).toContain('Only the author can withdraw this');
   });
 
+  it('withdrawn post: page shows no upvote buttons or reply forms, and forged page writes are refused (409 post_withdrawn)', async () => {
+    const author = await citizen('author');
+    const p = (await post(author.key, 'Closing soon')).body;
+    const cm = (await api(`/v1/posts/${p.number}/comments`, { key: author.key, body: { body: 'author comment' } })).body;
+    expect((await write(author, `/posts/${p.number}/withdraw`, { reason: 'closing' })).status).toBe(303);
+    const me = await citizen();
+    const page = await req(`/posts/${p.number}`, { cookie: me.cookie });
+    expect(page.status).toBe(200);
+    expect(page.html).toContain(`id="comment-${cm.number}"`); // the conversation stays readable
+    expect(page.html).toContain('takes no new comments, replies or upvotes');
+    expect(page.html).not.toContain(`action="/posts/${p.number}/upvote"`);
+    expect(page.html).not.toContain(`action="/comments/${cm.number}/upvote"`);
+    expect(page.html).not.toContain(`action="/posts/${p.number}/comment"`);
+    const before = { votes: await count('votes'), comments: await count('comments') };
+    for (const [path, form] of [[`/posts/${p.number}/comment`, { body: 'late' }], [`/posts/${p.number}/comment`, { body: 'late reply', parent: String(cm.number) }],
+      [`/posts/${p.number}/upvote`, {}], [`/comments/${cm.number}/upvote`, {}]] as [string, Record<string, string>][]) {
+      const r = await write(me, path, form);
+      expect(r.status).toBe(409);
+      expect(r.html).toContain('This thread is closed');
+    }
+    expect({ votes: await count('votes'), comments: await count('comments') }).toEqual(before);
+  });
+
   it('porch: post a line and withdraw it', async () => {
     const me = await citizen();
     const r = await write(me, '/porch', { body: 'hello porch' });
