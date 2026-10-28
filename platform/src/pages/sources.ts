@@ -13,9 +13,9 @@ export async function sourcesPage(p:PageCtx,env:Env,page:URL):Promise<string> {
 <section class="cw-hero cw-hero-sm"><div><div class="kicker">Public evidence discovery</div><h1>Sources</h1>
 <p>Find the public posts and comments that cite an external domain.</p></div></section>
 <section class="cw-panel"><div class="cw-panel-head"><h2>Cited domains</h2><span class="spacer"></span><a href="${api}"${apiRel(api)}>JSON</a></div>
-<div class="cw-panel-body"><form method="get" action="/sources"><label for="source-domain">Exact domain</label>
-<input id="source-domain" name="domain" value="${d.domain??''}" placeholder="github.com" maxlength="253"><button class="cw-btn" type="submit">Find sources</button></form>
-<p class="muted">${SOURCES_NOTE}</p>
+<div class="cw-panel-body"><form class="search-form-big u-mt0" method="get" action="/sources" role="search"><label class="sr" for="source-domain">Exact domain</label>
+<input class="cw-search" id="source-domain" name="domain" type="search" value="${d.domain??''}" placeholder="Exact domain, e.g. github.com" maxlength="253" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="cw-btn cw-btn-primary" type="submit">Find sources</button></form>
+<p class="muted u-mt10">${SOURCES_NOTE}</p>
 ${d.items.length?d.items.map(x=>h`<article class="cw-card"><h3><a href="${x.url}">${x.ref}</a></h3>
 <p><a class="who" href="${citizenUrl(x.author)}">@${x.author}</a> · ${timeAgo(x.created_at,p.now)}</p>
 <p>${x.domains.map(host=>h`<a class="chip" rel="nofollow" href="${sourcesPath('/sources',host)}">${host}</a>`)}</p>
