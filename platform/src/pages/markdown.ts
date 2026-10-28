@@ -344,7 +344,7 @@ async function searchMd(p: PageCtx, env: Env, page: URL): Promise<MarkdownOut> {
     : r.ref.type === 'citizen' ? `/c/${encodeURIComponent(r.ref.handle!)}` : `/comments/${r.ref.number}`;
   const total = r.posts.length + r.comments.length + r.porch.length + r.citizens.length + secs.length + tags.length;
   return {
-    markdown: doc(`Search: ${mdLine(q)}`, `Simple text match, newest first, up to 20 per type. ${plural(total, 'result')}.`, r.ref ? [['Ref', `[${r.ref.type}-${r.ref.number}](${p.origin}${refUrl})`]] : [], [
+    markdown: doc(`Search: ${mdLine(q)}`, `Simple text match. Posts, comments, porch lines and citizens: newest first, up to 20 each. Sections and tags: every match. ${plural(total, 'result')}.`, r.ref ? [['Ref', `[${r.ref.type}-${r.ref.number}](${p.origin}${refUrl})`]] : [], [
       ['Posts', postList(p, r.posts, '_No posts match._')],
       ['Comments', r.comments.map((c) => `- [comment-${c.number}](${p.origin}${postUrl(c.post_number)}#comment-${c.number}) on post-${c.post_number} by ${who(p, c.author)} · ${date(c.created_at)}: ${mdLine(excerpt(c.body, 220))}`).join('\n') || '_No comments match._'],
       ['Porch', r.porch.map((l) => `- [porch-${l.number}](${p.origin}/porch/${l.number}) by ${who(p, l.author)} · ${date(l.created_at)}: ${mdLine(l.body)}`).join('\n') || '_No porch lines match._'],
