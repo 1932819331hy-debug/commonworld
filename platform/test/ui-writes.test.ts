@@ -6,7 +6,7 @@ import { createExecutionContext, waitOnExecutionContext } from 'cloudflare:test'
 import { env, exports } from 'cloudflare:workers';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from '../src/index';
-import { linkDomains, linkHosts, MAX_LINK_DOMAINS, resetLinkCheckMemo } from '../src/link-check';
+import { decodeCharRefs, linkDomains, linkHosts, MAX_LINK_DOMAINS, resetLinkCheckMemo } from '../src/link-check';
 import { GSB_ENDPOINT } from '../src/trust-engine/sources/google-safe-browsing.ts';
 import { certPolska, metamask, scamsniffer } from '../src/trust-engine/index.ts';
 import { api, makeAdmin, post, register, resetDb, setSetting } from './helpers';
@@ -449,6 +449,18 @@ describe('link check: host normalization and fail-closed hosts (src/link-check.t
     expect(cjk[1]).toBe('drainer.example');
   });
 
+  it('scheme spellings a browser accepts and character references are read too', () => {
+    const one = (t: string) => linkDomains([t]);
+    for (const link of ['https:/drainer.example/x', 'https:\\\\drainer.example/x', 'https:\\/drainer.example', 'HTTPS:///drainer.example',
+      'https:drainer.example/x', '[claim](https:/drainer.example)']) expect(one(link), link).toEqual(['drainer.example']);
+    for (const link of ['https&#58;//drainer.example', 'https&colon;//drainer.example', 'https://drainer&#46;example', 'https://drainer&#x2E;example',
+      'https:&#x2F;&#x2F;drainer.example', '[x](https://drainer&period;example)', 'www&#46;drainer&#46;example']) {
+      expect(one(link), link).toContain('drainer.example');
+    }
+    expect(decodeCharRefs('a &Colon; b &#0; &#xD800; &bogus; &#58;')).toBe('a &Colon; b &#0; &#xD800; &bogus; :');
+    expect(one('see https: the scheme, and http:// alone')).toEqual([]);
+  });
+
   it('a host that cannot be read as a domain is reported, never dropped; names that are not domains are skipped', () => {
     expect(linkHosts(['https://good.example%40drainer.example/ and https://a!b.example/x'])).toEqual({ domains: [], unreadable: ['good.example%40drainer.example', 'a!b.example'] });
     expect(linkHosts(['https://drainer\uff0cexample/'])).toEqual({ domains: [], unreadable: ['drainer\uff0cexample'] });
@@ -457,7 +469,8 @@ describe('link check: host normalization and fail-closed hosts (src/link-check.t
 
   const ESCAPES = ['https://drainer\u3002example/claim', 'https://drainer\uff0eexample/claim', 'https://drainer\uff61example/claim',
     'https://drainer%2Eexample/claim', 'https://drainer%2eexample/claim', 'https://DRAINER.EXAMPLE./claim', 'https://u:p@drainer.example:8443/claim',
-    'https://www.www.drainer.example/claim', '**https://drainer.example**', 'www\u3002drainer\u3002example'];
+    'https://www.www.drainer.example/claim', '**https://drainer.example**', 'www\u3002drainer\u3002example', 'https:/drainer.example/claim', 'https:\\\\drainer.example/claim',
+    'https&#58;//drainer.example/claim', 'see www&#46;drainer.example'];
 
   it('API: every spelling of a listed host is refused (422 link_flagged) and recorded; nothing is written', async () => {
     sources();

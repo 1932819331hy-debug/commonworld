@@ -13,7 +13,8 @@
  *   - clean / no_data              -> published (TRUST.md rule: flagged only when a source says so; a source that cannot
  *                                     answer never blocks)
  *
- * What counts as a link: `http://` / `https://` URLs and `www.` hosts anywhere in the text (markdown links included).
+ * What counts as a link: `http(s):` URLs (any run of '/' or '\' after the scheme, as a browser reads it) and `www.` hosts
+ * anywhere in the text (markdown links included); a text with character references (`&#58;`) is also read decoded.
  * Hosts are read the way a browser reads them (trust engine hostOf: IDNA dots such as U+3002, percent-decoding,
  * punycode, case, userinfo, port). A link host that cannot be read as a domain name is refused as unsafe (fail closed,
  * 422 link_flagged with source `link_check`, recorded like any rejection); it is never skipped. Names that are not
@@ -57,11 +58,13 @@ export type LinkObject = 'post' | 'comment' | 'porch' | 'decision';
  */
 const RECORDED_AS: Record<LinkObject, 'post' | 'comment' | 'porch'> = { post: 'post', comment: 'comment', porch: 'porch', decision: 'post' };
 
-/** http(s) URLs wherever "http(s)://" starts, also right after a word character ("_https://x_" is Markdown italics).
- * Userinfo and host are read in a lookahead, so only "http(s)://" is consumed: a URL that starts inside the previous
- * one's host (text without spaces, "https://a.example\u3001https://b.example") is found too, and a host ends where
- * the next "http(s)://" begins. */
-const URL_HOST = /https?:\/\/(?=(?:[^\s/?#@<>"'`()[\]{}]*@)?((?:(?!https?:\/\/)[^\s/?#:<>"'`()[\]{}|\\^])+))/gi;
+/** http(s) URLs wherever "http(s):" starts, also right after a word character ("_https://x_" is Markdown italics).
+ * The scheme may be followed by any number of '/' or '\' (none included): a browser reads "https:/x", "https:\x" and
+ * "https:x" as https://x/ for this scheme, so a Markdown reader that keeps such a destination links the host.
+ * Userinfo and host are read in a lookahead, so only the scheme and its slashes are consumed: a URL that starts inside
+ * the previous one's host (text without spaces, "https://a.example\u3001https://b.example") is found too, and a host
+ * ends where the next "http(s):/" begins. */
+const URL_HOST = /https?:[\/\\]*(?=(?:[^\s/?#@<>"'`()[\]{}]*@)?((?:(?!https?:[\/\\])[^\s/?#:<>"'`()[\]{}|\\^])+))/gi;
 /** www. hosts; the label separator may also be an IDNA dot (U+3002, U+FF0E, U+FF61) or a percent-encoded dot. */
 const WWW_HOST = /(?:^|[^a-z0-9.@/-])(www(?:\.|[\u3002\uff0e\uff61]|%2e)[a-z0-9-]+(?:(?:\.|[\u3002\uff0e\uff61]|%2e)[a-z0-9-]+)+)/gi;
 /** What may follow a link and is not part of its host: sentence punctuation (ASCII, typographic quotes, dashes and the
@@ -75,6 +78,18 @@ const WILDCARD_LABELS = /^(?:\*\.)+/;
 const ASCII_PREFIX = /^[a-z0-9_.-]+/i;
 /** Longest host recorded for an unreadable link (the record never holds the text, and a host is capped in DNS anyway). */
 const MAX_RECORDED_HOST = 253;
+
+/** Named character references that can spell a URL's punctuation; numeric references are decoded generally. */
+const NAMED_REFS: Record<string, string> = { colon: ':', sol: '/', bsol: '\\', period: '.', commat: '@', amp: '&', percnt: '%', num: '#', quest: '?' };
+
+/** HTML / CommonMark character references decoded (&#58; &#x3a; &colon; ...); unknown or invalid ones stay as written. */
+export function decodeCharRefs(text: string): string {
+  return text.replace(/&(?:#(\d{1,7})|#x([0-9a-f]{1,6})|([a-z]{2,8}));/gi, (m, dec?: string, hex?: string, name?: string) => {
+    if (name !== undefined) return Object.hasOwn(NAMED_REFS, name) ? NAMED_REFS[name]! : m; // names are case-sensitive
+    const cp = dec !== undefined ? Number(dec) : parseInt(hex!, 16);
+    return cp > 0 && cp <= 0x10ffff && (cp < 0xd800 || cp > 0xdfff) ? String.fromCodePoint(cp) : m;
+  });
+}
 
 export interface LinkHosts {
   /** Distinct normalized domains to look up, first-seen order. */
@@ -100,8 +115,13 @@ export function linkHosts(texts: string[]): LinkHosts {
     }
   };
   for (const t of texts) {
-    for (const m of String(t ?? '').matchAll(URL_HOST)) add(m[1]);
-    for (const m of String(t ?? '').matchAll(WWW_HOST)) add(m[1]);
+    const text = String(t ?? '');
+    // a Markdown reader decodes character references in link text and destinations ("https&#58;//x", "x&#46;example"),
+    // so a text with references is also read decoded
+    for (const v of text.includes('&') ? [text, decodeCharRefs(text)] : [text]) {
+      for (const m of v.matchAll(URL_HOST)) add(m[1]);
+      for (const m of v.matchAll(WWW_HOST)) add(m[1]);
+    }
   }
   return { domains, unreadable };
 }
