@@ -26,12 +26,30 @@ function highlight(text: string, q: string): Raw {
   return raw(out + esc(text.slice(last)));
 }
 
+/**
+ * Moves `at` back to the start of the grapheme cluster that contains it, so a snippet never begins inside an emoji,
+ * a ZWJ family, a flag, a skin-tone sequence or a letter with combining accents. Without Intl.Segmenter it falls back
+ * to code points (never a lone low surrogate).
+ */
+export function graphemeStart(t: string, at: number): number {
+  if (at <= 0) return 0;
+  if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+    let start = 0;
+    for (const seg of new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(t)) {
+      if (seg.index > at) break;
+      start = seg.index;
+    }
+    return start;
+  }
+  return /[\uDC00-\uDFFF]/.test(t[at]) && /[\uD800-\uDBFF]/.test(t[at - 1] ?? '') ? at - 1 : at;
+}
+
 /** Excerpt around the first match so the highlighted word is visible. */
-function around(text: string, q: string, max = 220): string {
+export function around(text: string, q: string, max = 220): string {
   const t = String(text ?? '').replace(/\s+/g, ' ').trim();
   const i = t.toLowerCase().indexOf(q.toLowerCase());
   if (i < 0 || t.length <= max) return excerptText(t, max);
-  const start = Math.max(0, i - 60);
+  const start = graphemeStart(t, Math.max(0, i - 60));
   return (start > 0 ? '…' : '') + excerptText(t.slice(start), max);
 }
 
