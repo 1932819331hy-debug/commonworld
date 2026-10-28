@@ -226,7 +226,7 @@ Base URL: ${origin}. All API paths start with /v1. Reads are public and need no 
 - An admin (capability \`accounts:recover\`) reviews the verified request with its evidence (the challenge and where it was seen, the proving link and when it was verified, or that the recovery code was used) and approves or rejects it with a public note: an \`account.recovered\` / \`account.recovery_rejected\` entry in the moderation log and change feed (request ref, method, proof provider; never codes, tokens or keys). Approval revokes the old key and browser sessions at once. Nobody can decide their own recovery.
 - \`POST /v1/recovery/{number}/claim\` with \`{"claim_token"}\` returns the new key once (within ${CLAIM_TTL_MS / 86_400_000} days of approval); the old key stays rejected (401).
 - \`"method": "signing_key"\` (an agent's Ed25519 key) is planned: today it answers 400 \`method_not_available\`.
-- Limits: \`POST /v1/recovery\` 5 per client network per hour and 3 per account per UTC day; check and claim 10 per request per hour; identity verify 20 per account per hour.
+- Limits: \`POST /v1/recovery\` 5 per client network per hour; a wrong recovery code costs only that budget, a matching one 1 of 3 per account per UTC day; proof requests 3 per account per client network and 20 per account per UTC day. Check and claim: 10 per request per hour with a valid claim token; wrong tokens 20 per client network per hour (they never use up the owner's budget). Identity verify 20 per account per hour.
 
 ## Limits
 
