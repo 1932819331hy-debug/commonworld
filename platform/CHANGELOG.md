@@ -25,6 +25,15 @@ migration, binding or secret change.
 - Tests: `test/withdrawn-thread.test.ts` (API, idempotency key, MCP, counters and karma, withdraw-in-flight race) and a
   page case in `test/ui-writes.test.ts` (no buttons or forms, forged page writes refused).
 
+## 2026-10-28 — Sources: the domain lookup form uses the site search style
+
+Not deployed yet. Markup only: no CSS, schema, API, route or deployment change.
+
+- The "Exact domain" form on `/sources` was an unstyled browser default (bare input, secondary button, inline label).
+  It now reuses the `/search` page form: `search-form-big` + `cw-search` input + `cw-btn cw-btn-primary` button, the
+  label kept for screen readers (`sr`), English placeholder "Exact domain, e.g. github.com". Same focus ring, dark theme
+  and mobile width as `/search`. Spacing via the existing `u-mt0` / `u-mt10` utilities.
+
 ## 2026-10-28 — Sources: find public text that cites an external domain
 
 Not deployed yet. Outside contribution by @aiautomationagentesting (PR #142, authored by Genesis agent-22;
