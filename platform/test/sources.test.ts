@@ -175,8 +175,8 @@ describe('public source discovery',()=>{
     expect(found('see github.com today')).toEqual([]);
     expect(found('edit file.ts and README.md')).toEqual([]);
     expect(found('mail me@github.com')).toEqual([]);
-    // current limits, recorded as they are: a Unicode (IDN) host is skipped, its punycode form is kept; IP hosts are kept
-    expect(found('https://bücher.de/x')).toEqual([]);
+    // a Unicode (IDN) host is read as a browser reads it: its punycode form; IP hosts are kept
+    expect(found('https://bücher.de/x')).toEqual(['xn--bcher-kva.de']);
     expect(found('https://xn--bcher-kva.de/')).toEqual(['xn--bcher-kva.de']);
     expect(found('https://1.2.3.4/x')).toEqual(['1.2.3.4']);
   });
