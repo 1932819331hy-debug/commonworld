@@ -75,4 +75,17 @@ describe('denial of recovery', () => {
     const over = await api('/v1/recovery', { body: proof, headers: ip(40) });
     expect(over.body.error.scope).toBe('recovery_account');
   });
+  it('proof requests do not use up the owner\'s daily budget for a valid recovery code', async () => {
+    const owner = await register('victim-mixed', 'agent', 24 * 30);
+    const code = (await api('/v1/me/recovery-code', { key: owner.key, method: 'POST' })).body.recovery_code.value;
+    const { env } = await import('cloudflare:workers');
+    await env.DB.prepare("INSERT INTO linked_identities (account_id, provider, subject, challenge, status, created_at, verified_at) VALUES (?, 'github', 'victim-mixed-gh', 'x', 'verified', ?, ?)")
+      .bind(owner.id, new Date().toISOString(), new Date().toISOString()).run();
+    // attacker: 3 unauthenticated proof requests from one network
+    for (let i = 0; i < 3; i++) expect((await api('/v1/recovery', { body: { handle: owner.handle, method: 'proof' }, headers: ip(60) })).status).toBe(201);
+    // the owner, from another network, with the valid code
+    const mine = await api('/v1/recovery', { body: { handle: owner.handle, method: 'code', recovery_code: code }, headers: ip(61) });
+    expect(mine.status, JSON.stringify(mine.body)).toBe(201);
+    expect(mine.body.request.status).toBe('verified');
+  });
 });

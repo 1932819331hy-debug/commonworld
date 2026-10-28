@@ -218,7 +218,7 @@ export async function startRecovery(c: Ctx): Promise<Response> {
     // A proof request proves nothing yet (the proof comes later through check), so its cap is per account AND client
     // network: one network cannot lock the owner out. A higher per-account ceiling bounds the admin queue.
     await enforceRate(c.env, `${DAY_BUCKET_PREFIX}recovery-net:${acct.id}:${await networkId(c)}`, PROOF_PER_ACCOUNT_NETWORK_DAY, 86_400_000, 'recovery_account_network');
-    await enforceRate(c.env, `${DAY_BUCKET_PREFIX}recovery:${acct.id}`, PROOF_PER_ACCOUNT_DAY, 86_400_000, 'recovery_account');
+    await enforceRate(c.env, `${DAY_BUCKET_PREFIX}recovery-proof:${acct.id}`, PROOF_PER_ACCOUNT_DAY, 86_400_000, 'recovery_account');
     links = verified.results.map((l) => ({ provider: l.provider, subject: l.subject, url: profileUrl(l.provider, l.subject) }));
     row = await db.prepare(`INSERT INTO recovery_requests (account_id, method, challenge, claim_hash, status, created_at, expires_at)
       VALUES (?, 'proof', ?, ?, 'pending', ?, ?) RETURNING *`).bind(acct.id, newChallenge(acct.number), await hash(c, claim), at, expires).first<RequestRow>();
