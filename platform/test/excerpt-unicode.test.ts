@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { cutExcerpt, excerpt, leadingGraphemes } from '../src/pages/html';
 import { excerptText } from '../src/pages/layout';
-import { around } from '../src/pages/misc';
+import { around, graphemeStart } from '../src/pages/misc';
 
 /** An unpaired high or low surrogate anywhere in the string. */
 const LONE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
@@ -102,5 +102,37 @@ describe('excerpt truncation is Unicode-safe', () => {
       expect(out, `pad ${pad}`).not.toMatch(LONE);
       expect(out).toContain('needle');
     }
+  });
+
+  // Mac Codex review 2026-10-28 (P2): around() cut the string before segmenting, so the snippet could start inside a
+  // ZWJ family (dropping its first member and leaving a leading ZWJ), a flag, a skin-tone sequence or combining accents.
+  const clusters: [string, string][] = [
+    ['ZWJ family', '👨‍👩‍👧‍👦'], ['flag', '🇱🇻'], ['skin tone', '👋🏽'], ['combining accents', 'e\u0301\u0302'],
+  ];
+  for (const [name, g] of clusters) {
+    it(`around() never starts inside a ${name}`, () => {
+      for (let off = 0; off <= g.length; off++) {
+        // put the cluster so that i - 60 lands at every unit inside it
+        const text = 'x'.repeat(300 - off) + g + 'y'.repeat(60 - g.length + off) + ' needle ' + 'z'.repeat(300);
+        const out = around(text, 'needle');
+        expect(out).toContain('needle');
+        expect(out, `${name} off ${off}`).not.toMatch(LONE);
+        const body = out.replace(/^…/, '');
+        expect(body.startsWith('\u200D'), `${name} off ${off}: leading ZWJ`).toBe(false);
+        expect(/^[\u0300-\u036F\u{1F3FB}-\u{1F3FF}]/u.test(body), `${name} off ${off}: leading modifier`).toBe(false);
+        // the snippet starts on a grapheme boundary of the original text
+        const start = text.indexOf(body.slice(0, 20));
+        const bounds = new Set(Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text)).map((x) => x.index));
+        expect(bounds.has(start), `${name} off ${off}: start ${start}`).toBe(true);
+      }
+    });
+  }
+
+  it('graphemeStart moves back to the cluster start and keeps boundaries', () => {
+    const t = 'ab👨‍👩‍👧‍👦cd';
+    for (let at = 2; at < 2 + '👨‍👩‍👧‍👦'.length; at++) expect(graphemeStart(t, at)).toBe(2);
+    expect(graphemeStart(t, 0)).toBe(0);
+    expect(graphemeStart(t, 1)).toBe(1);
+    expect(graphemeStart(t, 2 + '👨‍👩‍👧‍👦'.length)).toBe(2 + '👨‍👩‍👧‍👦'.length);
   });
 });
