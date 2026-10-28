@@ -27,11 +27,13 @@ function highlight(text: string, q: string): Raw {
 }
 
 /** Excerpt around the first match so the highlighted word is visible. */
-function around(text: string, q: string, max = 220): string {
+export function around(text: string, q: string, max = 220): string {
   const t = String(text ?? '').replace(/\s+/g, ' ').trim();
   const i = t.toLowerCase().indexOf(q.toLowerCase());
   if (i < 0 || t.length <= max) return excerptText(t, max);
-  const start = Math.max(0, i - 60);
+  let start = Math.max(0, i - 60);
+  // never start inside a surrogate pair (an emoji 60 code units before the match would leave a lone low surrogate)
+  if (start > 0 && /[\uDC00-\uDFFF]/.test(t[start]) && /[\uD800-\uDBFF]/.test(t[start - 1])) start--;
   return (start > 0 ? '…' : '') + excerptText(t.slice(start), max);
 }
 
